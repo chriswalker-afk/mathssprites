@@ -29,7 +29,7 @@ Every completed equation operation consists of the same operation on the left an
 - **Guided Mirror:** one user command creates and animates the two halves, then commits one logical transaction.
 - **Your Turn:** the first half is shown as a **pending** operation, the beam temporarily tilts, and the player must repeat the same operation on the second room. Until completed, the pending operation is reversible and **not part of the committed mathematical history**.
 
-A single hand naturally visits rooms sequentially. The engine must not present its temporary middle pose as a legal final equation state. Validate that the operation can be completed **in both rooms before allowing the first half**, especially with division, so the learner cannot become stuck.
+A single hand naturally visits rooms sequentially. The engine must not present its temporary middle pose as a legal final equation state. In Guided Mirror, validate both rooms before the first hand visit so neither side can be left unfinished. In Your Turn, a physically possible first-side action is allowed even when it cannot be matched in the opposite room. The first action is **provisional only**, cannot become a valid equation step by itself, and may be safely undone. If the second room cannot perform the matching action, visually demonstrate why and roll both sides back. If the second room performs a *different* action, preview the resulting balance, explain unequal changes, then undo both actions.
 
 Matching means identical **algebraic operation**, signed token type, count and group factor. Zero-pair side effects may differ between rooms; this does not make the mirrored operation different.
 
@@ -115,3 +115,14 @@ Rejections:
 The default arrangement of every chamber is one floor-aligned row, even when it must be scaled to fit. To square a pure row, the hand animates a matching column and the remaining cells of an n-by-n grid **before** atomically changing the algebra at contact. A round x sprite becomes a distinct square x² sprite. Square-rooting builds the complete area and keeps a single side; square sprites squish back to round sprites. The row returns to the floor after the demonstration. These transformations are visual explanations of an already validated equation operation, never independent math.
 
 Chapter 6 builds `x²=9` from `x=3` as an *area-building goal*; chapter 7 reverses the process; chapter 8 takes `√(4x²)=√36`, giving `2x=6`, then divides by two. Since the course assumes `x≥0`, principal rooting is valid within the stated domain: outside that domain, `x²=9` has both `x=3` and `x=−3` solutions. The game must not imply otherwise. Both Guided Mirror and Your Turn remain two-sided transactions. Add, remove, multiply and divide preserve distinct x and x² token types without conflating their coefficients.
+
+
+## Unsuccessful action previews (PR10)
+
+The engine keeps committed equality transformations as the only entries in history. Failed operations return structured information (without mutation): fraction (kind, total, number of baskets and exact remainder), overflow (actual attempted count and 48-object capacity), missing token, unsupported area, or mismatched manual actions. A separate one-room preview may be called in Your Turn for educational display; it cannot itself change the canonical equation.
+
+Fractional pieces are **temporary diagrams**, not algebraic tokens silently introduced into the whole-item engine. For example, a share of 3x sprites into two baskets requires 1 + 1/2 of a sprite per basket; this is rejected for now and both rooms remain unchanged. Overflow items may bounce or tumble beyond the drawn chamber without modifying the actual object counts.
+
+After an observation pause, the hand narrates why the move is inadvisable, announces that it will undo the attempt, then returns the physical arrangement to the last committed equality. A matched, valid two-sided action still commits exactly once at contact. A manual mismatch uses two provisional previews and is rolled back; it must not generate a notebook panel or Undo entry.
+
+**Physical-truth exception:** two nonidentical actions can have mathematically identical effects (e.g. adding one weight versus removing one negative weight). The balance must remain level when the values are equal, even though the chapter may still ask pupils to use matching moves. Misleading tilting would teach false algebra.
