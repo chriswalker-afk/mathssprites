@@ -128,3 +128,25 @@ test("fractionDisplay refuses invalid slice ratios rather than drawing misleadin
   assert.equal(fractionDisplay({code:"fraction",factor:2,remainder:0}),null);
   assert.equal(fractionDisplay({code:"fraction",factor:3,remainder:3}),null);
 });
+
+
+test("Your Turn allows a physically possible first move even when the matching side lacks that object", () => {
+  const start=initialState(LEVELS[0]);
+  // Left has one x sprite; right has none. A student should still be allowed
+  // to try taking the left sprite, then observe an unmatched second action.
+  const first=perform(start,{op:"remove",kind:"posX",count:1},"manual","left");
+  assert.equal(first.ok,true);
+  assert.equal(first.committed,false);
+  assert.equal(first.state.pending.pair.left.ok,true);
+  assert.equal(first.state.pending.pair.right.code,"missing");
+  assert.equal(visibleRooms(first.state).left.posX,0);
+  assert.equal(visibleRooms(first.state).right.posX,0);
+  const impossibleSame=perform(first.state,{op:"remove",kind:"posX",count:1},"manual","right");
+  assert.equal(impossibleSame.ok,false);
+  assert.equal(impossibleSame.code,"missing");
+  const different=perform(first.state,{op:"add",kind:"posOne",count:1},"manual","right");
+  assert.equal(different.ok,false);
+  assert.equal(different.code,"mismatch");
+  assert.equal(JSON.stringify(start),JSON.stringify(undo(first.state)));
+  assert.equal(first.state.history.length,0);
+});
