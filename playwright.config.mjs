@@ -5,6 +5,10 @@ export default defineConfig({
   timeout: 30000,
   expect: { timeout: 14000 },
   reporter: [["list"]],
+  // Real-time animation and screenshot tests are serial within a runner.
+  // CI parallelism is handled via three isolated workflow shards.
+  workers: process.env.CI ? 1 : undefined,
+  fullyParallel: false,
   use: {
     baseURL: "http://127.0.0.1:8787",
     headless: true,
@@ -14,7 +18,11 @@ export default defineConfig({
     screenshot: "only-on-failure"
   },
   webServer: {
-    command: "python3 -m http.server 8787 --bind 127.0.0.1",
+    // Python writes an access-log line for every static asset to stderr.
+    // Silence those lines in CI; test failures and traces stay visible.
+    command: process.env.CI
+      ? "python3 -m http.server 8787 --bind 127.0.0.1 2>/dev/null"
+      : "python3 -m http.server 8787 --bind 127.0.0.1",
     url: "http://127.0.0.1:8787",
     reuseExistingServer: !process.env.CI,
     timeout: 15000
