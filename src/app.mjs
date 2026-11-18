@@ -1917,25 +1917,41 @@ $("next-level").addEventListener("click", () => {
 });
 /** PR20 notebook sandbox: Stage 3 puzzle content and saved progress arrive
  * in PR21. No notebook preview ever dispatches mathssprites:solved. */
-window.addEventListener("mathssprites:notebook-preview",event=>{
+function openNotebookLevel(level,number=null){
   if(busy)return;
-  const level=event.detail?.level;
-  startLevel(0,"positive",level,null);
+  startLevel(0,"positive",level,number,number===null?"guided":"notebook");
   notebookSession=startNotebook(level);
   notebookPhase="writing";
+  notebookReplaySuccessful=false;
   mode="auto";
+  $("notebook-hint-message").hidden=true;
+  $("notebook-hint-message").textContent="";
   notebookMessage("Write the next balanced equation. Each line must be one whole-object operation on both sides.");
   renderNotebookPaper();
   render();
   $("notebook-equation").value="";
   $("notebook-equation").focus({preventScroll:true});
+}
+window.addEventListener("mathssprites:notebook-preview",event=>{
+  openNotebookLevel(event.detail?.level);
+});
+window.addEventListener("mathssprites:notebook-campaign",event=>{
+  if(event.detail?.stage!=="notebook"||!Number.isInteger(event.detail?.number))return;
+  openNotebookLevel(event.detail.level,event.detail.number);
 });
 window.addEventListener("mathssprites:notebook-close",()=>{
   if(busy)return;
   notebookSession=null;
   notebookPhase="idle";
+  notebookReplaySuccessful=false;
   document.body.classList.remove("notebook-mode");
   renderNotebookVisibility();
+});
+$("notebook-hint").addEventListener("click",()=>{
+  if(!notebookSession)return;
+  $("notebook-hint-message").textContent=currentLevel().suggested||
+    "Think about one equal change you can make to both sides.";
+  $("notebook-hint-message").hidden=false;
 });
 $("notebook-form").addEventListener("submit",event=>{
   event.preventDefault();
@@ -1983,6 +1999,11 @@ $("notebook-back-paper").addEventListener("click",()=>{
   $("notebook-replay").focus({preventScroll:true});
 });
 $("notebook-watch-again").addEventListener("click",replayNotebookWithSprites);
+$("notebook-next").addEventListener("click",()=>{
+  if(busy||!notebookReplaySuccessful||notebookPhase!=="complete"||
+     campaignStage!=="notebook"||campaignLevelNumber===null)return;
+  window.dispatchEvent(new CustomEvent("mathssprites:advance"));
+});
 window.addEventListener("mathssprites:launch",event=>{
   const {number,legacyIndex,level,stage}=event.detail;
   startLevel(legacyIndex,"positive",level,number,stage);
