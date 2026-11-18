@@ -88,7 +88,7 @@ function token(kind, i, mini = false, side = "left") {
       '<span class="sprite-reaction-shell"><span class="sprite-motion">' +
       '<span class="sprite-feet"></span><span class="sprite-body">' +
       '<span class="sprite-eyes"><i></i><i></i></span>' +
-      (square ? '<span class="square-symbol">x²</span>' : "") + '</span>' +
+      (square ? '<span class="square-symbol">✦</span>' : "") + '</span>' +
       '</span></span></span>';
   }
   if (kind === "posOne")
@@ -287,19 +287,24 @@ function showAreaPreview(side, action) {
   const arrangement = areaArrangement(visible()[side], action.op);
   if (!arrangement || arrangement.side < 1) return;
   const cells = previewCells(arrangement).map(cell => {
-    const symbol = arrangement.symbolic ? "x²" : "●";
+    const symbol = arrangement.symbolic ? "✦" : "●";
     return '<span class="area-cell role-' + cell.role +
       (arrangement.symbolic ? " area-symbolic" : "") +
       '" data-cell-index="' + cell.index + '" data-cell-row="' + cell.row +
       '" data-cell-col="' + cell.col + '" style="--cell-delay:' + cell.delay +
       'ms">' + symbol + '</span>';
   }).join("");
+  const demonstration = arrangement.symbolic
+    ? (action.op === "square" ? "ROUND → SQUARE CREATURES" : "SQUARE → ROUND CREATURES")
+    : (action.op === "square"
+      ? arrangement.side + " × " + arrangement.side + " gives " + arrangement.cells
+      : "Keep " + arrangement.side + " from a " + arrangement.side + " × " + arrangement.side + " square");
   preview.dataset.operation = action.op;
   preview.dataset.phase = "arranging";
   preview.style.setProperty("--area-side", arrangement.side);
   preview.setAttribute("aria-label", areaMathLabel(arrangement) + ", a " +
     arrangement.side + " by " + arrangement.side + " square");
-  preview.innerHTML = '<span class="area-math">' + areaMathLabel(arrangement) + '</span>' +
+  preview.innerHTML = '<span class="area-math">' + demonstration + '</span>' +
     '<div class="area-guide"><strong>' + (action.op === "square" ? "ROW → COLUMN → FILL" :
       "FULL SQUARE → KEEP ONE SIDE") + '</strong></div>' +
     '<div class="area-grid" style="--area-side:' + arrangement.side + '">' + cells + '</div>' +
