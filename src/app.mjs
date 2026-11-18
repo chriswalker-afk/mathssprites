@@ -711,7 +711,7 @@ async function manualMove(side) {
   if (!outcome.ok) {
     if (wasPending && outcome.code === "mismatch")
       return animateMismatchedManualAction(side, state.pending.action, action);
-    return animateRejectedAction(action, outcome, wasPending ? side : undefined, wasPending);
+    return animateRejectedAction(action, outcome, side, wasPending);
   }
   busy = true;
   clearSpeech();
