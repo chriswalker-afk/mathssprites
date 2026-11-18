@@ -63,6 +63,8 @@ test("squaring constructs a matching column and square before pounding round x t
   await expect(page.locator("#right-area-preview .area-cell.role-row")).toHaveCount(3);
   await expect(page.locator("#right-area-preview .area-cell.role-column")).toHaveCount(2);
   await expect(page.locator("#right-area-preview .area-cell.role-fill")).toHaveCount(4);
+  await expect(page.locator("#action-caption")).toContainText("square of weights");
+  await page.waitForTimeout(920); // Capture the completed 3x3 arrangement, not its first row.
   await page.screenshot({path:"artifacts/hand-builds-three-by-three.png"});
   await expect(page.locator("#right-items .weight")).toHaveCount(9);
   await expect(page.locator("#replay-backdrop")).toBeVisible({timeout:20000});
@@ -81,6 +83,7 @@ test("principal root keeps a side of the array and squishes a square sprite roun
   await page.screenshot({path:"artifacts/square-squishes-back-into-round-sprite.png"});
   await expect(page.locator("#right-area-preview .area-cell")).toHaveCount(9);
   await expect(page.locator("#right-area-preview")).toHaveAttribute("data-operation","sqrt");
+  await expect(page.locator("#action-caption")).toContainText("weights");
   await expect(page.locator("#right-items .weight")).toHaveCount(3);
   await page.screenshot({path:"artifacts/nine-weight-square-keeps-three.png"});
   await expect(page.locator("#replay-backdrop")).toBeVisible({timeout:20000});
@@ -102,6 +105,8 @@ test("advanced square root reduces 4x²=36 to 2x=6 before sharing equally", asyn
     return {width:box.width,height:box.height};
   });
   expect(Math.abs(squareSize.width - squareSize.height)).toBeLessThan(2);
+  await expect(page.locator("#action-caption")).toContainText("36 weights");
+  await page.waitForTimeout(900); // Wait for the column and interior to materialise.
   await page.screenshot({path:"artifacts/root-36-objects-into-six.png"});
   await expect(page.locator("#right-items .weight")).toHaveCount(6);
   await expect(page.locator("#replay-backdrop")).toBeHidden();
