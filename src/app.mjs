@@ -829,8 +829,8 @@ async function finishTurn() {
     // The student must be able to SEE the final physical balance before
     // the comic-book retrospective covers the laboratory.
     $("scene").classList.add("solved-scene");
-    $("feedback").textContent = state.goal === "square"
-      ? "A complete area! The x² sprite matches the squared number of weights."
+    $("feedback").textContent = state.goal === "square" || state.goal==="area"
+      ? "A complete in-room square! Its physical regions match the squared side."
       : "One sprite, and its matching weights. The rooms are balanced!";
     await sleep(reducedMotion ? 1100 : 1800);
     $("scene").classList.remove("solved-scene");
@@ -934,15 +934,17 @@ async function manualMove(side) {
     $("feedback").textContent="One room done. Now perform the matching move in the other room.";
   else await finishTurn();
 }
-function startLevel(index) {
+function startLevel(index,quantityMode) {
   stopReplay();
   replayEntries = [];
   levelIndex = (index + LEVELS.length) % LEVELS.length;
-  state = initialState(LEVELS[levelIndex]);
-  operation = LEVELS[levelIndex].startingOperation ||
+  const level=LEVELS[levelIndex];
+  state=initialState(level,quantityMode||levelQuantityMode(level));
+  operation = level.startingOperation ||
     ((levelIndex === 1 || levelIndex === 4) ? "divide" : "remove");
-  kind = "posOne";
-  amount = levelIndex === 0 ? 2 : levelIndex === 2 ? 4 : levelIndex === 4 ? 2 : 1;
+  kind=level.startingKind||"posOne";
+  amount=level.startingAmount||
+    (levelIndex===0?2:levelIndex===2?4:levelIndex===4?2:1);
   factor = levelIndex === 1 ? 3 : levelIndex === 4 ? 5 : 2;
   override = null; groups = { left: 0, right: 0 };
   failureTilt = 0;
@@ -958,13 +960,16 @@ function startLevel(index) {
     $(side + "-chamber").classList.remove("hand-target", "hand-contact");
     clearAreaPreview(side);
     clearFailureStage(side);
+    clearNeutralEffect(side);
   }
   $("hand-cargo").hidden = true;
   $("action-caption").hidden = true;
   $("scene").classList.remove("solved-scene");
   clearSpeech();
   $("replay-backdrop").hidden = true;
-  $("feedback").textContent = "Choose a hand action, then try it on the rooms.";
+  $("feedback").textContent = state.quantityMode==="signed"
+    ? "Signed objects are active: white sprites and balloons are opposites. Make a zero pair!"
+    : "Positive objects only. Signed objects can be enabled with Maths mode.";
   render();
 }
 function miniItems(r) {
@@ -1252,6 +1257,16 @@ $("do-both").addEventListener("click", guidedMove);
 $("left-action").addEventListener("click", () => manualMove("left"));
 $("right-action").addEventListener("click", () => manualMove("right"));
 $("mode-select").addEventListener("change", event => { mode = event.target.value; render(); });
+$("quantity-mode").addEventListener("change", event => {
+  if(busy||state.pending)return render();
+  const requested=event.target.value;
+  if(levelQuantityMode(LEVELS[levelIndex])==="signed"&&requested!=="signed")
+    return render();
+  startLevel(levelIndex,requested);
+  setSpeech(requested==="signed"
+    ? "Signed objects are on. A white sprite is −x; a balloon is −1. Make opposite pairs to get zero!"
+    : "Only positive sprites and weights are available in this lesson.",5300);
+});
 $("level-select").addEventListener("change", event => startLevel(Number(event.target.value)));
 $("motion-toggle").addEventListener("click", () => chooseMotion(!reducedMotion));
 $("motion-enable").addEventListener("click", () => chooseMotion(false));
