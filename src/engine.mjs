@@ -3,7 +3,7 @@
  * Objects are physical counts; algebraic values are projections of those counts.
  * Both play modes commit exactly one two-sided transaction per mathematical step.
  */
-export const TOKEN_KINDS = ["posX", "negX", "posOne", "negOne"];
+export const TOKEN_KINDS = ["posX", "negX", "posX2", "posOne", "negOne"];
 export const LEVELS = [
   {
     id: "resident", title: "One little resident", chapter: "01 · Clearing the room",
@@ -34,6 +34,25 @@ export const LEVELS = [
     prompt: "These rooms are crowded. Can you pack everything into five equal baskets?",
     left: { posX: 5, posOne: 10 }, right: { posOne: 20 }, solution: 2,
     suggested: "Try five equal baskets in each room, then remove two weights from both."
+  },
+  {
+    id: "make-square", title: "Build the square", chapter: "06 · Length becomes area",
+    prompt: "Both sides show a length. Square each whole side: turn the row into a matching column, then fill the area. Assume x ≥ 0.",
+    left: { posX: 1 }, right: { posOne: 3 }, solution: 3, goal: "square",
+    startingOperation: "square",
+    suggested: "Square both sides. A round x becomes a square x²; three weights become a 3 × 3 square of nine."
+  },
+  {
+    id: "take-root", title: "Keep one side", chapter: "07 · Area becomes length",
+    prompt: "These are square areas. Arrange each as a square, then keep one side. Assume x ≥ 0.",
+    left: { posX2: 1 }, right: { posOne: 9 }, solution: 3, startingOperation: "sqrt",
+    suggested: "Take the principal square root of each side: a square x² becomes a round x, and √9 is 3."
+  },
+  {
+    id: "root-then-share", title: "Root and share", chapter: "08 · Two steps back",
+    prompt: "Four square sprites face 36 weights. Make squares, keep one side, then share equally. Assume x ≥ 0.",
+    left: { posX2: 4 }, right: { posOne: 36 }, solution: 3, startingOperation: "sqrt",
+    suggested: "√(4x²) = 2x and √36 = 6. Then divide both rooms by two."
   }
 ];
 
@@ -42,15 +61,15 @@ export function room(values = {}) {
 }
 export function copyRoom(value) { return room(value); }
 export function canonical(value) {
-  return { x: value.posX - value.negX, constant: value.posOne - value.negOne };
+  return { x2: value.posX2 || 0, x: value.posX - value.negX, constant: value.posOne - value.negOne };
 }
 export function evaluate(value, x) {
   const terms = canonical(value);
-  return terms.x * x + terms.constant;
+  return terms.x2 * x * x + terms.x * x + terms.constant;
 }
 export function initialState(level = LEVELS[0]) {
-  return { levelId: level.id, solution: level.solution, left: room(level.left),
-    right: room(level.right), history: [], pending: null };
+  return { levelId: level.id, goal: level.goal || "isolate", solution: level.solution,
+    left: room(level.left), right: room(level.right), history: [], pending: null };
 }
 export function visibleRooms(state) {
   if (!state.pending) return { left: state.left, right: state.right };
@@ -63,10 +82,19 @@ export function balanceDifference(state) {
 }
 export function isSolved(state) {
   if (state.pending) return false;
-  const isOneSprite = r => r.posX === 1 && r.negX === 0 && r.posOne === 0 && r.negOne === 0;
-  const isWeights = r => r.posX === 0 && r.negX === 0 && r.negOne === 0 && r.posOne === state.solution;
-  return (isOneSprite(state.left) && isWeights(state.right)) ||
-    (isOneSprite(state.right) && isWeights(state.left));
+  const isOneSprite = r => r.posX === 1 && r.negX === 0 && r.posX2 === 0 &&
+    r.posOne === 0 && r.negOne === 0;
+  const isOneSquare = r => r.posX2 === 1 && r.posX === 0 && r.negX === 0 &&
+    r.posOne === 0 && r.negOne === 0;
+  const isWeights = (r, n) => r.posX2 === 0 && r.posX === 0 && r.negX === 0 &&
+    r.negOne === 0 && r.posOne === n;
+  if (state.goal === "square") {
+    const n = state.solution ** 2;
+    return (isOneSquare(state.left) && isWeights(state.right, n)) ||
+      (isOneSquare(state.right) && isWeights(state.left, n));
+  }
+  return (isOneSprite(state.left) && isWeights(state.right, state.solution)) ||
+    (isOneSprite(state.right) && isWeights(state.left, state.solution));
 }
 export function normalize(value) {
   const next = room(value);
