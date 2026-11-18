@@ -287,13 +287,15 @@ function roomOperationText(action, side) {
       return area?.symbolic
         ? "The hand builds a matching column in the " + roomName +
           " room, fills the area and presses round sprites into square ones!"
-        : "The hand matches the " + area.side + "-weight row with a column and fills a " +
+        : !area ? "I can't form that square from this room's objects."
+          : "The hand matches the " + area.side + "-weight row with a column and fills a " +
           area.side + " × " + area.side + " square of weights in the " + roomName + " room!";
     }
     return area?.symbolic
       ? "The hand keeps one side of the square in the " + roomName +
         " room and squishes square sprites back into round ones!"
-      : "The hand makes a " + area.side + " × " + area.side + " square from " + area.cells +
+      : !area ? "This room will not form a complete square — I need to see why."
+        : "The hand makes a " + area.side + " × " + area.side + " square from " + area.cells +
         " weights, then keeps one side (" + area.side + " weights) in the " + roomName + " room!";
   }
   if (action.op === "divide") return "The hand sorts the " + roomName + " room into " + action.factor + " equal baskets...";
@@ -497,6 +499,160 @@ async function handAct(side, action, applyAtContact) {
   // The client must never treat an aborted first-room animation as solved.
   if (!applied) throw new Error("The hand did not complete its contact move.");
 }
+// A failed attempt is allowed to become a dramatic *visual experiment*, but
+// never a transaction. Only valid, matching moves can enter state.history.
+function failureStage(side, issue, action) {
+  const stage = $(side + "-attempt-stage");
+  const chamber = $(side + "-chamber");
+  stage.dataset.issue = issue.code || "invalid";
+  let html = "";
+  if (issue.code === "fraction") {
+    const parts = fractionDisplay(issue);
+    const visibleWhole = Math.min(parts.whole, 3);
+    const wholeKind = parts.kind === "posOne" || parts.kind === "negOne" ?
+      "weight-chip" : parts.kind === "posX2" ? "square-chip" : "";
+    const chip = '<span class="whole-chip ' + wholeKind + '"></span>';
+    const fractionKind = parts.kind === "posOne" || parts.kind === "negOne" ?
+      "weight-part" : parts.kind === "posX2" ? "square-part" :
+      parts.kind === "negOne" ? "balloon-part" : "";
+    const baskets = parts.parts.map(i => '<div class="attempt-basket" data-basket="' + i + '">' +
+      '<span class="basket-label">BASKET ' + (i + 1) + '</span>' +
+      '<span class="whole-chips">' + chip.repeat(visibleWhole) +
+      (parts.whole > 3 ? '<small>+' + (parts.whole - 3) + '</small>' : "") + '</span>' +
+      '<span class="slice-object ' + fractionKind + '" style="--slice-percent:' + parts.portion + '%">' +
+      '<span class="slice-ghost"></span><span class="slice-actual"></span><span class="slice-cut"></span></span>' +
+      '<span class="slice-fraction">' + (parts.whole ? parts.whole + ' + ' : "") +
+      parts.numerator + '/' + parts.denominator + '</span></div>').join("");
+    html = '<div class="attempt-caption">' + issue.count + ' ' +
+      itemWord(issue.kind,issue.count) + ' in ' + parts.baskets +
+      ' baskets — some would be cut into pieces!</div>' +
+      '<div class="attempt-baskets">' + baskets + '</div>' +
+      '<span class="attempt-hint">Those are fractional pieces, not whole objects.</span>';
+  } else if (issue.code === "overflow") {
+    const type = issue.kind === "posX" || issue.kind === "negX" ? "sprite-spill" :
+      issue.kind === "posX2" ? "square-spill sprite-spill" :
+      issue.kind === "negOne" ? "balloon-spill" : "weight-spill";
+    const props = Array.from({length:12}, (_,i) =>
+      '<span class="overflow-piece ' + type +
+      '" style="--start-x:' + (12 + i * 6) +
+      '%;--spill-x:' + (i%2 ? 110 + i * 10 : -95 - i*10) +
+      'px;--spill-delay:' + (i * 66) + 'ms"></span>').join("");
+    html = '<div class="attempt-caption">' + issue.total + ' objects — only ' +
+      issue.capacity + ' fit!</div><div class="overflow-trail">' + props +
+      '</div><span class="attempt-hint">They are bouncing and tumbling out!</span>';
+  } else {
+    const klass = issue.kind === "posOne" ? "weight-ghost" : "";
+    html = '<div class="attempt-caption">The hand tries, but the pieces do not fit...</div>' +
+      '<div class="ghost-object ' + klass + '"></div>' +
+      '<span class="attempt-hint">' + (issue.code === "missing" ?
+        "There aren't enough objects to pick up." :
+        "That shape cannot be made from these whole objects.") + '</span>';
+  }
+  stage.innerHTML = html;
+  stage.setAttribute("aria-label", issue.reason || "An impossible arrangement of objects");
+  stage.hidden = false;
+  stage.classList.remove("rewinding");
+  chamber.classList.add("attempt-" + (issue.code || "invalid"));
+}
+function clearFailureStage(side) {
+  const stage = $(side + "-attempt-stage");
+  stage.hidden = true;
+  stage.innerHTML = "";
+  stage.classList.remove("rewinding");
+  delete stage.dataset.issue;
+  $(side + "-chamber").classList.remove("attempt-fraction", "attempt-overflow",
+    "attempt-missing", "attempt-unsupported-area", "attempt-invalid");
+}
+function restoreExperiment({rollbackPending = false} = {}) {
+  // Clear *every* temporary representation before returning to the last
+  // committed state. No failed step ever changes the mathematical history.
+  if (rollbackPending && state.pending) state = undo(state);
+  override = null;
+  groups = {left:0,right:0};
+  failureTilt = 0;
+  for (const side of ["left","right"]) clearFailureStage(side);
+  $("scene").classList.remove("scene-failed-balance");
+  render();
+}
+async function animateRejectedAction(action, failure, preferredSide, rollbackPending = false) {
+  if (busy) return;
+  const current = preferredSide || failure.side || "left";
+  const preview = previewRoomAction(state[current], action);
+  const side = preview.ok ? (failure.side || current) : current;
+  const issue = preview.ok ? failure : preview;
+  busy = true;
+  clearSpeech();
+  $("feedback").textContent = "The hand is trying that experiment...";
+  render();
+  try {
+    await handAct(side, action, () => failureStage(side, issue, action));
+    // A visual pause comes BEFORE the speech bubble; learners can notice the
+    // cut pieces or spilling tokens for themselves.
+    await sleep(reducedMotion ? 220 : 850);
+    const message = attemptMessage(issue, action, side);
+    $("feedback").textContent = message;
+    setSpeech(message, reducedMotion ? 4500 : 7600);
+    await sleep(reducedMotion ? 650 : 2450);
+    $(side + "-attempt-stage").classList.add("rewinding");
+    $("scene").classList.add("scene-rewinding");
+    await sleep(reducedMotion ? 120 : 750);
+  } finally {
+    restoreExperiment({rollbackPending});
+    busy = false;
+    render();
+    await sleep(reducedMotion ? 1 : 180);
+    $("scene").classList.remove("scene-rewinding");
+  }
+}
+async function animateMismatchedManualAction(side, firstAction, action) {
+  if (busy || !state.pending) return;
+  const attempted = previewRoomAction(state[side], action);
+  if (!attempted.ok) {
+    // A second move that cannot physically happen still gets a demonstration,
+    // and BOTH provisional sides return to the last committed equation.
+    return animateRejectedAction(action, attempted, side, true);
+  }
+  const firstSide = state.pending.first;
+  busy = true;
+  clearSpeech();
+  $("feedback").textContent = "Let's see what happens when the rooms receive different moves...";
+  render();
+  try {
+    if (action.op === "divide") {
+      groups[side] = action.factor;
+      render();
+      await sleep(reducedMotion ? 80 : 860);
+    }
+    await handAct(side, action, () => {
+      const before = visibleRooms(state);
+      override = {left:before.left,right:before.right,[side]:attempted.after};
+      groups[side] = 0;
+      const difference = currentDifference(override);
+      // Equally valued but differently described operations do not magically
+      // unbalance a scale. Do not teach a false physical consequence.
+      failureTilt = difference === 0 ? 0 : difference > 0 ? -13 : 13;
+      $("scene").classList.add("scene-failed-balance");
+      $("scene").dataset.balanceOutcome = difference === 0 ? "equivalent" : "tipped";
+      render();
+    });
+    await sleep(reducedMotion ? 200 : 1100); // Observe the new balance pose.
+    const difference = currentDifference(override);
+    const message = mismatchedMoveMessage(firstAction, action, firstSide, difference);
+    $("feedback").textContent = message;
+    setSpeech(message, reducedMotion ? 5000 : 8000);
+    await sleep(reducedMotion ? 750 : 2300); // Explain before restoring.
+    $("scene").classList.add("scene-rewinding");
+    await sleep(reducedMotion ? 100 : 500);
+  } finally {
+    restoreExperiment({rollbackPending:true});
+    delete $("scene").dataset.balanceOutcome;
+    busy = false;
+    render();
+    await sleep(reducedMotion ? 1 : 370);
+    $("scene").classList.remove("scene-rewinding");
+  }
+}
+
 async function finishTurn() {
   if (isSolved(state)) {
     // The student must be able to SEE the final physical balance before
