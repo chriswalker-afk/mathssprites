@@ -252,7 +252,7 @@ function startLevel(index) {
   state = initialState(LEVELS[levelIndex]);
   operation = (levelIndex === 1 || levelIndex === 4) ? "divide" : "remove";
   kind = "posOne";
-  amount = levelIndex === 0 ? 2 : levelIndex === 2 ? 4 : 1;
+  amount = levelIndex === 0 ? 2 : levelIndex === 2 ? 4 : levelIndex === 4 ? 2 : 1;
   factor = levelIndex === 1 ? 3 : levelIndex === 4 ? 5 : 2;
   override = null; groups = { left: 0, right: 0 };
   busy = false;
@@ -322,7 +322,7 @@ function drawReplay(index, animate = true) {
   const active = $("mini-stage-" + replayIndex);
   if (animate && replayIndex > 0 && !reducedMotion) {
     const entry = replayEntries[replayIndex];
-    active.innerHTML = miniRooms(entry.before) + '<span class="mini-hand-cue" aria-hidden="true">✋</span>';
+    active.innerHTML = miniRooms(entry.before) + '<svg class="mini-hand-cue" viewBox="0 0 38 55" aria-hidden="true" focusable="false"><path fill="#cfa384" stroke="#6e5140" stroke-width="1.8" d="M13 3 Q16 0 18 5 L21 27 L20 7 Q22 3 25 8 L28 28 L28 13 Q29 10 32 13 L34 30 Q38 37 30 48 L23 53 L11 47 L5 35 Q1 28 5 26 Q9 24 13 32 Z"/></svg>';
     active.classList.add("reenacting");
     setTimeout(() => {
       if (serial !== replaySerial || $("replay-backdrop").hidden) return;
