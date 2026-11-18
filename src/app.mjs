@@ -158,6 +158,7 @@ function setSpeech(message, ms = 4000) {
   clearTimeout(speechTimer);
   const box = $("speech");
   box.hidden = false;
+  box.classList.remove("trial-speech");
   box.textContent = "“" + message + "”";
   speechTimer = setTimeout(() => { box.hidden = true; }, ms);
 }
