@@ -143,3 +143,22 @@ test("rejected attempts don't interrupt later valid moves or pollute the comic r
   await expect(page.locator("#replay-backdrop")).toBeVisible({timeout:15000});
   await expect(page.locator("#replay-progress")).toContainText("of 2");
 });
+
+
+test("Your Turn can remove an object found ONLY on the first side, then learns from a different second move",async ({page})=>{
+  await page.locator("#mode-select").selectOption("manual");
+  await page.locator('[data-kind="posX"]').click();
+  await page.locator("#amount-down").click(); // one sprite, not two
+  await page.locator("#left-action").click();
+  await expect(page.locator("#left-items .sprite-black")).toHaveCount(0);
+  await expect(page.locator("#right-items .sprite-black")).toHaveCount(0);
+  await expect(page.locator("#replay-backdrop")).toBeHidden();
+  await page.locator('[data-operation="add"]').click();
+  await page.locator("#right-action").click();
+  await expect(page.locator("#scene")).toHaveAttribute("data-balance-outcome","tipped",{timeout:12000});
+  await expect(page.locator("#speech")).toContainText("scale tips",{timeout:12000});
+  await expect(page.locator("#scene")).not.toHaveAttribute("data-balance-outcome","tipped",{timeout:13000});
+  await expect(page.locator("#left-items .sprite-black")).toHaveCount(1);
+  await expect(page.locator("#right-items .weight")).toHaveCount(5);
+  await expect(page.locator("#undo")).toBeDisabled();
+});
