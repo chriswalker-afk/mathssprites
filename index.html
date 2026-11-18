@@ -79,24 +79,24 @@
     <main class="site-page" id="site-levels" hidden>
       <button type="button" id="site-back" class="site-back-link">← Back to stages</button>
       <div class="portal-heading">
-        <div><div class="portal-kicker">WORLD 01 · STAGE 1 · POSITIVE WHOLE NUMBERS</div>
-          <h1 tabindex="-1">Guided Balance</h1>
-          <p>Choose the operation. The hand automatically makes the same change to both rooms.</p></div>
+        <div><div id="levels-stage-kicker" class="portal-kicker">WORLD 01 · STAGE 1 · POSITIVE WHOLE NUMBERS</div>
+          <h1 id="levels-stage-title" tabindex="-1">Guided Balance</h1>
+          <p id="levels-stage-intro">Choose the operation. The hand automatically makes the same change to both rooms.</p></div>
         <span id="level-progress" class="landing-progress" aria-live="polite"></span>
       </div>
       <div class="world1-progress-panel" aria-label="World 1 completion">
         <div class="world1-progress-labels"><span id="world1-progress-description">Stage 1 · Guided Balance</span><span id="world1-progress-number">0 of 20 complete</span></div>
-        <progress id="world1-progress-bar" value="0" max="20" aria-label="Completed World 1 experiments"></progress>
+        <progress id="world1-progress-bar" value="0" max="20" aria-label="Completed experiments in the selected learning stage"></progress>
       </div>
       <section id="world1-finale" class="world1-finale" aria-label="Stage 1 completed" hidden>
         <span class="finale-emblem" aria-hidden="true">✦</span>
-        <div><div class="portal-kicker">STAGE 1 COMPLETE</div>
-          <h2>Guided Balance mastered!</h2>
-          <p>You've completed all 20 guided experiments. Revisit a level to try another strategy. Stage 2 will ask you to balance each room yourself.</p>
+        <div><div id="stage-finale-kicker" class="portal-kicker">STAGE 1 COMPLETE</div>
+          <h2 id="stage-finale-title">Guided Balance mastered!</h2>
+          <p id="stage-finale-message">You've completed all 20 guided experiments. Stage 2 asks you to balance each room yourself.</p>
         </div>
       </section>
       <div id="level-sections"></div>
-      <p id="teacher-note" class="teacher-note" hidden>Teacher access: all 20 World 1 experiments are unlocked for classroom use, without changing their mathematical restrictions.</p>
+      <p id="teacher-note" class="teacher-note" hidden>Teacher access unlocks every implemented puzzle in this stage, without changing its mathematics.</p>
     </main>
     <main class="site-page" id="site-help" hidden>
       <div class="site-content-panel">
@@ -107,8 +107,8 @@
           <li>Choose an action: add, remove, multiply or split into equal groups.</li>
           <li>Keep the rooms balanced by making matching changes to both.</li>
           <li>When one sprite is left facing only weights, watch the hand's moves turn into algebra in the comic replay.</li></ol>
-        <p><strong>Stage 1 · Guided Balance:</strong> choose an action and the hand mirrors it automatically in both rooms. <strong>Stage 2 · Independent Balance:</strong> you will act on each room separately. <strong>Stage 3 · Algebra Apprentice:</strong> you will write the solution first, then see your steps replayed with sprites. The next two stages are under construction.</p>
-        <p>In Stage 1, an inadvisable experiment is safe: the hand shows what went wrong, explains it and restores the objects. The Equation Workshop will eventually let you create your own equations.</p>
+        <p><strong>Stage 1 · Guided Balance:</strong> choose an action and the hand mirrors it automatically in both rooms. <strong>Stage 2 · Independent Balance:</strong> you make each move yourself in both rooms, one after the other. <strong>Stage 3 · Algebra Apprentice:</strong> you will write the solution first, then see your steps replayed with sprites. Stage 3 remains under construction.</p>
+        <p>In both playable stages, an inadvisable experiment is safe: the hand shows what went wrong, explains it and restores the objects. The Equation Workshop will eventually let you create your own equations.</p>
         <button type="button" class="primary-btn" data-screen="worlds">Choose your first world →</button>
       </div>
     </main>
@@ -120,8 +120,9 @@
           <span><strong>Teacher access</strong> — unlock every currently playable level for classroom use.</span></label>
         <label class="settings-option"><input id="site-guided-help" type="checkbox" checked />
           <span><strong>First-visit guide</strong> — show short, step-by-step instructions in Level 1. You can dismiss them at any time.</span></label>
-        <button type="button" class="secondary-btn" id="site-replay-intro">Replay the guided introduction</button>
-        <p>Progress is stored on this browser only. No account is needed. Your original 20 World 1 levels and their saved progress are now Stage 1. Teacher access unlocks all 20 Guided Balance levels, but does not open unfinished stages or mathematical worlds.</p>
+        <button type="button" class="secondary-btn" id="site-replay-intro">Replay the Guided Balance introduction</button>
+        <button type="button" class="secondary-btn" id="site-replay-independent" hidden>Replay the Independent Balance introduction</button>
+        <p>Progress is stored on this browser only. No account is needed. Your existing 20 Stage 1 completions are preserved. The 16 new Stage 2 levels have separate progress. Stage 2 unlocks after Stage 1, or through Teacher access; Stage 3 and later worlds remain unfinished.</p>
         <button type="button" class="secondary-btn" id="site-motion">Use reduced motion</button>
         <p>Animation settings also apply to the hand, sprites and pencil inside levels.</p>
         <button type="button" class="primary-btn" data-screen="home">Back to the workshop →</button>
@@ -138,9 +139,9 @@
       <div class="header-actions">
         <button class="top-icon game-nav-button" id="game-home" type="button">⌂ Home</button>
         <button class="top-icon game-nav-button" id="game-levels" type="button">▦ Levels</button>
-        <button class="top-icon game-nav-button" id="game-guide-restart" type="button" aria-label="Restart Level 1 guided introduction">? Guide</button>
+        <button class="top-icon game-nav-button" id="game-guide-restart" type="button" aria-label="Restart the stage introduction">? Guide</button>
         <label class="labelled-select legacy-controls" for="level-select"><span>Experiment</span><select id="level-select" aria-label="Choose an experiment"></select></label>
-        <div id="campaign-hand-mode" class="campaign-hand-mode" hidden role="status"><span class="eyebrow">STAGE 1 · HAND CONTROL</span><strong>Guided Mirror</strong><small>The hand acts on both rooms.</small></div>
+        <div id="campaign-hand-mode" class="campaign-hand-mode" hidden role="status"><span class="eyebrow" id="campaign-hand-label">STAGE 1 · HAND CONTROL</span><strong id="campaign-hand-title">Guided Mirror</strong><small id="campaign-hand-help">The hand acts on both rooms.</small></div>
         <label class="labelled-select" id="mode-wrapper" for="mode-select"><span>Hand control</span><select id="mode-select" aria-label="Choose hand control mode"><option value="auto">Guided mirror</option><option value="manual">Your turn</option></select></label>
         <label class="labelled-select legacy-controls" for="quantity-mode"><span>Maths mode</span><select id="quantity-mode" aria-label="Choose positive-only or signed objects"><option value="positive">Positive objects</option><option value="signed">Signed objects</option></select></label>
         <button class="top-icon" id="motion-toggle" type="button" aria-pressed="false" title="Toggle reduced motion">Motion: on</button>
@@ -154,7 +155,7 @@
         <div class="step-dots" id="step-dots" aria-label="Experiments"></div>
       </div>
 
-      <aside id="apprentice-guide" class="apprentice-guide" aria-label="First experiment guided introduction" hidden>
+      <aside id="apprentice-guide" class="apprentice-guide" aria-label="First experiment introduction" hidden>
         <div class="guide-seal" aria-hidden="true">✧</div>
         <div class="guide-copy">
           <span id="guide-progress" class="eyebrow">1 of 4</span>

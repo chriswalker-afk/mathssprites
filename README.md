@@ -2,7 +2,7 @@
 
 *A wordless algebra puzzle that becomes an equation only after you solve it.*
 
-**Status:** World 1 now has a three-stage learning journey (PR18). **Stage 1 · Guided Balance** contains the original 20 positive whole-number puzzles with Guided Mirror fixed on. Stage 2 (16 independent-hand puzzles), Stage 3 (12 written-algebra puzzles), and the Equation Workshop are visible, but explicitly marked as coming soon. All existing completion records are preserved; the 13 advanced experiments remain separately available for QA.
+**Status:** World 1 now has **two fully playable stages**: Stage 1 · Guided Balance (20 original positive-whole-number puzzles, automatic matching hands) and Stage 2 · Independent Balance (16 new positive-whole-number puzzles, with a separate hand visit required in each room). Stage 3 · Algebra Apprentice (12 planned notebook-first puzzles) and the custom Equation Workshop are still visibly under construction. The 13 original advanced experiments remain separate for QA.
 
 ## The idea
 
@@ -16,7 +16,7 @@ At success, **comic-book panels appear automatically, one for each actual mathem
 
 1. **Two rooms, not piles on pans.** Each chamber is its own little world; objects and bouncing sprites inhabit it.
 2. **Invisible equation during play.** No `x`, `x²`, values, or algebraic statements until the end-of-level replay. Each unit object is nonetheless countable.
-3. **Hand control follows the learning stage.** In Stage 1, Guided Mirror automatically performs the same operation on both sides. The independent two-room hand will be introduced in Stage 2. Both modes remain testable in the authoring preview.
+3. **Hand control follows the learning stage.** In Stage 1, Guided Mirror automatically performs the same operation on both sides. In Stage 2, the student performs the operation separately in each chamber, watching the scale tip before matching the second move. Both modes remain testable in the authoring preview.
 4. **Every animation is mathematically truthful.** Sprite bouncing does not affect weight. Multiplication copies complete arrangements; division divides the entire arrangement into equal, see-through containers, leaving one group in each room.
 5. **Discover before explaining.** Each completed move becomes a newly revealed animated comic panel with handwritten algebra alongside. The replay begins automatically and remains pausable, rewindable and skippable.
 6. **Atmospheric rather than childish.** Warm, mysterious laboratory, charcoal sprites, brass, glass, aged timber, restraint in UI and colour.
@@ -38,7 +38,8 @@ At success, **comic-book panels appear automatically, one for each actual mathem
 - [Visual and animation direction](docs/ART_DIRECTION.md)
 - [Level progression and first playable milestone](docs/LEVEL_ROADMAP.md)
 - [Home, worlds and level selection (PR14)](docs/WORLD_NAVIGATION.md)
-- [World 1 three-stage progression (PR18)](docs/WORLD1_STAGES.md)
+- [World 1 three-stage progression (PR18–19)](docs/WORLD1_STAGES.md)
+- [Stage 2 Independent Balance: 16 puzzles and teacher routes](docs/STAGE2_CAMPAIGN.md)
 - [Two play modes, hand interactions and containers](docs/CONTROL_AND_CONTAINERS.md)
 - [Automatic comic-book equation replay](docs/COMIC_REPLAY.md)
 - [Negative sprites, balloons and zero pairs](docs/SIGNED_TOKENS.md)
@@ -47,14 +48,14 @@ At success, **comic-book panels appear automatically, one for each actual mathem
 
 The default URL opens **Home → World Select → World 1 Stage Select**. Stage 1 · Guided Balance contains the existing **20 positive whole-number puzzles** across five chapters. Levels unlock sequentially; their original saved completion records remain unchanged. Teachers can open any Stage 1 level through Settings. The hand now always mirrors the chosen operation automatically in both rooms for Stage 1, and the optional four-step introduction still starts at Level 1. Completing Level 20 earns the **Stage 1** mastery screen rather than claiming that all of World 1 has been completed.
 
-The new Stage Select page shows **Stage 2 · Independent Balance (16 planned)**, **Stage 3 · Algebra Apprentice (12 planned)**, and a separate **Equation Workshop (planned)**, without pretending any are playable. The other mathematical worlds remain locked: negatives, fractions and squares/square roots. See [World 1 stage design](docs/WORLD1_STAGES.md) and [teacher-facing first-stage solutions](docs/WORLD1_CAMPAIGN.md).
+The Stage Select page now offers **Stage 2 · Independent Balance (16 playable)** after the 20 Stage 1 puzzles are complete, or immediately through teacher access. Stage 2 has four chapters, its own first-level tutorial, independent progress, and matching-hand gameplay. **Stage 3 · Algebra Apprentice (12 planned)** and the **Equation Workshop (planned)** remain unavailable. Mathematical Worlds 2–4—negatives, fractions and squares/square roots—are separate. See [Stage 2 teacher routes](docs/STAGE2_CAMPAIGN.md).
 
 The original **thirteen curated experiments** have not been deleted. To inspect and regression-test their advanced mechanics before the later worlds go live, use the explicit authoring preview link `?preview=resident`, choose any prototype experiment there, or use a known ID such as `?preview=make-square`. The prototype preview is separate from the student campaign.
 
 The mathematical engine still supports the earlier experiments, including signed objects and genuine in-room square/root constructions. These capabilities cannot be selected inside World 1: its operation permissions are also enforced by the engine.
 
 - **Guided mirror (Stage 1)**: choose an operation and the hand performs it in both rooms. The hand mode is fixed, with no player-facing dropdown.
-- **Your turn (planned Stage 2 / existing preview)**: make a change in one room; the balance tips until you repeat it in the other.
+- **Your turn (Stage 2 / preview)**: make a change in one room; the real scale tips until you repeat that exact operation in the other. A mismatched second move is demonstrated, explained and undone.
 - **Transparent baskets**: dividing means making two to five identical groups *within each room*, then retaining one group on each side.
 - **Pencil-paced comic replay**: once a lone dark sprite faces the correct number of weights, the hand's actual steps unfold as comic panels. The pencil moves to each **individual algebra symbol**, draws it, pauses between lines, and only then advances to the next panel. Pause, continue, manual steps, and writing-speed choices are available.
 - **Hints, Undo, Reset, reduced motion and responsive layout** are included.

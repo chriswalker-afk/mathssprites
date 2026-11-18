@@ -76,3 +76,57 @@ export function introductionCue(step, { mode = "auto", pending = false, busy = f
     target: "do-both", action: null, progress: "4 of 4"
   };
 }
+
+
+/** Stage 2 has its OWN onboarding state, independent of the Stage 1 coach. */
+export const INDEPENDENT_GUIDE_SEEN_KEY="mathssprites.independent-guide-finished.v1";
+export const INDEPENDENT_BRIEFINGS=Object.freeze({
+  5:"NEW SKILL · Your hand must now create the same number of whole baskets in EACH chamber. Watch the scale until you have made both moves.",
+  9:"NEW SKILL · Some puzzles need more than one type of action. Always complete a matching pair before choosing the next kind.",
+  13:"NEW CHALLENGE · Dark sprites appear in both rooms. Choose which room will keep the final sprite, and match every removal."
+});
+export function readIndependentGuideSeen(storage){
+  try{return (storage??globalThis.localStorage)?.getItem(INDEPENDENT_GUIDE_SEEN_KEY)==="yes";}
+  catch{return false;}
+}
+export function writeIndependentGuideSeen(seen,storage){
+  try{(storage??globalThis.localStorage)?.setItem(INDEPENDENT_GUIDE_SEEN_KEY,seen?"yes":"no");}catch{}
+  return !!seen;
+}
+/**
+ * First Stage 2 lesson: not a modal, never blocks actual hand operations.
+ * After the first-room action, point at the OTHER chamber to match the move.
+ */
+export function independentIntroductionCue(step,{pending=null,busy=false}={}){
+  if(pending)return{
+    title:"3 · The other room is still waiting!",
+    text:"Look at the tilted scale. Now use the SAME removal of two weights in the other chamber. The balance will settle after your second hand visit.",
+    target:pending==="left"?"right-action":"left-action",
+    action:null,progress:"4 of 4"
+  };
+  if(busy)return{
+    title:"3 · Watch the scale",
+    text:"The hand is moving objects in one chamber. Notice how the rooms tip until you make the matching move.",
+    target:"scene",action:null,progress:"4 of 4"
+  };
+  if(step===0)return{
+    title:"You're controlling the hand now",
+    text:"The rooms start in perfect balance. In Stage 2, you will make the same change in each room yourself. The hand will not automatically visit the other side.",
+    target:"scene",action:"Choose an action",progress:"1 of 4"
+  };
+  if(step===1)return{
+    title:"1 · Choose Remove",
+    text:"Removing objects from one chamber will tip the scale until you make the same change in the other. Start with the Remove tool.",
+    target:"remove",action:"Choose the amount",progress:"2 of 4"
+  };
+  if(step===2)return{
+    title:"2 · Choose two weights",
+    text:"Choose Weight, and make the number TWO. The first room contains two loose weights to remove.",
+    target:"amount",action:"Try your first hand move",progress:"3 of 4"
+  };
+  return{
+    title:"3 · Make the west move",
+    text:"Press Use hand here in the west chamber. Watch the scale tilt; then perform the matching removal in the east.",
+    target:"left-action",action:null,progress:"4 of 4"
+  };
+}
