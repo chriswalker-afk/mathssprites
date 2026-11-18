@@ -548,9 +548,17 @@ async function handAct(side, action, applyAtContact) {
   // art's fingertips reach ~95% of its box (not 78% as in the original outline).
   // Keep the area diagram beside the hand, not hidden beneath its palm.
   // The hand still reaches the floor and traces the nearby square in view.
-  const centreX = items.left + items.width *
-    (action.op === "square" || action.op === "sqrt" ? .68 : .5) - scene.left;
+  const fractionTarget=action.fractionAttempt
+    ? [...$(side+"-items").querySelectorAll(
+        ".floor-track > "+fractionTokenSelector(action.fractionAttempt.kind))].at(-1)
+    : null;
+  const fractionBox=fractionTarget?.getBoundingClientRect();
+  const centreX = (fractionBox
+    ? fractionBox.left+fractionBox.width/2
+    : items.left + items.width *
+      (action.op === "square" || action.op === "sqrt" ? .68 : .5)) - scene.left;
   hand.style.left = centreX + "px";
+  if (action.fractionAttempt) hand.dataset.fractionAttempt="true";
   const restingTip = hand.offsetTop + hand.offsetHeight * 0.95;
   const targetTip = items.bottom - scene.top - Math.min(32, items.height * 0.20);
   const reach = Math.max(160, targetTip - restingTip);
@@ -580,7 +588,7 @@ async function handAct(side, action, applyAtContact) {
   caption.hidden = false;
   cargo.innerHTML = handProp(action, side);
   cargo.classList.remove("sprite-captured");
-  cargo.hidden = !motion.cargoOnApproach;
+  cargo.hidden = !motion.cargoOnApproach && !action.fractionAttempt;
   hand.classList.remove("approaching", "reaching", "grasping", "lifting");
   hand.classList.add("acting");
   hand.dataset.phase = motion.placing ? "carry" : "open";
@@ -659,7 +667,7 @@ async function handAct(side, action, applyAtContact) {
     }
   } finally {
     // No animation state should leak into the next room or next level.
-    hand.classList.remove("approaching", "lifting", "grasping", "reaching", "acting", "tracking-sprite", "arranging");
+    hand.classList.remove("approaching", "lifting", "grasping", "reaching", "acting", "tracking-sprite", "arranging", "fraction-observing");
     hand.dataset.phase = "rest";
     target.classList.remove("hand-target", "hand-contact");
     if (actor) {
@@ -671,6 +679,7 @@ async function handAct(side, action, applyAtContact) {
     hand.style.removeProperty("--hand-chase");
     delete hand.dataset.boxStep;
     delete hand.dataset.boxOperation;
+    delete hand.dataset.fractionAttempt;
     clearAreaPreview(side);
     clearNeutralEffect(side);
     cargo.classList.remove("sprite-captured");
