@@ -136,12 +136,12 @@ background-image:repeating-linear-gradient(90deg,transparent 0 66px,rgba(0,0,0,.
 .token{position:relative;flex:none;display:inline-block;vertical-align:bottom}
 .sprite{width:46px;height:47px;animation:sprite-hop 1.8s cubic-bezier(.33,.1,.33,1) infinite;animation-delay:var(--delay,0s);transform-origin:center bottom;filter:drop-shadow(0 3px 2px rgba(0,0,0,.5));will-change:transform}
 .sprite:before{content:"";position:absolute;left:8px;right:8px;bottom:1px;height:5px;border-radius:50%;background:#0b1213;filter:blur(2px)}
-.sprite-body{position:absolute;left:6px;bottom:5px;width:35px;height:34px;border-radius:49% 51% 45% 45%;background:radial-gradient(circle at 32% 24%,#414b49,#131719 75%);box-shadow:inset -2px -4px 5px #0009,0 0 0 1px #202426;z-index:2}
+.sprite-body{position:absolute;left:2px;bottom:4px;width:43px;height:41px;border-radius:49% 51% 45% 45%;background:radial-gradient(circle at 32% 24%,#56615c,#121719 78%);box-shadow:inset -2px -4px 6px #0009,0 0 0 1px rgba(228,225,197,.48),0 0 11px rgba(172,191,176,.22);z-index:2}
 .sprite-body:before{content:"";position:absolute;inset:-5px;border-radius:48%;background:repeating-conic-gradient(from 5deg,#192022 0deg 17deg,transparent 19deg 27deg);z-index:-1;filter:blur(.3px)}
 .sprite-body:after{content:"";position:absolute;left:-4px;top:19px;width:43px;height:13px;border-radius:50%;border-left:3px solid #161a1b;border-right:3px solid #161a1b;z-index:-1}
 .sprite-feet{position:absolute;left:13px;bottom:2px;width:24px;height:10px;border-left:4px solid #0c1011;border-right:4px solid #0c1011;transform:rotate(8deg)}
-.sprite-eyes{position:absolute;left:8px;top:9px;display:flex;gap:7px;z-index:4}
-.sprite-eyes i{width:6px;height:9px;background:#f2eee0;border-radius:50%;box-shadow:0 0 2px #fff8}
+.sprite-eyes{position:absolute;left:11px;top:10px;display:flex;gap:9px;z-index:4}
+.sprite-eyes i{width:7px;height:11px;background:#fff6dd;border-radius:50%;box-shadow:0 0 4px #fff9}
 .sprite-white .sprite-body{background:radial-gradient(circle at 32% 24%,#f5f2e9,#c9d0d0 78%);box-shadow:0 0 2px #aab0a8}
 .sprite-white .sprite-body:before{background:repeating-conic-gradient(#e7ece8 0deg 16deg,transparent 18deg 27deg)}
 .sprite-white .sprite-eyes i{background:#2e3436}
