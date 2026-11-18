@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 
 test.beforeEach(async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "no-preference" });
-  await page.goto("/");
+  await page.goto("/?preview=resident");
 });
 
 test("dark sprites are visible and visibly bounce rather than staying still", async ({ page }) => {
