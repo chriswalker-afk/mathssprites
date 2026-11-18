@@ -162,6 +162,13 @@ function setSpeech(message, ms = 4000) {
   box.textContent = "“" + message + "”";
   speechTimer = setTimeout(() => { box.hidden = true; }, ms);
 }
+function showTrialSpeech(message, ms) {
+  setSpeech(message, ms);
+  $("speech").classList.add("trial-speech");
+  // Manual action buttons can scroll the page low enough to clip a bubble at
+  // the top of the laboratory. Bring the scene back into view for the lesson.
+  $("scene").scrollIntoView({block:"center", behavior:"auto"});
+}
 function notify(message) {
   $("feedback").textContent = message;
   setSpeech(message);
@@ -592,8 +599,7 @@ async function animateRejectedAction(action, failure, preferredSide, rollbackPen
     await sleep(reducedMotion ? 220 : 850);
     const message = attemptMessage(issue, action, side);
     $("feedback").textContent = message;
-    setSpeech(message, reducedMotion ? 4500 : 7600);
-    $("speech").classList.add("trial-speech");
+    showTrialSpeech(message, reducedMotion ? 4500 : 7600);
     await sleep(reducedMotion ? 650 : 2450);
     $(side + "-attempt-stage").classList.add("rewinding");
     $("scene").classList.add("scene-rewinding");
@@ -641,8 +647,7 @@ async function animateMismatchedManualAction(side, firstAction, action) {
     const difference = currentDifference(override);
     const message = mismatchedMoveMessage(firstAction, action, firstSide, difference);
     $("feedback").textContent = message;
-    setSpeech(message, reducedMotion ? 5000 : 8000);
-    $("speech").classList.add("trial-speech");
+    showTrialSpeech(message, reducedMotion ? 5000 : 8000);
     await sleep(reducedMotion ? 750 : 2300); // Explain before restoring.
     $("scene").classList.add("scene-rewinding");
     await sleep(reducedMotion ? 100 : 500);
