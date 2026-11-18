@@ -86,6 +86,10 @@ test("Your Turn allows a different action on the second side, tips dramatically,
   await page.screenshot({path:"artifacts/manual-different-moves-scale-tips.png"});
   await expect(page.locator("#speech")).toContainText("scale tips",{timeout:12000});
   await expect(page.locator("#speech")).toContainText("undo both moves");
+  const bubble = await page.locator("#speech").boundingBox();
+  const height = page.viewportSize().height;
+  expect(bubble.y).toBeGreaterThanOrEqual(0);
+  expect(bubble.y + bubble.height).toBeLessThanOrEqual(height + 2);
   await page.screenshot({path:"artifacts/manual-different-moves-explained.png"});
   await expect(scene).not.toHaveAttribute("data-balance-outcome","tipped",{timeout:13000});
   await expect(page.locator("#left-items .weight")).toHaveCount(2);
