@@ -2,11 +2,11 @@
  * World 1 is a curriculum of representations, not just increasing equations.
  * The existing twenty puzzle IDs and math stay in WORLD1_LEVELS untouched.
  *
- * PR18 only activates Stage 1. Stage 2 (PR19), Stage 3 (PR20-21), and the
- * custom Equation Workshop (PR22) are deliberately unavailable, including
- * under Teacher access. Do not mistake a card for implemented content.
+ * PR19 activates Stage 2 (after Stage 1 completion, or for teachers).
+ * Stage 3 (PR20-21) and the Equation Workshop (PR22) remain unavailable.
  */
 import { WORLD1_LEVELS } from "./worlds.mjs";
+import { INDEPENDENT_LEVELS } from "./independent-levels.mjs";
 
 export const WORLD1_STAGES = Object.freeze([
   Object.freeze({
@@ -19,9 +19,9 @@ export const WORLD1_STAGES = Object.freeze([
   Object.freeze({
     id:"independent",number:2,title:"Independent Balance",
     tagline:"You control each room.",
-    description:"Make a move on one side, observe the balance, then make the matching move on the other. Sixteen new puzzles arrive next.",
-    method:"manual",count:16,available:false,unlockAfter:"guided",
-    icon:"↔",status:"planned"
+    description:"Make a move in one room, watch the scale tip, then restore the balance with a matching move in the other. Sixteen puzzles across four chapters.",
+    method:"manual",count:INDEPENDENT_LEVELS.length,available:true,unlockAfter:"guided",
+    icon:"↔",status:"playable"
   }),
   Object.freeze({
     id:"notebook",number:3,title:"Algebra Apprentice",
@@ -47,6 +47,9 @@ export function canOpenWorld1Stage(id,{teacher=false,stage1Completed=false,stage
   if (teacher) return true;
   if (stage.id==="independent") return stage1Completed;
   return stage2Completed;
+}
+export function stageTwoComplete(completed=[]) {
+  return INDEPENDENT_LEVELS.every(slot=>completed.includes(slot.number));
 }
 export function stageOneComplete(completed=[]) {
   const allowed=new Set(WORLD1_LEVELS.map(slot=>slot.number));
