@@ -295,10 +295,10 @@ function showAreaPreview(side, action) {
       'ms">' + symbol + '</span>';
   }).join("");
   const demonstration = arrangement.symbolic
-    ? (action.op === "square" ? "ROUND → SQUARE CREATURES" : "SQUARE → ROUND CREATURES")
+    ? (action.op === "square" ? "ROUND → SQUARE" : "SQUARE → ROUND")
     : (action.op === "square"
-      ? arrangement.side + " × " + arrangement.side + " gives " + arrangement.cells
-      : "Keep " + arrangement.side + " from a " + arrangement.side + " × " + arrangement.side + " square");
+      ? arrangement.side + " × " + arrangement.side + " → " + arrangement.cells
+      : arrangement.cells + " → KEEP " + arrangement.side);
   preview.dataset.operation = action.op;
   preview.dataset.phase = "arranging";
   preview.style.setProperty("--area-side", arrangement.side);
@@ -345,7 +345,10 @@ async function handAct(side, action, applyAtContact) {
 
   // Find the actual geometry of this room at any viewport width. The updated
   // art's fingertips reach ~95% of its box (not 78% as in the original outline).
-  const centreX = items.left + items.width / 2 - scene.left;
+  // Keep the area diagram beside the hand, not hidden beneath its palm.
+  // The hand still reaches the floor and traces the nearby square in view.
+  const centreX = items.left + items.width *
+    (action.op === "square" || action.op === "sqrt" ? .68 : .5) - scene.left;
   hand.style.left = centreX + "px";
   const restingTip = hand.offsetTop + hand.offsetHeight * 0.95;
   const targetTip = items.bottom - scene.top - Math.min(32, items.height * 0.20);
