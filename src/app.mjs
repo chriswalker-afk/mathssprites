@@ -641,6 +641,7 @@ async function animateMismatchedManualAction(side, firstAction, action) {
     const message = mismatchedMoveMessage(firstAction, action, firstSide, difference);
     $("feedback").textContent = message;
     setSpeech(message, reducedMotion ? 5000 : 8000);
+    $("speech").classList.add("trial-speech");
     await sleep(reducedMotion ? 750 : 2300); // Explain before restoring.
     $("scene").classList.add("scene-rewinding");
     await sleep(reducedMotion ? 100 : 500);
