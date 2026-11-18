@@ -245,9 +245,16 @@ function render() {
  * The hand descends, interacts, and *while still touching the room* applies the
  * corresponding visual transformation. Only then does it leave the screen.
  */
-function handProp(action) {
-  if (action.op === "square")
-    return '<span class="held-square-press" title="A brass press that forms square sprites"></span>';
+function handProp(action, side) {
+  if (action.op === "square") {
+    const area = areaArrangement(visible()[side], "square");
+    if (area?.symbolic)
+      return '<span class="held-square-press" title="A brass press that shapes a round sprite into a square"></span>';
+    const extras = (area?.cells || 0) - (area?.side || 0);
+    return extras > 0
+      ? '<span class="held-weight"></span><span class="held-count">×' + extras + '</span>'
+      : "";
+  }
   if (action.op === "sqrt") return "";
   if (action.op === "divide") {
     return '<span class="held-basket" title="A complete basket of objects"></span>';
@@ -353,6 +360,8 @@ async function handAct(side, action, applyAtContact) {
   const scene = $("scene").getBoundingClientRect();
   const items = $(side + "-items").getBoundingClientRect();
   const motion = handMotionPlan(action, reducedMotion);
+  const areaEffect = action.op === "square" || action.op === "sqrt"
+    ? areaArrangement(visible()[side], action.op) : null;
 
   // Find the actual geometry of this room at any viewport width. The updated
   // art's fingertips reach ~95% of its box (not 78% as in the original outline).
@@ -388,7 +397,7 @@ async function handAct(side, action, applyAtContact) {
   const caption = $("action-caption");
   caption.textContent = roomOperationText(action, side);
   caption.hidden = false;
-  cargo.innerHTML = handProp(action);
+  cargo.innerHTML = handProp(action, side);
   cargo.classList.remove("sprite-captured");
   cargo.hidden = !motion.cargoOnApproach;
   hand.classList.remove("approaching", "reaching", "grasping", "lifting");
@@ -440,8 +449,8 @@ async function handAct(side, action, applyAtContact) {
           target.classList.add("hand-contact");
           cargo.hidden = motion.placing || action.op === "sqrt";
           if (reaction) cargo.classList.add("sprite-captured");
-          hand.dataset.phase = action.op === "square" ? "pound" :
-            action.op === "sqrt" ? "squish" :
+          hand.dataset.phase = action.op === "square" ? (areaEffect?.symbolic ? "pound" : "release") :
+            action.op === "sqrt" ? (areaEffect?.symbolic ? "squish" : "carry") :
               motion.placing ? "release" : "carry";
           break;
         case "lift":
