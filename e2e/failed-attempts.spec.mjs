@@ -15,6 +15,7 @@ test("a non-whole division visually slices a sprite, waits, explains, and restor
   await expect(stage.locator(".slice-object")).toHaveCount(2);
   await expect(stage.locator(".slice-fraction").first()).toHaveText("1/2");
   // The hand shows the failed physical result before offering advice.
+  await expect(page.locator("#hand")).toHaveAttribute("data-phase","rest",{timeout:10000});
   await expect(page.locator("#speech")).toBeHidden();
   await page.screenshot({path:"artifacts/rejected-sprite-cut-into-halves.png"});
   await expect(page.locator("#speech")).toContainText("These pieces are too small",{timeout:12000});
@@ -37,6 +38,7 @@ test("manual first-side fraction cuts a WEIGHT, not a sprite in the other room",
   await expect(stage.locator(".slice-object.weight-part")).toHaveCount(2);
   await expect(stage.locator(".attempt-basket")).toHaveCount(2);
   await expect(stage.locator(".slice-fraction").first()).toHaveText("2 + 1/2");
+  await expect(page.locator("#hand")).toHaveAttribute("data-phase","rest",{timeout:10000});
   await page.screenshot({path:"artifacts/rejected-weight-cut-into-halves.png"});
   await expect(page.locator("#speech")).toContainText("1/2 of a weight",{timeout:12000});
   await expect(stage).toBeHidden({timeout:12000});
@@ -54,6 +56,7 @@ test("an overfull room spills weights out, then the hand undoes the attempted du
   await expect(stage.locator(".overflow-piece")).toHaveCount(12);
   await expect(stage.locator(".weight-spill")).toHaveCount(12);
   await expect(stage).toContainText("72 objects");
+  await expect(page.locator("#hand")).toHaveAttribute("data-phase","rest",{timeout:10000});
   await page.screenshot({path:"artifacts/rejected-overflow-weights-tumble.png"});
   await expect(page.locator("#speech")).toContainText("tumbling out",{timeout:12000});
   await expect(page.locator("#speech")).toContainText("undo");
