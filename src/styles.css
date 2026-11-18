@@ -617,10 +617,20 @@ background-image:repeating-linear-gradient(90deg,transparent 0 66px,rgba(0,0,0,.
   filter:drop-shadow(0 0 2px #e6eeed)}
 .signed-notebook-note{font:italic .65rem/1.4 Georgia,serif;color:#e9d3ab;padding:6px;
   border-radius:6px;background:#293734;border:1px solid #7c806e}
-.mini-neutral-pair{display:flex;align-items:center;justify-content:center;gap:3px;margin:3px auto;
-  font:italic .63rem Georgia,serif;color:#ead7b8}
-.mini-neutral-pair .mini-token{transform:scale(1.18);animation:mini-opposites 1s ease-in-out both}
-.mini-neutral-pair .mini-token:nth-child(2){animation-delay:.1s}
+.mini-neutral-pair{position:absolute;z-index:6;left:50%;top:48%;
+  transform:translate(-50%,-50%);display:flex;align-items:center;
+  justify-content:center;gap:5px;margin:0;padding:6px 8px;border-radius:7px;
+  background:#273832ed;box-shadow:0 3px 11px #0008;
+  border:1px solid #d0b98a;font:italic .63rem Georgia,serif;color:#ead7b8;
+  white-space:nowrap;animation:mini-neutral-cue 950ms ease-in-out var(--neutral-delay,0ms) both}
+.mini-neutral-pair[data-side="left"]{left:30%}
+.mini-neutral-pair[data-side="right"]{left:70%}
+.mini-neutral-pair .mini-token{transform:scale(1.18);animation:mini-opposites 950ms ease-in-out var(--neutral-delay,0ms) both}
+@keyframes mini-neutral-cue{
+  0%{opacity:0;translate:0 12px}
+  17%,75%{opacity:1;translate:0 0}
+  100%{opacity:0;translate:0 -12px}
+}
 @keyframes mini-opposites{0%{opacity:1;transform:translateX(0) scale(1)}
   55%{opacity:1;transform:translateX(6px) scale(1.18)}
   100%{opacity:0;transform:translateX(0) scale(.3)}}
@@ -871,6 +881,7 @@ legend{margin-bottom:12px;padding:0}
 .mini-token{width:13px;height:14px;display:inline-block;flex:none}
 .mini-token.posX,.mini-token.negX{border-radius:45%;background:#191d1c;position:relative;box-shadow:0 0 0 1px #434441}
 .mini-token.negX{background:#e3e4de}
+.zero-pair-line{font:italic .86rem Georgia,serif;color:#526a60;margin-bottom:5px}
 .mini-token.posX:after,.mini-token.negX:after{content:"";position:absolute;left:3px;top:4px;width:2px;height:3px;background:white;border-radius:50%;box-shadow:5px 0 white}
 .mini-token.negX:after{background:#202b2b;box-shadow:5px 0 #202b2b}
 .mini-token.posOne{background:linear-gradient(105deg,#b18b57,#ead3a3,#8c6f47);clip-path:polygon(21% 16%,75% 16%,100% 100%,0 100%)}
