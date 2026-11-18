@@ -29,6 +29,11 @@ test("thirteen curated levels include three intentional signed-object lessons",(
   }
   assert.ok(LEVELS.slice(10).every(l=>l.quantityMode==="signed"));
   assert.ok(LEVELS.slice(0,10).every(l=>levelQuantityMode(l)==="positive"));
+  for(const level of LEVELS.slice(10)){
+    // The hidden equations appear in the pencil replay, not level prompts or
+    // the optional hint: pupils discover the value from the physical rooms.
+    assert.doesNotMatch(level.prompt+" "+level.suggested,/\bx\s*(?:=|−|\+|\d)/i);
+  }
 });
 test("positive-only mode rejects white sprites and balloons at engine and preview level",()=>{
   const state=initialState(LEVELS[0]);
