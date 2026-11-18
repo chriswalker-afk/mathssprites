@@ -3,7 +3,16 @@
  * Objects are physical counts; algebraic values are projections of those counts.
  * Both play modes commit exactly one two-sided transaction per mathematical step.
  */
+import { neutralPairSequence } from "./neutral-pairs.mjs";
 export const TOKEN_KINDS = ["posX", "negX", "posX2", "posOne", "negOne"];
+export const QUANTITY_MODES = Object.freeze(["positive","signed"]);
+export function levelQuantityMode(level) {
+  if (level.quantityMode) return level.quantityMode;
+  // Legacy custom test levels with signed INITIAL contents are signed.
+  // All curated introductory chapters explicitly default to positive only.
+  return [level.left,level.right].some(r => r?.negX || r?.negOne)
+    ? "signed" : "positive";
+}
 export const LEVELS = [
   {
     id: "resident", title: "One little resident", chapter: "01 · Clearing the room",
@@ -68,6 +77,27 @@ export const LEVELS = [
     left:{posX2:4,posX:12,posOne:9}, right:{posOne:25}, solution:1,
     startingOperation:"sqrt",
     suggested: "Unbuild the 5-by-5 area to see 2x + 3 = 5; then remove three weights and share in two equal baskets."
+  },
+  {
+    id:"balloon-rescue",title:"The balloon rescue",chapter:"11 · Opposite units",
+    prompt:"White balloons pull up with value −1. Can adding weights make the balloon-and-weight pairs lift away? Solve x − 2 = 2.",
+    left:{posX:1,negOne:2},right:{posOne:2},solution:4,
+    quantityMode:"signed",startingOperation:"add",startingKind:"posOne",startingAmount:2,
+    suggested:"Add two weights to BOTH rooms. Watch each balloon lift one weight away, leaving x = 4."
+  },
+  {
+    id:"opposite-sprites",title:"A white sprite arrives",chapter:"12 · Opposite sprites",
+    prompt:"The white sprites are opposite to dark sprites. Add one white sprite to each room and watch who disappears. Assume x > 0.",
+    left:{posX:2,posOne:3},right:{posX:1,posOne:7},solution:4,
+    quantityMode:"signed",startingOperation:"add",startingKind:"negX",startingAmount:1,
+    suggested:"Add a white sprite to BOTH rooms, then take away three weights from each. A dark and white sprite make zero."
+  },
+  {
+    id:"two-zero-pairs",title:"Two ways to make zero",chapter:"13 · Balloon and sprite",
+    prompt:"Two black sprites and two balloons face a black sprite and two weights. Use BOTH sorts of opposite pair to leave x = 4.",
+    left:{posX:2,negOne:2},right:{posX:1,posOne:2},solution:4,
+    quantityMode:"signed",startingOperation:"add",startingKind:"posOne",startingAmount:2,
+    suggested:"Add two weights to cancel the balloons, then add one white sprite to cancel a dark sprite."
   }
 ];
 
@@ -82,8 +112,13 @@ export function evaluate(value, x) {
   const terms = canonical(value);
   return terms.x2 * x * x + terms.x * x + terms.constant;
 }
-export function initialState(level = LEVELS[0]) {
-  return { levelId: level.id, goal: level.goal || "isolate", solution: level.solution,
+export function initialState(level = LEVELS[0], quantityMode = levelQuantityMode(level)) {
+  if (!QUANTITY_MODES.includes(quantityMode))
+    throw new TypeError("Unknown quantity mode");
+  if (quantityMode === "positive" &&
+      [level.left,level.right].some(r=>r?.negX || r?.negOne))
+    throw new RangeError("A signed experiment cannot start in positive-only mode");
+  return { levelId: level.id, quantityMode, goal: level.goal || "isolate", solution: level.solution,
     areaTarget: level.target ? {left:room(level.target.left),right:room(level.target.right)} : null,
     left: room(level.left), right: room(level.right), history: [], pending: null };
 }
@@ -142,6 +177,16 @@ function check(action) {
   }
   return null;
 }
+export function quantityPermission(quantityMode, action) {
+  if (!QUANTITY_MODES.includes(quantityMode))
+    return {ok:false,code:"quantity-mode",reason:"Choose a valid mathematics mode."};
+  if (quantityMode === "positive" &&
+      (action?.kind === "negX" || action?.kind === "negOne") &&
+      (action?.op === "add" || action?.op === "remove"))
+    return {ok:false,code:"locked-negative",kind:action.kind,
+      reason:"This experiment uses positive objects only. Change Maths mode to Signed objects to work with white sprites and balloons."};
+  return {ok:true};
+}
 function perfectSquareRoot(n) {
   if (!Number.isInteger(n) || n < 0) return null;
   const root = Math.sqrt(n);
@@ -197,6 +242,7 @@ export function areaArrangement(r, op) {
 function transform(source, action) {
   const next = room(source);
   let priorCancellations = { sprites: 0, constants: 0 };
+  let preDivisionEvents = [];
   if (action.op === "add") next[action.kind] += action.count;
   if (action.op === "remove") {
     if (next[action.kind] < action.count)
@@ -241,6 +287,7 @@ function transform(source, action) {
   if (action.op === "divide") {
     const normalized = normalize(next);
     const compact = normalized.after;
+    preDivisionEvents = neutralPairSequence(next);
     priorCancellations = normalized.cancellations;
     const splitKind = TOKEN_KINDS.find(kind => compact[kind] % action.factor !== 0);
     if (splitKind) {
@@ -252,28 +299,38 @@ function transform(source, action) {
     }
     TOKEN_KINDS.forEach(kind => { next[kind] = compact[kind] / action.factor; });
   }
+  const raw = room(next);
   const reduced = normalize(next);
+  const cancellationEvents = action.op === "divide" ?
+    preDivisionEvents : neutralPairSequence(raw);
   if (countTokens(reduced.after) > 48)
     return { ok: false, code: "overflow", total: countTokens(reduced.after),
       capacity: 48, excess: countTokens(reduced.after) - 48,
       kind: action.kind || TOKEN_KINDS.find(kind => reduced.after[kind] >= 3) || "posOne",
       reason: "There would be too many things in the rooms. Let's try a smaller change." };
-  return { ok: true, after: reduced.after, cancellations: {
-    sprites: priorCancellations.sprites + reduced.cancellations.sprites,
-    constants: priorCancellations.constants + reduced.cancellations.constants
-  } };
+  return { ok: true, after: reduced.after, raw,
+    beforeGroups: action.op === "divide" ? normalize(source).after : null,
+    cancellationEvents,
+    cancellations: {
+      sprites: priorCancellations.sprites + reduced.cancellations.sprites,
+      constants: priorCancellations.constants + reduced.cancellations.constants
+    } };
 }
 /** Preview exactly one room. This never commits a step or changes the opposite
  * chamber. Used for teaching failed attempts and mismatched manual moves. */
-export function previewRoomAction(source, action) {
+export function previewRoomAction(source, action, quantityMode = "signed") {
   const error = check(action);
   if (error) return { ok: false, code: "invalid", reason: error };
+  const permission=quantityPermission(quantityMode,action);
+  if (!permission.ok) return permission;
   return transform(source, action);
 }
 export function prepare(state, action) {
   if (state.pending) return { ok: false, reason: "Finish the matching move, or undo the first one." };
   const error = check(action);
   if (error) return { ok: false, reason: error };
+  const permission=quantityPermission(state.quantityMode||"positive",action);
+  if(!permission.ok)return permission;
   const left = transform(state.left, action);
   if (!left.ok) return { ...left, side: "left" };
   const right = transform(state.right, action);
@@ -284,7 +341,11 @@ function commit(state, action, pair, mode) {
   const before = { left: copyRoom(state.left), right: copyRoom(state.right) };
   const after = { left: copyRoom(pair.left.after), right: copyRoom(pair.right.after) };
   const transaction = { action: { ...action }, mode, before, after,
-    cancellations: { left: pair.left.cancellations, right: pair.right.cancellations } };
+    cancellations: { left: pair.left.cancellations, right: pair.right.cancellations },
+    cancellationEvents: {
+      left: pair.left.cancellationEvents||[],
+      right:pair.right.cancellationEvents||[]
+    } };
   return { ...state, left: after.left, right: after.right, pending: null,
     history: [...state.history, transaction] };
 }
@@ -293,6 +354,10 @@ function commit(state, action, pair, mode) {
  * A fully committed action cannot be one-sided.
  */
 export function perform(state, action, mode = "auto", side) {
+  const error=check(action);
+  if(error)return {ok:false,code:"invalid",reason:error};
+  const permission=quantityPermission(state.quantityMode||"positive",action);
+  if(!permission.ok)return permission;
   if (state.pending) {
     if (side !== (state.pending.first === "left" ? "right" : "left"))
       return { ok: false, code: "wrong-side", reason: "Now make the matching move in the other room." };
@@ -316,9 +381,9 @@ export function perform(state, action, mode = "auto", side) {
     // room. Students can try a different second action and learn why it
     // unbalances the scale. An invalid matching second action is still
     // rejected and visually undone; no unilateral step can be committed.
-    const first = previewRoomAction(state[side], action);
+    const first = previewRoomAction(state[side], action, state.quantityMode);
     if (!first.ok) return { ...first, side };
-    const second = previewRoomAction(state[opposite], action);
+    const second = previewRoomAction(state[opposite], action, state.quantityMode);
     const pair = side === "left" ? {left:first,right:second} :
       {left:second,right:first};
     return { ok: true, committed: false,
@@ -375,6 +440,11 @@ export function algebraOperation(action) {
   return (signed < 0 ? "− " : "+ ") + term + " on both sides";
 }
 export function validInitialLevel(level) {
+  if (level.quantityMode && !QUANTITY_MODES.includes(level.quantityMode))
+    return false;
+  if (levelQuantityMode(level)==="positive" &&
+      [level.left,level.right].some(r=>r?.negX || r?.negOne))
+    return false;
   const a = canonical(room(level.left)), b = canonical(room(level.right));
   if (level.solution < 0 || !Number.isInteger(level.solution)) return false;
   if (evaluate(room(level.left), level.solution) !== evaluate(room(level.right), level.solution))
