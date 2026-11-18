@@ -2,6 +2,7 @@ import {
   LEVELS, TOKEN_KINDS, initialState, visibleRooms, evaluate,
   perform, undo, isSolved, equation, operationDescription, algebraOperation
 } from "./engine.mjs";
+import { buildWritingTimeline, symbolsOf } from "./replay-timeline.mjs";
 
 const $ = id => document.getElementById(id);
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
@@ -19,11 +20,16 @@ let override = null;
 let groups = { left: 0, right: 0 };
 let reducedMotion = !!readMedia();
 let speechTimer = null;
-let replayTimer = null;
-let replaySerial = 0;
-let replayPaused = false;
+let replayFrame = null;
+let replayPaused = true;
 let replayIndex = 0;
 let replayEntries = [];
+let replayTimeline = null;
+let replayElapsed = 0;
+let replayLastFrame = null;
+let replayNextEvent = 0;
+let replaySpeed = 1;
+let replayPanelFinished = false;
 
 function currentAction() {
   if (operation === "multiply" || operation === "divide") return { op: operation, factor };
@@ -325,8 +331,8 @@ async function manualMove(side) {
   }
 }
 function startLevel(index) {
-  clearTimeout(replayTimer);
-  replaySerial++;
+  stopReplay();
+  replayEntries = [];
   levelIndex = (index + LEVELS.length) % LEVELS.length;
   state = initialState(LEVELS[levelIndex]);
   operation = (levelIndex === 1 || levelIndex === 4) ? "divide" : "remove";
@@ -367,92 +373,239 @@ function panelHTML(entry, index, active) {
     '</div><div class="panel-footnote">' + (index === 0 ? "The two little rooms start in balance." :
       "The same mathematical change happened on both sides.") + '</div></article>';
 }
-function renderPaper(index) {
-  const lines = [];
-  for (let i = 0; i <= index; i++) {
-    const entry = replayEntries[i];
-    if (i === 0) {
-      lines.push('<div class="paper-line"><span class="equation-line"> ' + equation(entry.after) + "</span></div>");
-    } else {
-      lines.push('<div class="paper-line ' + (i === index ? "new-ink" : "") + '">' +
-        '<span class="operation-line">' + algebraOperation(entry.action) + '</span>' +
-        '<span class="equation-line' + (i === replayEntries.length - 1 ? " answer-line" : "") +
-        '">' + equation(entry.after) + "</span></div>");
-    }
-  }
-  $("pencil-lines").innerHTML = lines.join("");
-  const pencil = $("pencil");
-  pencil.style.top = Math.min(160 + index * 86, 465) + "px";
-  pencil.classList.remove("writing");
-  void pencil.offsetWidth;
-  if (!reducedMotion) pencil.classList.add("writing");
+/**
+ * Comic replay is deliberately paced by the pencil, not by a slideshow timer.
+ * Every visual glyph is initially invisible and revealed only after the
+ * animated pencil has moved to its actual position in the notebook.
+ */
+function escapeInk(value) {
+  return String(value).replace(/[&<>"']/g, symbol => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+  }[symbol]));
 }
-function clearReplayTimer() {
-  clearTimeout(replayTimer);
-  replayTimer = null;
-  replaySerial++;
+function notebookLines(entry, index) {
+  if (index === 0) return [{ type: "equation", text: equation(entry.after) }];
+  return [
+    { type: "operation", text: algebraOperation(entry.action) },
+    { type: "equation", text: equation(entry.after) }
+  ];
+}
+function inkCharacters(value, lineIndex) {
+  return symbolsOf(value).map((symbol, symbolIndex) =>
+    '<span class="ink-glyph" data-ink-line="' + lineIndex +
+    '" data-ink-symbol="' + symbolIndex + '">' + (symbol === " " ? "&nbsp;" : escapeInk(symbol)) +
+    "</span>"
+  ).join("");
+}
+function renderPaper(index, animateWriting) {
+  let html = "";
+  for (let i = 0; i <= index; i++) {
+    const written = notebookLines(replayEntries[i], i);
+    const livePanel = i === index && animateWriting;
+    html += '<div class="paper-line ' + (livePanel ? "new-ink" : "older-ink") + '">';
+    written.forEach((line, lineIndex) => {
+      const isAnswer = i === replayEntries.length - 1 && line.type === "equation";
+      const className = line.type + "-line" + (isAnswer ? " answer-line" : "") +
+        (isAnswer && !livePanel ? " complete" : "");
+      html += '<span class="' + className + '">' +
+        (livePanel ? inkCharacters(line.text, lineIndex) : escapeInk(line.text)) +
+        "</span>";
+    });
+    html += "</div>";
+  }
+  $("pencil-lines").innerHTML = html;
+  $("pencil").hidden = true;
+  $("pencil").classList.remove("writing");
+  return notebookLines(replayEntries[index], index).map(line => line.text);
+}
+function stopReplay() {
+  if (replayFrame !== null) cancelAnimationFrame(replayFrame);
+  replayFrame = null;
+  replayLastFrame = null;
 }
 function setReplayPaused(value) {
   replayPaused = value;
   $("replay-play").textContent = value ? "Play ▶" : "Pause Ⅱ";
   $("replay-play").setAttribute("aria-label", value ? "Play replay" : "Pause replay");
+  $("replay-backdrop").classList.toggle("replay-paused", value);
+  if (value) stopReplay();
+  else {
+    replayLastFrame = null;
+    if (!$("replay-backdrop").hidden) scheduleReplayFrame();
+  }
 }
-function drawReplay(index, animate = true) {
-  clearReplayTimer();
+function scheduleReplayFrame() {
+  if (replayFrame === null && !replayPaused && !$("replay-backdrop").hidden)
+    replayFrame = requestAnimationFrame(tickReplay);
+}
+function visibleInkGlyph(line, symbol) {
+  return $("pencil-lines").querySelector('[data-ink-line="' + line +
+    '"][data-ink-symbol="' + symbol + '"]');
+}
+function positionPencil(glyph) {
+  if (!glyph) return;
+  const pen = $("pencil");
+  const page = document.querySelector(".paper-page");
+  const glyphBox = glyph.getBoundingClientRect();
+  const pageBox = page.getBoundingClientRect();
+  // The SVG tip is at the bottom centre. Its rotation therefore leaves
+  // the nib on the baseline as the pencil travels between individual glyphs.
+  const x = glyphBox.left - pageBox.left + glyphBox.width / 2 - pen.offsetWidth / 2;
+  const y = glyphBox.bottom - pageBox.top - pen.offsetHeight;
+  pen.style.left = x + "px";
+  pen.style.top = y + "px";
+  pen.hidden = false;
+  pen.classList.add("writing");
+}
+function keepWritingInView(glyph) {
+  if (!glyph) return;
+  const pageScroll = document.querySelector(".paper-side");
+  const target = glyph.getBoundingClientRect();
+  const view = pageScroll.getBoundingClientRect();
+  if (target.bottom > view.bottom - 70 || target.top < view.top + 85) {
+    pageScroll.scrollTop += target.top - view.top - view.height * 0.34;
+  }
+}
+function finishMiniAction() {
+  const miniStage = $("mini-stage-" + replayIndex);
+  if (!miniStage || replayIndex === 0) return;
+  miniStage.innerHTML = miniRooms(replayEntries[replayIndex].after);
+  miniStage.classList.remove("reenacting");
+  miniStage.classList.add("action-complete");
+}
+function processReplayEvent(event) {
+  switch (event.type) {
+    case "action-complete":
+      finishMiniAction();
+      $("writing-status").textContent = "Now watch the pencil explain that move...";
+      break;
+    case "move-pen": {
+      const glyph = visibleInkGlyph(event.lineIndex, event.symbolIndex);
+      positionPencil(glyph);
+      if (event.symbolIndex === 0) keepWritingInView(glyph);
+      $("writing-status").textContent = event.lineIndex === 0 && replayIndex > 0
+        ? "Writing the matching operation, one symbol at a time..."
+        : "Writing the equation, one symbol at a time...";
+      break;
+    }
+    case "reveal-symbol": {
+      const glyph = visibleInkGlyph(event.lineIndex, event.symbolIndex);
+      glyph?.classList.add("written");
+      break;
+    }
+    case "line-complete": {
+      $("replay-announcement").textContent = event.text;
+      const paper = $("pencil-lines").lastElementChild;
+      const line = paper?.children[event.lineIndex];
+      if (line?.classList.contains("answer-line")) line.classList.add("complete");
+      break;
+    }
+    case "writing-complete":
+      $("pencil").hidden = true;
+      $("pencil").classList.remove("writing");
+      $("writing-status").textContent = "Finished writing. Take a moment to read...";
+      $("replay-progress").textContent = "Panel " + (replayIndex + 1) +
+        " of " + replayEntries.length + " · Written";
+      if (replayIndex === replayEntries.length - 1) $("next-level").disabled = false;
+      break;
+  }
+}
+function tickReplay(timestamp) {
+  replayFrame = null;
+  if (replayPaused || $("replay-backdrop").hidden || !replayTimeline) return;
+  if (document.hidden) {
+    replayLastFrame = null;
+    scheduleReplayFrame();
+    return;
+  }
+  if (replayLastFrame === null) replayLastFrame = timestamp;
+  // Background tabs and breakpoint pauses should never skip whole equations.
+  const delta = Math.min(Math.max(timestamp - replayLastFrame, 0), 80);
+  replayLastFrame = timestamp;
+  replayElapsed += delta * replaySpeed;
+
+  while (replayNextEvent < replayTimeline.events.length &&
+         replayTimeline.events[replayNextEvent].at <= replayElapsed) {
+    processReplayEvent(replayTimeline.events[replayNextEvent]);
+    replayNextEvent++;
+  }
+  if (replayElapsed >= replayTimeline.durationMs) {
+    if (replayIndex < replayEntries.length - 1) {
+      drawReplay(replayIndex + 1, { animate: !reducedMotion });
+    } else {
+      replayPanelFinished = true;
+      $("replay-progress").textContent = "All " + replayEntries.length + " panels complete";
+      $("next-level").disabled = false;
+      setReplayPaused(true);
+    }
+    return;
+  }
+  scheduleReplayFrame();
+}
+function drawReplay(index, { animate = !reducedMotion, complete = false } = {}) {
+  stopReplay();
   replayIndex = Math.max(0, Math.min(replayEntries.length - 1, index));
-  const serial = replaySerial;
+  replayElapsed = 0;
+  replayNextEvent = 0;
+  replayPanelFinished = complete;
+  const written = renderPaper(replayIndex, animate && !complete && !reducedMotion);
+  const mini = replayEntries[replayIndex];
   $("comic-panels").innerHTML = replayEntries.slice(0, replayIndex + 1)
     .map((entry, i) => panelHTML(entry, i, i === replayIndex)).join("");
-  const active = $("mini-stage-" + replayIndex);
-  if (animate && replayIndex > 0 && !reducedMotion) {
-    const entry = replayEntries[replayIndex];
-    active.innerHTML = miniRooms(entry.before) + '<svg class="mini-hand-cue" viewBox="0 0 38 55" aria-hidden="true" focusable="false"><path fill="#cfa384" stroke="#6e5140" stroke-width="1.8" d="M13 3 Q16 0 18 5 L21 27 L20 7 Q22 3 25 8 L28 28 L28 13 Q29 10 32 13 L34 30 Q38 37 30 48 L23 53 L11 47 L5 35 Q1 28 5 26 Q9 24 13 32 Z"/></svg>';
-    active.classList.add("reenacting");
-    setTimeout(() => {
-      if (serial !== replaySerial || $("replay-backdrop").hidden) return;
-      active.innerHTML = miniRooms(entry.after);
-      active.classList.remove("reenacting");
-      active.classList.add("action-complete");
-    }, 750);
+  const activeStage = $("mini-stage-" + replayIndex);
+  if (replayIndex > 0 && animate && !complete && !reducedMotion) {
+    activeStage.innerHTML = miniRooms(mini.before) +
+      '<svg class="mini-hand-cue" viewBox="0 0 38 55" aria-hidden="true" focusable="false">' +
+      '<path fill="#cfa384" stroke="#6e5140" stroke-width="1.8" d="M13 3 Q16 0 18 5 L21 27 L20 7 Q22 3 25 8 L28 28 L28 13 Q29 10 32 13 L34 30 Q38 37 30 48 L23 53 L11 47 L5 35 Q1 28 5 26 Q9 24 13 32 Z"/></svg>';
+    activeStage.classList.add("reenacting");
   }
-  renderPaper(replayIndex);
+
+  const lines = notebookLines(mini, replayIndex).map(line => line.text);
+  replayTimeline = animate && !complete && !reducedMotion
+    ? buildWritingTimeline(lines, { opening: replayIndex === 0 })
+    : { events: [], durationMs: complete ? 0 : 3900 };
+  $("pencil").hidden = true;
+  $("writing-status").textContent = complete ? "This panel's algebra is fully written."
+    : reducedMotion ? "Complete algebra shown, without animation."
+    : replayIndex === 0 ? "The pencil is about to reveal the hidden equation..."
+    : "First the hand replays the move, then the pencil writes...";
   $("replay-progress").textContent = "Panel " + (replayIndex + 1) + " of " + replayEntries.length;
   $("replay-back").disabled = replayIndex === 0;
   $("replay-next").disabled = replayIndex >= replayEntries.length - 1;
-  $("next-level").textContent = levelIndex === LEVELS.length - 1 ? "Play from the beginning →" : "Next experiment →";
-  const last = replayIndex >= replayEntries.length - 1;
-  if (last) {
-    setReplayPaused(true);
-  } else if (!replayPaused) {
-    replayTimer = setTimeout(() => {
-      if (serial !== replaySerial || replayPaused || $("replay-backdrop").hidden) return;
-      drawReplay(replayIndex + 1, true);
-    }, reducedMotion ? 850 : 2800);
+  $("next-level").textContent = levelIndex === LEVELS.length - 1
+    ? "Play from the beginning →" : "Next experiment →";
+  $("next-level").disabled = replayIndex !== replayEntries.length - 1 ||
+    (!complete && !reducedMotion);
+  if (complete || reducedMotion) {
+    $("replay-announcement").textContent = lines.join(". ");
   }
-  // Keep the newest panel visible on shorter screens.
   const box = $("comic-panels");
   if (box) box.scrollTop = box.scrollHeight;
+  if (!replayPaused && !complete) scheduleReplayFrame();
 }
 function showReplay() {
   if (!isSolved(state)) return;
-  clearReplayTimer();
+  stopReplay();
   replayEntries = [{ after: state.history[0]?.before || { left: state.left, right: state.right } },
-    ...state.history.map(h => ({ ...h }))];
+    ...state.history.map(entry => ({ ...entry }))];
   $("replay-backdrop").hidden = false;
-  setReplayPaused(false);
+  setReplayPaused(true);
   drawReplay(0);
+  setReplayPaused(false);
   $("replay-close").focus();
 }
 function hideReplay() {
-  clearReplayTimer();
+  stopReplay();
   $("replay-backdrop").hidden = true;
+  $("pencil").hidden = true;
+  setReplayPaused(true);
   $("watch-again")?.focus();
 }
 function replaySeek(offset) {
   setReplayPaused(true);
-  drawReplay(replayIndex + offset, true);
+  // Manual next/previous shows a *complete* panel so students can study it.
+  drawReplay(replayIndex + offset, { animate: false, complete: true });
 }
-
 $("level-select").innerHTML = LEVELS.map((lvl, i) =>
   '<option value="' + i + '">' + (i + 1) + " · " + lvl.title + "</option>").join("");
 for (const button of document.querySelectorAll("[data-operation]")) {
@@ -498,22 +651,33 @@ $("feedback").addEventListener("click", event => {
 });
 $("replay-close").addEventListener("click", hideReplay);
 $("replay-play").addEventListener("click", () => {
-  setReplayPaused(!replayPaused);
   if (!replayPaused) {
-    if (replayIndex >= replayEntries.length - 1) drawReplay(0);
-    else drawReplay(replayIndex);
-  } else clearReplayTimer();
+    setReplayPaused(true); // Keep both the pencil and its current symbol frozen.
+    return;
+  }
+  if (replayPanelFinished) {
+    drawReplay(replayIndex === replayEntries.length - 1 ? 0 : replayIndex + 1,
+      { animate: !reducedMotion });
+  }
+  setReplayPaused(false); // Resume in the middle of an unfinished equation.
 });
 $("replay-back").addEventListener("click", () => replaySeek(-1));
 $("replay-next").addEventListener("click", () => replaySeek(1));
 $("replay-restart").addEventListener("click", () => {
-  setReplayPaused(false);
+  setReplayPaused(true);
   drawReplay(0);
+  setReplayPaused(false);
 });
 $("replay-skip").addEventListener("click", () => {
   setReplayPaused(true);
-  drawReplay(replayEntries.length - 1, false);
+  drawReplay(replayEntries.length - 1, { animate: false, complete: true });
 });
+$("replay-speed").addEventListener("change", event => {
+  replaySpeed = Number(event.target.value) || 1;
+  // Playback clock uses the chosen speed on every new frame; switching pace
+  // never jumps the pencil to a different symbol.
+});
+document.addEventListener("visibilitychange", () => { replayLastFrame = null; });
 $("next-level").addEventListener("click", () => startLevel(levelIndex + 1));
 document.addEventListener("keydown", event => {
   if (event.key === "Escape" && !$("replay-backdrop").hidden) { hideReplay(); return; }
