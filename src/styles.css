@@ -314,6 +314,23 @@ background-image:repeating-linear-gradient(90deg,transparent 0 66px,rgba(0,0,0,.
   100%{filter:brightness(1.08);translate:0 -1px}}
 @keyframes box-return-to-floor{from{opacity:1;transform:translateY(0) scale(1)}
   to{opacity:0;transform:translateY(35px) scale(.75)}}
+/* Visual QA: an almost 190px hand hid most of the 5x5 construction,
+   especially on phones. This smaller working pose still reaches the floor,
+   and an end-of-build presentation motion clears the completed box. */
+.giant-hand[data-box-operation]{width:136px;height:190px}
+.giant-hand[data-box-operation] .hand-cargo{
+  transform:translate(-50%,-8px) scale(.82);transform-origin:center}
+.giant-hand[data-box-operation="square"][data-box-step="units"] .hand-art,
+.giant-hand[data-box-operation="sqrt"][data-box-step="edge"] .hand-art{
+  transform:translate(104px,-38px) rotate(9deg)}
+@media(max-width:600px){
+  .giant-hand[data-box-operation]{width:75px;height:111px}
+  .giant-hand[data-box-operation] .hand-cargo{
+    transform:translate(-50%,-8px) scale(.58)}
+  .giant-hand[data-box-operation="square"][data-box-step="units"] .hand-art,
+  .giant-hand[data-box-operation="sqrt"][data-box-step="edge"] .hand-art{
+    transform:translate(52px,-22px) rotate(7deg)}
+}
 /* The illustrated hand traces the physical box's actual quadrants. It pauses
    to pound x×x into a square sprite or squish an x² square into its side. */
 .giant-hand[data-box-step="frame"] .hand-art{transform:translate(-2px,-12px) rotate(-4deg)}
