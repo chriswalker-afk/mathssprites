@@ -4,6 +4,7 @@ import {
 } from "./engine.mjs";
 import { buildWritingTimeline, symbolsOf } from "./replay-timeline.mjs";
 import { handMotionPlan } from "./hand-timeline.mjs";
+import { spriteMotionProfile, spriteMotionStyle } from "./sprite-motion.mjs";
 
 const $ = id => document.getElementById(id);
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
@@ -48,25 +49,29 @@ function roomSummary(r) {
   ].filter(Boolean);
   return parts.length ? parts.join(", ") : "no objects";
 }
-function token(kind, i, mini = false) {
+function token(kind, i, mini = false, side = "left") {
   if (mini) {
     return '<span class="mini-token ' + kind + '" aria-hidden="true"></span>';
   }
   if (kind === "posX" || kind === "negX") {
+    const profile = spriteMotionProfile(LEVELS[levelIndex].id, side, kind, i);
     return '<span class="token sprite ' + (kind === "posX" ? "sprite-black" : "sprite-white") +
-      '" style="--delay:' + (-(i % 11) * .31) + 's" title="' +
+      '" style="' + spriteMotionStyle(profile) + '" title="' +
       (kind === "posX" ? "A little dark sprite" : "A little pale sprite") + '">' +
+      '<span class="sprite-ground-shadow"></span>' +
+      '<span class="sprite-motion">' +
       '<span class="sprite-feet"></span><span class="sprite-body">' +
-      '<span class="sprite-eyes"><i></i><i></i></span></span></span>';
+      '<span class="sprite-eyes"><i></i><i></i></span></span>' +
+      '</span></span>';
   }
   if (kind === "posOne")
     return '<span class="token weight" title="A brass weight"><i class="weight-handle"></i><i class="weight-shine"></i></span>';
   return '<span class="token balloon" title="A little floating balloon"><i class="balloon-body"></i><i class="balloon-knot"></i><i class="balloon-string"></i></span>';
 }
-function allTokens(r, mini = false) {
+function allTokens(r, mini = false, side = "left") {
   let html = "";
   for (const kind of TOKEN_KINDS) {
-    for (let i = 0; i < r[kind]; i++) html += token(kind, i, mini);
+    for (let i = 0; i < r[kind]; i++) html += token(kind, i, mini, side);
   }
   return html;
 }
@@ -74,7 +79,8 @@ function renderRoom(side, r, groupCount) {
   const node = $(side + "-items");
   // Only rebuild a room when its actual contents change. Otherwise the idle
   // sprites are repeatedly destroyed and their bouncing animations restart.
-  const signature = TOKEN_KINDS.map(key => r[key]).join(":") + "|groups:" + groupCount;
+  const signature = LEVELS[levelIndex].id + "|" + side + "|" +
+    TOKEN_KINDS.map(key => r[key]).join(":") + "|groups:" + groupCount;
   if (node.dataset.signature === signature) return;
   node.dataset.signature = signature;
   node.setAttribute("aria-label", (side === "left" ? "West chamber: " : "East chamber: ") + roomSummary(r));
@@ -90,14 +96,15 @@ function renderRoom(side, r, groupCount) {
     // Group view is only opened after the engine has validated whole-item partitioning.
     let baskets = "";
     for (let i = 0; i < groupCount; i++) {
-      baskets += '<div class="group-basket"><div class="basket-contents">' + allTokens(each) +
+      baskets += '<div class="group-basket"><div class="basket-contents">' +
+          allTokens(each, false, side + "-basket-" + i) +
         '</div><span class="basket-lip"></span></div>';
     }
     node.innerHTML = '<div class="basket-row" aria-label="' + groupCount +
       ' identical groups">' + baskets + '</div>';
     return;
   }
-  node.innerHTML = '<div class="items-grid">' + allTokens(r) + '</div>';
+  node.innerHTML = '<div class="items-grid">' + allTokens(r, false, side) + '</div>';
 }
 function visible() { return override || visibleRooms(state); }
 function currentDifference(shown) {
