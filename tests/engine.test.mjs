@@ -15,7 +15,7 @@ function committed(state, action) {
   return result.state;
 }
 
-test("the four curated puzzles have a unique intended integer solution", () => {
+test("the curated puzzles have a unique intended integer solution", () => {
   for (const level of LEVELS) {
     assert.equal(validInitialLevel(level), true, level.id);
     const state = initialState(level);
