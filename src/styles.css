@@ -184,25 +184,94 @@ background-image:repeating-linear-gradient(90deg,transparent 0 66px,rgba(0,0,0,.
 
 /* Actors and props */
 .token{position:relative;flex:none;display:inline-block;vertical-align:bottom}
-.sprite{width:46px;height:47px;animation:sprite-hop 1.8s cubic-bezier(.33,.1,.33,1) infinite;animation-delay:var(--delay,0s);transform-origin:center bottom;filter:drop-shadow(0 3px 2px rgba(0,0,0,.5));will-change:transform}
-.sprite:before{content:"";position:absolute;left:8px;right:8px;bottom:1px;height:5px;border-radius:50%;background:#0b1213;filter:blur(2px)}
-.sprite-body{position:absolute;left:2px;bottom:4px;width:43px;height:41px;border-radius:49% 51% 45% 45%;background:radial-gradient(circle at 32% 24%,#56615c,#121719 78%);box-shadow:inset -2px -4px 6px #0009,0 0 0 1px rgba(228,225,197,.48),0 0 11px rgba(172,191,176,.22);z-index:2}
-.sprite-body:before{content:"";position:absolute;inset:-5px;border-radius:48%;background:repeating-conic-gradient(from 5deg,#192022 0deg 17deg,transparent 19deg 27deg);z-index:-1;filter:blur(.3px)}
-.sprite-body:after{content:"";position:absolute;left:-4px;top:19px;width:43px;height:13px;border-radius:50%;border-left:3px solid #161a1b;border-right:3px solid #161a1b;z-index:-1}
-.sprite-feet{position:absolute;left:13px;bottom:2px;width:24px;height:10px;border-left:4px solid #0c1011;border-right:4px solid #0c1011;transform:rotate(8deg)}
-.sprite-eyes{position:absolute;left:11px;top:10px;display:flex;gap:9px;z-index:4}
-.sprite-eyes i{width:7px;height:11px;background:#fff6dd;border-radius:50%;box-shadow:0 0 4px #fff9}
-.sprite-white .sprite-body{background:radial-gradient(circle at 32% 24%,#f5f2e9,#c9d0d0 78%);box-shadow:0 0 2px #aab0a8}
+/* A sprite has separate LAYERS. The outer token keeps the layout position and
+   responsive scaling; a child hops; the body wobbles; eyes glance and blink;
+   its floor shadow stays on the floor. None of this changes its algebraic mass. */
+.sprite{width:46px;height:47px;transform-origin:center bottom;
+  filter:drop-shadow(0 2px 2px rgba(0,0,0,.38))}
+.sprite-motion{position:absolute;inset:0;z-index:2;display:block;transform-origin:center bottom;
+  animation:sprite-hop var(--hop-period,1600ms) cubic-bezier(.36,.08,.3,1) infinite;
+  animation-delay:var(--hop-delay,0ms);will-change:transform}
+.sprite-ground-shadow{position:absolute;z-index:0;bottom:0;left:50%;width:34px;height:7px;
+  background:rgba(6,13,12,.68);border-radius:50%;filter:blur(2px);
+  transform:translateX(-50%);animation:sprite-shadow var(--hop-period,1600ms) ease-in-out infinite;
+  animation-delay:var(--hop-delay,0ms)}
+.sprite-ground-shadow:after{content:"";position:absolute;left:15px;top:-2px;width:3px;height:3px;
+  border-radius:50%;background:#b7ad8c;box-shadow:-9px -2px #aaa589,10px -3px #d0bd94;
+  animation:sprite-dust var(--hop-period,1600ms) ease-out infinite;
+  animation-delay:var(--hop-delay,0ms)}
+.sprite-body{position:absolute;left:2px;bottom:4px;width:43px;height:41px;
+  border-radius:49% 51% 45% 45%;background:radial-gradient(circle at 32% 24%,#56615c,#121719 78%);
+  box-shadow:inset -2px -4px 6px #0009,0 0 0 1px rgba(228,225,197,.48),0 0 11px rgba(172,191,176,.22);
+  z-index:2;transform-origin:50% 85%;will-change:transform;
+  animation:sprite-wiggle var(--wiggle-period,1100ms) ease-in-out infinite;
+  animation-delay:var(--wiggle-delay,0ms)}
+.sprite-body:before{content:"";position:absolute;inset:-5px;border-radius:48%;
+  background:repeating-conic-gradient(from 5deg,#192022 0deg 17deg,transparent 19deg 27deg);
+  z-index:-1;filter:blur(.3px)}
+.sprite-body:after{content:"";position:absolute;left:-4px;top:19px;width:43px;height:13px;
+  border-radius:50%;border-left:3px solid #161a1b;border-right:3px solid #161a1b;z-index:-1}
+.sprite-feet{position:absolute;left:13px;bottom:2px;width:24px;height:10px;
+  border-left:4px solid #0c1011;border-right:4px solid #0c1011;transform:rotate(8deg)}
+.sprite-eyes{position:absolute;left:11px;top:10px;display:flex;gap:9px;z-index:4;
+  animation:sprite-look var(--look-period,4000ms) ease-in-out infinite;
+  animation-delay:var(--look-delay,0ms)}
+.sprite-eyes i{position:relative;display:block;width:7px;height:11px;
+  background:#fff6dd;border-radius:50%;box-shadow:0 0 4px #fff9;
+  transform-origin:50% 50%;animation:sprite-blink var(--blink-period,6000ms) linear infinite;
+  animation-delay:var(--blink-delay,0ms)}
+.sprite-eyes i:after{content:"";position:absolute;left:3px;top:5px;width:2.5px;height:3px;
+  border-radius:50%;background:#1c2726;opacity:.83}
+.sprite-white .sprite-body{background:radial-gradient(circle at 32% 24%,#f5f2e9,#c9d0d0 78%);
+  box-shadow:0 0 2px #aab0a8}
 .sprite-white .sprite-body:before{background:repeating-conic-gradient(#e7ece8 0deg 16deg,transparent 18deg 27deg)}
-.sprite-white .sprite-eyes i{background:#2e3436}
+.sprite-white .sprite-eyes i{background:#2e3436;box-shadow:0 0 2px #59605c}
+.sprite-white .sprite-eyes i:after{background:#f4f4e9}
 @keyframes sprite-hop{
-  0%,5%,55%,95%,100%{transform:translateY(0) scale(1,1) rotate(0deg)}
-  10%{transform:translateY(2px) scale(1.15,.78)}
-  29%{transform:translateY(-41px) scale(.94,1.09) rotate(-4deg)}
-  42%{transform:translateY(-23px) scale(.98,1.05) rotate(3deg)}
-  55%{transform:translateY(0) scale(1.13,.8)}
-  62%{transform:translateY(-13px) scale(.97,1.04)}
-  73%{transform:translateY(0) scale(1.04,.95)}
+  0%,5%,70%,94%,100%{transform:translateY(0) scale(1,1)}
+  9%{transform:translateY(2px) scale(1.15,.8)}
+  26%{transform:translateY(var(--hop-height,-39px)) scale(.96,1.08)}
+  39%{transform:translateY(var(--hop-half,-21px)) scale(.99,1.03)}
+  48%{transform:translateY(0) scale(1.13,.82)}
+  55%{transform:translateY(-12px) scale(.98,1.03)}
+  65%{transform:translateY(0) scale(1.05,.96)}
+  82%{transform:translateY(-4px) scale(1,1)}
+}
+@keyframes sprite-wiggle{
+  0%,100%{transform:translateX(0) rotate(0deg) scale(1)}
+  20%{transform:translateX(-2px) rotate(var(--wiggle-left,-4deg)) scale(1.04,.97)}
+  46%{transform:translateX(2px) rotate(var(--wiggle-right,5deg)) scale(.97,1.04)}
+  70%{transform:translateX(-1px) rotate(var(--wiggle-left,-4deg)) scale(1.03,.98)}
+  88%{transform:translateX(1px) rotate(2deg) scale(.98,1.02)}
+}
+@keyframes sprite-shadow{
+  0%,8%,48%,68%,100%{transform:translateX(-50%) scaleX(1);opacity:.7}
+  26%{transform:translateX(-50%) scaleX(.59);opacity:.35}
+  55%{transform:translateX(-50%) scaleX(.8);opacity:.48}
+}
+@keyframes sprite-dust{
+  0%,45%,54%,100%{opacity:0;transform:translateY(0) scale(.2)}
+  48%{opacity:.7;transform:translateY(0) scale(.8)}
+  60%{opacity:0;transform:translateY(-10px) scale(1.4)}
+}
+@keyframes sprite-look{
+  0%,25%,62%,100%{transform:translateX(0)}
+  30%,45%{transform:translateX(-2px)}
+  68%,82%{transform:translateX(2px)}
+}
+@keyframes sprite-blink{
+  0%,46%,49%,51%,100%{transform:scaleY(1)}
+  47.5%,50%{transform:scaleY(.07)}
+}
+/* Fingers can pass the sprites without frozen-looking, moving symbols.
+   Only the room being manipulated pauses; the opposite room keeps playing. */
+.hand-target .sprite-motion,.hand-target .sprite-body,
+.hand-target .sprite-ground-shadow,.hand-target .sprite-ground-shadow:after,
+.hand-target .sprite-eyes,.hand-target .sprite-eyes i{
+  animation-play-state:paused!important}
+@keyframes sprite-basket-bob{
+  0%,100%{transform:translateY(0)}
+  50%{transform:translateY(-4px)}
 }
 .weight{width:41px;height:41px;z-index:3;background:linear-gradient(108deg,#7b592f 0%,#d5b17c 32%,#8f6a3e 70%,#5b412b);clip-path:polygon(29% 17%,72% 17%,90% 88%,84% 97%,13% 97%,8% 88%);filter:drop-shadow(2px 3px 1px #0008);border-radius:7px}
 .weight:after{content:"";position:absolute;left:10%;bottom:4px;width:80%;height:5px;background:#4b311e;box-shadow:0 -3px #d8b77b}
@@ -222,6 +291,9 @@ background-image:repeating-linear-gradient(90deg,transparent 0 66px,rgba(0,0,0,.
 .basket-contents{position:absolute;inset:8px 3px 8px;display:flex;align-content:flex-end;align-items:flex-end;justify-content:center;flex-wrap:wrap;gap:1px}
 .group-basket .token{width:26px;height:27px;margin:-3px;transform:scale(.58);transform-origin:center bottom;animation:none}
 .group-basket .balloon{height:40px}
+.group-basket .sprite-motion{animation-name:sprite-basket-bob;animation-duration:var(--wiggle-period,1100ms)}
+.group-basket .sprite-ground-shadow{animation:none}
+.group-basket .sprite-ground-shadow:after{display:none}
 .group-basket .sprite-body{left:-3px;bottom:2px}
 .group-basket .sprite-feet{left:4px;bottom:0}
 .group-basket .weight{clip-path:polygon(29% 17%,72% 17%,90% 88%,84% 97%,13% 97%,8% 88%)}
@@ -455,3 +527,10 @@ legend{margin-bottom:12px;padding:0}
    click must be able to override it; an unconditional media rule would prevent
    the user's chosen animations from ever appearing. */
 .reduce-motion *,.reduce-motion *:before,.reduce-motion *:after{animation-duration:.001ms!important;transition-duration:.001ms!important;scroll-behavior:auto!important}
+/* Static presentation must not flicker/blink at 1000fps on reduced motion. */
+.reduce-motion .sprite-motion,.reduce-motion .sprite-body,
+.reduce-motion .sprite-ground-shadow,.reduce-motion .sprite-ground-shadow:after,
+.reduce-motion .sprite-eyes,.reduce-motion .sprite-eyes i{
+  animation:none!important;transform:none!important}
+.reduce-motion .sprite-ground-shadow{transform:translateX(-50%)!important}
+.reduce-motion .sprite-ground-shadow:after{opacity:0!important}
