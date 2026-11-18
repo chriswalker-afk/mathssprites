@@ -25,7 +25,7 @@ There is no `npm install` requirement for gameplay or tests.
 
 ## How to play
 
-1. Choose experiment 1–8 at the top. Each has the same hidden algebra rules but different physical starting objects.
+1. Choose experiment 1–10 at the top. Each has the same hidden algebra rules but different physical starting objects.
 2. Choose **Guided mirror** for one action that the hand automatically repeats in both chambers, or **Your turn** to direct the hand in one room and then match it in the other. Your second room remains mandatory: the beam tips after just one.
 3. Use **Remove / Add** with dark sprites or weights, and select how many.
 4. Use **Divide** to temporarily display the room contents in two to five equal transparent baskets. The hand keeps one basket per room; all terms are divided. **Multiply** duplicates entire rooms.
@@ -130,13 +130,13 @@ The ordinary (non-basket, non-area-demonstration) view of every chamber has a **
 
 New whole-room operations:
 
-- **Square:** a row of n round x sprites or n weights is visualized as an n-by-n area. The hand lays a row, matches it with a column, fills the remaining cells, then pounds the variable creature into a new square-shaped x² creature when needed. The physical result is n² x² sprites or n² weights; the mathematical change occurs only at hand contact.
-- **Square root:** the opposite visual process arranges n² square x² sprites or n² weights into an n-by-n area and keeps one side. Square-shaped sprites squish back into ordinary round sprites. Objects return to the usual floor row afterward.
-- **Eligibility:** do not allow square on mixed expressions (e.g. x+2), nor roots of imperfect-square token counts or mixed terms. In these lessons x≥0, and all roots are principal. Pure squares (2x)²=4x² and √(4x²)=2x are represented exactly.
+- **Square:** an existing single floor row of a round x sprites and b weights becomes a physical **in-room carpenter's box**. A matching perpendicular edge is laid out, then the hand fills the x² corner with a² square sprites, two cross-regions with 2ab round sprites, and the unit corner with b² weights. All pieces are laid before the engine commits at contact.
+- **Square root:** the reverse physical procedure fills an in-room box with a² square sprites, 2ab round sprites and b² weights. The hand removes the interior in stages, takes away the duplicate edge and keeps exactly a round sprites and b weights. The engine uses principal roots (x≥0) and returns to the one-row floor layout.
+- **Eligibility:** the full linear side ax+b (a,b≥0) CAN be squared, including mixed expressions such as x+2. Squaring x² again would require x⁴, so is not allowed. Rooting requires exact perfect-square corner counts a² and b² and the cross coefficient 2ab, with no signed objects. In these chapters x≥0. No room may exceed 48 whole objects.
 - **Outcome:** chapter 6's goal is intentionally to *build* x²=9 from x=3; chapter 7 reverses this by taking the root; chapter 8 goes from 4x²=36 through 2x=6 to x=3.
 - **Modes:** guided applies the same operation in both chambers, while manual requires the matching second operation. The hand diagram and its seven/eight-phase choreography never update the engine before contact.
 
-The engine's posX2 token is a new quadratic area term. New unit and Chrome tests cover physical floor geometry, matching row/column/fill order, literal counts, negative/mixed-case refusal, principal roots, manual matching, Undo, replay and phone layouts.
+The engine's posX2 token is a distinct quadratic area term. In-room geometry and Chrome tests verify the 4+6+6+9 interior pieces of (2x+3)², physical edge markers not counted as objects, reverse roots, floor layout, principal-root safeguards, manual matching, Undo, replay, and mobile screens.
 
 **Accessibility:** reduced-motion users still receive equivalent static area arrangements while the engine operations and written equations remain available. The original Motion control is unchanged.
 
@@ -147,9 +147,24 @@ Instead of rejecting an inadvisable move immediately, the game now teaches throu
 
 - **Fractional division:** the hand attempts to share a row into baskets. When this requires fractional creatures or weights, the little objects are shown sliced (for example, 3 sprites into two groups of 1 + 1/2). Fractions are *visual teaching previews only*; the whole-object engine rejects them.
 - **Overflow:** an add or duplication which would exceed the 48-object cap visibly spills bouncing sprites or tumbling weights beyond the chamber. The exact attempted count and the capacity are given.
-- **Missing or unsuitable pieces:** the hand shows a ghost object, or explains why a mixed room cannot form a square, rather than displaying incorrect algebra.
+- **Missing or unsuitable pieces:** the hand shows a ghost object, or explains why a root doesn't form a complete square (or an x² sprite would require a higher power), instead of displaying incorrect algebra.
 - **Order:** hand attempts the action; the learner watches the problem; a short pause; the hand explains the problem and explicitly says it will undo the change; a reversal animates; the previous whole-object rooms are restored. The attempt never enters Undo or comic history.
 - **Your Turn:** after the first-side provisional move, students may change the operation, object or count before clicking the second room. If the different move has an unequal algebraic effect, the scale tips dramatically, a speech bubble explains the unequal changes and the hand restores **both** sides. The second change is only a preview. Mathematically equivalent but visually different operations are acknowledged as equivalent; a balanced scale must not falsely tip. The exercise still asks to match actions and resets both provisional attempts.
 - **Reduced motion:** still shows partial-object arrangements, error explanations and reversibility, without gratuitous fast movement.
 
 The pure engine exposes previewRoomAction and structured failure codes (fraction, overflow, missing, unsupported-area, mismatch). The separate attempt-feedback module generates exact fractional basket shares and concise hand dialogue. A temporary DOM stage is cleared after the rollback; no invalid step is committed, solved or written into the notebook. Node and Chrome tests check the calculations, visual states and recovery.
+
+
+## In-room carpenter's square — PR11
+
+The reference example is a six-stage build of (2x+3)². Its stages are implemented in the original chamber rather than through a detached area preview: the left and right area boxes use the room-square-box class within room-interior. The physical sequence is **frame → existing edge → matching perpendicular edge → square-sprite corner → both cross regions → unit-weight corner**. Each interior cell has a truthful physical type, region, row and column; it enters from the floor under the illustrated hand. Variable segments have a visibly different length to unit segments (consistent across both dimensions). The box itself is geometrically square, not two unequal axes.
+
+There are exactly **4 square sprites**, **6+6 round sprites**, and **9 weights** inside the finished 2x+3 box. The translucent top/side edge markers are **guides**, not extra model tokens; the original floor row is dimmed during the construction and restored when the box clears. The engine's single contact event remains the only state mutation.
+
+The square-root operation uses the SAME cells and frame **in reverse**. It begins with a fully populated physical area, removes weights, then both mixed regions, then the square-sprite region; removes the duplicate side and highlights the side to keep. Only at contact does the room change to its a sprites and b weights. It is mathematically valid only for exact nonnegative perfect squares under x≥0, never an arbitrary quadratic.
+
+Chapters 9 and 10 use 2x+3=5 ↔ 4x²+12x+9=25, followed by ordinary two-sided operations. Existing simple area chapters (6–8), PR10 failed-experiment feedback, deliberate manual balance mismatches, reduced motion and the pencil notebook still share this implementation.
+
+### QA requirements
+
+The pure box plan in src/area-layout.mjs enforces a² + 2ab + b² = (a+b)² for every supported size; the two side edges are not added to those counts. Playwright must inspect the actual DOM box inside each room, the four region counts and stage order, the 6×6 simple root, 5×5 mixed build, its reversed root, phone-scale bounds and reduced motion. No UI animation may claim a transformation that the engine rejects or change the other room before hand contact.
