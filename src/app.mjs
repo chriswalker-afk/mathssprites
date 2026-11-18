@@ -1009,7 +1009,7 @@ async function guidedMove() {
   const action=currentAction();
   const outcome=perform(state,action,"auto");
   if(!outcome.ok) {
-    if(["locked-negative","locked-operation","locked-world"].includes(outcome.code))
+    if(["locked-negative","locked-operation","locked-world","locked-kind"].includes(outcome.code))
       return notify(outcome.reason);
     return animateRejectedAction(action,outcome);
   }
@@ -1063,7 +1063,7 @@ async function manualMove(side) {
   const wasPending=!!state.pending,action=currentAction();
   const outcome=perform(state,action,"manual",side);
   if(!outcome.ok){
-    if(["locked-negative","locked-operation","locked-world"].includes(outcome.code))
+    if(["locked-negative","locked-operation","locked-world","locked-kind"].includes(outcome.code))
       return notify(outcome.reason);
     if(wasPending&&outcome.code==="mismatch")
       return animateMismatchedManualAction(side,state.pending.action,action);
