@@ -323,8 +323,9 @@ function roomOperationText(action, side) {
       " room, lifts away the interior, and keeps one side: "+
       (a?a+" sprites"+(b?" and ":""):"")+(b?b+" weights":"")+".";
   }
-  if(action.op==="divide") return "The hand sorts the "+roomName+
-    " room into "+action.factor+" equal baskets...";
+  if(action.op==="divide") return action.fractionAttempt
+    ? "The hand tries to share the "+roomName+" room into "+action.factor+" equal groups..."
+    : "The hand sorts the "+roomName+" room into "+action.factor+" equal baskets...";
   if(action.op==="multiply") return "The hand makes "+action.factor+
     " complete copies in the "+roomName+" room...";
   const nouns=action.kind==="posX2"?
@@ -645,7 +646,7 @@ async function handAct(side, action, applyAtContact) {
           applied = true;
           if (action.op === "square" || action.op === "sqrt") finishAreaPreview(side, action);
           target.classList.add("hand-contact");
-          cargo.hidden = motion.placing || action.op === "sqrt";
+          cargo.hidden = !!action.fractionAttempt || motion.placing || action.op === "sqrt";
           if (reaction) cargo.classList.add("sprite-captured");
           hand.dataset.phase = action.op === "square" ? (areaEffect?.symbolic ? "pound" : "release") :
             action.op === "sqrt" ? (areaEffect?.symbolic ? "squish" : "carry") :
@@ -789,6 +790,9 @@ async function showFractionCut(side,issue){
   $("hand").dataset.phase="chop";
   await sleep(reducedMotion?210:820);
   stage.dataset.cutPhase="chopped";
+  // The cutting tool has finished: LIFT it off the fragments so students
+  // can actually see the two half-sprites, even on a small phone screen.
+  $("hand-cargo").hidden=true;
   $("hand").classList.add("fraction-observing");
   // Leave the tiny pieces twitching where the object used to stand.
   await sleep(reducedMotion?180:610);
