@@ -25,7 +25,7 @@ There is no `npm install` requirement for gameplay or tests.
 
 ## How to play
 
-1. Choose experiment 1–5 at the top. Each has the same hidden algebra rules but different physical starting objects.
+1. Choose experiment 1–8 at the top. Each has the same hidden algebra rules but different physical starting objects.
 2. Choose **Guided mirror** for one action that the hand automatically repeats in both chambers, or **Your turn** to direct the hand in one room and then match it in the other. Your second room remains mandatory: the beam tips after just one.
 3. Use **Remove / Add** with dark sprites or weights, and select how many.
 4. Use **Divide** to temporarily display the room contents in two to five equal transparent baskets. The hand keeps one basket per room; all terms are divided. **Multiply** duplicates entire rooms.
@@ -122,3 +122,20 @@ A real public-site Chrome probe confirmed (18 November 2026) that the GitHub Pag
 Previously this was difficult to notice: the small header toggle merely displayed "Motion: reduced". Following classroom feedback, **Motion: on is now the default for every first-time visitor**, including when their device requests reduced motion. This makes the game visibly lively on opening. Anyone can explicitly choose **Motion: reduced** via the header; when it is selected, a clear explanatory notice and **Enable animations** button appear. An explicit in-game choice persists across reloads in localStorage when storage is available. The initial on-by-default behaviour is an intentional classroom design choice; students who prefer reduced motion can readily opt out.
 
 Deployment verification sources live in scripts/check-public-site.mjs and scripts/check-live-browser.mjs. The optional GitHub Actions workflow Diagnose published Maths Sprites checks the real public URL and retains its screenshots and audit JSON. The normal Chrome test suite checks the default-on behaviour even under an OS-level reduced-motion preference, deliberate opt-out, the enable button, persistence and storage-disabled browsers.
+
+
+## Floor rows and geometric operations — PR9
+
+The ordinary (non-basket, non-area-demonstration) view of every chamber has a **single floor-aligned row**. A floor-shell centers it and scales it to fit the room, including on mobile. There is no wrap to a second row. This works for sprites, square sprites, weights and balloons; the latter still float slightly above their ground position.
+
+New whole-room operations:
+
+- **Square:** a row of n round x sprites or n weights is visualized as an n-by-n area. The hand lays a row, matches it with a column, fills the remaining cells, then pounds the variable creature into a new square-shaped x² creature when needed. The physical result is n² x² sprites or n² weights; the mathematical change occurs only at hand contact.
+- **Square root:** the opposite visual process arranges n² square x² sprites or n² weights into an n-by-n area and keeps one side. Square-shaped sprites squish back into ordinary round sprites. Objects return to the usual floor row afterward.
+- **Eligibility:** do not allow square on mixed expressions (e.g. x+2), nor roots of imperfect-square token counts or mixed terms. In these lessons x≥0, and all roots are principal. Pure squares (2x)²=4x² and √(4x²)=2x are represented exactly.
+- **Outcome:** chapter 6's goal is intentionally to *build* x²=9 from x=3; chapter 7 reverses this by taking the root; chapter 8 goes from 4x²=36 through 2x=6 to x=3.
+- **Modes:** guided applies the same operation in both chambers, while manual requires the matching second operation. The hand diagram and its seven/eight-phase choreography never update the engine before contact.
+
+The engine's posX2 token is a new quadratic area term. New unit and Chrome tests cover physical floor geometry, matching row/column/fill order, literal counts, negative/mixed-case refusal, principal roots, manual matching, Undo, replay and phone layouts.
+
+**Accessibility:** reduced-motion users still receive equivalent static area arrangements while the engine operations and written equations remain available. The original Motion control is unchanged.
