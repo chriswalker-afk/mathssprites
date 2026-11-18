@@ -246,17 +246,29 @@ export function perform(state, action, mode = "auto", side) {
         ((expected.op === "divide" || expected.op === "multiply") &&
          action.factor !== expected.factor))
       return { ok: false, code: "mismatch", reason: "The other room needs the same action, kind and amount." };
+    const second = state.pending.pair[side];
+    if (!second.ok) return { ...second, side };
     return { ok: true, committed: true,
       state: commit(state, state.pending.action, state.pending.pair, "manual") };
   }
-  const prepared = prepare(state, action);
-  if (!prepared.ok) return prepared;
   if (mode === "manual") {
     if (side !== "left" && side !== "right")
       return { ok: false, reason: "Choose the room to act in first." };
+    const opposite = side === "left" ? "right" : "left";
+    // In Your Turn the first hand visit need only be possible in the chosen
+    // room. Students can try a different second action and learn why it
+    // unbalances the scale. An invalid matching second action is still
+    // rejected and visually undone; no unilateral step can be committed.
+    const first = previewRoomAction(state[side], action);
+    if (!first.ok) return { ...first, side };
+    const second = previewRoomAction(state[opposite], action);
+    const pair = side === "left" ? {left:first,right:second} :
+      {left:second,right:first};
     return { ok: true, committed: false,
-      state: { ...state, pending: { first: side, action: { ...action }, pair: prepared.pair } } };
+      state: { ...state, pending: { first:side, action:{...action}, pair } } };
   }
+  const prepared = prepare(state, action);
+  if (!prepared.ok) return prepared;
   return { ok: true, committed: true, state: commit(state, action, prepared.pair, "auto") };
 }
 export function undo(state) {
