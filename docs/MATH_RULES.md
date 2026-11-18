@@ -1,43 +1,107 @@
 # Mathematical model and QA invariants
 
-## Domain
-First release uses **linear equations in one variable over nonnegative integer coefficients and constants**. One round sprite denotes an unknown fixed quantity `x`. One identical unit stone denotes `1`. The equation is concealed until replay; all manipulable objects nevertheless have precise algebraic values.
+## Mathematical truth beneath the toys
+There is **one canonical algebra engine**, shared by Guided Mirror, Your Turn, the balance needle, the hand's preview, the comic panels and the pencil's symbolic notation.
 
-Each room is represented by `ax + b` with `a,b ∈ ℤ≥0`. An initial puzzle has a positive integer solution `s`, and both rooms evaluate to the same number at `x=s`.
+The **first four playable puzzles** use one unknown with nonnegative integer coefficients and constants and a uniquely solvable positive integer answer. **Design the engine for signed terms from the start** so the later white-sprite and balloon chapters do not require changing what an operation means. Fractions and extra variables are separate later features.
 
-## Balance engine
-The scale is grounded in the algebra engine, not literal sprite collisions. Each sprite has a stable effective mass `s` for that puzzle; its vertical jump changes only its rendered position. The engine records a sequence of **reversible transactions**, with before/after states and replay annotations.
+The equation is never shown during play. The engine holds it regardless.
 
-### Allowed transformations in v1
-- **Add:** insert the same quantity of `x` sprites and/or `1` stones in both rooms.
-- **Subtract:** remove the same quantity of sprites and/or stones from both rooms, only when each room contains the requested items.
-- **Multiply by positive integer `k`:** duplicate the entire contents of each room into `k` equal copies; cap `k` to manage screen crowding.
-- **Divide by positive integer `k`:** partition **both** rooms' contents into `k` identical groups of whole sprites and stones, and retain one group per room. In this concrete mode all individual coefficients and constant counts must be divisible by `k`; do not silently split a sprite or stone.
-- Never allow multiply or divide by zero.
-- All state transitions occur atomically, despite the hand's sequential movement animation.
+### Four token kinds
 
-### Invariants
-1. If `L(s) = R(s)` before a valid operation, then `L'(s) = R'(s)` after it.
-2. The same algebraic transformation is applied to left and right.
-3. Each state is representable by nonnegative whole items for v1.
-4. Undo restores the exact prior logical state and reverses or reconstructs the visual arrangement.
-5. Every committed action has a canonical symbolic transformation and deterministic replay.
-6. A success state has exactly one sprite and no stones in one room, zero sprites in the other room, and `s` unit stones in the other.
-7. All generated puzzle inputs have a unique intended positive-integer solution, except deliberately designated demonstration cases.
+| Physical token | Algebraic value | Signed contribution |
+|---|---|---|
+| Black dust sprite | `+x` | positive variable term |
+| White dust sprite | `−x` | negative variable term |
+| Unit weight / stone | `+1` | positive constant |
+| Balloon | `−1` | negative constant |
 
-### Deliberately excluded complexity
-- **Negative quantities:** require signed tokens or cancellation pairs.
-- **Fractions:** require split objects or fractional weights.
-- **Square sprites (`x²`):** may be rendered in future, but **cannot be assumed solvable by linear addition/removal alone**. A distinct non-linear puzzle and factor/grouping mechanic is required, plus reliable solution checking and a valid replay. Do not add a square sprite merely as a decoration to a linear equation.
-- **Different-coloured variables:** cannot generally solve a single equation containing two independent unknowns; needs substitution clues, a second scale, or systems of equations. Different colours should never misleadingly imply different unknown values without a constraint.
-- **Variables on both sides:** valid and included once one-sided equation solving is established.
+Each room holds an array of physical objects with persistent IDs, kinds, positions and optional container membership. The mathematical projection is
 
-## Sample QA assertions
-- `2x + 3 = x + 7`, solution `4`: subtract `x` both sides, then subtract `3` both sides, reaching `x = 4`.
-- `3x = 12`: partition into three equal groups, reaching `x = 4`.
-- `x + 5 = 9`: subtract five stones, reaching `x = 4`.
-- `2x + 4 = 12`: subtract four stones then divide by two, reaching `x = 4`.
-- Reject subtraction of a sprite from a side containing no sprite.
-- Reject division of `x + 1 = 5` by two in concrete-object mode, because the item counts cannot be equally partitioned.
-- Reject changing only one room as a completed move.
-- Verify replay labels and equations correspond to every actual transaction.
+`Room(x) = (blackCount - whiteCount)·x + (weightCount - balloonCount)`.
+
+For the first signed chapter, the level's solution `s` remains positive. The fantasy balance maps signed contributions to downward/upward force, **never to the sprite's animated vertical coordinate**.
+
+## Two-phase hand operations
+Every completed equation operation consists of the same operation on the left and right room. Two modes change only **how the player submits those two halves**:
+
+- **Guided Mirror:** one user command creates and animates the two halves, then commits one logical transaction.
+- **Your Turn:** the first half is shown as a **pending** operation, the beam temporarily tilts, and the player must repeat the same operation on the second room. Until completed, the pending operation is reversible and **not part of the committed mathematical history**.
+
+A single hand naturally visits rooms sequentially. The engine must not present its temporary middle pose as a legal final equation state. Validate that the operation can be completed **in both rooms before allowing the first half**, especially with division, so the learner cannot become stuck.
+
+Matching means identical **algebraic operation**, signed token type, count and group factor. Zero-pair side effects may differ between rooms; this does not make the mirrored operation different.
+
+## Valid equation transformations
+
+1. **Add signed term(s):** add the same `+x`, `−x`, `+1` or `−1` tokens in each room. This adds the same expression to both sides. A positive and a negative term may form zero pairs.
+2. **Remove signed term(s):** physically remove matching existing objects from each room. Removing `−1` means **subtract `(-1)`**, not subtract `1`. In more advanced chapters, adding the opposite token is an equivalent operation but should remain a distinct recorded physical action.
+3. **Multiply by positive integer `k`:** build `k` complete copies of **each room's entire expression**; never duplicate only one chosen type.
+4. **Divide by positive integer `k`:** after zero-pair normalization, place the *entire* contents of **each room** into `k` baskets that have identical contents **within that room**. Remove `k−1` full baskets from each side, retaining one group in each room. The group's container itself contributes **zero** weight.
+5. **Cancel a zero pair:** `(+x)+(-x)=0` and `(+1)+(-1)=0`. These are **local algebraic simplifications** with no value change, so they may occur in one room without a parallel action. Log them as ordered **visual subevents** attached to the triggering transaction, not new bilateral operation steps.
+
+### Whole-item chapter restrictions
+- A divide by `k` move is permitted only if **each room** can form `k` identical groups from **whole** sprites, whole weights and whole balloons, after permitted zero-pair normalization. Operationally, the canonical variable coefficient and constant coefficient of each room must both be divisible by `k`. The animation must be able to realise that partition with real visible tokens.
+- Reject `k=0`; never silently split a creature or stone.
+- If division would create fractions in a whole-item level, the hand-owner can say that they prefer not to deal with fractions **in this experiment**. The mathematics of fractions is legitimate and unlocks in a later chapter.
+- Reject subtraction that cannot be performed using the chosen physically present tokens; do not invent a token removal while displaying another action.
+- Cap `k` and token growth to keep counting and room layout usable.
+
+## Cancellation animations
+- **Black + white:** hop together and vanish in a little puff, then remove exactly one of each from physical state.
+- **Weight + balloon:** balloon lifts its matched weight and the pair floats away, then remove exactly one of each.
+- Make the before-cancellation pair visible long enough to understand the zero relationship.
+- Normalization must preserve the net signed coefficients. Deterministically log token IDs, order, animation type and post-normalization scene. Undo must recover tokens and their positions.
+- Automatic normalization in the scene happens at a controlled beat, not at unpredictable physics collision time.
+
+See [signed tokens and chapter example](SIGNED_TOKENS.md).
+
+## Data contracts for implementation
+Store every level as: `levelId`, `hiddenInitialExpressionLeft`, `hiddenInitialExpressionRight`, `positiveIntegerSolution`, allowed operations, mode options, and constraints.
+
+Store every completed user transaction as:
+- precise operation and signed operand / factor;
+- ordered two-room physical hand actions, including whether manual mode was used;
+- before and after **canonical expressions**;
+- before and after physical object snapshots;
+- cancellation subevents;
+- optional reason code for hints / dialogue (not a new equation step).
+
+Use these transaction records as the **single source of truth** for the animated comic-book replay, pencil writing, and Undo / Redo. Never infer the equation from screen pixels or animation coordinates.
+
+## Invariants / automated tests
+
+1. If `L(s)=R(s)` before a completed valid transaction, then `L'(s)=R'(s)` afterwards.
+2. The two halves of every committed transaction are algebraically identical.
+3. The mathematical expression of any one room is unchanged by a local zero-pair cancellation.
+4. Intermediate Your Turn states are pending, cannot win and cannot initiate unrelated commands. Undo restores the exact prior state.
+5. A divide-by-`k` move yields `L/k` and `R/k` and one visible group per side, or rejects without partial action.
+6. The intended positive-integer answer stays the unique solution to every committed equation.
+7. In early chapters, success means exactly **one black sprite with no other items in its room** and only `s` unit weights in the other; no hidden uncancelled zero pairs.
+8. Replay yields **one panel per complete student transaction**, plus optionally setup/finale panels, and writes the matching initial, intermediary and final symbolic equations.
+9. Reduced-motion and non-visual modes preserve the same interaction outcomes and written equations.
+10. A refusal for fractions fires **only if** the requested operation would be nonintegral in that level's whole-item representation.
+
+## Curated tests
+
+| Initial expression | Student action sequence | Result |
+|---|---|---|
+| `x+2=5` | subtract two weights on each side | `x=3` |
+| `3x=9` | divide both expressions into 3 equal groups | `x=3` |
+| `2x+4=12` | subtract 4 weights, then divide by 2 | `x=4` |
+| `2x+3=x+7` | remove one black sprite on each side, then remove three weights each | `x=4` |
+| `5x+10=20` | divide the entire arrangement by 5 | `x+2=4` |
+| `2x-2=x+2` | remove one black each; **add** two weights each; cancel left weight/balloon pairs | `x=4` |
+
+Rejections:
+- Remove a sprite from a room with none of the selected kind.
+- Divide `x+1=5` by 2 in whole-item mode.
+- Divide any room by zero.
+- Commit a first-side-only action as a finished equation move.
+- Skip a recorded step or mislabel removal of a `−1` balloon as subtraction of `+1`.
+
+## Future mathematical chapters
+- **Fractions:** split containers and fractional tokens, with explicit semantics and correct symbolic fractions.
+- **Multiple variables:** separate creature family with actual constraints / linked balances; a single equation in two unknowns is generally insufficient.
+- **Square sprites:** `x²` requires a distinct quadratic model and meaningful operations (such as factor/area structures); it is *not* solved by pretending square sprites are extra `x` sprites.
+- **Negative solutions of x:** revisit the mass/anti-mass metaphor before allowing `s<0` rather than silently reversing what black and white creatures do.
