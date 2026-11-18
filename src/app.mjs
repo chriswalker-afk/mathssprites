@@ -200,7 +200,9 @@ function render() {
     button.setAttribute("aria-pressed", String(button.dataset.kind === kind));
   }
   const grouped = operation === "divide" || operation === "multiply";
-  $("object-picker").hidden = grouped;
+  const geometric = operation === "square" || operation === "sqrt";
+  $("object-picker").hidden = grouped || geometric;
+  $("amount-control").hidden = geometric;
   $("amount-label").textContent = grouped ? "3 · How many groups?" : "3 · How many?";
   $("amount-value").textContent = grouped ? factor : amount;
   $("amount-down").disabled = busy || awaiting || isSolved(state) || (grouped ? factor <= 2 : amount <= 1);
@@ -244,26 +246,82 @@ function render() {
  * corresponding visual transformation. Only then does it leave the screen.
  */
 function handProp(action) {
+  if (action.op === "square")
+    return '<span class="held-square-press" title="A brass press that forms square sprites"></span>';
+  if (action.op === "sqrt") return "";
   if (action.op === "divide") {
     return '<span class="held-basket" title="A complete basket of objects"></span>';
   }
   if (action.op === "multiply") {
     return '<span class="held-basket held-basket-double" title="A complete group of objects"></span>';
   }
-  const picture = action.kind === "posX" || action.kind === "negX"
-    ? '<span class="held-sprite' + (action.kind === "negX" ? " held-sprite-pale" : "") +
+  const picture = action.kind === "posX" || action.kind === "negX" || action.kind === "posX2"
+    ? '<span class="held-sprite' + (action.kind === "negX" ? " held-sprite-pale" :
+      action.kind === "posX2" ? " held-sprite-square" : "") +
       '"><i></i><i></i></span>'
     : '<span class="held-weight"></span>';
   return picture + (action.count > 1 ? '<span class="held-count">×' + action.count + '</span>' : "");
 }
 function roomOperationText(action, side) {
   const roomName = side === "left" ? "west" : "east";
+  if (action.op === "square") return "The hand makes a matching column and fills the " + roomName +
+    " square — round x becomes square x²...";
+  if (action.op === "sqrt") return "The hand arranges a square and keeps one side in the " + roomName +
+    " room — square x² is squished back to round x...";
   if (action.op === "divide") return "The hand sorts the " + roomName + " room into " + action.factor + " equal baskets...";
   if (action.op === "multiply") return "The hand makes " + action.factor + " complete copies in the " + roomName + " room...";
-  const nouns = action.kind === "posX" ? (action.count === 1 ? "sprite" : "sprites") :
+  const nouns = action.kind === "posX2" ? (action.count === 1 ? "square sprite" : "square sprites") :
+    action.kind === "posX" ? (action.count === 1 ? "sprite" : "sprites") :
     (action.count === 1 ? "weight" : "weights");
   return "The hand " + (action.op === "remove" ? "lifts away " : "places ") +
     action.count + " " + nouns + " in the " + roomName + " room...";
+}
+/**
+ * A visual multiplication array, not a change in the algebra. The hand builds
+ * the horizontal row, matching vertical column, then fills the interior.
+ * Taking roots reverses this: the completed square loses every cell except
+ * the first side. Only the later hand contact commits the actual math.
+ */
+function showAreaPreview(side, action) {
+  const preview = $(side + "-area-preview");
+  const arrangement = areaArrangement(visible()[side], action.op);
+  if (!arrangement || arrangement.side < 1) return;
+  const cells = previewCells(arrangement).map(cell => {
+    const symbol = arrangement.symbolic ? "x²" : "●";
+    return '<span class="area-cell role-' + cell.role +
+      (arrangement.symbolic ? " area-symbolic" : "") +
+      '" data-cell-index="' + cell.index + '" data-cell-row="' + cell.row +
+      '" data-cell-col="' + cell.col + '" style="--cell-delay:' + cell.delay +
+      'ms">' + symbol + '</span>';
+  }).join("");
+  preview.dataset.operation = action.op;
+  preview.dataset.phase = "arranging";
+  preview.style.setProperty("--area-side", arrangement.side);
+  preview.setAttribute("aria-label", areaMathLabel(arrangement) + ", a " +
+    arrangement.side + " by " + arrangement.side + " square");
+  preview.innerHTML = '<span class="area-math">' + areaMathLabel(arrangement) + '</span>' +
+    '<div class="area-guide"><strong>' + (action.op === "square" ? "ROW → COLUMN → FILL" :
+      "FULL SQUARE → KEEP ONE SIDE") + '</strong></div>' +
+    '<div class="area-grid" style="--area-side:' + arrangement.side + '">' + cells + '</div>' +
+    '<span class="area-extract-label">' + (action.op === "square" ? "SQUARE COMPLETED" :
+      "ONE SIDE REMAINS") + '</span>';
+  preview.hidden = false;
+  $(side + "-chamber").classList.add("area-active");
+}
+function finishAreaPreview(side, action) {
+  const preview = $(side + "-area-preview");
+  if (preview.hidden) return;
+  preview.dataset.phase = "result";
+  $(side + "-chamber").classList.add(action.op === "square" ?
+    "area-after-square" : "area-after-sqrt");
+}
+function clearAreaPreview(side) {
+  const preview = $(side + "-area-preview");
+  preview.hidden = true;
+  preview.innerHTML = "";
+  preview.removeAttribute("data-phase");
+  const chamber = $(side + "-chamber");
+  chamber.classList.remove("area-active", "area-after-square", "area-after-sqrt");
 }
 function animateClassFrame() {
   return new Promise(resolve => {
