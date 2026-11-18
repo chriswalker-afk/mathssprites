@@ -438,6 +438,81 @@ function clearAreaPreview(side) {
   chamber.classList.remove("area-active","area-after-square","area-after-sqrt");
 }
 
+function clearNeutralEffect(side) {
+  const effect=$(side+"-neutral-effect");
+  effect.hidden=true;
+  effect.innerHTML="";
+  delete effect.dataset.pairType;
+}
+/**
+ * Animate zero-valued subevents after adding the tokens (or before dividing).
+ * The paint callback changes only the temporary display, never the algebra.
+ * Children see each original pair before its collision or balloon lift.
+ */
+async function animateNeutralEvents(side,events,paint) {
+  if(!events?.length)return;
+  const effect=$(side+"-neutral-effect");
+  for(const event of events) {
+    paint(event.before);
+    await sleep(reducedMotion?200:450);
+    const node=$(side+"-items");
+    const posSelector=event.type==="sprites"?".sprite-black":".weight";
+    const negSelector=event.type==="sprites"?".sprite-white":".balloon";
+    const positive=[...node.querySelectorAll(posSelector)].at(-1);
+    const negative=[...node.querySelectorAll(negSelector)].at(-1);
+    if(!positive||!negative)
+      throw new Error("Neutral-pair objects were missing from the scene: "+event.id);
+    const p=positive.getBoundingClientRect(),n=negative.getBoundingClientRect();
+    const pX=p.left+p.width/2,nX=n.left+n.width/2;
+    const midX=(pX+nX)/2;
+    const midY=(p.top+p.height/2+n.top+n.height/2)/2;
+    const roomBox=effect.parentElement.getBoundingClientRect();
+    positive.style.setProperty("--pair-dx",Math.round(midX-pX)+"px");
+    negative.style.setProperty("--pair-dx",Math.round(midX-nX)+"px");
+    positive.classList.add("zero-pair-actor",event.type==="sprites"
+      ?"zero-sprite-positive":"zero-weight-positive");
+    negative.classList.add("zero-pair-actor",event.type==="sprites"
+      ?"zero-sprite-negative":"zero-balloon-negative");
+    effect.dataset.pairType=event.type;
+    effect.hidden=false;
+    effect.style.left=Math.max(40,Math.min(roomBox.width-40,midX-roomBox.left))+"px";
+    effect.style.top=Math.max(55,Math.min(roomBox.height-55,midY-roomBox.top-12))+"px";
+    effect.innerHTML=event.type==="sprites"
+      ? '<span class="puff-core"></span>'+Array.from({length:5},()=>
+          '<span class="soot"></span>').join("")+
+        '<span class="neutral-caption">+x and −x make zero!</span>'
+      : '<span class="balloon-trail"></span>'+
+        '<span class="neutral-caption">+1 and −1 float away!</span>';
+    const line=event.type==="sprites"
+      ? "The black and white sprites hop together — their values cancel to zero!"
+      : "Watch the balloon lift its matching weight! +1 and −1 make zero.";
+    $("action-caption").textContent=line;
+    $("action-caption").hidden=false;
+    setSpeech(line,reducedMotion?1800:3000);
+    await sleep(reducedMotion?720:1280);
+    paint(event.after);
+    clearNeutralEffect(side);
+    await sleep(reducedMotion?80:180);
+  }
+  $("feedback").textContent="Opposites made zero. The two rooms still obey the same equation.";
+}
+async function neutraliseBeforeDivision(action,previews) {
+  if(action.op!=="divide")return;
+  const showing=visible();
+  override={left:room(showing.left),right:room(showing.right)};
+  for(const side of ["left","right"]) {
+    const events=previews[side].cancellationEvents||[];
+    if(events.length)await animateNeutralEvents(side,events,r=>{
+      override={...override,[side]:room(r)};render();
+    });
+  }
+  override={
+    left:room(previews.left.beforeGroups||showing.left),
+    right:room(previews.right.beforeGroups||showing.right)
+  };
+  render();
+}
+
 function animateClassFrame() {
   return new Promise(resolve => {
     // Requesting a frame ensures the hand starts ABOVE the room before
