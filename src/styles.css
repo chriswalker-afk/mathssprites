@@ -70,8 +70,10 @@ background-image:repeating-linear-gradient(90deg,transparent 0 66px,rgba(0,0,0,.
   transition:transform .64s cubic-bezier(.22,.75,.25,1);
   filter:drop-shadow(9px 12px 10px rgba(0,0,0,.48));
   will-change:transform}
+.giant-hand.tracking-sprite .hand-art{transform:translateX(var(--hand-chase,10px)) rotate(3deg)}
 .hand-art{display:block;position:relative;z-index:3;width:100%;height:100%;overflow:visible;
   filter:drop-shadow(1px 2px 1px rgba(27,20,14,.3))}
+.hand-art{transition:transform .19s ease-out}
 .hand-art .hand-digit{transform-box:view-box;transition:transform .29s cubic-bezier(.25,.75,.2,1.08);
   will-change:transform}
 .hand-art .digit-thumb{transform-origin:72px 152px;transform:rotate(7deg)}
@@ -117,6 +119,13 @@ background-image:repeating-linear-gradient(90deg,transparent 0 66px,rgba(0,0,0,.
 .held-sprite{position:absolute;left:13px;top:6px;width:39px;height:38px;
   background:radial-gradient(circle at 30% 20%,#444c4b,#111516 70%);
   border-radius:46%;box-shadow:0 0 0 2px #4a4d47}
+.held-sprite-pale{background:radial-gradient(circle at 30% 20%,#f8f3e9,#b9c4c0 73%);box-shadow:0 0 0 2px #a5b6b4}
+.held-sprite-pale i{background:#2c3532}
+.hand-cargo.sprite-captured .held-sprite{animation:held-sprite-squirm .35s ease-in-out infinite alternate}
+@keyframes held-sprite-squirm{
+  from{transform:translateX(-2px) rotate(-6deg) scale(.98,1.03)}
+  to{transform:translateX(2px) rotate(7deg) scale(1.05,.96)}
+}
 .held-sprite i{position:absolute;top:12px;left:11px;width:6px;height:8px;border-radius:50%;background:#f1eddd}
 .held-sprite i+i{left:23px}
 .held-basket{position:absolute;left:4px;top:4px;width:56px;height:46px;
@@ -189,6 +198,44 @@ background-image:repeating-linear-gradient(90deg,transparent 0 66px,rgba(0,0,0,.
    its floor shadow stays on the floor. None of this changes its algebraic mass. */
 .sprite{width:46px;height:47px;transform-origin:center bottom;
   filter:drop-shadow(0 2px 2px rgba(0,0,0,.38))}
+/* PR7: a separate reaction shell lets a selected sprite duck or dodge
+   while the normal hop, wiggle and blink layers are paused by the hand.
+   The token's slot, counts and mathematical weight never move. */
+.sprite-reaction-shell{position:absolute;inset:0;display:block;z-index:2;transform-origin:50% 92%}
+.sprite-reacting[data-react-phase="start"][data-reaction="duck"] .sprite-reaction-shell{
+  animation:sprite-duck .98s cubic-bezier(.24,.75,.35,1) both}
+.sprite-reacting[data-react-phase="start"][data-reaction="dodge"] .sprite-reaction-shell{
+  animation:sprite-dodge .98s cubic-bezier(.22,.65,.24,1) both}
+.sprite-reacting[data-react-phase="caught"] .sprite-reaction-shell{
+  animation:sprite-caught .29s ease-out both}
+.sprite-reacting:after{content:"!";position:absolute;z-index:8;top:-25px;left:50%;color:#f7dfaf;
+  font:italic bold 1.2rem Georgia,serif;text-shadow:0 2px 3px #0009;pointer-events:none;
+  animation:sprite-surprise .5s ease-out both}
+.sprite-reacting[data-reaction="dodge"]:after{content:"↝";font-size:1.45rem;top:-29px}
+@keyframes sprite-duck{
+  0%,8%{transform:translateY(0) scale(1)}
+  22%{transform:translateY(4px) scale(1.14,.73)}
+  40%,58%{transform:translateY(10px) scale(1.21,.48)}
+  76%{transform:translateY(6px) scale(1.08,.69)}
+  100%{transform:translateY(3px) scale(1.06,.8)}
+}
+@keyframes sprite-dodge{
+  0%,10%{transform:translateX(0) rotate(0deg) scale(1)}
+  25%{transform:translateX(var(--dodge-shift,20px)) rotate(-10deg) scale(.91,1.07)}
+  40%,56%{transform:translateX(var(--dodge-shift,20px)) rotate(8deg) scale(.96,1.05)}
+  73%{transform:translateX(4px) rotate(-5deg) scale(1.05,.95)}
+  100%{transform:translateX(0) rotate(0deg) scale(1)}
+}
+@keyframes sprite-caught{
+  0%{transform:translateY(0) scale(1)}
+  45%{transform:translateY(6px) scale(1.1,.65)}
+  100%{transform:translateY(4px) scale(.85,.72)}
+}
+@keyframes sprite-surprise{
+  from{opacity:0;transform:translateY(10px) scale(.4)}
+  40%{opacity:1;transform:translateY(-4px) scale(1.1)}
+  to{opacity:.9;transform:translateY(0) scale(1)}
+}
 .sprite-motion{position:absolute;inset:0;z-index:2;display:block;transform-origin:center bottom;
   animation:sprite-hop var(--hop-period,1600ms) cubic-bezier(.36,.08,.3,1) infinite;
   animation-delay:var(--hop-delay,0ms);will-change:transform}
@@ -534,3 +581,5 @@ legend{margin-bottom:12px;padding:0}
   animation:none!important;transform:none!important}
 .reduce-motion .sprite-ground-shadow{transform:translateX(-50%)!important}
 .reduce-motion .sprite-ground-shadow:after{opacity:0!important}
+.reduce-motion .sprite-reaction-shell,.reduce-motion .sprite-reacting:after,
+.reduce-motion .hand-cargo .held-sprite{animation:none!important;transform:none!important}
