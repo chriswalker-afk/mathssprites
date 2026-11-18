@@ -98,6 +98,17 @@ export function writeIndependentGuideSeen(seen,storage){
  * After the first-room action, point at the OTHER chamber to match the move.
  */
 export function independentIntroductionCue(step,{pending=null,busy=false}={}){
+  if(pending)return{
+    title:"3 · The other room is still waiting!",
+    text:"Look at the tilted scale. Now use the SAME removal of two weights in the other chamber. The balance will settle after your second hand visit.",
+    target:pending==="left"?"right-action":"left-action",
+    action:null,progress:"4 of 4"
+  };
+  if(busy)return{
+    title:"3 · Watch the scale",
+    text:"The hand is moving objects in one chamber. Notice how the rooms tip until you make the matching move.",
+    target:"scene",action:null,progress:"4 of 4"
+  };
   if(step===0)return{
     title:"You're controlling the hand now",
     text:"The rooms start in perfect balance. In Stage 2, you will make the same change in each room yourself. The hand will not automatically visit the other side.",
@@ -112,17 +123,6 @@ export function independentIntroductionCue(step,{pending=null,busy=false}={}){
     title:"2 · Choose two weights",
     text:"Choose Weight, and make the number TWO. The first room contains two loose weights to remove.",
     target:"amount",action:"Try your first hand move",progress:"3 of 4"
-  };
-  if(pending)return{
-    title:"3 · The other room is still waiting!",
-    text:"Look at the tilted scale. Now use the SAME removal of two weights in the other chamber. The balance will settle after your second hand visit.",
-    target:pending==="left"?"right-action":"left-action",
-    action:null,progress:"4 of 4"
-  };
-  if(busy)return{
-    title:"3 · Watch the scale",
-    text:"The hand is moving objects in one chamber. Notice how the rooms tip until you make the matching move.",
-    target:"scene",action:null,progress:"4 of 4"
   };
   return{
     title:"3 · Make the west move",
