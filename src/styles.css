@@ -923,3 +923,15 @@ legend{margin-bottom:12px;padding:0}
 .reduce-motion .sprite-ground-shadow:after{opacity:0!important}
 .reduce-motion .sprite-reaction-shell,.reduce-motion .sprite-reacting:after,
 .reduce-motion .hand-cargo .held-sprite{animation:none!important;transform:none!important}
+/* A still, readable in-room square for students choosing Motion: reduced. */
+.reduce-motion .room-square-box .box-cell,
+.reduce-motion .room-square-box .box-workshop,
+.reduce-motion .room-square-box .box-actor,
+.reduce-motion .room-square-box .box-edge,
+.reduce-motion .room-square-box .box-cell.placed .box-actor{
+  animation:none!important;transition:none!important}
+.reduce-motion .room-square-box .box-cell.placed{opacity:1;transform:none}
+.reduce-motion .room-square-box .box-cell.removed{opacity:0;transform:none}
+.reduce-motion .room-square-box .box-edge.built{opacity:.83;transform:none}
+.reduce-motion .room-square-box .box-edge.retired{opacity:0;transform:none}
+.reduce-motion .room-square-box .box-edge.kept{opacity:1;transform:none}
