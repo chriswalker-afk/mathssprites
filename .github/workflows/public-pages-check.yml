@@ -19,11 +19,15 @@ jobs:
           node-version: 22
       - name: Inspect actual public HTML CSS JS and deployment settings
         run: node scripts/check-public-site.mjs
+      - name: Install Chrome browser probe
+        run: npm install --no-save @playwright/test@1.65.1
+      - name: Check public site behaviour inside Chrome
+        run: node scripts/check-live-browser.mjs
       - name: Retain precise deployment check results
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: public-pages-diagnostic
-          path: artifacts/pages-deployment-diagnostic.json
+          path: artifacts/
           if-no-files-found: warn
           retention-days: 5
