@@ -57,7 +57,7 @@ test("Stage 2 has 16 different valid positive whole-number puzzles in four chapt
     const engine=initialState(lvl);
     assert.equal(levelActionPermission(engine,{op:"square"}).code,"locked-operation");
     assert.equal(levelActionPermission(engine,{op:"sqrt"}).code,"locked-operation");
-    assert.equal(levelActionPermission(engine,{op:"add",kind:"negOne",count:1}).code,"locked-negative");
+    assert.equal(perform(engine,{op:"add",kind:"negOne",count:1},"manual","left").code,"locked-negative");
   }
 });
 
