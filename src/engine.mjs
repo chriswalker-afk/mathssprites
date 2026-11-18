@@ -3,7 +3,7 @@
  * Objects are physical counts; algebraic values are projections of those counts.
  * Both play modes commit exactly one two-sided transaction per mathematical step.
  */
-export const TOKEN_KINDS = ["posX", "negX", "posOne", "negOne"];
+export const TOKEN_KINDS = ["posX", "negX", "posX2", "posOne", "negOne"];
 export const LEVELS = [
   {
     id: "resident", title: "One little resident", chapter: "01 · Clearing the room",
@@ -34,6 +34,25 @@ export const LEVELS = [
     prompt: "These rooms are crowded. Can you pack everything into five equal baskets?",
     left: { posX: 5, posOne: 10 }, right: { posOne: 20 }, solution: 2,
     suggested: "Try five equal baskets in each room, then remove two weights from both."
+  },
+  {
+    id: "make-square", title: "Build the square", chapter: "06 · Length becomes area",
+    prompt: "Both sides show a length. Square each whole side: turn the row into a matching column, then fill the area. Assume x ≥ 0.",
+    left: { posX: 1 }, right: { posOne: 3 }, solution: 3, goal: "square",
+    startingOperation: "square",
+    suggested: "Square both sides. A round x becomes a square x²; three weights become a 3 × 3 square of nine."
+  },
+  {
+    id: "take-root", title: "Keep one side", chapter: "07 · Area becomes length",
+    prompt: "These are square areas. Arrange each as a square, then keep one side. Assume x ≥ 0.",
+    left: { posX2: 1 }, right: { posOne: 9 }, solution: 3, startingOperation: "sqrt",
+    suggested: "Take the principal square root of each side: a square x² becomes a round x, and √9 is 3."
+  },
+  {
+    id: "root-then-share", title: "Root and share", chapter: "08 · Two steps back",
+    prompt: "Four square sprites face 36 weights. Make squares, keep one side, then share equally. Assume x ≥ 0.",
+    left: { posX2: 4 }, right: { posOne: 36 }, solution: 3, startingOperation: "sqrt",
+    suggested: "√(4x²) = 2x and √36 = 6. Then divide both rooms by two."
   }
 ];
 
@@ -42,15 +61,15 @@ export function room(values = {}) {
 }
 export function copyRoom(value) { return room(value); }
 export function canonical(value) {
-  return { x: value.posX - value.negX, constant: value.posOne - value.negOne };
+  return { x2: value.posX2 || 0, x: value.posX - value.negX, constant: value.posOne - value.negOne };
 }
 export function evaluate(value, x) {
   const terms = canonical(value);
-  return terms.x * x + terms.constant;
+  return terms.x2 * x * x + terms.x * x + terms.constant;
 }
 export function initialState(level = LEVELS[0]) {
-  return { levelId: level.id, solution: level.solution, left: room(level.left),
-    right: room(level.right), history: [], pending: null };
+  return { levelId: level.id, goal: level.goal || "isolate", solution: level.solution,
+    left: room(level.left), right: room(level.right), history: [], pending: null };
 }
 export function visibleRooms(state) {
   if (!state.pending) return { left: state.left, right: state.right };
@@ -63,10 +82,19 @@ export function balanceDifference(state) {
 }
 export function isSolved(state) {
   if (state.pending) return false;
-  const isOneSprite = r => r.posX === 1 && r.negX === 0 && r.posOne === 0 && r.negOne === 0;
-  const isWeights = r => r.posX === 0 && r.negX === 0 && r.negOne === 0 && r.posOne === state.solution;
-  return (isOneSprite(state.left) && isWeights(state.right)) ||
-    (isOneSprite(state.right) && isWeights(state.left));
+  const isOneSprite = r => r.posX === 1 && r.negX === 0 && r.posX2 === 0 &&
+    r.posOne === 0 && r.negOne === 0;
+  const isOneSquare = r => r.posX2 === 1 && r.posX === 0 && r.negX === 0 &&
+    r.posOne === 0 && r.negOne === 0;
+  const isWeights = (r, n) => r.posX2 === 0 && r.posX === 0 && r.negX === 0 &&
+    r.negOne === 0 && r.posOne === n;
+  if (state.goal === "square") {
+    const n = state.solution ** 2;
+    return (isOneSquare(state.left) && isWeights(state.right, n)) ||
+      (isOneSquare(state.right) && isWeights(state.left, n));
+  }
+  return (isOneSprite(state.left) && isWeights(state.right, state.solution)) ||
+    (isOneSprite(state.right) && isWeights(state.left, state.solution));
 }
 export function normalize(value) {
   const next = room(value);
@@ -82,16 +110,47 @@ function countTokens(value) {
   return TOKEN_KINDS.reduce((sum, kind) => sum + value[kind], 0);
 }
 function check(action) {
-  if (!["add", "remove", "multiply", "divide"].includes(action?.op))
+  if (!["add", "remove", "multiply", "divide", "square", "sqrt"].includes(action?.op))
     return "Choose an operation first.";
   if (action.op === "add" || action.op === "remove") {
     if (!TOKEN_KINDS.includes(action.kind)) return "Choose a kind of object.";
     if (!Number.isInteger(action.count) || action.count < 1 || action.count > 12)
       return "Choose between one and twelve objects.";
-  } else if (!Number.isInteger(action.factor) || action.factor < 2 || action.factor > 5) {
+  } else if ((action.op === "multiply" || action.op === "divide") &&
+    (!Number.isInteger(action.factor) || action.factor < 2 || action.factor > 5)) {
     return "Choose between two and five groups.";
   }
   return null;
+}
+function perfectSquareRoot(n) {
+  if (!Number.isInteger(n) || n < 0) return null;
+  const root = Math.sqrt(n);
+  return Number.isInteger(root) ? root : null;
+}
+function pureNonnegativeKind(r) {
+  const used = TOKEN_KINDS.filter(kind => r[kind] > 0);
+  return used.length === 1 ? used[0] : used.length === 0 ? "zero" : null;
+}
+/**
+ * Squaring is (nx)² = n²x² or n², NEVER independently squaring the terms of
+ * a sum. Mixed expressions are rejected: (x+2)² = x²+4x+4.
+ * Principal roots in this chapter explicitly assume x >= 0.
+ */
+export function areaArrangement(r, op) {
+  if (op !== "square" && op !== "sqrt") return null;
+  const source = room(r);
+  const kind = pureNonnegativeKind(source);
+  if (op === "square" && (kind === "posX" || kind === "posOne")) {
+    const n = source[kind];
+    if (n * n > 48) return null;
+    return { op, kind, side: n, cells: n * n, symbolic: kind === "posX" };
+  }
+  if (op === "sqrt" && (kind === "posX2" || kind === "posOne")) {
+    const side = perfectSquareRoot(source[kind]);
+    if (side === null || side > 7) return null;
+    return { op, kind, side, cells: source[kind], symbolic: kind === "posX2" };
+  }
+  return kind === "zero" ? { op, kind: "zero", side: 0, cells: 0, symbolic: false } : null;
 }
 function transform(source, action) {
   const next = room(source);
@@ -101,6 +160,21 @@ function transform(source, action) {
     if (next[action.kind] < action.count)
       return { ok: false, reason: "I can't take away something that isn't in that room." };
     next[action.kind] -= action.count;
+  }
+  if (action.op === "square" || action.op === "sqrt") {
+    const area = areaArrangement(next, action.op);
+    if (!area) return { ok: false, reason: action.op === "square"
+      ? "First make one row of only round sprites or only weights. Squaring (x + 2) also needs 4x, so mixed rooms cannot use this tool."
+      : "The principal square root needs one perfect-square group (square sprites or weights), with no mixed terms." };
+    if (area.kind !== "zero") {
+      const { kind, side } = area;
+      next[kind] = 0;
+      if (action.op === "square") {
+        next[kind === "posX" ? "posX2" : "posOne"] = side * side;
+      } else {
+        next[kind === "posX2" ? "posX" : "posOne"] = side;
+      }
+    }
   }
   if (action.op === "multiply") {
     TOKEN_KINDS.forEach(kind => { next[kind] *= action.factor; });
@@ -177,21 +251,32 @@ export function undo(state) {
 }
 export function expression(value) {
   const { x, constant } = canonical(value);
+  const { x2 } = canonical(value);
+  const sqTerm = x2 === 0 ? "" : (x2 === 1 ? "" : String(x2)) + "x²";
   const xTerm = x === 0 ? "" : x === 1 ? "x" : x === -1 ? "−x" : String(x).replace("-", "−") + "x";
-  if (constant === 0) return xTerm || "0";
-  const n = String(Math.abs(constant));
-  if (!xTerm) return (constant < 0 ? "−" : "") + n;
-  return xTerm + (constant < 0 ? " − " : " + ") + n;
+  let out = sqTerm;
+  if (xTerm) out += out && x < 0 ? " − " + xTerm.slice(1) :
+    out ? " + " + xTerm : xTerm;
+  if (constant !== 0) {
+    const n = String(Math.abs(constant));
+    out += out ? (constant < 0 ? " − " : " + ") + n :
+      (constant < 0 ? "−" : "") + n;
+  }
+  return out || "0";
 }
 export function equation(pair) { return expression(pair.left) + " = " + expression(pair.right); }
-const TOKEN_NAME = { posX: "dark sprite", negX: "pale sprite", posOne: "weight", negOne: "balloon" };
+const TOKEN_NAME = { posX: "dark sprite", negX: "pale sprite", posX2: "square x² sprite", posOne: "weight", negOne: "balloon" };
 export function operationDescription(action) {
+  if (action.op === "square") return "Square both entire sides (x ≥ 0)";
+  if (action.op === "sqrt") return "Take the principal square root of both sides (x ≥ 0)";
   if (action.op === "multiply") return "Make " + action.factor + " complete copies in each room";
   if (action.op === "divide") return "Make " + action.factor + " equal groups in each room; keep one";
   const unit = action.count === 1 ? TOKEN_NAME[action.kind] : TOKEN_NAME[action.kind] + "s";
   return (action.op === "add" ? "Add " : "Remove ") + action.count + " " + unit + " in each room";
 }
 export function algebraOperation(action) {
+  if (action.op === "square") return "Square both sides (x ≥ 0)";
+  if (action.op === "sqrt") return "Take √ of both sides (principal root, x ≥ 0)";
   if (action.op === "divide") return "÷ " + action.factor + " on both sides";
   if (action.op === "multiply") return "× " + action.factor + " on both sides";
   const signOfToken = action.kind === "negX" || action.kind === "negOne" ? -1 : 1;
@@ -205,5 +290,15 @@ export function algebraOperation(action) {
 }
 export function validInitialLevel(level) {
   const a = canonical(room(level.left)), b = canonical(room(level.right));
-  return a.x !== b.x && (a.x - b.x) * level.solution === b.constant - a.constant;
+  if (level.solution < 0 || !Number.isInteger(level.solution)) return false;
+  if (evaluate(room(level.left), level.solution) !== evaluate(room(level.right), level.solution))
+    return false;
+  const A = a.x2 - b.x2, B = a.x - b.x, C = a.constant - b.constant;
+  if (A === 0) return B !== 0 && B * level.solution === -C;
+  const disc = B * B - 4 * A * C;
+  if (disc < 0) return false;
+  const roots = [(-B + Math.sqrt(disc)) / (2 * A),
+    (-B - Math.sqrt(disc)) / (2 * A)].filter(Number.isFinite)
+    .filter(x => x >= 0);
+  return roots.length === 1 && Math.abs(roots[0] - level.solution) < 1e-8;
 }

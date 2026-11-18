@@ -1,11 +1,12 @@
 import {
   LEVELS, TOKEN_KINDS, initialState, visibleRooms, evaluate,
-  perform, undo, isSolved, equation, operationDescription, algebraOperation
+  perform, undo, isSolved, equation, operationDescription, algebraOperation, areaArrangement
 } from "./engine.mjs";
 import { buildWritingTimeline, symbolsOf } from "./replay-timeline.mjs";
 import { handMotionPlan } from "./hand-timeline.mjs";
 import { spriteMotionProfile, spriteMotionStyle } from "./sprite-motion.mjs";
 import { pickSpriteHandReaction, dodgeOffsetPx } from "./sprite-reactions.mjs";
+import { floorScaleToFit, previewCells, areaMathLabel } from "./area-layout.mjs";
 
 const $ = id => document.getElementById(id);
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
@@ -55,6 +56,7 @@ let replaySpeed = 1;
 let replayPanelFinished = false;
 
 function currentAction() {
+  if (operation === "square" || operation === "sqrt") return { op: operation };
   if (operation === "multiply" || operation === "divide") return { op: operation, factor };
   return { op: operation, kind, count: amount };
 }
@@ -65,6 +67,7 @@ function roomSummary(r) {
   const parts = [
     r.posX && possessiveCount(r.posX, "dark sprite", "dark sprites"),
     r.negX && possessiveCount(r.negX, "pale sprite", "pale sprites"),
+    r.posX2 && possessiveCount(r.posX2, "square sprite", "square sprites"),
     r.posOne && possessiveCount(r.posOne, "weight", "weights"),
     r.negOne && possessiveCount(r.negOne, "balloon", "balloons")
   ].filter(Boolean);
@@ -74,15 +77,18 @@ function token(kind, i, mini = false, side = "left") {
   if (mini) {
     return '<span class="mini-token ' + kind + '" aria-hidden="true"></span>';
   }
-  if (kind === "posX" || kind === "negX") {
+  if (kind === "posX" || kind === "negX" || kind === "posX2") {
     const profile = spriteMotionProfile(LEVELS[levelIndex].id, side, kind, i);
-    return '<span class="token sprite ' + (kind === "posX" ? "sprite-black" : "sprite-white") +
+    const square = kind === "posX2";
+    const appearance = square ? "sprite-square" : kind === "posX" ? "sprite-black" : "sprite-white";
+    return '<span class="token sprite ' + appearance +
       '" style="' + spriteMotionStyle(profile) + '" title="' +
-      (kind === "posX" ? "A little dark sprite" : "A little pale sprite") + '">' +
+      (square ? "A square x² sprite" : kind === "posX" ? "A little dark sprite" : "A little pale sprite") + '">' +
       '<span class="sprite-ground-shadow"></span>' +
       '<span class="sprite-reaction-shell"><span class="sprite-motion">' +
       '<span class="sprite-feet"></span><span class="sprite-body">' +
-      '<span class="sprite-eyes"><i></i><i></i></span></span>' +
+      '<span class="sprite-eyes"><i></i><i></i></span>' +
+      (square ? '<span class="square-symbol">✦</span>' : "") + '</span>' +
       '</span></span></span>';
   }
   if (kind === "posOne")
@@ -102,7 +108,7 @@ function renderRoom(side, r, groupCount) {
   // sprites are repeatedly destroyed and their bouncing animations restart.
   const signature = LEVELS[levelIndex].id + "|" + side + "|" +
     TOKEN_KINDS.map(key => r[key]).join(":") + "|groups:" + groupCount;
-  if (node.dataset.signature === signature) return;
+  if (node.dataset.signature === signature) { resizeFloor(side); return; }
   node.dataset.signature = signature;
   node.setAttribute("aria-label", (side === "left" ? "West chamber: " : "East chamber: ") + roomSummary(r));
   const total = TOKEN_KINDS.reduce((a, field) => a + r[field], 0);
@@ -125,8 +131,23 @@ function renderRoom(side, r, groupCount) {
       ' identical groups">' + baskets + '</div>';
     return;
   }
-  node.innerHTML = '<div class="items-grid">' + allTokens(r, false, side) + '</div>';
+  node.innerHTML = '<div class="floor-shell"><div class="items-grid floor-track" data-layout="floor">' +
+    allTokens(r, false, side) + '</div></div>' +
+    (total > 14 ? '<span class="floor-count" aria-hidden="true">' + total + ' objects in a row</span>' : "");
+  resizeFloor(side);
 }
+// Scale the entire horizontal row, never wrap it into multiple rows.
+function resizeFloor(side) {
+  const room = $(side + "-items");
+  const track = room.querySelector(".floor-track");
+  if (!track) return;
+  const width = track.scrollWidth || track.getBoundingClientRect().width;
+  const fit = floorScaleToFit(room.clientWidth, width);
+  track.style.setProperty("--floor-scale", fit.toFixed(4));
+}
+window.addEventListener("resize", () => {
+  for (const side of ["left", "right"]) resizeFloor(side);
+});
 function visible() { return override || visibleRooms(state); }
 function currentDifference(shown) {
   return evaluate(shown.left, state.solution) - evaluate(shown.right, state.solution);
@@ -179,7 +200,9 @@ function render() {
     button.setAttribute("aria-pressed", String(button.dataset.kind === kind));
   }
   const grouped = operation === "divide" || operation === "multiply";
-  $("object-picker").hidden = grouped;
+  const geometric = operation === "square" || operation === "sqrt";
+  $("object-picker").hidden = grouped || geometric;
+  $("amount-control").hidden = geometric;
   $("amount-label").textContent = grouped ? "3 · How many groups?" : "3 · How many?";
   $("amount-value").textContent = grouped ? factor : amount;
   $("amount-down").disabled = busy || awaiting || isSolved(state) || (grouped ? factor <= 2 : amount <= 1);
@@ -222,27 +245,106 @@ function render() {
  * The hand descends, interacts, and *while still touching the room* applies the
  * corresponding visual transformation. Only then does it leave the screen.
  */
-function handProp(action) {
+function handProp(action, side) {
+  if (action.op === "square") {
+    const area = areaArrangement(visible()[side], "square");
+    if (area?.symbolic)
+      return '<span class="held-square-press" title="A brass press that shapes a round sprite into a square"></span>';
+    const extras = (area?.cells || 0) - (area?.side || 0);
+    return extras > 0
+      ? '<span class="held-weight"></span><span class="held-count">×' + extras + '</span>'
+      : "";
+  }
+  if (action.op === "sqrt") return "";
   if (action.op === "divide") {
     return '<span class="held-basket" title="A complete basket of objects"></span>';
   }
   if (action.op === "multiply") {
     return '<span class="held-basket held-basket-double" title="A complete group of objects"></span>';
   }
-  const picture = action.kind === "posX" || action.kind === "negX"
-    ? '<span class="held-sprite' + (action.kind === "negX" ? " held-sprite-pale" : "") +
+  const picture = action.kind === "posX" || action.kind === "negX" || action.kind === "posX2"
+    ? '<span class="held-sprite' + (action.kind === "negX" ? " held-sprite-pale" :
+      action.kind === "posX2" ? " held-sprite-square" : "") +
       '"><i></i><i></i></span>'
     : '<span class="held-weight"></span>';
   return picture + (action.count > 1 ? '<span class="held-count">×' + action.count + '</span>' : "");
 }
 function roomOperationText(action, side) {
   const roomName = side === "left" ? "west" : "east";
+  if (action.op === "square" || action.op === "sqrt") {
+    const area = areaArrangement(visible()[side], action.op);
+    if (action.op === "square") {
+      return area?.symbolic
+        ? "The hand builds a matching column in the " + roomName +
+          " room, fills the area and presses round sprites into square ones!"
+        : "The hand matches the " + area.side + "-weight row with a column and fills a " +
+          area.side + " × " + area.side + " square of weights in the " + roomName + " room!";
+    }
+    return area?.symbolic
+      ? "The hand keeps one side of the square in the " + roomName +
+        " room and squishes square sprites back into round ones!"
+      : "The hand makes a " + area.side + " × " + area.side + " square from " + area.cells +
+        " weights, then keeps one side (" + area.side + " weights) in the " + roomName + " room!";
+  }
   if (action.op === "divide") return "The hand sorts the " + roomName + " room into " + action.factor + " equal baskets...";
   if (action.op === "multiply") return "The hand makes " + action.factor + " complete copies in the " + roomName + " room...";
-  const nouns = action.kind === "posX" ? (action.count === 1 ? "sprite" : "sprites") :
+  const nouns = action.kind === "posX2" ? (action.count === 1 ? "square sprite" : "square sprites") :
+    action.kind === "posX" ? (action.count === 1 ? "sprite" : "sprites") :
     (action.count === 1 ? "weight" : "weights");
   return "The hand " + (action.op === "remove" ? "lifts away " : "places ") +
     action.count + " " + nouns + " in the " + roomName + " room...";
+}
+/**
+ * A visual multiplication array, not a change in the algebra. The hand builds
+ * the horizontal row, matching vertical column, then fills the interior.
+ * Taking roots reverses this: the completed square loses every cell except
+ * the first side. Only the later hand contact commits the actual math.
+ */
+function showAreaPreview(side, action) {
+  const preview = $(side + "-area-preview");
+  const arrangement = areaArrangement(visible()[side], action.op);
+  if (!arrangement || arrangement.side < 1) return;
+  const cells = previewCells(arrangement).map(cell => {
+    const symbol = arrangement.symbolic ? "✦" : "●";
+    return '<span class="area-cell role-' + cell.role +
+      (arrangement.symbolic ? " area-symbolic" : "") +
+      '" data-cell-index="' + cell.index + '" data-cell-row="' + cell.row +
+      '" data-cell-col="' + cell.col + '" style="--cell-delay:' + cell.delay +
+      'ms">' + symbol + '</span>';
+  }).join("");
+  const demonstration = arrangement.symbolic
+    ? (action.op === "square" ? "ROUND → SQUARE" : "SQUARE → ROUND")
+    : (action.op === "square"
+      ? arrangement.side + " × " + arrangement.side + " → " + arrangement.cells
+      : arrangement.cells + " → KEEP " + arrangement.side);
+  preview.dataset.operation = action.op;
+  preview.dataset.phase = "arranging";
+  preview.style.setProperty("--area-side", arrangement.side);
+  preview.setAttribute("aria-label", areaMathLabel(arrangement) + ", a " +
+    arrangement.side + " by " + arrangement.side + " square");
+  preview.innerHTML = '<span class="area-math">' + demonstration + '</span>' +
+    '<div class="area-guide"><strong>' + (action.op === "square" ? "ROW → COLUMN → FILL" :
+      "FULL SQUARE → KEEP ONE SIDE") + '</strong></div>' +
+    '<div class="area-grid" style="--area-side:' + arrangement.side + '">' + cells + '</div>' +
+    '<span class="area-extract-label">' + (action.op === "square" ? "SQUARE COMPLETED" :
+      "ONE SIDE REMAINS") + '</span>';
+  preview.hidden = false;
+  $(side + "-chamber").classList.add("area-active");
+}
+function finishAreaPreview(side, action) {
+  const preview = $(side + "-area-preview");
+  if (preview.hidden) return;
+  preview.dataset.phase = "result";
+  $(side + "-chamber").classList.add(action.op === "square" ?
+    "area-after-square" : "area-after-sqrt");
+}
+function clearAreaPreview(side) {
+  const preview = $(side + "-area-preview");
+  preview.hidden = true;
+  preview.innerHTML = "";
+  preview.removeAttribute("data-phase");
+  const chamber = $(side + "-chamber");
+  chamber.classList.remove("area-active", "area-after-square", "area-after-sqrt");
 }
 function animateClassFrame() {
   return new Promise(resolve => {
@@ -258,10 +360,15 @@ async function handAct(side, action, applyAtContact) {
   const scene = $("scene").getBoundingClientRect();
   const items = $(side + "-items").getBoundingClientRect();
   const motion = handMotionPlan(action, reducedMotion);
+  const areaEffect = action.op === "square" || action.op === "sqrt"
+    ? areaArrangement(visible()[side], action.op) : null;
 
   // Find the actual geometry of this room at any viewport width. The updated
   // art's fingertips reach ~95% of its box (not 78% as in the original outline).
-  const centreX = items.left + items.width / 2 - scene.left;
+  // Keep the area diagram beside the hand, not hidden beneath its palm.
+  // The hand still reaches the floor and traces the nearby square in view.
+  const centreX = items.left + items.width *
+    (action.op === "square" || action.op === "sqrt" ? .68 : .5) - scene.left;
   hand.style.left = centreX + "px";
   const restingTip = hand.offsetTop + hand.offsetHeight * 0.95;
   const targetTip = items.bottom - scene.top - Math.min(32, items.height * 0.20);
@@ -290,7 +397,7 @@ async function handAct(side, action, applyAtContact) {
   const caption = $("action-caption");
   caption.textContent = roomOperationText(action, side);
   caption.hidden = false;
-  cargo.innerHTML = handProp(action);
+  cargo.innerHTML = handProp(action, side);
   cargo.classList.remove("sprite-captured");
   cargo.hidden = !motion.cargoOnApproach;
   hand.classList.remove("approaching", "reaching", "grasping", "lifting");
@@ -322,8 +429,13 @@ async function handAct(side, action, applyAtContact) {
           hand.dataset.phase = motion.placing ? "carry" : "aim";
           if (reaction === "dodge") hand.classList.add("tracking-sprite");
           break;
+        case "arrange":
+          showAreaPreview(side, action);
+          hand.classList.add("arranging");
+          hand.dataset.phase = action.op === "square" ? "aim" : "reach";
+          break;
         case "grip":
-          hand.classList.remove("tracking-sprite");
+          hand.classList.remove("tracking-sprite", "arranging");
           hand.classList.add("grasping");
           hand.dataset.phase = "grip";
           if (reaction) actor.dataset.reactPhase = "caught";
@@ -333,10 +445,13 @@ async function handAct(side, action, applyAtContact) {
           // covering the objects, and the other room has not been touched yet.
           applyAtContact();
           applied = true;
+          if (action.op === "square" || action.op === "sqrt") finishAreaPreview(side, action);
           target.classList.add("hand-contact");
-          cargo.hidden = motion.placing;
+          cargo.hidden = motion.placing || action.op === "sqrt";
           if (reaction) cargo.classList.add("sprite-captured");
-          hand.dataset.phase = motion.placing ? "release" : "carry";
+          hand.dataset.phase = action.op === "square" ? (areaEffect?.symbolic ? "pound" : "release") :
+            action.op === "sqrt" ? (areaEffect?.symbolic ? "squish" : "carry") :
+              motion.placing ? "release" : "carry";
           break;
         case "lift":
           hand.classList.add("lifting");
@@ -354,7 +469,7 @@ async function handAct(side, action, applyAtContact) {
     }
   } finally {
     // No animation state should leak into the next room or next level.
-    hand.classList.remove("approaching", "lifting", "grasping", "reaching", "acting", "tracking-sprite");
+    hand.classList.remove("approaching", "lifting", "grasping", "reaching", "acting", "tracking-sprite", "arranging");
     hand.dataset.phase = "rest";
     target.classList.remove("hand-target", "hand-contact");
     if (actor) {
@@ -364,6 +479,7 @@ async function handAct(side, action, applyAtContact) {
       actor.style.removeProperty("--dodge-shift");
     }
     hand.style.removeProperty("--hand-chase");
+    clearAreaPreview(side);
     cargo.classList.remove("sprite-captured");
     cargo.hidden = true;
     caption.hidden = true;
@@ -376,7 +492,9 @@ async function finishTurn() {
     // The student must be able to SEE the final physical balance before
     // the comic-book retrospective covers the laboratory.
     $("scene").classList.add("solved-scene");
-    $("feedback").textContent = "One sprite, and its matching weights. The rooms are balanced!";
+    $("feedback").textContent = state.goal === "square"
+      ? "A complete area! The x² sprite matches the squared number of weights."
+      : "One sprite, and its matching weights. The rooms are balanced!";
     await sleep(reducedMotion ? 1100 : 1800);
     $("scene").classList.remove("solved-scene");
     showReplay();
@@ -447,18 +565,22 @@ function startLevel(index) {
   replayEntries = [];
   levelIndex = (index + LEVELS.length) % LEVELS.length;
   state = initialState(LEVELS[levelIndex]);
-  operation = (levelIndex === 1 || levelIndex === 4) ? "divide" : "remove";
+  operation = LEVELS[levelIndex].startingOperation ||
+    ((levelIndex === 1 || levelIndex === 4) ? "divide" : "remove");
   kind = "posOne";
   amount = levelIndex === 0 ? 2 : levelIndex === 2 ? 4 : levelIndex === 4 ? 2 : 1;
   factor = levelIndex === 1 ? 3 : levelIndex === 4 ? 5 : 2;
   override = null; groups = { left: 0, right: 0 };
   busy = false;
   // Clear any half-finished visual state when changing levels.
-  $("hand").classList.remove("approaching", "reaching", "grasping", "lifting", "acting", "tracking-sprite");
+  $("hand").classList.remove("approaching", "reaching", "grasping", "lifting", "acting", "tracking-sprite", "arranging");
   $("hand").style.removeProperty("--hand-chase");
   $("hand-cargo").classList.remove("sprite-captured");
   $("hand").dataset.phase = "rest";
-  for (const side of ["left", "right"]) $(side + "-chamber").classList.remove("hand-target", "hand-contact");
+  for (const side of ["left", "right"]) {
+    $(side + "-chamber").classList.remove("hand-target", "hand-contact");
+    clearAreaPreview(side);
+  }
   $("hand-cargo").hidden = true;
   $("action-caption").hidden = true;
   $("scene").classList.remove("solved-scene");

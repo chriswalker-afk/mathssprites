@@ -134,6 +134,7 @@ background-image:repeating-linear-gradient(90deg,transparent 0 66px,rgba(0,0,0,.
   background:radial-gradient(circle at 30% 20%,#444c4b,#111516 70%);
   border-radius:46%;box-shadow:0 0 0 2px #4a4d47}
 .held-sprite-pale{background:radial-gradient(circle at 30% 20%,#f8f3e9,#b9c4c0 73%);box-shadow:0 0 0 2px #a5b6b4}
+.held-sprite-square{border-radius:7px;background:radial-gradient(circle at 30% 20%,#58736b,#233a35 80%);box-shadow:0 0 0 3px #c9a878}
 .held-sprite-pale i{background:#2c3532}
 .hand-cargo.sprite-captured .held-sprite{animation:held-sprite-squirm .35s ease-in-out infinite alternate}
 @keyframes held-sprite-squirm{
@@ -182,9 +183,24 @@ background-image:repeating-linear-gradient(90deg,transparent 0 66px,rgba(0,0,0,.
 .room-name{position:absolute;left:50%;transform:translateX(-50%);top:24px;white-space:nowrap;z-index:1;color:#d9c7a6;font-size:.62rem;letter-spacing:.22em;text-shadow:0 2px 3px #121b1d}
 .room-index{color:#a58d6a;margin-left:6px}
 .room-items{position:absolute;left:4%;right:4%;bottom:30px;height:180px;display:flex;justify-content:center;align-items:flex-end;z-index:4;overflow:visible}
-.items-grid{display:flex;flex-wrap:wrap;align-content:flex-end;justify-content:center;align-items:end;gap:5px 7px;max-width:94%;max-height:100%;padding-bottom:0}
-.room-items.crowded .items-grid{gap:2px 4px}
-.room-items.crowded .token{transform:scale(.8);margin:-4px}
+/* Outside deliberate area operations, every object rests on ONE floor row.
+   The whole track is scaled when necessary, never wrapped or stacked. */
+.floor-shell{position:absolute;inset:0;display:flex;align-items:flex-end;justify-content:center;
+  pointer-events:none}
+.items-grid.floor-track{position:relative;width:max-content;max-width:none;flex:none;
+  height:max-content;display:flex;flex-wrap:nowrap;align-items:flex-end;justify-content:center;
+  gap:6px;padding:0;white-space:nowrap;
+  transform:scale(var(--floor-scale,1));transform-origin:50% 100%;
+  transition:opacity .3s ease}
+.items-grid.floor-track>.token{flex:none;margin:0;transform:none}
+.floor-count{position:absolute;bottom:68px;left:50%;transform:translateX(-50%);
+  white-space:nowrap;font:italic .67rem Georgia,serif;letter-spacing:.02em;color:#decba1;
+  text-shadow:0 2px 5px #000;pointer-events:none}
+.area-active .room-items{opacity:.16;transition:opacity .2s ease}
+/* Hide the old row while the grid is arranged, but REVEAL the result at the
+   exact contact moment so children can see the creature shape change. */
+.area-active.area-after-square .room-items,
+.area-active.area-after-sqrt .room-items{opacity:1}
 .room-empty{font:italic .8rem Georgia,serif;color:rgba(215,203,166,.45);padding-bottom:15px}
 .room-floor{position:absolute;bottom:0;left:0;right:0;height:31px;background:
  repeating-linear-gradient(90deg,transparent 0 30px,#2d251e 31px 33px),
@@ -204,6 +220,92 @@ background-image:repeating-linear-gradient(90deg,transparent 0 66px,rgba(0,0,0,.
 .workbench{position:absolute;bottom:0;left:0;right:0;height:46px;z-index:1;background:repeating-linear-gradient(90deg,transparent 0 165px,#2b1e1a 166px 169px),linear-gradient(#7f5b3c,#32231f 80%);border-top:9px solid #a68456;box-shadow:0 -7px 28px #0009}
 .scene-caption{position:absolute;z-index:8;bottom:15px;left:29px;font:italic .81rem Georgia,serif;letter-spacing:.035em;color:#e9d8b5;text-shadow:0 2px 3px #1b1715}
 .scene-caption.unbalanced{color:#ffdca8}
+
+/* The hand temporarily turns a FLOOR ROW into a visual n by n array.
+   Row appears, matching column follows, then interior cells fill. On a
+   principal root the interior disappears, leaving exactly one side. */
+.area-preview{position:absolute;z-index:7;left:2%;right:51%;bottom:33px;height:203px;
+  display:flex;align-items:center;justify-content:flex-end;flex-direction:column;gap:7px;
+  pointer-events:none;filter:drop-shadow(0 4px 7px #0009)}
+.area-math{padding:4px 8px;border:1px solid #ad996e;border-radius:8px;background:#263330ed;
+  color:#f5ddb1;font:700 .81rem Georgia,serif;text-align:center;white-space:normal;max-width:100%}
+.area-preview .area-guide{display:flex;gap:7px;align-items:center;color:#d3bb92;
+  font:italic .69rem Georgia,serif;white-space:normal;text-align:center}
+.area-preview .area-guide strong{color:#f4d9a5}
+.area-grid{width:min(94%,132px,calc(var(--area-side,3) * 41px));
+  aspect-ratio:1;max-width:132px;max-height:132px;flex:none;display:grid;
+  grid-template-columns:repeat(var(--area-side,3),minmax(0,1fr));
+  grid-template-rows:repeat(var(--area-side,3),minmax(0,1fr));
+  gap:4px;padding:5px;border:2px dashed rgba(220,196,141,.85);border-radius:7px;
+  background:radial-gradient(ellipse,#6a6f56a1,#293a36d9);
+  box-shadow:0 0 0 3px #18232096,inset 0 0 17px #0006}
+.area-cell{min-width:0;min-height:0;border:1px solid #f4d9a9;border-radius:7px;
+  background:linear-gradient(130deg,#d3b786,#86613c);box-shadow:inset 1px 1px #f1dab0a8,0 1px 3px #0009;
+  display:flex;align-items:center;justify-content:center;opacity:0;
+  transform:scale(.4);font:700 clamp(.5rem,.8vw,.85rem) Georgia,serif;color:#30261c}
+.area-cell.area-symbolic{border-radius:5px;background:linear-gradient(135deg,#50685d,#203532);
+  color:#f5dfaf;box-shadow:inset 0 0 0 2px #caa977,0 2px 3px #0009}
+.area-preview[data-phase="arranging"] .area-cell{
+  animation:area-cell-enter .31s cubic-bezier(.22,.86,.24,1.2) var(--cell-delay,0ms) both}
+.area-preview[data-phase="arranging"] .area-cell.role-row{
+  box-shadow:inset 0 0 0 2px #fae3af,0 0 10px #f9d4859c}
+.area-preview[data-phase="arranging"] .area-cell.role-column{
+  box-shadow:inset 0 0 0 2px #e5d2ad,0 0 10px #d9ac6888}
+.area-preview[data-phase="result"] .area-cell{opacity:1;transform:scale(1)}
+.area-preview[data-phase="result"][data-operation="sqrt"] .area-cell:not(.role-row){
+  animation:area-cell-disappear .48s ease-in both}
+.area-preview[data-phase="result"][data-operation="sqrt"] .area-cell.role-row{
+  animation:area-side-kept .58s ease-in-out both}
+.area-preview[data-phase="result"][data-operation="square"] .area-cell{
+  animation:area-cells-complete .48s ease-out both}
+.area-extract-label{opacity:0;min-height:16px;color:#f8e1b3;font:bold .68rem Georgia,serif;letter-spacing:.06em}
+.area-preview[data-phase="result"] .area-extract-label{animation:area-label-in .45s .12s both}
+@keyframes area-cell-enter{from{opacity:0;transform:translateY(-12px) scale(.4)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes area-cell-disappear{from{opacity:1;transform:scale(1)}to{opacity:0;transform:scale(.18) translateY(-15px)}}
+@keyframes area-side-kept{0%,100%{opacity:1;transform:scale(1)}50%{opacity:1;transform:scale(1.13);filter:brightness(1.45)}}
+@keyframes area-cells-complete{from{filter:brightness(1.7);transform:scale(.93)}to{filter:brightness(1);transform:scale(1)}}
+@keyframes area-label-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+/* The illustrated hand visibly presses the round x into a square x² and
+   pinches/squishes the reverse transformation. */
+.giant-hand.arranging .hand-art,.giant-hand.arranging .hand-cargo{
+  animation:hand-trace-area 1.13s cubic-bezier(.25,.7,.3,1) both}
+@keyframes hand-trace-area{
+  0%{transform:translate(-18px,4px) rotate(-9deg)}
+  24%{transform:translate(19px,4px) rotate(5deg)}
+  43%{transform:translate(19px,-21px) rotate(-3deg)}
+  62%{transform:translate(-18px,-21px) rotate(5deg)}
+  81%{transform:translate(10px,-8px) rotate(-4deg)}
+  100%{transform:translate(0,0) rotate(0deg)}
+}
+.giant-hand[data-phase="pound"] .hand-art{animation:hand-area-pound .46s cubic-bezier(.25,.6,.34,1) both}
+.giant-hand[data-phase="squish"] .hand-art{animation:hand-area-squish .48s ease-in-out both}
+@keyframes hand-area-pound{
+  0%{transform:translateY(-13px) rotate(-7deg)}
+  44%{transform:translateY(17px) rotate(5deg) scaleY(.93)}
+  69%{transform:translateY(-4px) rotate(-2deg)}
+  100%{transform:translateY(0) rotate(0)}
+}
+@keyframes hand-area-squish{
+  0%{transform:scaleX(1.04)}
+  38%{transform:scaleX(.86) scaleY(1.07) rotate(-4deg)}
+  65%{transform:scaleX(.93) rotate(3deg)}
+  100%{transform:scale(1)}
+}
+.held-square-press{position:absolute;left:11px;top:8px;width:42px;height:35px;
+  background:linear-gradient(120deg,#e2c28c,#765332);border:3px solid #5c432d;border-radius:5px;
+  box-shadow:inset 0 2px #f7e4bb,0 3px 4px #000a}
+.held-square-press:after{content:"";position:absolute;top:-24px;left:13px;width:12px;height:25px;
+  border-radius:4px;background:linear-gradient(90deg,#735138,#b99162,#69432e);border:1px solid #573e29}
+.held-square-press:before{content:"✦";position:absolute;inset:6px 0 0;text-align:center;
+  font:700 .76rem Georgia,serif;color:#4e3424}
+.mini-token.posX2{border-radius:3px!important;box-shadow:inset 0 0 0 1.5px #c5a877!important}
+@media(max-width:600px){
+  .area-preview{left:1%;right:49%;bottom:21px;height:146px;gap:3px}
+  .area-grid{width:min(94%,100px,calc(var(--area-side,3) * 41px));max-width:100px;max-height:100px;gap:2px;padding:3px}
+  .area-math{font-size:.58rem;padding:3px 5px}
+  .area-preview .area-guide{font-size:.55rem}
+  .area-extract-label{font-size:.53rem;min-height:12px}
+}
 
 /* Actors and props */
 .token{position:relative;flex:none;display:inline-block;vertical-align:bottom}
@@ -288,6 +390,20 @@ background-image:repeating-linear-gradient(90deg,transparent 0 66px,rgba(0,0,0,.
 .sprite-white .sprite-body:before{background:repeating-conic-gradient(#e7ece8 0deg 16deg,transparent 18deg 27deg)}
 .sprite-white .sprite-eyes i{background:#2e3436;box-shadow:0 0 2px #59605c}
 .sprite-white .sprite-eyes i:after{background:#f4f4e9}
+/* The quadratic creature is genuinely a square, but keeps the same lively
+   hop, independent wiggle, blinking eyes and floor shadow as its round cousin. */
+.sprite-square .sprite-body{border-radius:10px;background:radial-gradient(circle at 24% 15%,#5b6961,#1a2a28 80%);
+  box-shadow:inset -4px -4px 6px #050a09a8,0 0 0 2px #c8aa75,0 0 12px #cfb9873d}
+.sprite-square .sprite-body:before{border-radius:9px;background:repeating-conic-gradient(from 12deg,#36443d 0deg 22deg,transparent 24deg 35deg)}
+.sprite-square .sprite-body:after{border-radius:5px}
+.square-symbol{position:absolute;bottom:3px;left:50%;transform:translateX(-50%);
+  font:bold .68rem Georgia,serif;color:#edd3a3;text-shadow:0 2px 2px #000;white-space:nowrap;z-index:5}
+.area-after-square .sprite-square .sprite-body{animation:square-form .45s cubic-bezier(.2,.9,.2,1) both!important}
+.area-after-sqrt .sprite-black .sprite-body{animation:round-form .45s cubic-bezier(.2,.9,.2,1) both!important}
+.area-after-square .sprite-square .sprite-body,
+.area-after-sqrt .sprite-black .sprite-body{animation-play-state:running!important}
+@keyframes square-form{0%{border-radius:50%;transform:scale(1.1,.7)}50%{border-radius:21%;transform:scale(.87,1.17)}100%{border-radius:10px;transform:scale(1)}}
+@keyframes round-form{0%{border-radius:10px;transform:scale(1.2,.76)}55%{border-radius:38%;transform:scale(.88,1.12)}100%{border-radius:50%;transform:scale(1)}}
 @keyframes sprite-hop{
   0%,5%,70%,94%,100%{transform:translateY(0) scale(1,1)}
   9%{transform:translateY(2px) scale(1.15,.8)}
@@ -382,6 +498,7 @@ legend{margin-bottom:12px;padding:0}
 .item-button{display:inline-flex;gap:9px;align-items:center;min-width:100px;justify-content:center}
 .tiny-weight{width:15px;height:15px;background:linear-gradient(100deg,#977044,#e9c890,#80603e);clip-path:polygon(25% 10%,75% 10%,100% 100%,0 100%)}
 .tiny-sprite{font-size:9px;letter-spacing:2px;text-align:center;line-height:22px;color:white;width:25px;height:25px;background:#151819;border-radius:48%;box-shadow:0 0 0 2px #353e3b}
+.tiny-square-sprite{border-radius:5px;color:#f0d6a0;background:#23332f;box-shadow:0 0 0 2px #c9a975;font:700 11px/25px Georgia,serif}
 .amount-control{flex:0 0 110px}
 .stepper{display:flex;align-items:center;margin-top:12px;border:1px solid #647066;border-radius:9px;overflow:hidden;height:45px}
 .stepper button{border:0;background:#33423e;color:#e9d6b9;flex:1;font-size:1.2rem;height:100%}
@@ -532,8 +649,9 @@ legend{margin-bottom:12px;padding:0}
   .room-name{top:19px;font-size:.48rem;letter-spacing:.09em}
   .room-window{left:5%;top:40px;width:30px;height:49px;border-width:3px}
   .room-items{height:124px;bottom:17px}
-  .items-grid .token{transform:scale(.58);margin:-8px}
-  .items-grid{gap:0}
+  .items-grid.floor-track>.token{transform:none;margin:0}
+  .items-grid.floor-track{gap:4px}
+  .floor-count{font-size:.55rem;bottom:48px}
   .room-action{font-size:.52rem;padding:4px 7px}
   .scale-pan{height:18px}
   .scale-beam{top:296px;height:20px}

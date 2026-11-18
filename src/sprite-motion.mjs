@@ -26,7 +26,7 @@ function vary(seed, salt, limit) {
 export function spriteMotionProfile(levelId, side, kind, index) {
   if (typeof levelId !== "string" || !levelId ||
     typeof side !== "string" || !side ||
-    !["posX", "negX"].includes(kind) ||
+    !["posX", "negX", "posX2"].includes(kind) ||
     !Number.isInteger(index) || index < 0)
     throw new TypeError("Sprite animation requires a valid, stable identity");
 
