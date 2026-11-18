@@ -86,6 +86,9 @@ test("manual mode does not complete the puzzle after only one room is changed", 
 test("Motion: on overrides the system's reduced-motion preference", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.reload();
+  // Even with an OS-level reduced-motion preference, first visit animates.
+  await expect(page.locator("#motion-toggle")).toHaveText("Motion: on");
+  await page.locator("#motion-toggle").click();
   await expect(page.locator("#motion-toggle")).toHaveText("Motion: reduced");
   await page.locator("#motion-toggle").click();
   await expect(page.locator("#motion-toggle")).toHaveText("Motion: on");
