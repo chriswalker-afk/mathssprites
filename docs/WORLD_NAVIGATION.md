@@ -4,10 +4,10 @@
 
 1. Home: a contextual introduction, Play/Continue, World Select, How to Play and Settings.
 2. World Select: four thematic laboratories. Only World 1 is enabled. Future worlds are intentionally visible but inaccessible.
-3. World 1 Stage Select (PR18): Guided Balance (playable), Independent Balance (planned), Algebra Apprentice (planned) and Equation Workshop (planned).
-4. Stage 1 Level Select: five chapters with four fully implemented slots each (20 playable), showing ready / completed / locked according to progress.
-5. Play: original two-room balancing scene with Guided Mirror **fixed** for Stage 1. The player still chooses operations, objects and amounts.
-6. Success: actual transactions replay as comic panels with handwritten algebra. After Level 20 the player returns to Stage Select, not a falsely unlocked future stage.
+3. World 1 Stage Select (PR18–19): Guided Balance (20 playable), Independent Balance (16 playable after Stage 1 mastery, or through teacher access), Algebra Apprentice (planned) and Equation Workshop (planned).
+4. Stage-specific level selection: five four-level chapters in Guided Balance (20 levels), four four-level chapters in Independent Balance (16 levels). Progress and level unlocking are independent.
+5. Play: the original two-room scene with Guided Mirror **fixed** for Stage 1 and Your Turn **fixed** for Stage 2. The independent hand genuinely tips the scale after the first move; only the matched second move commits the equation step.
+6. Success: committed hand transactions replay as comic panels with handwritten algebra. The final level of either stage returns to Stage Select.
 
 ### World definitions
 
@@ -56,8 +56,8 @@ The World 1 campaign now has five distinct chapter visual themes, optional first
 
 See [PR17_EXPERIENCE.md](PR17_EXPERIENCE.md) for the intended walkthrough and browser QA criteria.
 
-## PR18 — Stage-first World 1
+## PR18–19 — Three-stage World 1
 
-World 1 now presents Stage 1 · Guided Balance with the original 20 chapters and saved progress. Stage 2 · Independent Balance (16 levels), Stage 3 · Algebra Apprentice (12 levels), and the Equation Workshop are clear, inaccessible placeholders. The Stage 1 hand always acts on both rooms, even if code tries to switch the hidden selector. See [WORLD1_STAGES.md](WORLD1_STAGES.md).
+PR18 introduced the stage map and fixed automatic mirroring in Stage 1. PR19 adds all **16 Independent Balance** puzzles, the separate-room hand tutorial, real provisional scale tipping, stage-specific progress and Stage 2 unlocking (Stage 1 mastered or teacher access). The unfinished Stage 3 and Equation Workshop remain clearly unavailable. See [WORLD1_STAGES.md](WORLD1_STAGES.md) and [STAGE2_CAMPAIGN.md](STAGE2_CAMPAIGN.md).
 
-**Next: PR19.** Add the 16 Independent Balance puzzles, turn the current manual hand behaviour into Stage 2's dedicated control scheme, teach matching actions on each side, and validate every level. Worlds 2–4 remain separate future mathematics.
+**Next: PR20.** Build the notebook-first algebra editor and the validated transformation-to-sprite replay used in Stage 3. PR21 will add twelve Stage 3 puzzles; PR22 will develop the custom Equation Workshop. Worlds 2–4 remain distinct, later mathematical work.
