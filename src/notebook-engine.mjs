@@ -8,7 +8,7 @@
  * movements. No eval, MathML parser, or user-supplied executable expressions.
  */
 import {
-  initialState, perform, isSolved, undo, canonical, evaluate,
+  initialState, perform, isSolved, undo, canonical,
   equation, validInitialLevel, algebraOperation
 } from "./engine.mjs";
 
@@ -111,8 +111,8 @@ export function tryNotebookLine(session,text) {
   if(!parsed.ok)return parsed;
   if(notebookStateMatches(parsed,session.state))
     return error("unchanged","That line rearranges the same objects. Try an operation on both sides.");
-  if(evaluate(parsed.left,session.level.solution)!==
-     evaluate(parsed.right,session.level.solution))
+  const atSolution=side=>side.x*session.level.solution+side.constant;
+  if(atSolution(parsed.left)!==atSolution(parsed.right))
     return error("not-equivalent","That equation is not balanced. Check that you changed both sides equally.");
   for(const action of CANDIDATES){
     const performed=perform(session.state,action,"auto");
