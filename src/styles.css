@@ -266,13 +266,25 @@ legend{margin-bottom:12px;padding:0}
 .paper-line{min-height:76px;padding:6px 0 11px;margin-bottom:7px;border-bottom:1px dashed rgba(110,90,61,.26);display:flex;flex-direction:column;justify-content:center}
 .operation-line{font-size:.79rem;font-style:italic;color:#806c50;margin-bottom:6px}
 .equation-line{display:block;font:clamp(1.25rem,2.3vw,1.9rem)/1.25 Georgia,serif;letter-spacing:.015em;color:#292f30;white-space:nowrap}
-.new-ink .equation-line,.new-ink .operation-line{animation:ink-reveal 1.15s steps(24,end) both}
-.new-ink .operation-line{animation-duration:.8s}
 .answer-line{display:inline-block;font-weight:700;color:#214a43;border-bottom:3px solid #587e6b;width:max-content;padding-right:10px}
-@keyframes ink-reveal{from{clip-path:inset(0 100% 0 0);opacity:.5}to{clip-path:inset(0 0 0 0);opacity:1}}
-.pencil-icon{position:absolute;left:20px;top:160px;font-size:2.5rem;color:#3f4140;pointer-events:none;transform:rotate(-25deg);filter:drop-shadow(2px 2px 1px #0004)}
-.pencil-icon.writing{animation:pencil-write 1.25s ease-in-out both}
-@keyframes pencil-write{0%{transform:translateX(0) translateY(-5px) rotate(-25deg);opacity:0}12%{opacity:1}45%{transform:translateX(65px) translateY(7px) rotate(-18deg)}75%{transform:translateX(140px) translateY(2px) rotate(-22deg)}100%{transform:translateX(175px) translateY(-7px) rotate(-25deg);opacity:0}}
+/* Every character has a reserved space, but is invisible until the pencil
+   reaches it. This deliberately does not reveal whole lines at once. */
+.ink-glyph{display:inline-block;white-space:pre;opacity:0}
+.ink-glyph.written{opacity:1;animation:ink-stroke .16s steps(4,end) both}
+@keyframes ink-stroke{from{clip-path:inset(0 100% 0 0);opacity:.65}to{clip-path:inset(0 0 0 0);opacity:1}}
+.paper-line .answer-line:not(.complete){border-bottom-color:transparent}
+.writing-status{font:italic .79rem Georgia,serif;color:#8f7955;margin-bottom:10px;min-height:18px}
+.pencil-icon{position:absolute;z-index:9;left:20px;top:160px;width:30px;height:70px;pointer-events:none;
+  transform:rotate(29deg);transform-origin:50% 100%;
+  transition:left .16s linear,top .16s linear,opacity .15s ease;
+  filter:drop-shadow(3px 4px 2px #0006)}
+.pencil-icon svg{height:100%;width:100%;overflow:visible}
+.pencil-icon.writing{animation:pencil-nib .22s ease-in-out infinite alternate}
+@keyframes pencil-nib{from{transform:rotate(26deg)}to{transform:rotate(32deg)}}
+.replay-paused .pencil-icon.writing,.replay-paused .mini-stage *{animation-play-state:paused!important}
+.paper-page .pencil-lines{z-index:1}
+.sr-only{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;
+  overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
 .journal-footer{margin-top:28px;padding-top:15px;border-top:2px solid #9d8c70;font:italic .85rem/1.5 Georgia,serif;color:#776345}
 .replay-toolbar{padding:13px 19px;border-top:1px solid #786648;background:#252e2d;display:flex;justify-content:space-between;align-items:center;gap:12px}
 .replay-transport,.replay-end-actions{display:flex;align-items:center;gap:7px}
@@ -280,6 +292,8 @@ legend{margin-bottom:12px;padding:0}
 .replay-transport button:hover:not(:disabled){background:#53655a}
 .replay-transport button:first-child,.replay-transport button:nth-child(3){font-size:1.6rem;line-height:1;padding:0 15px}
 .replay-progress{color:#e0c89a;font-size:.77rem;white-space:nowrap}
+.replay-speed{display:flex;align-items:center;gap:8px;color:#d5c8ad;font-size:.7rem;white-space:nowrap}
+.replay-speed select{min-height:36px;background:#394542;color:#eee3d3;border:1px solid #797762;border-radius:6px;padding:5px 8px;cursor:pointer}
 
 /* Adaptability */
 @media(max-width:1100px){
@@ -372,7 +386,10 @@ legend{margin-bottom:12px;padding:0}
   .paper-page h3{font-size:1.15rem;margin:9px 0}
   .paper-line{min-height:57px;margin-bottom:1px}
   .equation-line{font-size:1.15rem}
-  .pencil-icon{display:none}
+  .pencil-icon{width:22px;height:53px}
+  .writing-status{font-size:.65rem;margin-bottom:4px}
+  .replay-speed{font-size:.65rem;gap:4px}
+  .replay-speed select{min-height:34px;padding:4px}
   .replay-toolbar{padding:8px;flex-wrap:wrap}
   .replay-progress{order:3;width:100%;text-align:center}
   .replay-transport button{padding:7px;font-size:.74rem}
