@@ -43,7 +43,7 @@ test("the room visuals have grouping, hand and responsive style rules", () => {
   assert.match(css, /max-width:600px/);
 });
 test("fifth level really exercises a divide-by-five followed by subtraction", () => {
-  assert.equal(LEVELS.length, 10);
+  assert.equal(LEVELS.length, 13);
   assert.equal(LEVELS[4].left.posX, 5);
   assert.equal(LEVELS[4].left.posOne, 10);
   assert.equal(LEVELS[4].right.posOne, 20);

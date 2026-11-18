@@ -3,7 +3,7 @@
 ## Mathematical truth beneath the toys
 There is **one canonical algebra engine**, shared by Guided Mirror, Your Turn, the balance needle, the hand's preview, the comic panels and the pencil's symbolic notation.
 
-The **first five playable puzzles** use one unknown with nonnegative integer coefficients and constants and a uniquely solvable positive integer answer. **Design the engine for signed terms from the start** so the later white-sprite and balloon chapters do not require changing what an operation means. Fractions and extra variables are separate later features.
+The introductory balancing and area puzzles use one unknown with nonnegative object counts and a positive integer answer. Chapters 11–13 add explicit signed-token modes: black sprite +x, white sprite −x, brass weight +1, and balloon −1. These **signed quantities do not change the meaning of an operation**. Fractions and negative values of the unknown x remain separate later features.
 
 The equation is never shown during play. The engine holds it regardless.
 
@@ -137,3 +137,18 @@ Maths invariant for any a,b nonnegative integers: the square's cell total is a²
 Under the stated x≥0 condition, sqrt((ax+b)²)=ax+b because ax+b≥0. In the unrestricted real domain the result is |ax+b|. Chapters 9 and 10 use x=1, so 2x+3=5 and 4x²+12x+9=25 stay safely inside the limit. The new area-building chapter has an explicit goal target, so a victory cannot be triggered before the four interior regions are completed. The square-root chapter continues with ordinary subtract/divide to reach x=1.
 
 Atomicity and accessibility: a hand beat called contact is still the ONE mathematical mutation. During the frame, edge and four filling stages the box is a UI-only preview, and the opposite room is unchanged. Undo, manual mode, the scale needle, and the pencil-written algebra recap read only committed engine state. Reduced motion compresses the same stages without losing the information.
+
+
+## PR12: lesson-scoped positive or signed Maths mode
+
+A level may specify quantityMode positive or signed. The first ten chapters default to positive; signed chapters 11–13 explicitly require signed. The user may switch an introductory puzzle into Signed mode for experimentation; switching modes restarts it and clears any pending hand action/history. A signed level cannot be switched to Positive while its opening state contains negative objects.
+
+The pure engine refuses add/remove actions targeting white sprites (negX) or balloons (negOne) in positive-only mode, even if a caller bypasses the visual control. Rendering hides these signed-only controls but never relies on CSS alone to enforce mathematics. The separate Guided Mirror and Your Turn hand-control settings do not alter quantity permissions.
+
+After every eligible signed action, a room's temporary pre-normalized object counts may contain one or more pairs. The engine derives a deterministic zero-pair sequence with individual ID, room, species, before/after counts and physical action (mutual-hop or balloon-lift). Pair removal preserves that room's value for all x. The whole two-sided operation commits exactly once, and all local zero-pair subevents are stored in its single transaction; they never become independent unequal algebra steps. Undo restores exact original counts.
+
+Before division, first normalize any existing pairs (with the matching animation) and ONLY THEN create whole-object baskets. Both rooms' compact integer counts must be divisible by the same group factor. No implicit fractional objects are introduced.
+
+The pencil notebook writes the mathematical operation and then explicit neutralisation notes such as (+x) + (−x) = 0 or (+1) + (−1) = 0 in the correct room, before writing the resulting equation. Removing a balloon must remain subtraction of negative one, never subtraction of positive one. The miniature comic includes the physical cancellation cue, while the actual game illustrates separate soot-puff and rising-weight animations.
+
+The supported signed experiments have positive x=4: x−2=2, 2x+3=x+7, and 2x−2=x+2. Signed squares and roots are not unlocked: the current area construction requires a pure nonnegative length and exact perfect square, so a signed object is rejected rather than squared incorrectly.

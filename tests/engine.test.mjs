@@ -129,7 +129,7 @@ test("balloon lifting a weight is an exact zero pair", () => {
   assert.equal(equation(next),"x = 4");
 });
 test("adding a white sprite cancels a black sprite; removing a balloon means subtracting negative one", () => {
-  const start = initialState(LEVELS[0]);
+  const start = initialState(LEVELS[0],"signed");
   const next = committed(start,act("add","negX",1));
   assert.equal(next.left.posX,0);
   assert.equal(next.right.negX,1);

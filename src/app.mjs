@@ -1,13 +1,14 @@
 import {
-  LEVELS, TOKEN_KINDS, initialState, visibleRooms, evaluate,
+  LEVELS, TOKEN_KINDS, initialState, visibleRooms, evaluate, levelQuantityMode, normalize, room,
   perform, previewRoomAction, undo, isSolved, equation, operationDescription, algebraOperation, areaArrangement
 } from "./engine.mjs";
-import { buildWritingTimeline, symbolsOf } from "./replay-timeline.mjs";
+import { buildWritingTimeline, symbolsOf, WRITING_PACE } from "./replay-timeline.mjs";
 import { handMotionPlan } from "./hand-timeline.mjs";
 import { spriteMotionProfile, spriteMotionStyle } from "./sprite-motion.mjs";
 import { pickSpriteHandReaction, dodgeOffsetPx } from "./sprite-reactions.mjs";
 import { floorScaleToFit, inRoomBoxPlan, areaMathLabel } from "./area-layout.mjs";
 import { fractionDisplay, itemWord, attemptMessage, mismatchedMoveMessage } from "./attempt-feedback.mjs";
+import {neutralPairSummary} from "./neutral-pairs.mjs";
 
 const $ = id => document.getElementById(id);
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
@@ -206,7 +207,9 @@ function render() {
   }
   for (const button of document.querySelectorAll("[data-kind]")) {
     button.classList.toggle("selected", button.dataset.kind === kind);
-    button.disabled = busy || isSolved(state);
+    const signedObject=button.dataset.kind==="negX"||button.dataset.kind==="negOne";
+    button.hidden=signedObject&&state.quantityMode!=="signed";
+    button.disabled = busy || isSolved(state) || (signedObject&&state.quantityMode!=="signed");
     button.setAttribute("aria-pressed", String(button.dataset.kind === kind));
   }
   const grouped = operation === "divide" || operation === "multiply";
@@ -219,6 +222,14 @@ function render() {
   $("amount-up").disabled = busy || isSolved(state) || (grouped ? factor >= 5 : amount >= 12);
   $("mode-select").value = mode;
   $("mode-select").disabled = busy || awaiting;
+  $("quantity-mode").value=state.quantityMode;
+  $("quantity-mode").disabled=busy||awaiting;
+  $("quantity-mode").querySelector('option[value="positive"]').disabled=
+    levelQuantityMode(lvl)==="signed";
+  document.body.classList.toggle("quantity-mode-positive",state.quantityMode==="positive");
+  $("journal-legend").textContent=state.quantityMode==="signed"
+    ? "● black = +x   ·   ◯ white = −x   ·   ◆ weight = +1   ·   ♧ balloon = −1"
+    : "● black sprite = +x   ·   ◆ weight = +1";
   $("level-select").value = String(levelIndex);
   $("level-select").disabled = busy || awaiting;
   $("motion-toggle").textContent = reducedMotion ? "Motion: reduced" : "Motion: on";
@@ -284,7 +295,8 @@ function handProp(action, side) {
     ? '<span class="held-sprite' + (action.kind === "negX" ? " held-sprite-pale" :
       action.kind === "posX2" ? " held-sprite-square" : "") +
       '"><i></i><i></i></span>'
-    : '<span class="held-weight"></span>';
+    : action.kind==="negOne" ? '<span class="held-balloon"></span>' :
+      '<span class="held-weight"></span>';
   return picture + (action.count > 1 ? '<span class="held-count">×' + action.count + '</span>' : "");
 }
 function roomOperationText(action, side) {
@@ -315,7 +327,11 @@ function roomOperationText(action, side) {
   const nouns=action.kind==="posX2"?
     (action.count===1?"square sprite":"square sprites"):
     action.kind==="posX"?
-      (action.count===1?"sprite":"sprites"):
+      (action.count===1?"black sprite":"black sprites"):
+    action.kind==="negX"?
+      (action.count===1?"white sprite":"white sprites"):
+    action.kind==="negOne"?
+      (action.count===1?"balloon":"balloons"):
       (action.count===1?"weight":"weights");
   return "The hand "+(action.op==="remove"?"lifts away ":"places ")+
     action.count+" "+nouns+" in the "+roomName+" room...";
@@ -420,6 +436,88 @@ function clearAreaPreview(side) {
   delete node.dataset.step;delete node.dataset.layout;
   const chamber=$(side+"-chamber");
   chamber.classList.remove("area-active","area-after-square","area-after-sqrt");
+}
+
+function clearNeutralEffect(side) {
+  const effect=$(side+"-neutral-effect");
+  effect.hidden=true;
+  effect.innerHTML="";
+  delete effect.dataset.pairType;
+}
+/**
+ * Animate zero-valued subevents after adding the tokens (or before dividing).
+ * The paint callback changes only the temporary display, never the algebra.
+ * Children see each original pair before its collision or balloon lift.
+ */
+async function animateNeutralEvents(side,events,paint) {
+  if(!events?.length)return;
+  const effect=$(side+"-neutral-effect");
+  const hand=$("hand"),activeHand=hand.classList.contains("acting");
+  if(activeHand)hand.classList.add("observing-neutral");
+  try {
+  for(const event of events) {
+    paint(event.before);
+    await sleep(reducedMotion?200:450);
+    const node=$(side+"-items");
+    const posSelector=event.type==="sprites"?".sprite-black":".weight";
+    const negSelector=event.type==="sprites"?".sprite-white":".balloon";
+    const positive=[...node.querySelectorAll(posSelector)].at(-1);
+    const negative=[...node.querySelectorAll(negSelector)].at(-1);
+    if(!positive||!negative)
+      throw new Error("Neutral-pair objects were missing from the scene: "+event.id);
+    const p=positive.getBoundingClientRect(),n=negative.getBoundingClientRect();
+    const pX=p.left+p.width/2,nX=n.left+n.width/2;
+    const midX=(pX+nX)/2;
+    const midY=(p.top+p.height/2+n.top+n.height/2)/2;
+    const roomBox=effect.parentElement.getBoundingClientRect();
+    positive.style.setProperty("--pair-dx",Math.round(midX-pX)+"px");
+    negative.style.setProperty("--pair-dx",Math.round(midX-nX)+"px");
+    positive.classList.add("zero-pair-actor",event.type==="sprites"
+      ?"zero-sprite-positive":"zero-weight-positive");
+    negative.classList.add("zero-pair-actor",event.type==="sprites"
+      ?"zero-sprite-negative":"zero-balloon-negative");
+    effect.dataset.pairType=event.type;
+    effect.hidden=false;
+    effect.style.left=Math.max(40,Math.min(roomBox.width-40,midX-roomBox.left))+"px";
+    effect.style.top=Math.max(55,Math.min(roomBox.height-55,midY-roomBox.top-12))+"px";
+    effect.innerHTML=event.type==="sprites"
+      ? '<span class="puff-core"></span>'+Array.from({length:5},()=>
+          '<span class="soot"></span>').join("")+
+        '<span class="neutral-caption">Opposite sprites vanish!</span>'
+      : '<span class="balloon-trail"></span>'+
+        '<span class="neutral-caption">Balloon lifts its weight!</span>';
+    const line=event.type==="sprites"
+      ? "The black and white sprites hop together — their values cancel to zero!"
+      : "Watch the balloon lift its matching weight! They make zero.";
+    $("action-caption").textContent=line;
+    $("action-caption").hidden=false;
+    showTrialSpeech(line,reducedMotion?1800:3000);
+    await sleep(reducedMotion?720:1280);
+    paint(event.after);
+    clearNeutralEffect(side);
+    await sleep(reducedMotion?80:180);
+  }
+  } finally {
+    if(activeHand)hand.classList.remove("observing-neutral");
+    clearNeutralEffect(side);
+  }
+  $("feedback").textContent="Opposites made zero. The two rooms still obey the same equation.";
+}
+async function neutraliseBeforeDivision(action,previews) {
+  if(action.op!=="divide")return;
+  const showing=visible();
+  override={left:room(showing.left),right:room(showing.right)};
+  for(const side of ["left","right"]) {
+    const events=previews[side].cancellationEvents||[];
+    if(events.length)await animateNeutralEvents(side,events,r=>{
+      override={...override,[side]:room(r)};render();
+    });
+  }
+  override={
+    left:room(previews.left.beforeGroups||showing.left),
+    right:room(previews.right.beforeGroups||showing.right)
+  };
+  render();
 }
 
 function animateClassFrame() {
@@ -530,7 +628,9 @@ async function handAct(side, action, applyAtContact) {
         case "contact":
           // The only place physical objects change. The hand is still *down*,
           // covering the objects, and the other room has not been touched yet.
-          applyAtContact();
+          const contactPromise=applyAtContact();
+          if(contactPromise&&typeof contactPromise.then==="function")
+            await contactPromise;
           applied = true;
           if (action.op === "square" || action.op === "sqrt") finishAreaPreview(side, action);
           target.classList.add("hand-contact");
@@ -569,6 +669,7 @@ async function handAct(side, action, applyAtContact) {
     delete hand.dataset.boxStep;
     delete hand.dataset.boxOperation;
     clearAreaPreview(side);
+    clearNeutralEffect(side);
     cargo.classList.remove("sprite-captured");
     cargo.hidden = true;
     caption.hidden = true;
@@ -647,14 +748,17 @@ function restoreExperiment({rollbackPending = false} = {}) {
   override = null;
   groups = {left:0,right:0};
   failureTilt = 0;
-  for (const side of ["left","right"]) clearFailureStage(side);
+  for (const side of ["left","right"]){
+    clearFailureStage(side);
+    clearNeutralEffect(side);
+  }
   $("scene").classList.remove("scene-failed-balance");
   render();
 }
 async function animateRejectedAction(action, failure, preferredSide, rollbackPending = false) {
   if (busy) return;
   const current = preferredSide || failure.side || "left";
-  const preview = previewRoomAction(state[current], action);
+  const preview = previewRoomAction(state[current], action, state.quantityMode,current);
   const side = preview.ok ? (failure.side || current) : current;
   const issue = preview.ok ? failure : preview;
   busy = true;
@@ -683,7 +787,7 @@ async function animateRejectedAction(action, failure, preferredSide, rollbackPen
 }
 async function animateMismatchedManualAction(side, firstAction, action) {
   if (busy || !state.pending) return;
-  const attempted = previewRoomAction(state[side], action);
+  const attempted = previewRoomAction(state[side], action, state.quantityMode,side);
   if (!attempted.ok) {
     // A second move that cannot physically happen still gets a demonstration,
     // and BOTH provisional sides return to the last committed equation.
@@ -695,14 +799,26 @@ async function animateMismatchedManualAction(side, firstAction, action) {
   $("feedback").textContent = "Let's see what happens when the rooms receive different moves...";
   render();
   try {
-    if (action.op === "divide") {
-      groups[side] = action.factor;
-      render();
-      await sleep(reducedMotion ? 80 : 860);
+    const before=visibleRooms(state);
+    if(action.op==="divide"){
+      if(attempted.cancellationEvents.length){
+        override={left:room(before.left),right:room(before.right)};
+        await animateNeutralEvents(side,attempted.cancellationEvents,r=>{
+          override={...override,[side]:room(r)};render();
+        });
+      }
+      override={...before,[side]:room(attempted.beforeGroups)};
+      groups[side]=action.factor;render();
+      await sleep(reducedMotion?160:860);
     }
-    await handAct(side, action, () => {
-      const before = visibleRooms(state);
-      override = {left:before.left,right:before.right,[side]:attempted.after};
+    await handAct(side, action, async() => {
+      if(action.op!=="divide"&&attempted.cancellationEvents.length){
+        override={...before,[side]:room(attempted.raw)};render();
+        await animateNeutralEvents(side,attempted.cancellationEvents,r=>{
+          override={...override,[side]:room(r)};render();
+        });
+      }
+      override={left:before.left,right:before.right,[side]:attempted.after};
       groups[side] = 0;
       const difference = currentDifference(override);
       // Equally valued but differently described operations do not magically
@@ -735,8 +851,8 @@ async function finishTurn() {
     // The student must be able to SEE the final physical balance before
     // the comic-book retrospective covers the laboratory.
     $("scene").classList.add("solved-scene");
-    $("feedback").textContent = state.goal === "square"
-      ? "A complete area! The x² sprite matches the squared number of weights."
+    $("feedback").textContent = state.goal === "square" || state.goal==="area"
+      ? "A complete in-room square! Its physical regions match the squared side."
       : "One sprite, and its matching weights. The rooms are balanced!";
     await sleep(reducedMotion ? 1100 : 1800);
     $("scene").classList.remove("solved-scene");
@@ -747,75 +863,110 @@ async function finishTurn() {
 }
 async function guidedMove() {
   if (busy || isSolved(state)) return;
-  const action = currentAction();
-  const outcome = perform(state, action, "auto");
-  if (!outcome.ok) return animateRejectedAction(action, outcome);
-  const previous = state;
-  const next = outcome.state;
-  busy = true;
-  clearSpeech();
-  $("feedback").textContent = operationDescription(action) + "...";
-  if (action.op === "divide") {
-    groups = { left: action.factor, right: action.factor };
-    render();
-    await sleep(reducedMotion ? 550 : 1350);
+  const action=currentAction();
+  const outcome=perform(state,action,"auto");
+  if(!outcome.ok) {
+    if(outcome.code==="locked-negative")return notify(outcome.reason);
+    return animateRejectedAction(action,outcome);
   }
-  render();
-  await handAct("left", action, () => {
-    override = { left: next.left, right: previous.right };
-    groups.left = 0;
-    render();
-  });
-  await handAct("right", action, () => {
-    // Commit *at contact*, before hand exits and before the success replay.
-    state = next;
-    override = null;
-    groups.right = 0;
-    render();
-  });
-  busy = false;
-  render();
+  const previous=state,next=outcome.state;
+  const previews={
+    left:previewRoomAction(previous.left,action,state.quantityMode,"left"),
+    right:previewRoomAction(previous.right,action,state.quantityMode,"right")
+  };
+  busy=true;clearSpeech();
+  $("feedback").textContent=operationDescription(action)+"...";
+  try {
+    if(action.op==="divide"){
+      await neutraliseBeforeDivision(action,previews);
+      groups={left:action.factor,right:action.factor};
+      render();
+      await sleep(reducedMotion?550:1350);
+    }else render();
+    const beforeRight=action.op==="divide"
+      ? room(previews.right.beforeGroups) : previous.right;
+    await handAct("left",action,async()=>{
+      const trial=previews.left;
+      if(action.op!=="divide"&&trial.cancellationEvents.length){
+        override={left:room(trial.raw),right:beforeRight};render();
+        await animateNeutralEvents("left",trial.cancellationEvents,r=>{
+          override={left:room(r),right:beforeRight};render();
+        });
+      }
+      override={left:next.left,right:beforeRight};
+      groups.left=0;render();
+    });
+    await handAct("right",action,async()=>{
+      // Commit exactly once, while the hand touches the second room.
+      state=next;
+      const trial=previews.right;
+      if(action.op!=="divide"&&trial.cancellationEvents.length){
+        override={left:next.left,right:room(trial.raw)};render();
+        await animateNeutralEvents("right",trial.cancellationEvents,r=>{
+          override={left:next.left,right:room(r)};render();
+        });
+      }
+      override=null;groups.right=0;render();
+    });
+  }finally{
+    override=null;groups={left:0,right:0};busy=false;render();
+    clearNeutralEffect("left");clearNeutralEffect("right");
+  }
   await finishTurn();
 }
 async function manualMove(side) {
-  if (busy || isSolved(state)) return;
-  const wasPending = !!state.pending;
-  const action = currentAction();
-  const outcome = perform(state, action, "manual", side);
-  if (!outcome.ok) {
-    if (wasPending && outcome.code === "mismatch")
-      return animateMismatchedManualAction(side, state.pending.action, action);
-    return animateRejectedAction(action, outcome, side, wasPending);
+  if(busy||isSolved(state))return;
+  const wasPending=!!state.pending,action=currentAction();
+  const outcome=perform(state,action,"manual",side);
+  if(!outcome.ok){
+    if(outcome.code==="locked-negative")return notify(outcome.reason);
+    if(wasPending&&outcome.code==="mismatch")
+      return animateMismatchedManualAction(side,state.pending.action,action);
+    return animateRejectedAction(action,outcome,side,wasPending);
   }
-  busy = true;
-  clearSpeech();
-  if (action.op === "divide") {
-    groups[side] = action.factor;
-    render();
-    await sleep(reducedMotion ? 500 : 1100);
+  const before=visible();
+  const preview=previewRoomAction(before[side],action,state.quantityMode,side);
+  busy=true;clearSpeech();
+  try{
+    if(action.op==="divide"){
+      if(preview.cancellationEvents.length){
+        override={left:before.left,right:before.right};
+        await animateNeutralEvents(side,preview.cancellationEvents,r=>{
+          override={...override,[side]:room(r)};render();
+        });
+      }
+      override={...before,[side]:room(preview.beforeGroups)};
+      groups[side]=action.factor;render();
+      await sleep(reducedMotion?500:1100);
+    }
+    await handAct(side,action,async()=>{
+      state=outcome.state;
+      if(action.op!=="divide"&&preview.cancellationEvents.length){
+        override={...visibleRooms(state),[side]:room(preview.raw)};render();
+        await animateNeutralEvents(side,preview.cancellationEvents,r=>{
+          override={...override,[side]:room(r)};render();
+        });
+      }
+      override=null;groups[side]=0;render();
+    });
+  }finally{
+    override=null;groups[side]=0;busy=false;render();clearNeutralEffect(side);
   }
-  await handAct(side, action, () => {
-    state = outcome.state;
-    groups[side] = 0;
-    render();
-  });
-  busy = false;
-  render();
-  if (state.pending) {
-    $("feedback").textContent = "One room done. Now perform the matching move in the other room.";
-  } else {
-    await finishTurn();
-  }
+  if(state.pending)
+    $("feedback").textContent="One room done. Now perform the matching move in the other room.";
+  else await finishTurn();
 }
-function startLevel(index) {
+function startLevel(index,quantityMode) {
   stopReplay();
   replayEntries = [];
   levelIndex = (index + LEVELS.length) % LEVELS.length;
-  state = initialState(LEVELS[levelIndex]);
-  operation = LEVELS[levelIndex].startingOperation ||
+  const level=LEVELS[levelIndex];
+  state=initialState(level,quantityMode||levelQuantityMode(level));
+  operation = level.startingOperation ||
     ((levelIndex === 1 || levelIndex === 4) ? "divide" : "remove");
-  kind = "posOne";
-  amount = levelIndex === 0 ? 2 : levelIndex === 2 ? 4 : levelIndex === 4 ? 2 : 1;
+  kind=level.startingKind||"posOne";
+  amount=level.startingAmount||
+    (levelIndex===0?2:levelIndex===2?4:levelIndex===4?2:1);
   factor = levelIndex === 1 ? 3 : levelIndex === 4 ? 5 : 2;
   override = null; groups = { left: 0, right: 0 };
   failureTilt = 0;
@@ -831,13 +982,16 @@ function startLevel(index) {
     $(side + "-chamber").classList.remove("hand-target", "hand-contact");
     clearAreaPreview(side);
     clearFailureStage(side);
+    clearNeutralEffect(side);
   }
   $("hand-cargo").hidden = true;
   $("action-caption").hidden = true;
   $("scene").classList.remove("solved-scene");
   clearSpeech();
   $("replay-backdrop").hidden = true;
-  $("feedback").textContent = "Choose a hand action, then try it on the rooms.";
+  $("feedback").textContent = state.quantityMode==="signed"
+    ? "Signed objects are active: white sprites and balloons are opposites. Make a zero pair!"
+    : "Positive objects only. Signed objects can be enabled with Maths mode.";
   render();
 }
 function miniItems(r) {
@@ -852,7 +1006,19 @@ function miniRooms(pair) {
     '<div class="mini-room"><span class="mini-caption">EAST</span><div class="mini-floor">' + miniItems(pair.right) + '</div></div>' +
     '</div>';
 }
+function recordedZeroEvents(entry) {
+  return [...(entry.cancellationEvents?.left||[]),
+    ...(entry.cancellationEvents?.right||[])];
+}
+function replayZeroPairNotes(entry) {
+  return recordedZeroEvents(entry).map(event=>({
+    type:"zero-pair",
+    text:(event.side==="right"?"East":"West")+" room: "+
+      (event.type==="sprites"?"(+x) + (−x) = 0":"(+1) + (−1) = 0")
+  }));
+}
 function panelHTML(entry, index, active) {
+  const zeroPairs=recordedZeroEvents(entry);
   const title = index === 0 ? "Before the hand began" : "Move " + index;
   const subtitle = index === 0 ? "Every object has a hidden value..." : operationDescription(entry.action);
   return '<article class="comic-panel ' + (active ? "current-panel" : "old-panel") + '" data-panel="' + index + '">' +
@@ -860,6 +1026,8 @@ function panelHTML(entry, index, active) {
     '<div class="mini-stage" id="mini-stage-' + index + '">' +
     miniRooms(index === 0 ? entry.after : entry.after) +
     '</div><div class="panel-footnote">' + (index === 0 ? "The two little rooms start in balance." :
+      zeroPairs.length ? "The same operation on both sides; "+neutralPairSummary(zeroPairs)+
+        " cancelled inside their rooms (each pair has value zero)." :
       "The same mathematical change happened on both sides.") + '</div></article>';
 }
 /**
@@ -876,6 +1044,7 @@ function notebookLines(entry, index) {
   if (index === 0) return [{ type: "equation", text: equation(entry.after) }];
   return [
     { type: "operation", text: algebraOperation(entry.action) },
+    ...replayZeroPairNotes(entry),
     { type: "equation", text: equation(entry.after) }
   ];
 }
@@ -1046,12 +1215,25 @@ function drawReplay(index, { animate = !reducedMotion, complete = false } = {}) 
     activeStage.innerHTML = miniRooms(mini.before) +
       '<svg class="mini-hand-cue" viewBox="0 0 38 55" aria-hidden="true" focusable="false">' +
       '<path fill="#cfa384" stroke="#6e5140" stroke-width="1.8" d="M13 3 Q16 0 18 5 L21 27 L20 7 Q22 3 25 8 L28 28 L28 13 Q29 10 32 13 L34 30 Q38 37 30 48 L23 53 L11 47 L5 35 Q1 28 5 26 Q9 24 13 32 Z"/></svg>';
+    for(const [cueIndex,event] of recordedZeroEvents(mini).entries()){
+      activeStage.innerHTML+='<div class="mini-neutral-pair" data-pair-type="'+event.type+
+        '" style="--neutral-delay:'+(cueIndex*950)+'ms" data-side="'+event.side+'">'+
+        '<span class="mini-token '+event.positive+'"></span>'+
+        '<span class="mini-token '+event.negative+'"></span>'+
+        '<span>→ 0 in '+(event.side==="left"?"west":"east")+'</span></div>';
+    }
     activeStage.classList.add("reenacting");
   }
 
   const lines = notebookLines(mini, replayIndex).map(line => line.text);
+  // The action needs time to replay EVERY physical neutralisation first.
+  // Otherwise the pencil starts writing while pairs are still disappearing.
+  const zeroCount=recordedZeroEvents(mini).length;
+  const pace=zeroCount ? {...WRITING_PACE,
+    actionCompleteMs:WRITING_PACE.actionCompleteMs+zeroCount*950,
+    operationDelayMs:WRITING_PACE.operationDelayMs+zeroCount*950} : WRITING_PACE;
   replayTimeline = animate && !complete && !reducedMotion
-    ? buildWritingTimeline(lines, { opening: replayIndex === 0 })
+    ? buildWritingTimeline(lines, { opening: replayIndex === 0,pace })
     : { events: [], durationMs: complete ? 0 : 3900 };
   $("pencil").hidden = true;
   $("writing-status").textContent = complete ? "This panel's algebra is fully written."
@@ -1125,6 +1307,16 @@ $("do-both").addEventListener("click", guidedMove);
 $("left-action").addEventListener("click", () => manualMove("left"));
 $("right-action").addEventListener("click", () => manualMove("right"));
 $("mode-select").addEventListener("change", event => { mode = event.target.value; render(); });
+$("quantity-mode").addEventListener("change", event => {
+  if(busy||state.pending)return render();
+  const requested=event.target.value;
+  if(levelQuantityMode(LEVELS[levelIndex])==="signed"&&requested!=="signed")
+    return render();
+  startLevel(levelIndex,requested);
+  setSpeech(requested==="signed"
+    ? "Signed objects are on. White sprites and balloons are opposites to dark sprites and weights. Watch what happens when they meet!"
+    : "Only positive sprites and weights are available in this lesson.",5300);
+});
 $("level-select").addEventListener("change", event => startLevel(Number(event.target.value)));
 $("motion-toggle").addEventListener("click", () => chooseMotion(!reducedMotion));
 $("motion-enable").addEventListener("click", () => chooseMotion(false));

@@ -53,3 +53,23 @@ Avoid continuous, random collisions deleting objects without an intelligible cau
 6. Undo of a cancellation restores exactly the original physical tokens and IDs.
 7. Replay shows all physical actions, cancellation effects and correct symbol changes, in order.
 8. Manual-mode partial actions remain uncommitted until paired, even when zero-pair effects fire on the first room.
+
+
+## PR12 implementation (18 November 2026)
+
+**Maths mode and hand control are separate settings.** The Maths mode selector has two current choices: Positive objects (introductory, no negative kinds permitted by engine) and Signed objects (white sprites and balloons allowed). Users can opt into signed practice on an introductory lesson, resetting that lesson. Signed chapters 11–13 require signed objects, so their opening objects cannot be hidden by selecting Positive mode. Guided Mirror and Your Turn remain independent, unchanged hand-control choices.
+
+**Physical cancellation is animated and atomically recorded:** the hand places the objects; while the hand is at contact, black and white sprites hop towards each other and disappear in a little animated soot puff, or a balloon grabs and carries away its matching weight. With several pairs, they cancel in a deterministic order: sprite pairs first, then constant pairs, one pair at a time. The children see the pair together before it leaves. The engine commits only one mathematical change for the two-sided operation; a local zero-pair event is recorded inside its history entry with its room, ID, before/after counts and animation type.
+
+**Division:** when the current room already contains zero pairs, the pairs are visibly cancelled before making whole-object baskets. The remaining counts must all divide exactly; otherwise the PR10 fractional-piece refusal is shown. We never pretend a half sprite or balloon is a whole object.
+
+**Notebook:** the pencil writes signed operations correctly (for instance, adding a white sprite is + (−x), not +x). Each signed cancellation is shown as a zero-valued subevent before the resulting equation is written. The miniature comic stages likewise show the black/white or weight/balloon pair. Undo restores the exact initial counts on both sides, and Your Turn cannot commit a one-sided step.
+
+**Three new introductory signed puzzles:**
+- 11. x−2=2: add two positive weights, letting two balloons lift two new weights away, leaving x=4.
+- 12. 2x+3=x+7: add a white sprite to both sides; the opposite sprites cancel. Remove three weights to leave x=4.
+- 13. 2x−2=x+2: add two weights to neutralize the balloons; then add one white sprite to both sides to neutralize black sprites, leaving x=4.
+
+All current signed puzzles intentionally retain **positive solutions of x**, and signed-square, signed-root and fractional visual representations are intentionally not added. The existing square/root frame still requires a nonnegative length and an exact area. The rendered vertical bounce or balloon flight is never treated as literal mass in the scale's mathematical calculation.
+
+Test contracts are implemented in tests/signed-objects.test.mjs and e2e/signed-objects.spec.mjs alongside the pre-existing balance, Undo, animation and notebook QA.

@@ -19,6 +19,7 @@
       <div class="header-actions">
         <label class="labelled-select" for="level-select"><span>Experiment</span><select id="level-select" aria-label="Choose an experiment"></select></label>
         <label class="labelled-select" for="mode-select"><span>Hand control</span><select id="mode-select" aria-label="Choose hand control mode"><option value="auto">Guided mirror</option><option value="manual">Your turn</option></select></label>
+        <label class="labelled-select" for="quantity-mode"><span>Maths mode</span><select id="quantity-mode" aria-label="Choose positive-only or signed objects"><option value="positive">Positive objects</option><option value="signed">Signed objects</option></select></label>
         <button class="top-icon" id="motion-toggle" type="button" aria-pressed="false" title="Toggle reduced motion">Motion: on</button>
       </div>
     </header>
@@ -154,6 +155,7 @@
               <div class="room-name">WEST CHAMBER <span class="room-index">I</span></div>
               <div id="left-items" class="room-items" aria-label="Objects in the west chamber"></div>
               <div id="left-attempt-stage" class="attempt-stage" role="img" aria-label="An unsuccessful experiment in the west chamber" hidden></div>
+              <div id="left-neutral-effect" class="neutral-effect" role="img" aria-label="Opposite objects making zero in west chamber" hidden></div>
               <div id="left-area-box" class="room-square-box" role="img" aria-label="Physical square being built in the west chamber" hidden></div>
               <div class="room-floor" aria-hidden="true"></div>
               <button id="left-action" class="room-action" type="button">Use hand here</button>
@@ -169,6 +171,7 @@
               <div class="room-name">EAST CHAMBER <span class="room-index">II</span></div>
               <div id="right-items" class="room-items" aria-label="Objects in the east chamber"></div>
               <div id="right-attempt-stage" class="attempt-stage" role="img" aria-label="An unsuccessful experiment in the east chamber" hidden></div>
+              <div id="right-neutral-effect" class="neutral-effect" role="img" aria-label="Opposite objects making zero in east chamber" hidden></div>
               <div id="right-area-box" class="room-square-box" role="img" aria-label="Physical square being built in the east chamber" hidden></div>
               <div class="room-floor" aria-hidden="true"></div>
               <button id="right-action" class="room-action" type="button">Use hand here</button>
@@ -207,6 +210,8 @@
               <button type="button" class="item-button selected" data-kind="posOne"><span class="tiny-weight" aria-hidden="true"></span> Weight</button>
               <button type="button" class="item-button" data-kind="posX"><span class="tiny-sprite" aria-hidden="true">••</span> Sprite</button>
                <button type="button" class="item-button" data-kind="posX2"><span class="tiny-sprite tiny-square-sprite" aria-hidden="true">□</span> Square sprite</button>
+              <button type="button" class="item-button signed-kind" data-kind="negX" hidden><span class="tiny-sprite tiny-white-sprite" aria-hidden="true">••</span> White sprite</button>
+              <button type="button" class="item-button signed-kind" data-kind="negOne" hidden><span class="tiny-balloon" aria-hidden="true">◯</span> Balloon</button>
             </fieldset>
             <div class="amount-control" id="amount-control">
               <div class="control-label" id="amount-label">3 · How many?</div>
@@ -241,7 +246,7 @@
           <div class="paper-page">
             <div class="paper-top"><span>THE WORKSHOP JOURNAL</span><span>✦</span></div>
             <h3>What the hand discovered</h3>
-            <div class="legend">● black sprite = +x &nbsp; · &nbsp; ◆ weight = +1</div>
+            <div class="legend" id="journal-legend">● black sprite = +x &nbsp; · &nbsp; ◆ weight = +1</div>
             <div id="writing-status" class="writing-status" aria-hidden="true">The pencil is getting ready...</div>
             <div id="pencil-lines" class="pencil-lines" aria-hidden="true"></div>
             <div id="pencil" class="pencil-icon" aria-hidden="true" hidden>

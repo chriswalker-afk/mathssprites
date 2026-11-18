@@ -48,7 +48,7 @@ The equations above are **teacher notes only**; the browser UI keeps them hidden
 
 ## Deliberate first-prototype limitations
 
-- Only dark sprites (positive variable) and brass weights (positive units) are selectable in the five current levels. **White negative sprites, balloons, cancellation puffs and signed-number levels** are documented and partially supported by the pure mathematical engine but **not yet playable or illustrated**. Do not present them as shipped features.
+- In the introductory levels, Maths mode defaults to Positive objects: dark sprites and brass weights are available. Signed mode can be chosen for exploratory practice, and chapters 11–13 require it. White sprites, tethered balloons, collision puffs and balloon lifts are now playable and animated. Their opening levels all have positive x values; negative x solutions remain out of scope.
 - Visual elements are original **CSS / inline-SVG placeholders**, not the final painted art library. The hand uses a simplified SVG pose; comic miniatures currently use DOM-rendered token symbols.
 - Containers are temporarily displayed during division; there is no freeform drag-and-drop of baskets yet.
 - The manual mode requires a second matching room selection, with the chosen action and count carried over. We can make the student reselect the action as a later difficulty setting.
@@ -58,7 +58,7 @@ The equations above are **teacher notes only**; the browser UI keeps them hidden
 
 ## Technical / testing
 
-The algebra engine lives in `src/engine.mjs`, with immutable state and complete before/after snapshots for history and replay. The browser code is in `src/app.mjs` and CSS in `src/styles.css`. The test suite (`tests/engine.test.mjs`) covers validity of the five levels, solving paths, manual pending state, undo, equal grouping, whole-number restriction, signed zero pairs, and algebraic replay correspondence.
+The algebra engine lives in src/engine.mjs, with immutable state and complete before/after snapshots for history and replay. The browser code is in src/app.mjs and CSS in src/styles.css. Unit and Chrome tests now cover thirteen curated levels, manual pending actions, Undo, equal grouping, signed zero pairs, and the pencil's replay of every cancellation.
 
 The browser should preserve keyboard and pointer accessibility; the motion toggle and OS reduced-motion preference disable the decorative animations.
 
@@ -168,3 +168,14 @@ Chapters 9 and 10 use 2x+3=5 ↔ 4x²+12x+9=25, followed by ordinary two-sided o
 ### QA requirements
 
 The pure box plan in src/area-layout.mjs enforces a² + 2ab + b² = (a+b)² for every supported size; the two side edges are not added to those counts. Playwright must inspect the actual DOM box inside each room, the four region counts and stage order, the 6×6 simple root, 5×5 mixed build, its reversed root, phone-scale bounds and reduced motion. No UI animation may claim a transformation that the engine rejects or change the other room before hand contact.
+
+
+## PR12: Signed objects and proper zero-pair theatre
+
+The **Maths mode** selector is independent of hand control. Positive-only mode hides the two negative-object tools and the pure engine rejects them. Signed mode enables two additional physical objects: pale white −x sprites with pointed tufts and balloons representing −1. Positive introductory chapters can opt into signed practice by resetting the level; signed chapters 11–13 start signed and cannot hide their negative objects.
+
+At contact with the large hand, all newly introduced pieces become visible BEFORE the appropriate zero-pair animation. For variables, black and white sprites hop into one another and disappear in a soot puff. For constants, the balloon reaches the weight, lifts it, and they leave together. Several zero pairs vanish one by one. The visual code consumes deterministic per-pair events from the engine: each event has a room-specific ID, before and after counts, pair kind and specific animation. It never randomly deletes nearby objects. One committed two-room operation can have arbitrarily many local zero-valued cancellation subevents; they do not create extra equation steps.
+
+Before division, existing pairs neutralise first, then the hand forms valid whole-object baskets from the reduced counts. The notebook replay preserves each signed operation and writes separate neutralisation notes before the resulting equation. The miniature scene includes the corresponding cancelling sprites or weight/balloon. Undo restores all pre-operation objects in both rooms, including white sprites and balloons. Reduced motion displays an equivalent static pair before it disappears.
+
+Suggested visual inspection: black/white collision in chapter 12; two distinct balloon lifts in chapter 11; both effects across two transactions in chapter 13; signed mode disabled by default in the original introductory level; separate Guided Mirror / Your Turn controls; signed algebra and neutralisation in the final pencil notebook.
