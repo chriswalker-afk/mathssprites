@@ -8,6 +8,7 @@ import { spriteMotionProfile, spriteMotionStyle } from "./sprite-motion.mjs";
 import { pickSpriteHandReaction, dodgeOffsetPx } from "./sprite-reactions.mjs";
 import { floorScaleToFit, inRoomBoxPlan, areaMathLabel } from "./area-layout.mjs";
 import { fractionDisplay, itemWord, attemptMessage, mismatchedMoveMessage } from "./attempt-feedback.mjs";
+import { fractionCutPlan } from "./fraction-theatre.mjs";
 import {neutralPairSummary} from "./neutral-pairs.mjs";
 
 const $ = id => document.getElementById(id);
@@ -286,7 +287,9 @@ function handProp(action, side) {
   }
   if (action.op === "sqrt") return "";
   if (action.op === "divide") {
-    return '<span class="held-basket" title="A complete basket of objects"></span>';
+    return action.fractionAttempt
+      ? '<span class="held-fraction-cutter" title="The hand tries to divide an object into pieces"><i></i></span>'
+      : '<span class="held-basket" title="A complete basket of objects"></span>';
   }
   if (action.op === "multiply") {
     return '<span class="held-basket held-basket-double" title="A complete group of objects"></span>';
