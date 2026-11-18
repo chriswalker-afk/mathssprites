@@ -4,7 +4,7 @@
 
 1. Home: a contextual introduction, Play/Continue, World Select, How to Play and Settings.
 2. World Select: four thematic laboratories. Only World 1 is enabled. Future worlds are intentionally visible but inaccessible.
-3. World 1 Level Select: five chapters with four slots each (20 planned), a title and an honest state (ready / completed / locked / coming soon).
+3. World 1 Level Select: five chapters with four fully implemented slots each (20 playable), showing ready / completed / locked according to the player's progress.
 4. Play: original two-room balancing scene, Guided Mirror / Your Turn and hand feedback.
 5. Success: the actual transaction history is replayed as comic panels with handwritten algebra. The next-level control advances only to an implemented, accessible level; otherwise it returns to level selection.
 
@@ -12,14 +12,14 @@
 
 | World | Maths scope | Status |
 |---|---|---|
-| The Balance Workshop | positive whole-number initial values, operations and solutions | playable (5 puzzles) |
+| The Balance Workshop | positive whole-number initial values, operations and solutions | playable (20 puzzles) |
 | The Opposite Chambers | negative numbers, white anti-sprites, balloons, cancellation | locked placeholder |
 | The Fraction Workshop | exact fractional objects and arithmetic | locked placeholder |
 | The Square Laboratory | in-room squaring, square roots and area models | locked placeholder |
 
 World 1 contains 20 slots grouped into Clearing the Room (1–4), Equal Groups (5–8), Two-Step Experiments (9–12), Across the Hall (13–16), and Master of the Balance (17–20).
 
-Five puzzles are ready in PR14: four one-step clearing problems, and the existing three-equal-baskets problem. The remaining 15 slots are **not** described as playable; PR15 will author and progressively test them. The previous 13 prototype experiments remain in the engine, including early two-step, both-sides, signed and area problems, rather than being silently overwritten or incorrectly presented as finished campaign chapters.
+All 20 puzzles are playable following PR16, organised from simple one-step manipulations to multi-route strategy problems. The previous 13 prototype experiments remain in the engine, including early two-step, both-sides, signed and area problems, rather than being overwritten or incorrectly presented as student-facing advanced worlds. Teacher reference solutions and all level maths are documented in [WORLD1_CAMPAIGN.md](WORLD1_CAMPAIGN.md).
 
 ## Boundaries and enforcement
 
@@ -45,10 +45,10 @@ Five puzzles are ready in PR14: four one-step clearing problems, and the existin
 - World cards show exactly one available world and three unavailable placeholders.
 - The level map shows five chapter groups and 20 slots, but only Level 1 opens initially.
 - Completing Level 1 automatically launches its algebra comic, stores progress and permits Level 2. After a reload, the home Play action continues at the correct level.
-- Teacher access unlocks all five implemented levels, never Level 6.
+- Teacher access unlocks all 20 World 1 levels but never later, unimplemented mathematical worlds.
 - World 1 physically and mathematically blocks signed objects and square/root actions.
 - Prior animation, neutral pair, area, fraction-cut and replay browser tests still run in preview mode.
 
-## Next: PR15
+## Next: PR17
 
-Complete the full **20-level World 1** campaign. Make each chapter match its specified mathematical focus; progressively remove hints and require genuinely different strategies; check every level's arithmetic, reachability, whole-object constraints, solution and replay; keep the current five starter puzzles as regression anchors. PR16 follows with menu artwork, more guided onboarding, success transitions and responsive polish.
+World 1 content is complete and mathematically validated in PR16. Next: review the visual differentiation of worlds and chapters, scaffold the first lessons more explicitly, and refine completion transitions and mobile navigation. Advanced negative numbers, fractions and squares/square roots remain later-world projects.
