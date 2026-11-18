@@ -11,7 +11,9 @@ export const HAND_BEATS=Object.freeze({
 });
 export const HAND_BEATS_REDUCED=Object.freeze({
   hover:90,descend:110,aim:80,
-  frame:60,edge:70,column:70,quadratic:80,mixed:80,units:70,
+  // Motion reduced: stationary snapshots remain long enough to notice each
+  // construction region; no hopping, tracing or rapid flying movements.
+  frame:210,edge:220,column:220,quadratic:250,mixed:280,units:250,
   close:90,contact:380,lift:115,withdraw:150
 });
 
