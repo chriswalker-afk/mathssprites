@@ -1,5 +1,5 @@
 import {
-  LEVELS, TOKEN_KINDS, initialState, visibleRooms, evaluate,
+  LEVELS, TOKEN_KINDS, initialState, visibleRooms, evaluate, levelQuantityMode, normalize, room,
   perform, previewRoomAction, undo, isSolved, equation, operationDescription, algebraOperation, areaArrangement
 } from "./engine.mjs";
 import { buildWritingTimeline, symbolsOf } from "./replay-timeline.mjs";
@@ -8,6 +8,7 @@ import { spriteMotionProfile, spriteMotionStyle } from "./sprite-motion.mjs";
 import { pickSpriteHandReaction, dodgeOffsetPx } from "./sprite-reactions.mjs";
 import { floorScaleToFit, inRoomBoxPlan, areaMathLabel } from "./area-layout.mjs";
 import { fractionDisplay, itemWord, attemptMessage, mismatchedMoveMessage } from "./attempt-feedback.mjs";
+import {neutralPairSummary} from "./neutral-pairs.mjs";
 
 const $ = id => document.getElementById(id);
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
@@ -206,7 +207,9 @@ function render() {
   }
   for (const button of document.querySelectorAll("[data-kind]")) {
     button.classList.toggle("selected", button.dataset.kind === kind);
-    button.disabled = busy || isSolved(state);
+    const signedObject=button.dataset.kind==="negX"||button.dataset.kind==="negOne";
+    button.hidden=signedObject&&state.quantityMode!=="signed";
+    button.disabled = busy || isSolved(state) || (signedObject&&state.quantityMode!=="signed");
     button.setAttribute("aria-pressed", String(button.dataset.kind === kind));
   }
   const grouped = operation === "divide" || operation === "multiply";
@@ -219,6 +222,14 @@ function render() {
   $("amount-up").disabled = busy || isSolved(state) || (grouped ? factor >= 5 : amount >= 12);
   $("mode-select").value = mode;
   $("mode-select").disabled = busy || awaiting;
+  $("quantity-mode").value=state.quantityMode;
+  $("quantity-mode").disabled=busy||awaiting;
+  $("quantity-mode").querySelector('option[value="positive"]').disabled=
+    levelQuantityMode(lvl)==="signed";
+  document.body.classList.toggle("quantity-mode-positive",state.quantityMode==="positive");
+  $("journal-legend").textContent=state.quantityMode==="signed"
+    ? "● black = +x   ·   ◯ white = −x   ·   ◆ weight = +1   ·   ♧ balloon = −1"
+    : "● black sprite = +x   ·   ◆ weight = +1";
   $("level-select").value = String(levelIndex);
   $("level-select").disabled = busy || awaiting;
   $("motion-toggle").textContent = reducedMotion ? "Motion: reduced" : "Motion: on";
@@ -284,7 +295,8 @@ function handProp(action, side) {
     ? '<span class="held-sprite' + (action.kind === "negX" ? " held-sprite-pale" :
       action.kind === "posX2" ? " held-sprite-square" : "") +
       '"><i></i><i></i></span>'
-    : '<span class="held-weight"></span>';
+    : action.kind==="negOne" ? '<span class="held-balloon"></span>' :
+      '<span class="held-weight"></span>';
   return picture + (action.count > 1 ? '<span class="held-count">×' + action.count + '</span>' : "");
 }
 function roomOperationText(action, side) {
@@ -315,7 +327,11 @@ function roomOperationText(action, side) {
   const nouns=action.kind==="posX2"?
     (action.count===1?"square sprite":"square sprites"):
     action.kind==="posX"?
-      (action.count===1?"sprite":"sprites"):
+      (action.count===1?"black sprite":"black sprites"):
+    action.kind==="negX"?
+      (action.count===1?"white sprite":"white sprites"):
+    action.kind==="negOne"?
+      (action.count===1?"balloon":"balloons"):
       (action.count===1?"weight":"weights");
   return "The hand "+(action.op==="remove"?"lifts away ":"places ")+
     action.count+" "+nouns+" in the "+roomName+" room...";
@@ -654,7 +670,7 @@ function restoreExperiment({rollbackPending = false} = {}) {
 async function animateRejectedAction(action, failure, preferredSide, rollbackPending = false) {
   if (busy) return;
   const current = preferredSide || failure.side || "left";
-  const preview = previewRoomAction(state[current], action);
+  const preview = previewRoomAction(state[current], action, state.quantityMode);
   const side = preview.ok ? (failure.side || current) : current;
   const issue = preview.ok ? failure : preview;
   busy = true;
@@ -683,7 +699,7 @@ async function animateRejectedAction(action, failure, preferredSide, rollbackPen
 }
 async function animateMismatchedManualAction(side, firstAction, action) {
   if (busy || !state.pending) return;
-  const attempted = previewRoomAction(state[side], action);
+  const attempted = previewRoomAction(state[side], action, state.quantityMode);
   if (!attempted.ok) {
     // A second move that cannot physically happen still gets a demonstration,
     // and BOTH provisional sides return to the last committed equation.
