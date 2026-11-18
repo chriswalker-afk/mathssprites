@@ -33,6 +33,11 @@ test("students can opt into white sprites on an introductory puzzle and see a RE
   await expect(page.locator("#left-items .zero-pair-actor")).toHaveCount(2);
   await expect(page.locator("#left-items .sprite-white")).toHaveCount(1);
   await expect(page.locator("#left-items .sprite-black")).toHaveCount(1);
+  await page.waitForTimeout(420); // Catch the midair collision instead of the first frame.
+  const bubble=await page.locator("#speech").boundingBox();
+  const viewport=page.viewportSize().height;
+  expect(bubble.y).toBeGreaterThanOrEqual(0);
+  expect(bubble.y+bubble.height).toBeLessThanOrEqual(viewport+2);
   await page.screenshot({path:"artifacts/pr12-black-white-sprites-collide.png"});
   await expect(page.locator("#speech")).toContainText("cancel to zero",{timeout:8000});
   await expect(page.locator("#left-items .sprite-black")).toHaveCount(0,{timeout:15000});
@@ -60,6 +65,7 @@ test("signed balloon rescue shows two distinct lifts before revealing x = 4",asy
   await expect(effect).toHaveAttribute("data-pair-type","constants",{timeout:17000});
   await expect(page.locator("#left-items .zero-pair-actor")).toHaveCount(2);
   await expect(effect.locator(".balloon-trail")).toHaveCount(1);
+  await page.waitForTimeout(460); // Capture the upward lift.
   await page.screenshot({path:"artifacts/pr12-balloon-lifts-weight-upwards.png"});
   await expect(page.locator("#speech")).toContainText("balloon lift",{timeout:9000});
   await expect(page.locator("#left-items .balloon")).toHaveCount(0,{timeout:22000});
@@ -71,6 +77,7 @@ test("signed balloon rescue shows two distinct lifts before revealing x = 4",asy
   await expect(page.locator("#pencil-lines")).toContainText("(+1) + (−1) = 0");
   await expect(page.locator("#pencil-lines")).toContainText("x = 4");
   await expect(page.locator(".panel-footnote").last()).toContainText("2 weight/balloon pairs");
+  await page.waitForTimeout(680); // Let the current comic panel unfold for the screenshot.
   await page.screenshot({path:"artifacts/pr12-signed-zero-pairs-in-notebook.png"});
 });
 
