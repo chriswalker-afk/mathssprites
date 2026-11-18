@@ -114,7 +114,7 @@ function renderRoom(side, r, groupCount) {
   const node = $(side + "-items");
   // Only rebuild a room when its actual contents change. Otherwise the idle
   // sprites are repeatedly destroyed and their bouncing animations restart.
-  const signature = LEVELS[levelIndex].id + "|" + side + "|" +
+  const signature = currentLevel().id + "|" + side + "|" +
     TOKEN_KINDS.map(key => r[key]).join(":") + "|groups:" + groupCount;
   if (node.dataset.signature === signature) { resizeFloor(side); return; }
   node.dataset.signature = signature;
