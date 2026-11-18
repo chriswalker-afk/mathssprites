@@ -185,10 +185,12 @@ background-image:repeating-linear-gradient(90deg,transparent 0 66px,rgba(0,0,0,.
 .room-items{position:absolute;left:4%;right:4%;bottom:30px;height:180px;display:flex;justify-content:center;align-items:flex-end;z-index:4;overflow:visible}
 /* Outside deliberate area operations, every object rests on ONE floor row.
    The whole track is scaled when necessary, never wrapped or stacked. */
-.items-grid.floor-track{position:absolute;bottom:0;left:50%;width:max-content;max-width:none;
+.floor-shell{position:absolute;inset:0;display:flex;align-items:flex-end;justify-content:center;
+  pointer-events:none}
+.items-grid.floor-track{position:relative;width:max-content;max-width:none;flex:none;
   height:max-content;display:flex;flex-wrap:nowrap;align-items:flex-end;justify-content:center;
   gap:6px;padding:0;white-space:nowrap;
-  transform:translateX(-50%) scale(var(--floor-scale,1));transform-origin:50% 100%;
+  transform:scale(var(--floor-scale,1));transform-origin:50% 100%;
   transition:opacity .3s ease}
 .items-grid.floor-track>.token{flex:none;margin:0;transform:none}
 .floor-count{position:absolute;bottom:68px;left:50%;transform:translateX(-50%);
