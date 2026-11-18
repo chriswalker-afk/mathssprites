@@ -151,7 +151,7 @@ test("a reversed, two-sided World 1 level completes and reveals correct algebra"
   await expect(page.locator("#level-title")).toHaveText("The quicker route");
 });
 
-test("World 1 offers 3 stage cards and an honest, unbuilt Equation Workshop", async ({page}) => {
+test("World 1 offers 3 stage cards and a playable, independent Equation Workshop", async ({page}) => {
   await page.locator('[data-screen="worlds"]').first().click();
   await page.getByRole("button",{name:"Explore stages"}).click();
   await expect(page.locator(".stage-card")).toHaveCount(3);
@@ -163,7 +163,7 @@ test("World 1 offers 3 stage cards and an honest, unbuilt Equation Workshop", as
   await expect(page.locator('[data-stage="independent"] button')).toHaveCount(0);
   await expect(page.locator('[data-stage="notebook"] button')).toHaveCount(0);
   await expect(page.locator("#world1-workshop")).toContainText("Equation Workshop");
-  await expect(page.locator("#world1-workshop button")).toHaveCount(0);
+  await expect(page.locator("#world1-workshop button")).toHaveCount(1);
   await page.locator("#stages-back").click();
   await expect(page.locator("#site-worlds")).toBeVisible();
 });
