@@ -10,6 +10,24 @@ import { pickSpriteHandReaction, dodgeOffsetPx } from "./sprite-reactions.mjs";
 const $ = id => document.getElementById(id);
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 const readMedia = () => window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const MOTION_SETTING = "mathssprites.motion-preference.v1";
+function savedMotionPreference() {
+  try {
+    const value = window.localStorage.getItem(MOTION_SETTING);
+    if (value === "on") return false;
+    if (value === "reduced") return true;
+  } catch {
+    // Storage can be blocked in private or locked-down school browsers.
+  }
+  return null;
+}
+function chooseMotion(reduced) {
+  reducedMotion = reduced;
+  try {
+    window.localStorage.setItem(MOTION_SETTING, reduced ? "reduced" : "on");
+  } catch {}
+  render();
+}
 
 let levelIndex = 0;
 let mode = "auto";
@@ -21,7 +39,9 @@ let state = initialState(LEVELS[0]);
 let busy = false;
 let override = null;
 let groups = { left: 0, right: 0 };
-let reducedMotion = !!readMedia();
+// Respect the user's device preference unless they explicitly choose a
+// different setting in the game. An explicit override survives a refresh.
+let reducedMotion = savedMotionPreference() ?? !!readMedia();
 let speechTimer = null;
 let replayFrame = null;
 let replayPaused = true;
@@ -171,6 +191,7 @@ function render() {
   $("motion-toggle").textContent = reducedMotion ? "Motion: reduced" : "Motion: on";
   $("motion-toggle").setAttribute("aria-pressed", String(reducedMotion));
   document.body.classList.toggle("reduce-motion", reducedMotion);
+  $("motion-notice").hidden = !reducedMotion;
 
   $("do-both").hidden = mode !== "auto";
   $("do-both").disabled = busy || awaiting || isSolved(state);
@@ -732,7 +753,8 @@ $("left-action").addEventListener("click", () => manualMove("left"));
 $("right-action").addEventListener("click", () => manualMove("right"));
 $("mode-select").addEventListener("change", event => { mode = event.target.value; render(); });
 $("level-select").addEventListener("change", event => startLevel(Number(event.target.value)));
-$("motion-toggle").addEventListener("click", () => { reducedMotion = !reducedMotion; render(); });
+$("motion-toggle").addEventListener("click", () => chooseMotion(!reducedMotion));
+$("motion-enable").addEventListener("click", () => chooseMotion(false));
 $("undo").addEventListener("click", () => {
   if (busy) return;
   state = undo(state); clearSpeech();
