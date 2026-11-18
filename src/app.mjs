@@ -13,6 +13,9 @@ import {neutralPairSequence, neutralPairSummary} from "./neutral-pairs.mjs";
 import { WORLD1_LEVELS } from "./worlds.mjs";
 import {INDEPENDENT_LEVELS} from "./independent-levels.mjs";
 import {
+  startNotebook,tryNotebookLine,undoNotebookLine,notebookReplayScript
+} from "./notebook-engine.mjs";
+import {
   CHAPTER_BRIEFINGS, INDEPENDENT_BRIEFINGS,
   introductionCue,independentIntroductionCue,readGuideEnabled,readGuideSeen,
   writeGuideEnabled,writeGuideSeen,readIndependentGuideSeen,writeIndependentGuideSeen
@@ -49,6 +52,8 @@ let state = initialState(LEVELS[0]);
 let activeLevel = LEVELS[0];
 let campaignLevelNumber = null;
 let campaignStage = null; // null = separate advanced prototype preview
+let notebookSession=null; // only teacher prototype in PR20; never campaign progress
+let notebookPhase="idle"; // idle | writing | replaying | complete
 let guideEnabled = readGuideEnabled();
 let guideSeen = readGuideSeen();
 let independentGuideSeen=readIndependentGuideSeen();
@@ -376,6 +381,7 @@ function render() {
       '<button id="watch-again" class="inline-link" type="button">Watch the comic again</button>';
   }
   renderFirstGuide();
+  renderNotebookVisibility();
 }
 /**
  * A two-stage hand movement, not an instant model update followed by an effect.
@@ -1224,6 +1230,9 @@ async function manualMove(side) {
 function startLevel(index, quantityMode, levelOverride=null, campaignNumber=null, stage="guided") {
   stopReplay();
   replayEntries = [];
+  notebookSession=null;
+  notebookPhase="idle";
+  document.body.classList.remove("notebook-mode");
   levelIndex = (index + LEVELS.length) % LEVELS.length;
   const level = levelOverride || LEVELS[levelIndex];
   activeLevel = level;
