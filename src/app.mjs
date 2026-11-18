@@ -264,10 +264,10 @@ function handProp(action) {
 }
 function roomOperationText(action, side) {
   const roomName = side === "left" ? "west" : "east";
-  if (action.op === "square") return "The hand makes a matching column and fills the " + roomName +
-    " square — round x becomes square x²...";
-  if (action.op === "sqrt") return "The hand arranges a square and keeps one side in the " + roomName +
-    " room — square x² is squished back to round x...";
+  if (action.op === "square") return "The hand builds a matching column and fills the " + roomName +
+    " square — a round sprite is pressed into a square one!";
+  if (action.op === "sqrt") return "The hand forms a square in the " + roomName +
+    " room, then keeps one side — a square sprite squishes into a round one!";
   if (action.op === "divide") return "The hand sorts the " + roomName + " room into " + action.factor + " equal baskets...";
   if (action.op === "multiply") return "The hand makes " + action.factor + " complete copies in the " + roomName + " room...";
   const nouns = action.kind === "posX2" ? (action.count === 1 ? "square sprite" : "square sprites") :
