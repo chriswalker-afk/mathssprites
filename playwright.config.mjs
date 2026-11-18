@@ -8,6 +8,7 @@ export default defineConfig({
   use: {
     baseURL: "http://127.0.0.1:8787",
     headless: true,
+    channel: "chrome", // Use stable Chrome preinstalled on GitHub-hosted Ubuntu runners.
     viewport: { width: 1280, height: 900 },
     trace: "retain-on-failure",
     screenshot: "only-on-failure"
