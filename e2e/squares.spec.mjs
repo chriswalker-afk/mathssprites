@@ -97,6 +97,11 @@ test("advanced square root reduces 4x²=36 to 2x=6 before sharing equally", asyn
   await expect(page.locator("#left-area-preview .area-cell")).toHaveCount(4);
   await expect(page.locator("#left-items .sprite-black")).toHaveCount(2);
   await expect(page.locator("#right-area-preview .area-cell")).toHaveCount(36);
+  const squareSize = await page.locator("#right-area-preview .area-grid").evaluate(el => {
+    const box = el.getBoundingClientRect();
+    return {width:box.width,height:box.height};
+  });
+  expect(Math.abs(squareSize.width - squareSize.height)).toBeLessThan(2);
   await page.screenshot({path:"artifacts/root-36-objects-into-six.png"});
   await expect(page.locator("#right-items .weight")).toHaveCount(6);
   await expect(page.locator("#replay-backdrop")).toBeHidden();
