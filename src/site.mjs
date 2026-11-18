@@ -167,13 +167,15 @@ $("site-guided-help").addEventListener("change", event => {
     {detail:{enabled:guideEnabled}}));
   renderSettings();
 });
-$("site-replay-intro").addEventListener("click", () => {
+function restartFirstExperimentGuide() {
   guideEnabled = writeGuideEnabled(true);
   writeGuideSeen(false);
   window.dispatchEvent(new CustomEvent("mathssprites:guide-setting",
     {detail:{enabled:true, reset:true}}));
   launch(1);
-});
+}
+$("site-replay-intro").addEventListener("click", restartFirstExperimentGuide);
+window.addEventListener("mathssprites:restart-guide", restartFirstExperimentGuide);
 $("site-motion").addEventListener("click", () => {
   $("motion-toggle").click();
   renderSettings();
