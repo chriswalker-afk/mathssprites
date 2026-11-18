@@ -9,13 +9,14 @@ test("dark sprites are visible and visibly bounce rather than staying still", as
   const sprite = page.locator("#left-items .sprite").first();
   await expect(sprite).toBeVisible();
 
-  const movement = await sprite.evaluate(el => {
+  const movement = await sprite.locator(".sprite-motion").evaluate(el => {
     const anim = el.getAnimations().find(candidate => candidate.animationName === "sprite-hop");
     if (!anim) return null;
     anim.pause();
-    anim.currentTime = 10;
+    const cycle = anim.effect.getComputedTiming().duration;
+    anim.currentTime = 0;
     const resting = el.getBoundingClientRect().top;
-    anim.currentTime = 540;
+    anim.currentTime = cycle * .26;
     const airborne = el.getBoundingClientRect().top;
     anim.play();
     return Math.abs(resting - airborne);
@@ -83,7 +84,7 @@ test("Motion: on overrides the system's reduced-motion preference", async ({ pag
   await expect(page.locator("#motion-toggle")).toHaveText("Motion: reduced");
   await page.locator("#motion-toggle").click();
   await expect(page.locator("#motion-toggle")).toHaveText("Motion: on");
-  const duration = await page.locator("#left-items .sprite").first().evaluate(el => (
+  const duration = await page.locator("#left-items .sprite-motion").first().evaluate(el => (
     getComputedStyle(el).animationDuration
   ));
   expect(parseFloat(duration)).toBeGreaterThanOrEqual(1);
