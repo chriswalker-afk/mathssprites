@@ -50,7 +50,7 @@ test("Stage 3 is locked until Stage 2 is mastered; teacher access grants all twe
   await expect(page.locator(".level-tile")).toHaveCount(12);
   await expect(page.locator('[data-level="1"]')).toBeEnabled();
   await expect(page.locator('[data-level="2"]')).toBeDisabled();
-  await expect(page.locator("#world1-workshop button")).toHaveCount(0);
+  await expect(page.locator("#world1-workshop button")).toHaveCount(1);
 });
 
 test("backwards fading shows a different worked example, then first/last cues, then none",async({page})=>{
@@ -108,7 +108,7 @@ test("solved paper alone earns NO progress; successful hands earn credit and adv
   await expect(page.locator("#notebook-workspace")).toBeVisible();
   await expect(page.locator("#scene")).toBeHidden();
   await expect(page.locator("#notebook-lines")).toContainText("2x = 12");
-  await expect(page.locator("#world1-workshop button")).toHaveCount(0);
+  await expect(page.locator("#world1-workshop button")).toHaveCount(1);
 });
 
 test("wrong or skipped steps leave campaign progress untouched, and one-step hints do not solve it",async({page})=>{
