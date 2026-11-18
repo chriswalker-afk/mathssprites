@@ -200,7 +200,7 @@ test("old saved Stage 1 progress survives the new stage selection unchanged", as
   expect(stored).toEqual(original);
 });
 
-test("Stage 1 mastery unlocks Independent Balance but not unfinished Stage 3, including teacher use", async ({page}) => {
+test("Stage 1 mastery opens Stage 2 and teacher access also opens Stage 3", async ({page}) => {
   const complete={completed:Array.from({length:20},(_,i)=>i+1),lastPlayed:20};
   await page.evaluate(data=>localStorage.setItem("mathssprites.progress.v1",JSON.stringify(data)),complete);
   await page.reload();
@@ -210,7 +210,7 @@ test("Stage 1 mastery unlocks Independent Balance but not unfinished Stage 3, in
   await page.getByRole("button",{name:"Explore stages"}).click();
   await expect(page.locator('[data-stage="guided"]')).toContainText("Stage mastered");
   await expect(page.locator('[data-stage="independent"] button')).toHaveCount(1);
-  await expect(page.locator('[data-stage="notebook"] button')).toHaveCount(0);
+  await expect(page.locator('[data-stage="notebook"] button')).toHaveCount(1);
   await page.getByRole("button",{name:"Choose Stage 1 levels"}).click();
   await expect(page.locator("#world1-finale")).toBeVisible();
   await expect(page.locator("#world1-finale")).toContainText("Guided Balance mastered");

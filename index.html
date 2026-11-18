@@ -75,7 +75,7 @@
       </div>
       <div id="world1-stage-cards" class="world1-stage-grid" aria-label="World 1 learning stages"></div>
       <section id="world1-workshop" class="workshop-card" aria-label="Equation Workshop"></section>
-      <p id="stage-teacher-note" class="teacher-note" hidden>Teacher access unlocks completed content within Stage 1. It cannot unlock future stages that have not yet been built.</p>
+      <p id="stage-teacher-note" class="teacher-note" hidden>Teacher access opens every implemented level in Stages 1–3; future worlds and free-play tools remain locked.</p>
     </main>
     <main class="site-page" id="site-levels" hidden>
       <button type="button" id="site-back" class="site-back-link">← Back to stages</button>
@@ -108,8 +108,8 @@
           <li>Choose an action: add, remove, multiply or split into equal groups.</li>
           <li>Keep the rooms balanced by making matching changes to both.</li>
           <li>When one sprite is left facing only weights, watch the hand's moves turn into algebra in the comic replay.</li></ol>
-        <p><strong>Stage 1 · Guided Balance:</strong> choose an action and the hand mirrors it automatically in both rooms. <strong>Stage 2 · Independent Balance:</strong> you make each move yourself in both rooms, one after the other. <strong>Stage 3 · Algebra Apprentice:</strong> you will write the solution first, then see your steps replayed with sprites. Stage 3 remains under construction.</p>
-        <p>In both playable stages, an inadvisable experiment is safe: the hand shows what went wrong, explains it and restores the objects. The Equation Workshop will eventually let you create your own equations.</p>
+        <p><strong>Stage 1 · Guided Balance:</strong> choose an action and the hand mirrors it automatically in both rooms. <strong>Stage 2 · Independent Balance:</strong> you make each move yourself in both rooms, one after the other. <strong>Stage 3 · Algebra Apprentice:</strong> you will write the solution first, then see your steps replayed with sprites. All three World 1 stages are playable.</p>
+        <p>In the first two stages, an inadvisable experiment is safe: the hand shows what went wrong, explains it and restores the objects. The Equation Workshop will eventually let you create your own equations.</p>
         <button type="button" class="primary-btn" data-screen="worlds">Choose your first world →</button>
       </div>
     </main>
@@ -127,7 +127,7 @@
           <p><strong>Teacher preview · Stage 3</strong> — try the paper-first equation editor with a sample positive whole-number puzzle. This is a prototype, not a Stage 3 level, and earns no campaign progress.</p>
           <button type="button" class="secondary-btn" id="site-notebook-preview">Preview the Algebra Apprentice notebook →</button>
         </div>
-        <p>Progress is stored on this browser only. No account is needed. Your existing 20 Stage 1 completions are preserved. The 16 new Stage 2 levels have separate progress. Stage 2 unlocks after Stage 1, or through Teacher access; Stage 3 and later worlds remain unfinished.</p>
+        <p>Progress is stored on this browser only. No account is needed. Stage 1 (20 levels), Stage 2 (16 levels) and Stage 3 (12 notebook-first levels) save progress separately. Each new stage unlocks when the previous one is mastered; Teacher access opens all implemented levels. Later mathematical worlds and the Equation Workshop are still planned.</p>
         <button type="button" class="secondary-btn" id="site-motion">Use reduced motion</button>
         <p>Animation settings also apply to the hand, sprites and pencil inside levels.</p>
         <button type="button" class="primary-btn" data-screen="home">Back to the workshop →</button>
@@ -183,10 +183,16 @@
 
       <section id="notebook-workspace" class="notebook-workspace" aria-label="Algebra Apprentice paper-first notebook" hidden>
         <div class="notebook-intro">
-          <span class="eyebrow">STAGE 3 · ALGEBRA APPRENTICE · TEACHER PROTOTYPE</span>
+          <span class="eyebrow" id="notebook-stage-kicker">STAGE 3 · ALGEBRA APPRENTICE · TEACHER PROTOTYPE</span>
           <h3>First the paper. Then the sprites.</h3>
-          <p>You already have the equation. Write one balanced operation per line, just as you would on paper. When you have isolated a single sprite, the hand will replay <em>your</em> method in both chambers.</p>
-          <span class="notebook-preview-warning">Practice preview · No levels or progress earned</span>
+          <p id="notebook-level-prompt">You already have the equation. Write one balanced operation per line, just as you would on paper. When you have isolated a single sprite, the hand will replay <em>your</em> method in both chambers.</p>
+          <span id="notebook-stage-note" class="notebook-preview-warning">Practice preview · No levels or progress earned</span>
+          <aside id="notebook-scaffold" class="notebook-scaffold" hidden aria-label="Writing support">
+            <strong id="notebook-scaffold-heading">Your first example</strong>
+            <p id="notebook-scaffold-text">A different example shows how an operation changes both sides of an equation.</p>
+          </aside>
+          <button id="notebook-hint" type="button" class="secondary-btn notebook-hint">Need a thinking prompt?</button>
+          <p id="notebook-hint-message" class="notebook-hint-message" hidden role="status"></p>
         </div>
         <div class="notebook-paper">
           <div class="notebook-paper-head"><span>THE WORKSHOP JOURNAL</span><span aria-hidden="true">✎</span></div>
@@ -212,7 +218,8 @@
         <div><span class="eyebrow">PAPER → SPRITES</span><p id="notebook-playback-message">The hand is following your checked algebra...</p></div>
         <div class="notebook-playback-actions">
           <button id="notebook-back-paper" type="button" class="secondary-btn" hidden>← View my notebook</button>
-          <button id="notebook-watch-again" type="button" class="primary-btn" hidden>↺ Replay my steps</button>
+          <button id="notebook-watch-again" type="button" class="secondary-btn" hidden>↺ Replay my steps</button>
+          <button id="notebook-next" type="button" class="primary-btn" hidden>Next notebook level →</button>
         </div>
       </section>
       <section class="playfield" id="scene" aria-label="Balance laboratory scene">

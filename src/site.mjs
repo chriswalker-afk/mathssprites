@@ -8,11 +8,16 @@ import {
  isIndependentUnlocked,nextIndependentLevel
 } from "./independent-levels.mjs";
 import {
- WORLD1_STAGES,EQUATION_WORKSHOP,stageOneComplete,stageTwoComplete,canOpenWorld1Stage
+ APPRENTICE_LEVELS,APPRENTICE_CHAPTERS,findApprenticeLevel,
+ isApprenticeUnlocked,nextApprenticeLevel
+} from "./apprentice-levels.mjs";
+import {
+ WORLD1_STAGES,EQUATION_WORKSHOP,stageOneComplete,stageTwoComplete,stageThreeComplete,canOpenWorld1Stage
 } from "./stages.mjs";
 import {
   loadProgress, saveProgress, markWorld1Complete,
   loadStage2Progress,saveStage2Progress,markStage2Complete,
+  loadStage3Progress,saveStage3Progress,markStage3Complete,
   loadTeacherSetting, saveTeacherSetting
 } from "./progress.mjs";
 import {
@@ -22,6 +27,7 @@ import {
 const $ = id => document.getElementById(id);
 let progress = loadProgress();
 let stage2Progress = loadStage2Progress();
+let stage3Progress = loadStage3Progress();
 let teacher = loadTeacherSetting();
 let guideEnabled = readGuideEnabled();
 let currentScreen = "home";
@@ -39,6 +45,10 @@ function independentUnlocked(number) {
   return stageCanOpen("independent") &&
     isIndependentUnlocked(number,stage2Progress.completed,teacher);
 }
+function apprenticeUnlocked(number) {
+  return stageCanOpen("notebook") &&
+    isApprenticeUnlocked(number,stage3Progress.completed,teacher);
+}
 const screenNames = ["home","worlds","stages","levels","help","settings"];
 
 function clean(text) {
@@ -49,16 +59,23 @@ function unlocked(number) {
   return isWorld1Unlocked(number, progress.completed, teacher);
 }
 function homeAction() {
-  const readyForStage2=stageOneComplete(progress.completed) && stageCanOpen("independent");
-  if (readyForStage2) {
+  const stage1Ready=stageOneComplete(progress.completed);
+  const stage2Ready=stageTwoComplete(stage2Progress.completed);
+  if(stage1Ready&&stage2Ready&&stageCanOpen("notebook")){
+    const mastered=stageThreeComplete(stage3Progress.completed);
+    const n=apprenticeUnlocked(stage3Progress.lastPlayed)?stage3Progress.lastPlayed:1;
+    $("home-play").textContent=mastered?"Explore your mastered stages →":
+      stage3Progress.completed.length
+        ?"Continue Stage 3 · Level "+n+" →":"Begin Stage 3 · Algebra Apprentice →";
+    $("home-progress").textContent="Stages 1 and 2 mastered · Stage 3 "+
+      stage3Progress.completed.length+"/12 complete · progress saved on this device";
+    return;
+  }
+  if(stage1Ready&&stageCanOpen("independent")){
     const n=independentUnlocked(stage2Progress.lastPlayed)?stage2Progress.lastPlayed:1;
-    const played=stage2Progress.completed.length>0;
-    $("home-play").textContent = stageTwoComplete(stage2Progress.completed)
-      ? "Explore your mastered stages →"
-      : played
-        ? "Continue Stage 2 · Level " + n + " →"
-        : "Begin Stage 2 · Independent Balance →";
-    $("home-progress").textContent="Stage 1 mastered · Stage 2 " +
+    $("home-play").textContent=stage2Progress.completed.length
+      ?"Continue Stage 2 · Level "+n+" →":"Begin Stage 2 · Independent Balance →";
+    $("home-progress").textContent="Stage 1 mastered · Stage 2 "+
       stage2Progress.completed.length+"/16 complete · progress saved on this device";
     return;
   }
@@ -74,7 +91,9 @@ function homeAction() {
 function renderWorlds() {
   $("world-cards").innerHTML = WORLDS.map(world => {
     const progressLine = world.available
-      ? (stageOneComplete(progress.completed)
+      ? (stageOneComplete(progress.completed) && stageTwoComplete(stage2Progress.completed)
+        ? "STAGES 1–2 MASTERED · STAGE 3 " + stage3Progress.completed.length + "/12 complete"
+        : stageOneComplete(progress.completed)
         ? "STAGE 1 MASTERED · STAGE 2 " + stage2Progress.completed.length + "/16 complete"
         : "STAGE 1 · " + progress.completed.length + "/20 complete · Stage 2 next")
       : "COMING SOON";
@@ -98,23 +117,25 @@ function renderWorlds() {
 /** The three distinct representations appear before the existing chapter list.
  * Locked stages have no playable link, even when the teacher flag is on. */
 function renderStages() {
-  const complete=stageOneComplete(progress.completed);
+  const statuses={
+    guided:{progress,complete:stageOneComplete(progress.completed)},
+    independent:{progress:stage2Progress,complete:stageTwoComplete(stage2Progress.completed)},
+    notebook:{progress:stage3Progress,complete:stageThreeComplete(stage3Progress.completed)}
+  };
   $("world1-stage-cards").innerHTML=WORLD1_STAGES.map(stage=>{
-    const playable=stageCanOpen(stage.id);
-    const countText=stage.id==="guided"
-      ? progress.completed.length+" of "+stage.count+" experiments complete"
-      : stage.id==="independent"
-        ? (playable?stage2Progress.completed.length+" of "+stage.count+" experiments complete"
-          : stage.count+" experiments · complete Stage 1 to unlock")
+    const playable=stageCanOpen(stage.id),meta=statuses[stage.id];
+    const finished=meta.complete;
+    const countText=playable
+      ? meta.progress.completed.length+" of "+stage.count+" experiments complete"
+      : stage.available
+        ? stage.count+" experiments · complete Stage "+(stage.number-1)+" to unlock"
         : stage.count+" new experiments planned";
-    const finished=stage.id==="guided"?complete:
-      stage.id==="independent"&&stageTwoComplete(stage2Progress.completed);
     return '<article class="stage-card '+(playable?"stage-ready":"stage-planned")+
       '" data-stage="'+stage.id+'" aria-label="Stage '+stage.number+
       ': '+clean(stage.title)+(playable?", available":", locked")+'">'+
       '<div class="stage-top"><span class="stage-no">STAGE '+String(stage.number).padStart(2,"0")+
       '</span><span class="stage-tag">'+(finished?"Stage mastered":
-        playable?"Ready to play":stage.available?"Complete Stage 1":"Coming soon")+
+        playable?"Ready to play":stage.available?"Complete Stage "+(stage.number-1):"Coming soon")+
       '</span></div><div class="stage-ornament" aria-hidden="true">'+stage.icon+'</div>'+
       '<h2>'+clean(stage.title)+'</h2>'+
       '<p class="stage-tagline">'+clean(stage.tagline)+'</p>'+
@@ -125,7 +146,7 @@ function renderStages() {
           (stage.id==="guided"?' data-screen="levels"':'')+
           '>Choose Stage '+stage.number+' levels →</button>'
         : '<span class="stage-coming" aria-label="This stage is unavailable">'+
-            (stage.available?"◇ Complete Stage 1 to unlock":"◇ New levels in development")+
+            (stage.available?"◇ Complete Stage "+(stage.number-1)+" to unlock":"◇ New levels in development")+
           '</span>')+'</div></article>';
   }).join("");
   $("world1-workshop").innerHTML=
@@ -136,68 +157,75 @@ function renderStages() {
     '<span class="workshop-planned" aria-label="Equation Workshop is coming soon">◇ Coming soon</span>';
   $("stage-teacher-note").hidden=!teacher;
   $("stage-teacher-note").textContent=
-    "Teacher access opens all implemented Stage 1 and Stage 2 puzzles. "+
-    "Stage 3, future mathematical worlds and the Equation Workshop are not built yet.";
+    "Teacher access opens all implemented levels in Stages 1, 2 and 3. "+
+    "Other mathematical worlds and the custom Equation Workshop are not built yet.";
 }
 function renderLevels() {
-  const independent=selectedStage==="independent";
-  const stage=independent?"Independent Balance":"Guided Balance";
-  const stageNumber=independent?2:1;
-  const source=independent?INDEPENDENT_LEVELS:WORLD1_LEVELS;
-  const chapters=independent?INDEPENDENT_CHAPTERS:WORLD1_CHAPTERS;
-  const current=independent?stage2Progress:progress;
-  const total=source.length,completed=current.completed.length;
-  const allowed=number=>independent?independentUnlocked(number):unlocked(number);
-  const nextNumber=source.find(slot=>
-    slot.available&&!current.completed.includes(slot.number)&&allowed(slot.number))?.number;
-  $("levels-stage-kicker").textContent="WORLD 01 · STAGE "+stageNumber+" · POSITIVE WHOLE NUMBERS";
-  $("levels-stage-title").textContent=stage;
-  $("levels-stage-intro").textContent=independent
-    ? "Make each mathematical move separately in the west and east rooms. The scale tells you when one move is still waiting to be matched."
-    : "Choose the operation. The hand automatically makes the same change to both rooms.";
+  const configs={
+    guided:{title:"Guided Balance",number:1,levels:WORLD1_LEVELS,chapters:WORLD1_CHAPTERS,
+      progress,open:unlocked,emblems:["−","÷","→","⇄","✦"],
+      intro:"Choose the operation. The hand automatically makes the same change to both rooms.",
+      finale:"You've finished 20 guided puzzles. Independent Balance now lets you control each chamber yourself."},
+    independent:{title:"Independent Balance",number:2,levels:INDEPENDENT_LEVELS,
+      chapters:INDEPENDENT_CHAPTERS,progress:stage2Progress,open:independentUnlocked,
+      emblems:["↔","÷","→","✦"],
+      intro:"Make each mathematical move separately in the west and east rooms. The scale tells you when one move is still waiting to be matched.",
+      finale:"You've balanced both chambers yourself in all 16 puzzles. Your next challenge is writing the algebra first."},
+    notebook:{title:"Algebra Apprentice",number:3,levels:APPRENTICE_LEVELS,
+      chapters:APPRENTICE_CHAPTERS,progress:stage3Progress,open:apprenticeUnlocked,
+      emblems:["✎","≡","✦"],
+      intro:"Read the equation on paper, write one balanced transformation per line, then watch the sprites reenact YOUR method.",
+      finale:"You've solved all twelve equations on paper before seeing the sprites. The Equation Workshop will be a separate free-play challenge."}
+  };
+  const cfg=configs[selectedStage];
+  if(!cfg)return;
+  const {levels,chapters,progress:current}=cfg;
+  const total=levels.length,completed=current.completed.length;
+  const nextNumber=levels.find(slot=>slot.available &&
+    !current.completed.includes(slot.number) && cfg.open(slot.number))?.number;
+  $("levels-stage-kicker").textContent="WORLD 01 · STAGE "+cfg.number+" · POSITIVE WHOLE NUMBERS";
+  $("levels-stage-title").textContent=cfg.title;
+  $("levels-stage-intro").textContent=cfg.intro;
   $("level-progress").textContent=completed+" / "+total+" experiments complete";
-  $("world1-progress-description").textContent="Stage "+stageNumber+" · "+stage;
+  $("world1-progress-description").textContent="Stage "+cfg.number+" · "+cfg.title;
   $("world1-progress-bar").max=total;
   $("world1-progress-bar").value=completed;
   $("world1-progress-number").textContent=completed+" of "+total+" complete";
   $("world1-finale").hidden=completed!==total;
-  $("world1-finale").setAttribute("aria-label","Stage "+stageNumber+" completed");
-  $("stage-finale-kicker").textContent="STAGE "+stageNumber+" COMPLETE";
-  $("stage-finale-title").textContent=stage+" mastered!";
-  $("stage-finale-message").textContent=independent
-    ? "You've balanced both chambers yourself in all 16 puzzles. Your next challenge will be writing the algebra first."
-    : "You've finished 20 guided puzzles. Independent Balance now lets you control each chamber yourself.";
-  const emblems=independent?["↔","÷","→","✦"]:["−","÷","→","⇄","✦"];
+  $("world1-finale").setAttribute("aria-label","Stage "+cfg.number+" completed");
+  $("stage-finale-kicker").textContent="STAGE "+cfg.number+" COMPLETE";
+  $("stage-finale-title").textContent=cfg.title+" mastered!";
+  $("stage-finale-message").textContent=cfg.finale;
   $("level-sections").innerHTML=chapters.map((chapter,index)=>{
-    const slots=source.slice(index*4,index*4+4);
+    const slots=levels.slice(index*4,index*4+4);
     const finished=slots.filter(slot=>current.completed.includes(slot.number)).length;
     const cards=slots.map(slot=>{
       const done=current.completed.includes(slot.number);
-      const open=allowed(slot.number);
+      const open=cfg.open(slot.number);
       const next=slot.number===nextNumber;
       const tag=done?"Completed":open?"Ready to play":"Locked";
       const status=done?"complete":open?"ready":"locked";
       return '<button type="button" class="level-tile status-'+status+
         (next?' level-next':'')+'" data-level="'+slot.number+'"'+(open?"":" disabled")+
         (next?' aria-current="step"':'')+
-        ' aria-label="Stage '+stageNumber+' Level '+slot.number+': '+clean(slot.title)+'. '+tag+'">'+
+        ' aria-label="Stage '+cfg.number+' Level '+slot.number+': '+clean(slot.title)+'. '+tag+'">'+
         '<span class="tile-number">'+String(slot.number).padStart(2,"0")+'</span>'+
         '<span class="tile-name">'+clean(slot.title)+'</span>'+
         '<span class="tile-status">'+(done?"✓ ":open?"✦ ":"◇ ")+tag+'</span></button>';
     }).join("");
     return '<section class="chapter-group chapter-theme-'+(index+1)+
       (finished===4?' chapter-complete':'')+
-      '" aria-label="Stage '+stageNumber+' Chapter '+(index+1)+': '+clean(chapter.title)+'">'+
+      '" aria-label="Stage '+cfg.number+' Chapter '+(index+1)+': '+clean(chapter.title)+'">'+
       '<div class="chapter-group-heading">'+
       '<div class="chapter-intro"><span class="chapter-badge">'+
       String(index+1).padStart(2,"0")+'</span><div><h3>'+clean(chapter.title)+
       '</h3><p>'+clean(chapter.description)+'</p>'+
       '<p class="chapter-stat">'+(finished===4?"CHAPTER MASTERED":finished+" of 4 experiments complete")+
       '</p></div></div><div class="chapter-illustration" aria-hidden="true">'+
-      emblems[index]+'</div></div><div class="level-grid">'+cards+'</div></section>';
+      cfg.emblems[index]+'</div></div><div class="level-grid">'+cards+'</div></section>';
   }).join("");
   $("teacher-note").hidden=!teacher;
-  $("teacher-note").textContent="Teacher access: all "+total+" puzzles in Stage "+stageNumber+
+  $("teacher-note").textContent="Teacher access: all "+total+" puzzles in Stage "+cfg.number+
     " are unlocked, without changing their mathematical restrictions.";
 }
 function renderSettings() {
@@ -211,7 +239,7 @@ function renderSettings() {
 }
 function showScreen(name) {
   if (!screenNames.includes(name)) return;
-  if(currentScreen==="notebook-preview")
+  if(currentScreen==="notebook-preview" || playingStage==="notebook")
     window.dispatchEvent(new Event("mathssprites:notebook-close"));
   currentScreen = name;
   playingNumber = null;
@@ -231,23 +259,30 @@ function showScreen(name) {
   window.scrollTo?.(0,0);
 }
 function launch(number,stage=selectedStage) {
-  if(!stageCanOpen(stage) || !["guided","independent"].includes(stage))return false;
-  const independent=stage==="independent";
-  const slot=independent?findIndependentLevel(number):findWorld1Level(number);
-  const allowed=independent?independentUnlocked(number):unlocked(number);
+  if(!stageCanOpen(stage)||!["guided","independent","notebook"].includes(stage))return false;
+  const slot=stage==="independent"?findIndependentLevel(number):
+    stage==="notebook"?findApprenticeLevel(number):findWorld1Level(number);
+  const allowed=stage==="independent"?independentUnlocked(number):
+    stage==="notebook"?apprenticeUnlocked(number):unlocked(number);
   if(!slot?.level||!allowed)return false;
   selectedStage=stage;
   playingStage=stage;
   playingNumber=slot.number;
   currentScreen="game";
-  if(independent) stage2Progress=saveStage2Progress({...stage2Progress,lastPlayed:slot.number});
+  if(stage==="independent")
+    stage2Progress=saveStage2Progress({...stage2Progress,lastPlayed:slot.number});
+  else if(stage==="notebook")
+    stage3Progress=saveStage3Progress({...stage3Progress,lastPlayed:slot.number});
   else progress=saveProgress({...progress,lastPlayed:slot.number});
   $("site-shell").hidden=true;
   $("game-shell").hidden=false;
   document.body.classList.remove("preview-mode");
-  window.dispatchEvent(new CustomEvent("mathssprites:launch",{
-    detail:{stage,number:slot.number,legacyIndex:slot.legacyIndex,level:slot.level}
-  }));
+  if(stage==="notebook")
+    window.dispatchEvent(new CustomEvent("mathssprites:notebook-campaign",
+      {detail:{stage,number:slot.number,level:slot.level}}));
+  else
+    window.dispatchEvent(new CustomEvent("mathssprites:launch",
+      {detail:{stage,number:slot.number,legacyIndex:slot.legacyIndex,level:slot.level}}));
   $("level-title").setAttribute("tabindex","-1");
   $("level-title").focus({preventScroll:true});
   window.scrollTo?.(0,0);
@@ -266,8 +301,11 @@ $("site-shell").addEventListener("click", event => {
   if (target.dataset.level) return launch(Number(target.dataset.level));
 });
 $("home-play").addEventListener("click", () => {
-  if(stageOneComplete(progress.completed) && stageTwoComplete(stage2Progress.completed))
-    return showScreen("stages");
+  if(stageOneComplete(progress.completed) && stageTwoComplete(stage2Progress.completed)){
+    if(stageThreeComplete(stage3Progress.completed))return showScreen("stages");
+    if(stageCanOpen("notebook"))
+      return launch(apprenticeUnlocked(stage3Progress.lastPlayed)?stage3Progress.lastPlayed:1,"notebook");
+  }
   if(stageOneComplete(progress.completed) && stageCanOpen("independent"))
     return launch(independentUnlocked(stage2Progress.lastPlayed)?stage2Progress.lastPlayed:1,"independent");
   return launch(unlocked(progress.lastPlayed)?progress.lastPlayed:1,"guided");
@@ -332,6 +370,8 @@ window.addEventListener("mathssprites:solved",event=>{
      event.detail?.stage!==playingStage)return;
   if(playingStage==="independent")
     stage2Progress=saveStage2Progress(markStage2Complete(stage2Progress,playingNumber));
+  else if(playingStage==="notebook")
+    stage3Progress=saveStage3Progress(markStage3Complete(stage3Progress,playingNumber));
   else
     progress=saveProgress(markWorld1Complete(progress,playingNumber));
   renderWorlds();
@@ -349,7 +389,9 @@ window.addEventListener("mathssprites:advance",()=>{
   if(playingNumber===null)return showScreen("levels");
   const next=playingStage==="independent"
     ? nextIndependentLevel(playingNumber,stage2Progress.completed,teacher)
-    : nextWorld1Level(playingNumber,progress.completed,teacher);
+    : playingStage==="notebook"
+      ? nextApprenticeLevel(playingNumber,stage3Progress.completed,teacher)
+      : nextWorld1Level(playingNumber,progress.completed,teacher);
   if(next)launch(next.number,playingStage);
   else showScreen("stages");
 });

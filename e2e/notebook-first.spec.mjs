@@ -15,7 +15,7 @@ async function writeLine(page,text){
   await page.locator("#notebook-equation").fill(text);
   await page.locator("#notebook-check").click();
 }
-test("teacher notebook sandbox is separate from locked Stage 3 campaign",async({page})=>{
+test("teacher notebook sandbox earns no campaign credit even after Stage 3 unlocks",async({page})=>{
   await page.locator('[data-screen="settings"]').first().click();
   await expect(page.locator("#site-notebook-option")).toBeHidden();
   await page.locator("#teacher-unlock").check();
@@ -28,7 +28,7 @@ test("teacher notebook sandbox is separate from locked Stage 3 campaign",async({
   await expect(page.locator("#site-settings")).toBeVisible();
   await page.locator('[data-screen="worlds"]').first().click();
   await page.getByRole("button",{name:"Explore stages"}).click();
-  await expect(page.locator('[data-stage="notebook"] button')).toHaveCount(0);
+  await expect(page.locator('[data-stage="notebook"] button')).toHaveCount(1);
   await expect(page.locator("#world1-workshop button")).toHaveCount(0);
 });
 
