@@ -49,6 +49,12 @@ All 20 puzzles are playable following PR16, organised from simple one-step manip
 - World 1 physically and mathematically blocks signed objects and square/root actions.
 - Prior animation, neutral pair, area, fraction-cut and replay browser tests still run in preview mode.
 
-## Next: PR17
+## PR17 — Player-experience polish
 
-World 1 content is complete and mathematically validated in PR16. Next: review the visual differentiation of worlds and chapters, scaffold the first lessons more explicitly, and refine completion transitions and mobile navigation. Advanced negative numbers, fractions and squares/square roots remain later-world projects.
+The World 1 campaign now has five distinct chapter visual themes, optional first-visit Level 1 coaching, contextual chapter introductions, visible completion progress, a balanced-scene celebration before comic replay, a finished-workshop mastery screen and larger mobile touch/replay controls. Teachers can turn guidance off or restart the introductory sequence. All first-world mathematical restrictions and the 13 legacy experiments remain untouched.
+
+See [PR17_EXPERIENCE.md](PR17_EXPERIENCE.md) for the intended walkthrough and browser QA criteria.
+
+## Next after PR17
+
+Classroom-test onboarding and mobile usability, then begin planning World 2's negative numbers and the existing zero-pair visual mechanics. The future worlds remain locked until their own curricula are validated.
