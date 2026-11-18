@@ -9,16 +9,22 @@ test("dark sprites are visible and visibly bounce rather than staying still", as
   const sprite = page.locator("#left-items .sprite").first();
   await expect(sprite).toBeVisible();
 
-  const movement = await sprite.evaluate(el => {
+  const movement = await sprite.locator(".sprite-motion").evaluate(el => {
     const anim = el.getAnimations().find(candidate => candidate.animationName === "sprite-hop");
     if (!anim) return null;
     anim.pause();
-    anim.currentTime = 10;
-    const resting = el.getBoundingClientRect().top;
-    anim.currentTime = 540;
-    const airborne = el.getBoundingClientRect().top;
+    const cycle = anim.effect.getComputedTiming().duration;
+    const originalTime = anim.currentTime;
+    const heights = [];
+    // The sprites now have individual negative phase delays. Sweep one whole
+    // cycle instead of assuming the peak occurs at the same absolute time.
+    for (let i = 0; i <= 60; i++) {
+      anim.currentTime = cycle * i / 60;
+      heights.push(el.getBoundingClientRect().top);
+    }
+    anim.currentTime = originalTime;
     anim.play();
-    return Math.abs(resting - airborne);
+    return Math.max(...heights) - Math.min(...heights);
   });
   expect(movement, "Sprite needs a real vertical hop").not.toBeNull();
   expect(movement).toBeGreaterThan(22);
@@ -83,7 +89,7 @@ test("Motion: on overrides the system's reduced-motion preference", async ({ pag
   await expect(page.locator("#motion-toggle")).toHaveText("Motion: reduced");
   await page.locator("#motion-toggle").click();
   await expect(page.locator("#motion-toggle")).toHaveText("Motion: on");
-  const duration = await page.locator("#left-items .sprite").first().evaluate(el => (
+  const duration = await page.locator("#left-items .sprite-motion").first().evaluate(el => (
     getComputedStyle(el).animationDuration
   ));
   expect(parseFloat(duration)).toBeGreaterThanOrEqual(1);
