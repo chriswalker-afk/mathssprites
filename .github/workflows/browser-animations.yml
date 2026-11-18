@@ -19,8 +19,6 @@ jobs:
           node-version: 22
       - name: Install Playwright test (QA-only, not a game dependency)
         run: npm install --no-save @playwright/test@1.65.1
-      - name: Install headless Chromium
-        run: npx playwright install --with-deps chromium
       - name: Check live DOM, bounce and hand choreography
         run: npx playwright test
       - name: Keep screenshots and traces for design review
