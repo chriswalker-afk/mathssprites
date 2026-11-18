@@ -1230,6 +1230,101 @@ async function guidedMove() {
   }
   await finishTurn();
 }
+/** Replay a CHECKED algebra notebook as consecutive real hand movements.
+ * The pure engine's committed history, never user text, provides the actions.
+ * This deliberately does NOT call finishTurn/showReplay: paper already came
+ * first, so showing the standard paper-after-sprites comic would reverse PR20. */
+async function replayNotebookWithSprites() {
+  if(!notebookSession || !isSolved(notebookSession.state) || busy)return;
+  const script=notebookReplayScript(notebookSession);
+  notebookPhase="replaying";
+  mode="auto";
+  busy=true;
+  state=initialState(notebookSession.level);
+  override=null;
+  groups={left:0,right:0};
+  $("scene").hidden=false; // let geometry exist BEFORE hand measurements
+  $("notebook-workspace").hidden=true;
+  $("notebook-playback").hidden=false;
+  $("notebook-playback-message").textContent="The hand is getting ready to follow your checked steps...";
+  render();
+  try {
+    await sleep(60);
+    for(const [i,step] of script.entries()){
+      const action=step.action;
+      const previous=state;
+      const result=perform(previous,action,"auto");
+      if(!result.ok)throw new Error("Checked notebook action became invalid");
+      const next=result.state;
+      const exact=["left","right"].every(side=>
+        TOKEN_KINDS.every(kind=>next[side][kind]===step.after[side][kind]));
+      if(!exact)throw new Error("Notebook script disagrees with engine history");
+      const previews={
+        left:previewRoomAction(previous.left,action,state.quantityMode,"left"),
+        right:previewRoomAction(previous.right,action,state.quantityMode,"right")
+      };
+      if(!previews.left.ok||!previews.right.ok)
+        throw new Error("A notebook room preview was invalid");
+      $("notebook-playback-message").textContent=
+        "Step "+(i+1)+" of "+script.length+": "+step.explanation;
+      if(action.op==="divide"){
+        await neutraliseBeforeDivision(action,previews);
+        groups={left:action.factor,right:action.factor};
+        render();
+        await sleep(reducedMotion?350:900);
+      } else render();
+      const beforeRight=action.op==="divide"
+        ? room(previews.right.beforeGroups) : previous.right;
+      await handAct("left",action,async()=>{
+        const trial=previews.left;
+        if(action.op!=="divide"&&trial.cancellationEvents.length){
+          override={left:room(trial.raw),right:beforeRight};render();
+          await animateNeutralEvents("left",trial.cancellationEvents,r=>{
+            override={left:room(r),right:beforeRight};render();
+          });
+        }
+        override={left:next.left,right:beforeRight};
+        groups.left=0;
+        render();
+      });
+      await handAct("right",action,async()=>{
+        state=next;
+        const trial=previews.right;
+        if(action.op!=="divide"&&trial.cancellationEvents.length){
+          override={left:next.left,right:room(trial.raw)};render();
+          await animateNeutralEvents("right",trial.cancellationEvents,r=>{
+            override={left:next.left,right:room(r)};render();
+          });
+        }
+        override=null;groups.right=0;render();
+      });
+      override=null;groups={left:0,right:0};render();
+      clearNeutralEffect("left");clearNeutralEffect("right");
+      if(i<script.length-1)await sleep(reducedMotion?120:450);
+    }
+    if(!isSolved(state))throw new Error("Replay did not reach the validated solution");
+    $("scene").classList.add("solved-scene");
+    $("level-clear-title").textContent="Your algebra came to life!";
+    $("level-clear").hidden=false;
+    $("notebook-playback-message").textContent=
+      "Your "+script.length+" checked algebra step"+(script.length===1?"":"s")+
+      " just happened in the rooms. Every move stayed balanced.";
+    await sleep(reducedMotion?650:1250);
+  } catch {
+    state=initialState(notebookSession.level);
+    $("notebook-playback-message").textContent=
+      "The sprite replay was interrupted. Your checked paper working is safe; try the replay again.";
+  } finally {
+    override=null;groups={left:0,right:0};
+    $("scene").classList.remove("solved-scene");
+    $("level-clear").hidden=true;
+    clearNeutralEffect("left");clearNeutralEffect("right");
+    busy=false;
+    notebookPhase="complete";
+    render();
+    $("notebook-back-paper").focus({preventScroll:true});
+  }
+}
 async function manualMove(side) {
   // A student-facing Stage 1 cannot perform one-sided actions, even if an
   // invisible prototype button is activated programmatically.
