@@ -28,6 +28,12 @@ export const LEVELS = [
     prompt: "A sprite has wandered into the other room. Can you isolate one resident?",
     left: { posX: 2, posOne: 3 }, right: { posX: 1, posOne: 7 }, solution: 4,
     suggested: "A matching sprite can be removed from each side, and then the weights."
+  },
+  {
+    id: "five-baskets", title: "Five little baskets", chapter: "05 · A bigger division",
+    prompt: "These rooms are crowded. Can you pack everything into five equal baskets?",
+    left: { posX: 5, posOne: 10 }, right: { posOne: 20 }, solution: 2,
+    suggested: "Try five equal baskets in each room, then remove two weights from both."
   }
 ];
 
