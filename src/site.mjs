@@ -3,21 +3,42 @@ import {
   WORLDS, WORLD1_CHAPTERS, WORLD1_LEVELS, findWorld1Level,
   isWorld1Unlocked, nextWorld1Level
 } from "./worlds.mjs";
-import {WORLD1_STAGES, EQUATION_WORKSHOP, stageOneComplete} from "./stages.mjs";
+import {
+ INDEPENDENT_LEVELS,INDEPENDENT_CHAPTERS,findIndependentLevel,
+ isIndependentUnlocked,nextIndependentLevel
+} from "./independent-levels.mjs";
+import {
+ WORLD1_STAGES,EQUATION_WORKSHOP,stageOneComplete,stageTwoComplete,canOpenWorld1Stage
+} from "./stages.mjs";
 import {
   loadProgress, saveProgress, markWorld1Complete,
+  loadStage2Progress,saveStage2Progress,markStage2Complete,
   loadTeacherSetting, saveTeacherSetting
 } from "./progress.mjs";
 import {
-  readGuideEnabled, writeGuideEnabled, writeGuideSeen
+  readGuideEnabled, writeGuideEnabled, writeGuideSeen,writeIndependentGuideSeen
 } from "./onboarding.mjs";
 
 const $ = id => document.getElementById(id);
 let progress = loadProgress();
+let stage2Progress = loadStage2Progress();
 let teacher = loadTeacherSetting();
 let guideEnabled = readGuideEnabled();
 let currentScreen = "home";
 let playingNumber = null;
+let playingStage = null;
+let selectedStage = "guided";
+function stageCanOpen(id) {
+  return canOpenWorld1Stage(id,{
+    teacher,
+    stage1Completed:stageOneComplete(progress.completed),
+    stage2Completed:stageTwoComplete(stage2Progress.completed)
+  });
+}
+function independentUnlocked(number) {
+  return stageCanOpen("independent") &&
+    isIndependentUnlocked(number,stage2Progress.completed,teacher);
+}
 const screenNames = ["home","worlds","stages","levels","help","settings"];
 
 function clean(text) {
@@ -28,21 +49,34 @@ function unlocked(number) {
   return isWorld1Unlocked(number, progress.completed, teacher);
 }
 function homeAction() {
-  const number = unlocked(progress.lastPlayed) ? progress.lastPlayed : 1;
-  const played = progress.completed.length > 0;
-  $("home-play").textContent = played
-    ? (progress.completed.includes(number) ? "Replay Stage 1 · Level " : "Continue Stage 1 · Level ") + number + " →"
+  const readyForStage2=stageOneComplete(progress.completed) && stageCanOpen("independent");
+  if (readyForStage2) {
+    const n=independentUnlocked(stage2Progress.lastPlayed)?stage2Progress.lastPlayed:1;
+    const played=stage2Progress.completed.length>0;
+    $("home-play").textContent = stageTwoComplete(stage2Progress.completed)
+      ? "Explore your mastered stages →"
+      : played
+        ? "Continue Stage 2 · Level " + n + " →"
+        : "Begin Stage 2 · Independent Balance →";
+    $("home-progress").textContent="Stage 1 mastered · Stage 2 " +
+      stage2Progress.completed.length+"/16 complete · progress saved on this device";
+    return;
+  }
+  const n=unlocked(progress.lastPlayed)?progress.lastPlayed:1;
+  const played=progress.completed.length>0;
+  $("home-play").textContent=played
+    ? (progress.completed.includes(n)?"Replay Stage 1 · Level ":"Continue Stage 1 · Level ")+n+" →"
     : "Begin Stage 1 · Guided Balance →";
-  $("home-progress").textContent = played
-    ? progress.completed.length + " of 20 Guided Balance experiments complete · saved on this device"
-    : "Stage 1: 20 playable experiments · Stages 2 and 3 coming soon";
+  $("home-progress").textContent=played
+    ? progress.completed.length+" of 20 Guided Balance experiments complete · saved on this device"
+    : "Stage 1: 20 playable experiments · Stage 2 opens after Stage 1";
 }
 function renderWorlds() {
   $("world-cards").innerHTML = WORLDS.map(world => {
     const progressLine = world.available
       ? (stageOneComplete(progress.completed)
-        ? "STAGE 1 MASTERED · 20/20 · TWO STAGES PLANNED"
-        : "STAGE 1 · " + progress.completed.length + "/20 complete · 20 playable")
+        ? "STAGE 1 MASTERED · STAGE 2 " + stage2Progress.completed.length + "/16 complete"
+        : "STAGE 1 · " + progress.completed.length + "/20 complete · Stage 2 next")
       : "COMING SOON";
     return '<article class="world-card world-' + world.theme +
       (world.available ? ' world-ready' : ' world-planned') + '">' +
@@ -65,79 +99,106 @@ function renderWorlds() {
  * Locked stages have no playable link, even when the teacher flag is on. */
 function renderStages() {
   const complete=stageOneComplete(progress.completed);
-  $("world1-stage-cards").innerHTML = WORLD1_STAGES.map(stage=>{
-    const playable=stage.available;
-    const countText=stage.number===1
-      ? progress.completed.length + " of " + stage.count + " experiments complete"
-      : stage.count + " new experiments planned";
-    return '<article class="stage-card ' + (playable?"stage-ready":"stage-planned") +
-      '" data-stage="' + stage.id + '" aria-label="Stage ' + stage.number +
-      ': ' + clean(stage.title) + (playable?", available":", coming soon") + '">' +
-      '<div class="stage-top"><span class="stage-no">STAGE ' + String(stage.number).padStart(2,"0") +
-      '</span><span class="stage-tag">' +
-      (playable ? (complete ? "Stage mastered" : "Ready to play") : "Coming soon") +
-      '</span></div><div class="stage-ornament" aria-hidden="true">' + stage.icon + '</div>' +
-      '<h2>' + clean(stage.title) + '</h2>' +
-      '<p class="stage-tagline">' + clean(stage.tagline) + '</p>' +
-      '<p>' + clean(stage.description) + '</p>' +
-      '<div class="stage-card-bottom"><span class="stage-count">' + countText + '</span>' +
+  $("world1-stage-cards").innerHTML=WORLD1_STAGES.map(stage=>{
+    const playable=stageCanOpen(stage.id);
+    const countText=stage.id==="guided"
+      ? progress.completed.length+" of "+stage.count+" experiments complete"
+      : stage.id==="independent"
+        ? (playable?stage2Progress.completed.length+" of "+stage.count+" experiments complete"
+          : stage.count+" experiments · complete Stage 1 to unlock")
+        : stage.count+" new experiments planned";
+    const finished=stage.id==="guided"?complete:
+      stage.id==="independent"&&stageTwoComplete(stage2Progress.completed);
+    return '<article class="stage-card '+(playable?"stage-ready":"stage-planned")+
+      '" data-stage="'+stage.id+'" aria-label="Stage '+stage.number+
+      ': '+clean(stage.title)+(playable?", available":", locked")+'">'+
+      '<div class="stage-top"><span class="stage-no">STAGE '+String(stage.number).padStart(2,"0")+
+      '</span><span class="stage-tag">'+(finished?"Stage mastered":
+        playable?"Ready to play":stage.available?"Complete Stage 1":"Coming soon")+
+      '</span></div><div class="stage-ornament" aria-hidden="true">'+stage.icon+'</div>'+
+      '<h2>'+clean(stage.title)+'</h2>'+
+      '<p class="stage-tagline">'+clean(stage.tagline)+'</p>'+
+      '<p>'+clean(stage.description)+'</p>'+
+      '<div class="stage-card-bottom"><span class="stage-count">'+countText+'</span>'+
       (playable
-        ? '<button type="button" class="primary-btn" data-screen="levels">Choose Stage 1 levels →</button>'
-        : '<span class="stage-coming" aria-label="This stage is not yet available">◇ New levels in development</span>') +
-      '</div></article>';
+        ? '<button type="button" class="primary-btn" data-stage-open="'+stage.id+'"'+
+          (stage.id==="guided"?' data-screen="levels"':'')+
+          '>Choose Stage '+stage.number+' levels →</button>'
+        : '<span class="stage-coming" aria-label="This stage is unavailable">'+
+            (stage.available?"◇ Complete Stage 1 to unlock":"◇ New levels in development")+
+          '</span>')+'</div></article>';
   }).join("");
-  $("world1-workshop").innerHTML =
-    '<div class="workshop-glyph" aria-hidden="true">' + EQUATION_WORKSHOP.icon + '</div>' +
-    '<div class="workshop-content"><div class="portal-kicker">FREE PLAY · PLANNED</div>' +
-    '<h2>' + clean(EQUATION_WORKSHOP.title) + '</h2><p>' +
-    clean(EQUATION_WORKSHOP.description) + '</p></div>' +
+  $("world1-workshop").innerHTML=
+    '<div class="workshop-glyph" aria-hidden="true">'+EQUATION_WORKSHOP.icon+'</div>'+
+    '<div class="workshop-content"><div class="portal-kicker">FREE PLAY · PLANNED</div>'+
+    '<h2>'+clean(EQUATION_WORKSHOP.title)+'</h2><p>'+
+    clean(EQUATION_WORKSHOP.description)+'</p></div>'+
     '<span class="workshop-planned" aria-label="Equation Workshop is coming soon">◇ Coming soon</span>';
-  $("stage-teacher-note").hidden = !teacher;
+  $("stage-teacher-note").hidden=!teacher;
+  $("stage-teacher-note").textContent=
+    "Teacher access opens all implemented Stage 1 and Stage 2 puzzles. "+
+    "Stage 3, future mathematical worlds and the Equation Workshop are not built yet.";
 }
 function renderLevels() {
-  const completed = progress.completed.length;
-  const nextNumber = WORLD1_LEVELS.find(slot =>
-    slot.available && !progress.completed.includes(slot.number) && unlocked(slot.number))?.number;
-  $("level-progress").textContent = completed + " / 20 experiments complete";
-  $("world1-progress-bar").value = completed;
-  $("world1-progress-number").textContent = completed + " of 20 complete";
-  $("world1-finale").hidden = completed !== 20;
-  const emblems = ["−", "÷", "→", "⇄", "✦"];
-  $("level-sections").innerHTML = WORLD1_CHAPTERS.map((chapter, index) => {
-    const slots = WORLD1_LEVELS.slice(index*4, index*4+4);
-    const finished = slots.filter(slot=>progress.completed.includes(slot.number)).length;
-    const cards = slots.map(slot => {
-      const complete = progress.completed.includes(slot.number);
-      const open = unlocked(slot.number);
-      const current = slot.number === nextNumber;
-      const tag = !slot.available ? "Coming soon" : complete ? "Completed" :
-        open ? "Ready to play" : "Locked";
-      const status = !slot.available ? "upcoming" : complete ? "complete" :
-        open ? "ready" : "locked";
-      return '<button type="button" class="level-tile status-' + status +
-        (current ? ' level-next' : '') +
-        '" data-level="' + slot.number + '"' + (open ? "" : " disabled") +
-        (current ? ' aria-current="step"' : '') +
-        ' aria-label="Level ' + slot.number + ': ' + clean(slot.title) + '. ' + tag + '">' +
-        '<span class="tile-number">' + String(slot.number).padStart(2,"0") + '</span>' +
-        '<span class="tile-name">' + clean(slot.title) + '</span>' +
-        '<span class="tile-status">' +
-          (complete ? "✓ " : open ? "✦ " : "◇ ") + tag + '</span>' +
-        '</button>';
+  const independent=selectedStage==="independent";
+  const stage=independent?"Independent Balance":"Guided Balance";
+  const stageNumber=independent?2:1;
+  const source=independent?INDEPENDENT_LEVELS:WORLD1_LEVELS;
+  const chapters=independent?INDEPENDENT_CHAPTERS:WORLD1_CHAPTERS;
+  const current=independent?stage2Progress:progress;
+  const total=source.length,completed=current.completed.length;
+  const allowed=number=>independent?independentUnlocked(number):unlocked(number);
+  const nextNumber=source.find(slot=>
+    slot.available&&!current.completed.includes(slot.number)&&allowed(slot.number))?.number;
+  $("levels-stage-kicker").textContent="WORLD 01 · STAGE "+stageNumber+" · POSITIVE WHOLE NUMBERS";
+  $("levels-stage-title").textContent=stage;
+  $("levels-stage-intro").textContent=independent
+    ? "Make each mathematical move separately in the west and east rooms. The scale tells you when one move is still waiting to be matched."
+    : "Choose the operation. The hand automatically makes the same change to both rooms.";
+  $("level-progress").textContent=completed+" / "+total+" experiments complete";
+  $("world1-progress-description").textContent="Stage "+stageNumber+" · "+stage;
+  $("world1-progress-bar").max=total;
+  $("world1-progress-bar").value=completed;
+  $("world1-progress-number").textContent=completed+" of "+total+" complete";
+  $("world1-finale").hidden=completed!==total;
+  $("world1-finale").setAttribute("aria-label","Stage "+stageNumber+" completed");
+  $("stage-finale-kicker").textContent="STAGE "+stageNumber+" COMPLETE";
+  $("stage-finale-title").textContent=stage+" mastered!";
+  $("stage-finale-message").textContent=independent
+    ? "You've balanced both chambers yourself in all 16 puzzles. Your next challenge will be writing the algebra first."
+    : "You've finished 20 guided puzzles. Independent Balance now lets you control each chamber yourself.";
+  const emblems=independent?["↔","÷","→","✦"]:["−","÷","→","⇄","✦"];
+  $("level-sections").innerHTML=chapters.map((chapter,index)=>{
+    const slots=source.slice(index*4,index*4+4);
+    const finished=slots.filter(slot=>current.completed.includes(slot.number)).length;
+    const cards=slots.map(slot=>{
+      const done=current.completed.includes(slot.number);
+      const open=allowed(slot.number);
+      const next=slot.number===nextNumber;
+      const tag=done?"Completed":open?"Ready to play":"Locked";
+      const status=done?"complete":open?"ready":"locked";
+      return '<button type="button" class="level-tile status-'+status+
+        (next?' level-next':'')+'" data-level="'+slot.number+'"'+(open?"":" disabled")+
+        (next?' aria-current="step"':'')+
+        ' aria-label="Stage '+stageNumber+' Level '+slot.number+': '+clean(slot.title)+'. '+tag+'">'+
+        '<span class="tile-number">'+String(slot.number).padStart(2,"0")+'</span>'+
+        '<span class="tile-name">'+clean(slot.title)+'</span>'+
+        '<span class="tile-status">'+(done?"✓ ":open?"✦ ":"◇ ")+tag+'</span></button>';
     }).join("");
-    return '<section class="chapter-group chapter-theme-' + (index+1) +
-      (finished === 4 ? ' chapter-complete' : '') +
-      '" aria-label="Chapter ' + (index+1) + ': ' + clean(chapter.title) + '">' +
-      '<div class="chapter-group-heading">' +
-        '<div class="chapter-intro"><span class="chapter-badge">' +
-        String(index+1).padStart(2,"0") + '</span><div><h3>' +
-        clean(chapter.title) + '</h3><p>' + clean(chapter.description) +
-        '</p><p class="chapter-stat">' + (finished === 4 ? 'CHAPTER MASTERED' :
-         finished + ' of 4 experiments complete') + '</p></div></div>' +
-        '<div class="chapter-illustration" aria-hidden="true">' + emblems[index] + '</div>' +
-      '</div><div class="level-grid">' + cards + '</div></section>';
+    return '<section class="chapter-group chapter-theme-'+(index+1)+
+      (finished===4?' chapter-complete':'')+
+      '" aria-label="Stage '+stageNumber+' Chapter '+(index+1)+': '+clean(chapter.title)+'">'+
+      '<div class="chapter-group-heading">'+
+      '<div class="chapter-intro"><span class="chapter-badge">'+
+      String(index+1).padStart(2,"0")+'</span><div><h3>'+clean(chapter.title)+
+      '</h3><p>'+clean(chapter.description)+'</p>'+
+      '<p class="chapter-stat">'+(finished===4?"CHAPTER MASTERED":finished+" of 4 experiments complete")+
+      '</p></div></div><div class="chapter-illustration" aria-hidden="true">'+
+      emblems[index]+'</div></div><div class="level-grid">'+cards+'</div></section>';
   }).join("");
-  $("teacher-note").hidden = !teacher;
+  $("teacher-note").hidden=!teacher;
+  $("teacher-note").textContent="Teacher access: all "+total+" puzzles in Stage "+stageNumber+
+    " are unlocked, without changing their mathematical restrictions.";
 }
 function renderSettings() {
   $("teacher-unlock").checked = teacher;
