@@ -48,7 +48,7 @@ The repository now includes a **dependency-free browser game** with five curated
 - **Guided mirror**: choose an operation and the hand performs it in both rooms.
 - **Your turn**: make a change in one room; the balance tips until you repeat it in the other.
 - **Transparent baskets**: dividing means making two to five identical groups *within each room*, then retaining one group on each side.
-- **Automatic comic replay**: once a lone dark sprite faces the correct number of weights, a notebook unfolds. Animated panels replay each actual mathematical step, and the pencil writes the equations alongside.
+- **Pencil-paced comic replay**: once a lone dark sprite faces the correct number of weights, the hand's actual steps unfold as comic panels. The pencil moves to each **individual algebra symbol**, draws it, pauses between lines, and only then advances to the next panel. Pause, continue, manual steps, and writing-speed choices are available.
 - **Hints, Undo, Reset, reduced motion and responsive layout** are included.
 - **Signed algebra is supported in the isolated engine**, but white sprites, balloons and animated zero pairs remain planned for the next chapter rather than falsely advertised as part of this prototype.
 
