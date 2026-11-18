@@ -512,7 +512,7 @@ background-image:repeating-linear-gradient(90deg,transparent 0 66px,rgba(0,0,0,.
 }
 
 /* PR10: unsuccessful actions are VISUAL EXPERIMENTS, never algebra commits.
-   Fractions are shown as sliced objects in baskets; crowded rooms spill props;
+   Fractional cuts now happen directly to floor actors; crowded rooms spill props;
    different one-sided actions tip the actual beam before the hand undoes them. */
 .attempt-stage[hidden]{display:none!important}
 .attempt-stage{position:absolute;z-index:10;left:1%;right:1%;bottom:34px;height:150px;
@@ -527,53 +527,6 @@ background-image:repeating-linear-gradient(90deg,transparent 0 66px,rgba(0,0,0,.
 .attempt-stage.rewinding{animation:attempt-reverse .7s ease-in both}
 @keyframes attempt-reveal{from{opacity:0;transform:translateY(-12px) scale(.93)}to{opacity:1;transform:translateY(0) scale(1)}}
 @keyframes attempt-reverse{from{opacity:1;transform:scale(1)}to{opacity:0;transform:translateY(-12px) scale(.82)}}
-.attempt-baskets{display:flex;justify-content:center;align-items:flex-end;gap:5px;
-  width:100%;height:91px}
-.attempt-basket{border:2px solid #c4a36d;border-top:5px solid #e1bf85;
-  border-radius:6px 6px 15px 15px;background:#e1c6901c;width:min(19%,79px);
-  height:84px;min-width:0;display:flex;align-items:center;justify-content:flex-end;
-  flex-direction:column;position:relative;gap:3px;padding:4px 2px 6px;
-  animation:basket-in .45s both}
-.attempt-basket .basket-label{font:bold .59rem Georgia,serif;color:#eed4a6}
-.attempt-basket .whole-chips{display:flex;flex-wrap:nowrap;gap:2px;
-  height:22px;justify-content:center;align-items:center;max-width:100%}
-.attempt-basket .whole-chip{display:inline-flex;width:14px;height:15px;
-  background:radial-gradient(circle at 25% 25%,#67786f,#121a1a 85%);
-  border:1px solid #ddc18a;border-radius:50%;box-shadow:0 2px 2px #0009}
-.attempt-basket .whole-chip.weight-chip{border-radius:3px 3px 6px 6px;
-  background:linear-gradient(90deg,#765335,#e3c58e,#805c3e)}
-.attempt-basket .whole-chip.square-chip{border-radius:3px}
-.slice-object{width:31px;height:31px;position:relative;display:block;
-  transform-origin:center;animation:split-surprise .8s ease-out both}
-.slice-object .slice-ghost{position:absolute;inset:0;border:2px dashed #d3c0a5;
-  background:#28393661;border-radius:50%}
-.slice-object .slice-actual{position:absolute;inset:0;
-  clip-path:polygon(0 0,var(--slice-percent,50%) 0,var(--slice-percent,50%) 100%,0 100%);
-  border-radius:50%;background:radial-gradient(circle at 30% 28%,#70837b,#152222 78%);
-  box-shadow:inset 1px -2px 5px #0009}
-.slice-object .slice-actual:before{content:"";position:absolute;left:9px;top:8px;
-  width:4px;height:6px;border-radius:50%;background:#f7f1d9;
-  box-shadow:10px 0 #f7f1d9}
-.slice-object.weight-part .slice-ghost,.slice-object.weight-part .slice-actual{
-  border-radius:5px;background:linear-gradient(95deg,#795633,#efcd94,#8a633d)}
-.slice-object.weight-part .slice-actual:before{display:none}
-.slice-object.square-part .slice-ghost,.slice-object.square-part .slice-actual{border-radius:5px}
-.slice-object.balloon-part .slice-ghost,.slice-object.balloon-part .slice-actual{background:#d39897}
-.slice-object .slice-cut{position:absolute;left:var(--slice-percent,50%);top:-4px;height:38px;
-  border-left:3px dashed #f9d09b;transform:rotate(5deg);
-  animation:blade-cut .8s ease-out both}
-.slice-fraction{font:bold .66rem Georgia,serif;color:#ffdda4;
-  background:#293633dc;border-radius:4px;padding:1px 4px}
-@keyframes split-surprise{
-  0%{transform:scale(1.12) rotate(-3deg)}35%{transform:scale(.7,1.2)}
-  70%{transform:translateX(6px) rotate(8deg) scale(.92)}
-  100%{transform:translateX(4px) rotate(3deg) scale(1)}
-}
-@keyframes blade-cut{
-  0%{opacity:0;transform:translateY(-24px) rotate(-15deg)}
-  40%{opacity:1;transform:translateY(0) rotate(8deg)}
-  100%{opacity:.8;transform:translateY(0) rotate(5deg)}
-}
 .attempt-overflow .room-interior{overflow:visible}
 .attempt-overflow .attempt-stage{left:-16%;right:-17%;height:156px}
 .overflow-trail{width:100%;height:98px;position:relative}
@@ -634,13 +587,6 @@ background-image:repeating-linear-gradient(90deg,transparent 0 66px,rgba(0,0,0,.
   .attempt-stage{bottom:20px;height:98px;gap:2px}
   .attempt-stage .attempt-caption{font-size:.49rem;padding:2px 3px}
   .attempt-stage .attempt-hint{font-size:.48rem}
-  .attempt-baskets{height:64px;gap:2px}
-  .attempt-basket{height:57px;border-width:1px;border-top-width:3px;padding:2px}
-  .attempt-basket .basket-label{font-size:.44rem}
-  .attempt-basket .whole-chips{height:11px}
-  .attempt-basket .whole-chip{width:9px;height:10px}
-  .slice-object{transform:scale(.62);margin:-5px}
-  .slice-fraction{font-size:.45rem}
   .attempt-overflow .attempt-stage{height:102px}
   .overflow-trail{height:58px}
   .overflow-piece{width:21px;height:21px}
