@@ -8,11 +8,16 @@ import {
  isIndependentUnlocked,nextIndependentLevel
 } from "./independent-levels.mjs";
 import {
- WORLD1_STAGES,EQUATION_WORKSHOP,stageOneComplete,stageTwoComplete,canOpenWorld1Stage
+ APPRENTICE_LEVELS,APPRENTICE_CHAPTERS,findApprenticeLevel,
+ isApprenticeUnlocked,nextApprenticeLevel
+} from "./apprentice-levels.mjs";
+import {
+ WORLD1_STAGES,EQUATION_WORKSHOP,stageOneComplete,stageTwoComplete,stageThreeComplete,canOpenWorld1Stage
 } from "./stages.mjs";
 import {
   loadProgress, saveProgress, markWorld1Complete,
   loadStage2Progress,saveStage2Progress,markStage2Complete,
+  loadStage3Progress,saveStage3Progress,markStage3Complete,
   loadTeacherSetting, saveTeacherSetting
 } from "./progress.mjs";
 import {
@@ -22,6 +27,7 @@ import {
 const $ = id => document.getElementById(id);
 let progress = loadProgress();
 let stage2Progress = loadStage2Progress();
+let stage3Progress = loadStage3Progress();
 let teacher = loadTeacherSetting();
 let guideEnabled = readGuideEnabled();
 let currentScreen = "home";
@@ -39,6 +45,10 @@ function independentUnlocked(number) {
   return stageCanOpen("independent") &&
     isIndependentUnlocked(number,stage2Progress.completed,teacher);
 }
+function apprenticeUnlocked(number) {
+  return stageCanOpen("notebook") &&
+    isApprenticeUnlocked(number,stage3Progress.completed,teacher);
+}
 const screenNames = ["home","worlds","stages","levels","help","settings"];
 
 function clean(text) {
@@ -49,16 +59,23 @@ function unlocked(number) {
   return isWorld1Unlocked(number, progress.completed, teacher);
 }
 function homeAction() {
-  const readyForStage2=stageOneComplete(progress.completed) && stageCanOpen("independent");
-  if (readyForStage2) {
+  const stage1Ready=stageOneComplete(progress.completed);
+  const stage2Ready=stageTwoComplete(stage2Progress.completed);
+  if(stage1Ready&&stage2Ready&&stageCanOpen("notebook")){
+    const mastered=stageThreeComplete(stage3Progress.completed);
+    const n=apprenticeUnlocked(stage3Progress.lastPlayed)?stage3Progress.lastPlayed:1;
+    $("home-play").textContent=mastered?"Explore your mastered stages →":
+      stage3Progress.completed.length
+        ?"Continue Stage 3 · Level "+n+" →":"Begin Stage 3 · Algebra Apprentice →";
+    $("home-progress").textContent="Stages 1 and 2 mastered · Stage 3 "+
+      stage3Progress.completed.length+"/12 complete · progress saved on this device";
+    return;
+  }
+  if(stage1Ready&&stageCanOpen("independent")){
     const n=independentUnlocked(stage2Progress.lastPlayed)?stage2Progress.lastPlayed:1;
-    const played=stage2Progress.completed.length>0;
-    $("home-play").textContent = stageTwoComplete(stage2Progress.completed)
-      ? "Explore your mastered stages →"
-      : played
-        ? "Continue Stage 2 · Level " + n + " →"
-        : "Begin Stage 2 · Independent Balance →";
-    $("home-progress").textContent="Stage 1 mastered · Stage 2 " +
+    $("home-play").textContent=stage2Progress.completed.length
+      ?"Continue Stage 2 · Level "+n+" →":"Begin Stage 2 · Independent Balance →";
+    $("home-progress").textContent="Stage 1 mastered · Stage 2 "+
       stage2Progress.completed.length+"/16 complete · progress saved on this device";
     return;
   }
@@ -74,7 +91,9 @@ function homeAction() {
 function renderWorlds() {
   $("world-cards").innerHTML = WORLDS.map(world => {
     const progressLine = world.available
-      ? (stageOneComplete(progress.completed)
+      ? (stageOneComplete(progress.completed) && stageTwoComplete(stage2Progress.completed)
+        ? "STAGES 1–2 MASTERED · STAGE 3 " + stage3Progress.completed.length + "/12 complete"
+        : stageOneComplete(progress.completed)
         ? "STAGE 1 MASTERED · STAGE 2 " + stage2Progress.completed.length + "/16 complete"
         : "STAGE 1 · " + progress.completed.length + "/20 complete · Stage 2 next")
       : "COMING SOON";
