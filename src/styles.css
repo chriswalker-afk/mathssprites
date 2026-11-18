@@ -226,7 +226,7 @@ legend{margin-bottom:12px;padding:0}
 .mini-empty{font-size:.62rem;color:#dfd7c4}
 .mini-equals{align-self:center;color:#d9c393}
 .mini-stage.reenacting .mini-rooms{animation:mini-jostle .65s ease-in-out}
-.mini-hand-cue{position:absolute;top:-10px;left:45%;font-size:1.45rem;animation:mini-visit .7s ease both}
+.mini-hand-cue{position:absolute;top:-10px;left:45%;width:36px;height:52px;animation:mini-visit .7s ease both;filter:drop-shadow(2px 3px 3px #1d2424a0)}
 .mini-stage.action-complete:after{content:"✓";position:absolute;right:7px;top:4px;color:#f2db9c;font-size:1.1rem}
 @keyframes mini-visit{0%{transform:translateY(-40px);opacity:0}50%{transform:translateY(15px);opacity:1}100%{transform:translateY(-40px);opacity:0}}
 @keyframes mini-jostle{35%{transform:translateY(3px)}65%{transform:translateY(-2px)}}
