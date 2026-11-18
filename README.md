@@ -2,7 +2,7 @@
 
 *A wordless algebra puzzle that becomes an equation only after you solve it.*
 
-**Status:** concept and design phase; no game code yet.
+**Status:** first playable browser prototype on this feature branch. The artwork is deliberately provisional; the mathematical mechanics are testable.
 
 ## The idea
 
@@ -41,10 +41,40 @@ At success, **comic-book panels appear automatically, one for each actual mathem
 - [Automatic comic-book equation replay](docs/COMIC_REPLAY.md)
 - [Negative sprites, balloons and zero pairs](docs/SIGNED_TOKENS.md)
 
-## Proposed first build
+## Play the first prototype
 
-A polished **four-level vertical slice**, playable entirely in-browser, with two inhabited rooms, a working scale, **both hand-control modes**, an animated hand, see-through grouping baskets, a small set of weights and round sprites, undo, supported basic operations, and the **automatic comic-and-pencil replay**. Build the algebra engine with signed values in mind, but introduce white sprites and balloons in a subsequent level chapter. **No login, server, leaderboards, timers or quadratic solving.**
+The repository now includes a **dependency-free browser game** with four curated whole-number levels.
 
-Implementation proposal (not committed yet): Vite + TypeScript, a 2D rendering/animation library, a separately testable algebra engine, and simple HTML controls. Static hosting is enough for the first version.
+- **Guided mirror**: choose an operation and the hand performs it in both rooms.
+- **Your turn**: make a change in one room; the balance tips until you repeat it in the other.
+- **Transparent baskets**: dividing means making two to five identical groups *within each room*, then retaining one group on each side.
+- **Automatic comic replay**: once a lone dark sprite faces the correct number of weights, a notebook unfolds. Animated panels replay each actual mathematical step, and the pencil writes the equations alongside.
+- **Hints, Undo, Reset, reduced motion and responsive layout** are included.
+- **Signed algebra is supported in the isolated engine**, but white sprites, balloons and animated zero pairs remain planned for the next chapter rather than falsely advertised as part of this prototype.
 
-The design is deliberately documented before coding; all details remain open to review.
+### Run locally
+
+```sh
+python3 -m http.server 8000
+```
+
+Open [http://localhost:8000/](http://localhost:8000/).
+
+To run the mathematical tests (Node.js 20+):
+
+```sh
+npm run check
+```
+
+No package installation is needed. After merge, publish as GitHub Pages from `main` root if desired. See [prototype instructions, scope and QA checklist](docs/PROTOTYPE.md).
+
+### Code
+
+- `index.html` — static game interface
+- `src/engine.mjs` — testable equations, physical tokens, history, grouping and manual operations
+- `src/app.mjs` — room rendering, interactions, hand choreography and comic replay
+- `src/styles.css` — original CSS-drawn laboratory and actors
+- `tests/engine.test.mjs` — engine regression tests
+- `.github/workflows/check.yml` — automated checks on PRs and main
+
+The first prototype prioritises **correct physical mathematics and a delightful reveal** over final art assets or a large level library.
