@@ -71,7 +71,11 @@ test("hand performs scene changes at contact, before retracting or revealing the
 });
 test("idle sprite motion is strong and persistent across unrelated room renders", () => {
   assert.match(css, /@keyframes sprite-hop/);
-  assert.match(css, /translateY\(-41px\)/);
+  assert.match(css, /translateY\(var\(--hop-height/);
+  assert.match(css, /@keyframes sprite-wiggle/);
+  assert.match(css, /@keyframes sprite-blink/);
+  assert.match(css, /@keyframes sprite-look/);
+  assert.match(css, /\.hand-target \.sprite-motion/);
   assert.match(app, /node\.dataset\.signature === signature/);
   assert.match(app, /style\.setProperty\("--hand-reach"/);
 });
