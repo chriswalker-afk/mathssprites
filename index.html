@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#151d20" />
+  <meta name="description" content="Maths Sprites: a mysterious little balancing-lab game where physical puzzles turn into algebraic discoveries." />
+  <title>Maths Sprites — The Balance Lab</title>
+  <link rel="stylesheet" href="./src/styles.css" />
+  <script type="module" src="./src/app.mjs"></script>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="identity">
+        <span class="brand-mark" aria-hidden="true"><i></i><i></i></span>
+        <div><div class="eyebrow">THE EXPERIMENTAL WORKSHOP</div><h1>Maths Sprites<span class="title-dot">.</span></h1></div>
+      </div>
+      <div class="header-actions">
+        <label class="labelled-select" for="level-select"><span>Experiment</span><select id="level-select" aria-label="Choose an experiment"></select></label>
+        <label class="labelled-select" for="mode-select"><span>Hand control</span><select id="mode-select" aria-label="Choose hand control mode"><option value="auto">Guided mirror</option><option value="manual">Your turn</option></select></label>
+        <button class="top-icon" id="motion-toggle" type="button" aria-pressed="false" title="Toggle reduced motion">Motion: on</button>
+      </div>
+    </header>
+
+    <main>
+      <div class="chapter-strip">
+        <div><div id="chapter" class="eyebrow">01 · Clearing the room</div><h2 id="level-title">One little resident</h2></div>
+        <div class="step-dots" id="step-dots" aria-label="Experiments"></div>
+      </div>
+
+      <section class="playfield" id="scene" aria-label="Balance laboratory scene">
+        <div class="ambient-window" aria-hidden="true"><div class="moon"></div></div>
+        <div class="shelf shelf-left" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+        <div class="shelf shelf-right" aria-hidden="true"><i></i><i></i><i></i></div>
+        <div class="light-pool" aria-hidden="true"></div>
+        <div class="scene-heading">THE BALANCE CHAMBERS <span class="scene-heading-rule"></span> LAB № 04</div>
+        <div id="speech" class="speech" role="status" aria-live="polite" hidden></div>
+
+        <div id="hand" class="giant-hand" aria-hidden="true">
+          <svg viewBox="0 0 185 242" focusable="false">
+            <path class="hand-sleeve" d="M58 -2 L152 -2 L144 95 L74 98 Z" />
+            <path class="hand-cuff" d="M72 83 L147 78 L149 109 L73 114 Z" />
+            <path class="hand-skin" d="M84 107 C83 130 77 145 69 161 C64 171 58 172 53 168 C46 163 50 151 58 134 C63 121 65 112 65 109 C64 101 53 104 45 114 C32 129 20 144 15 148 C6 156 -2 151 1 142 C7 128 28 101 48 85 C58 76 71 77 86 84 C98 77 115 79 125 86 C137 93 137 111 130 124 C128 135 122 155 120 174 C117 186 105 185 101 176 C99 173 99 167 100 160 L102 128 C99 151 93 179 87 190 C82 201 70 198 67 190 C66 185 68 179 69 172 C71 153 79 126 84 107 Z" />
+            <path class="hand-detail" d="M102 126 L103 104 M121 126 L120 108 M70 143 Q64 152 60 160" />
+          </svg>
+        </div>
+
+        <div class="rooms-row" id="rooms-row">
+          <div class="chamber" id="left-chamber" data-side="left">
+            <div class="room-roof" aria-hidden="true"><div class="roof-line"></div></div>
+            <div class="room-interior">
+              <div class="room-arch" aria-hidden="true"></div>
+              <div class="room-window" aria-hidden="true"><span></span></div>
+              <div class="tiny-shelf" aria-hidden="true"><i></i><i></i><i></i></div>
+              <div class="room-name">WEST CHAMBER <span class="room-index">I</span></div>
+              <div id="left-items" class="room-items" aria-label="Objects in the west chamber"></div>
+              <div class="room-floor" aria-hidden="true"></div>
+              <button id="left-action" class="room-action" type="button">Use hand here</button>
+            </div>
+            <div class="scale-pan" aria-hidden="true"></div>
+          </div>
+          <div class="chamber" id="right-chamber" data-side="right">
+            <div class="room-roof" aria-hidden="true"><div class="roof-line"></div></div>
+            <div class="room-interior">
+              <div class="room-arch" aria-hidden="true"></div>
+              <div class="room-window" aria-hidden="true"><span></span></div>
+              <div class="tiny-shelf" aria-hidden="true"><i></i><i></i><i></i></div>
+              <div class="room-name">EAST CHAMBER <span class="room-index">II</span></div>
+              <div id="right-items" class="room-items" aria-label="Objects in the east chamber"></div>
+              <div class="room-floor" aria-hidden="true"></div>
+              <button id="right-action" class="room-action" type="button">Use hand here</button>
+            </div>
+            <div class="scale-pan" aria-hidden="true"></div>
+          </div>
+        </div>
+        <div class="scale-beam" id="scale-beam" aria-hidden="true">
+          <div class="beam-body"></div><div class="pivot-dial"><div class="dial-needle" id="dial-needle"></div><span>⚖</span></div>
+        </div>
+        <div class="scale-base" aria-hidden="true"></div>
+        <div class="workbench" aria-hidden="true"></div>
+        <div class="scene-caption" id="balance-caption">A perfectly balanced mystery</div>
+      </section>
+
+      <section class="experiment-controls" aria-label="Hand tools">
+        <div class="mission">
+          <span class="eyebrow">YOUR EXPERIMENT</span>
+          <p id="level-prompt">Leave one dark sprite alone, facing only weights.</p>
+          <div id="feedback" class="feedback" role="status" aria-live="polite">Choose a hand action, then try it on the rooms.</div>
+        </div>
+        <div class="control-content">
+          <div class="control-top">
+            <fieldset class="operation-picker">
+              <legend>1 · Choose an action</legend>
+              <button class="tool-button selected" type="button" data-operation="remove"><span>−</span> Remove</button>
+              <button class="tool-button" type="button" data-operation="add"><span>+</span> Add</button>
+              <button class="tool-button" type="button" data-operation="divide"><span>÷</span> Divide</button>
+              <button class="tool-button" type="button" data-operation="multiply"><span>×</span> Multiply</button>
+            </fieldset>
+            <fieldset class="object-picker" id="object-picker">
+              <legend>2 · Choose what</legend>
+              <button type="button" class="item-button selected" data-kind="posOne"><span class="tiny-weight" aria-hidden="true"></span> Weight</button>
+              <button type="button" class="item-button" data-kind="posX"><span class="tiny-sprite" aria-hidden="true">••</span> Sprite</button>
+            </fieldset>
+            <div class="amount-control">
+              <div class="control-label" id="amount-label">3 · How many?</div>
+              <div class="stepper"><button type="button" id="amount-down" aria-label="Decrease amount">−</button><output id="amount-value">2</output><button type="button" id="amount-up" aria-label="Increase amount">+</button></div>
+            </div>
+          </div>
+          <div class="control-bottom">
+            <div class="small-actions">
+              <button id="undo" type="button" class="secondary-btn">↶ Undo</button>
+              <button id="reset" type="button" class="secondary-btn">Reset</button>
+              <button id="hint" type="button" class="secondary-btn">Ask the hand</button>
+            </div>
+            <button id="do-both" class="primary-btn" type="button">Do it to both rooms <span aria-hidden="true">→</span></button>
+            <div class="manual-explanation" id="manual-explanation" hidden>Pick a room above, then repeat the same move on the other.</div>
+          </div>
+        </div>
+      </section>
+
+      <div class="footer-note">The equations are hiding in the rooms. Solve the puzzle to discover them. <span>Made for curious mathematicians.</span></div>
+    </main>
+  </div>
+
+  <section class="replay-backdrop" id="replay-backdrop" hidden>
+    <div class="replay-card" role="dialog" aria-modal="true" aria-labelledby="replay-title">
+      <header class="replay-header">
+        <div><div class="eyebrow">THE EXPERIMENT REVEALED</div><h2 id="replay-title">Your algebra, illustrated.</h2><p>The sprites remember every move. Watch what your hand really did.</p></div>
+        <button type="button" id="replay-close" class="replay-exit">← Back to the laboratory</button>
+      </header>
+      <div class="replay-columns">
+        <section class="comic-side" aria-label="Animated comic panels"><div class="comic-label">THE STORY OF YOUR MOVES</div><div id="comic-panels" class="comic-panels" aria-live="polite"></div></section>
+        <section class="paper-side" aria-label="Algebra notebook">
+          <div class="paper-page">
+            <div class="paper-top"><span>THE WORKSHOP JOURNAL</span><span>✦</span></div>
+            <h3>What the hand discovered</h3>
+            <div class="legend">● black sprite = +x &nbsp; · &nbsp; ◆ weight = +1</div>
+            <div id="pencil-lines" class="pencil-lines" aria-live="polite"></div>
+            <div id="pencil" class="pencil-icon" aria-hidden="true">✎</div>
+            <p class="journal-footer">Whatever you change on one side, you must also change on the other.</p>
+          </div>
+        </section>
+      </div>
+      <footer class="replay-toolbar">
+        <div class="replay-transport">
+          <button id="replay-back" type="button" aria-label="Previous comic panel">‹</button>
+          <button id="replay-play" type="button" aria-label="Pause or play replay">Pause Ⅱ</button>
+          <button id="replay-next" type="button" aria-label="Next comic panel">›</button>
+          <button id="replay-restart" type="button">↺ Watch again</button>
+        </div>
+        <div id="replay-progress" class="replay-progress">Panel 1 of 3</div>
+        <div class="replay-end-actions">
+          <button id="replay-skip" type="button" class="secondary-btn">Show final working</button>
+          <button id="next-level" type="button" class="primary-btn">Next experiment →</button>
+        </div>
+      </footer>
+    </div>
+  </section>
+</body>
+</html>

@@ -1,0 +1,12 @@
+{
+  "name": "mathssprites",
+  "private": true,
+  "version": "0.1.0",
+  "description": "A wordless balancing-equation game with a comic-book algebra reveal",
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/*.test.mjs",
+    "check": "node --check src/engine.mjs && node --check src/app.mjs && npm test"
+  },
+  "engines": { "node": ">=20" }
+}
