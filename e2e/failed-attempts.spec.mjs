@@ -5,23 +5,38 @@ test.beforeEach(async ({ page }) => {
   await page.goto("/");
 });
 
-test("a non-whole division visually slices a sprite, waits, explains, and restores the room", async ({ page }) => {
-  const stage = page.locator("#left-attempt-stage");
+test("a rejected division actually CHOPS the floor sprite in half, pauses, then puts it together",async({page})=>{
+  test.setTimeout(45000);
+  const stage=page.locator("#left-attempt-stage");
   await page.locator('[data-operation="divide"]').click();
   await page.locator("#do-both").click();
   await expect(stage).toBeVisible({timeout:12000});
-  await expect(stage).toHaveAttribute("data-issue", "fraction");
-  await expect(stage.locator(".attempt-basket")).toHaveCount(2);
-  await expect(stage.locator(".slice-object")).toHaveCount(2);
-  await expect(stage.locator(".slice-fraction").first()).toHaveText("1/2");
-  // The hand shows the failed physical result before offering advice.
-  await expect(page.locator("#hand")).toHaveAttribute("data-phase","rest",{timeout:10000});
+  await expect(stage).toHaveAttribute("data-issue","fraction");
+  await expect(stage).toHaveClass(/fraction-floor-stage/);
+  await expect(stage).toHaveAttribute("data-cut-factor","2");
+  await expect(stage).toHaveAttribute("data-cut-sources","1");
+  await expect(stage.locator(".fraction-cut-source[data-kind='posX']")).toHaveCount(1);
+  await expect(stage.locator(".fraction-cut-piece")).toHaveCount(2);
+  await expect(stage.locator(".fraction-cut-art.sprite-black")).toHaveCount(2);
+  await expect(stage.locator(".fraction-cut-seam")).toHaveCount(1);
+  await expect(stage.locator(".attempt-basket")).toHaveCount(0,
+    "the actual floor character is cut, not an unrelated basket diagram");
+  await expect(page.locator("#left-items .sprite-black.fraction-original-hidden")).toHaveCount(1);
+  await expect(page.locator("#left-items .weight")).toHaveCount(2);
+  await expect(stage).toHaveAttribute("data-cut-phase","chopped",{timeout:13000});
+  await page.waitForTimeout(260);
+  const moved=await stage.locator(".fraction-cut-piece").first().evaluate(
+    e=>getComputedStyle(e).transform);
+  expect(moved).not.toBe("none");
   await expect(page.locator("#speech")).toBeHidden();
-  await page.screenshot({path:"artifacts/rejected-sprite-cut-into-halves.png"});
-  await expect(page.locator("#speech")).toContainText("These pieces are too small",{timeout:12000});
+  await page.screenshot({path:"artifacts/pr13-actual-floor-sprite-chopped-into-halves.png"});
+  await expect(page.locator("#speech")).toContainText("These pieces are too small",{timeout:14000});
+  await expect(page.locator("#speech")).toContainText("put the bits back together");
   await expect(page.locator("#speech")).toContainText("undo");
-  await page.screenshot({path:"artifacts/rejected-sprite-speech-bubble.png"});
-  await expect(stage).toBeHidden({timeout:12000});
+  await page.screenshot({path:"artifacts/pr13-sprite-halves-and-explanation.png"});
+  await expect(stage).toHaveAttribute("data-cut-phase","rejoining",{timeout:13000});
+  await expect(stage).toBeHidden({timeout:13000});
+  await expect(page.locator("#left-items .sprite-black.fraction-original-hidden")).toHaveCount(0);
   await expect(page.locator("#left-items .sprite-black")).toHaveCount(1);
   await expect(page.locator("#left-items .weight")).toHaveCount(2);
   await expect(page.locator("#right-items .weight")).toHaveCount(5);
