@@ -115,10 +115,15 @@ export function evaluate(value, x) {
 export function initialState(level = LEVELS[0], quantityMode = levelQuantityMode(level)) {
   if (!QUANTITY_MODES.includes(quantityMode))
     throw new TypeError("Unknown quantity mode");
+  if (level.lockPositive && quantityMode !== "positive")
+    throw new RangeError("This World 1 level is restricted to positive whole numbers.");
   if (quantityMode === "positive" &&
       [level.left,level.right].some(r=>r?.negX || r?.negOne))
     throw new RangeError("A signed experiment cannot start in positive-only mode");
-  return { levelId: level.id, quantityMode, goal: level.goal || "isolate", solution: level.solution,
+  return { levelId: level.id, quantityMode,
+    allowedOperations: level.allowedOperations ? [...level.allowedOperations] : null,
+    lockPositive: !!level.lockPositive,
+    goal: level.goal || "isolate", solution: level.solution,
     areaTarget: level.target ? {left:room(level.target.left),right:room(level.target.right)} : null,
     left: room(level.left), right: room(level.right), history: [], pending: null };
 }
@@ -325,8 +330,20 @@ export function previewRoomAction(source, action, quantityMode = "signed", side 
   if (!permission.ok) return permission;
   return transform(source, action, side);
 }
+/** World-specific permissions live in the pure engine; a hidden DOM button
+ * must never be the only barrier between introductory and advanced maths. */
+export function levelActionPermission(state, action) {
+  if (state.lockPositive && state.quantityMode !== "positive")
+    return {ok:false,code:"locked-world",reason:"This workshop uses positive objects only."};
+  if (state.allowedOperations && !state.allowedOperations.includes(action?.op))
+    return {ok:false,code:"locked-operation",
+      reason:"That tool belongs to a later laboratory. Use the whole-number tools here."};
+  return {ok:true};
+}
 export function prepare(state, action) {
   if (state.pending) return { ok: false, reason: "Finish the matching move, or undo the first one." };
+  const worldPermission = levelActionPermission(state, action);
+  if (!worldPermission.ok) return worldPermission;
   const error = check(action);
   if (error) return { ok: false, reason: error };
   const permission=quantityPermission(state.quantityMode||"positive",action);
@@ -356,6 +373,8 @@ function commit(state, action, pair, mode) {
 export function perform(state, action, mode = "auto", side) {
   const error=check(action);
   if(error)return {ok:false,code:"invalid",reason:error};
+  const worldPermission=levelActionPermission(state,action);
+  if(!worldPermission.ok)return worldPermission;
   const permission=quantityPermission(state.quantityMode||"positive",action);
   if(!permission.ok)return permission;
   if (state.pending) {
