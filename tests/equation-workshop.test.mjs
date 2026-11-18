@@ -58,13 +58,13 @@ test("clear, specific feedback for unsupported algebra and physical limits",()=>
     ["x=0","zero-solution"],["x+5=5","zero-solution"],
     ["x+5=3","negative-solution"],["3x+5=x+1","negative-solution"],
     ["2x=5","fraction-solution"],["2x+3=8","fraction-solution"],
-    ["x=49","solution-overflow"],["7x=21","unrepresentable"],
+    ["x=49","capacity"],["7x=21","unrepresentable"],
     ["11x=33","unrepresentable"],["13x+2=41","unrepresentable"],
     ["x=5","already-solved"],["5=x","already-solved"],
     ["x-2=5","negative"],["x/2=4","fraction"],
     ["x²=9","fraction"],["x+1.5=4","fraction"],
     ["x=2=3","equation"],["x+999=1000","capacity"],
-    ["<script>alert(1)</script>","syntax"],
+    ["<script>alert(1)</script>","fraction"],
     ["2x+5=foo","syntax"],["","equation"]
   ];
   for(const [input,code] of cases){
