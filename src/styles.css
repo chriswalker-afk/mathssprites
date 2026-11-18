@@ -546,6 +546,15 @@ background-image:repeating-linear-gradient(90deg,transparent 0 66px,rgba(0,0,0,.
 .quantity-mode-positive .sprite-white,.quantity-mode-positive .balloon{
   /* Never hide initial objects by CSS; model permission prevents their creation. */
 }
+/* The hand has deposited its object. It moves its palm out of the way
+   so students can actually SEE the opposites collide or rise together. */
+.giant-hand.observing-neutral .hand-art{
+  transform:translate(84px,-56px) rotate(8deg)!important;
+  transition:transform .26s cubic-bezier(.2,.7,.3,1)}
+@media(max-width:600px){
+  .giant-hand.observing-neutral .hand-art{
+    transform:translate(48px,-35px) rotate(6deg)!important}
+}
 .neutral-effect[hidden]{display:none!important}
 .neutral-effect{position:absolute;z-index:12;pointer-events:none;
   width:82px;height:84px;margin:-42px 0 0 -41px;opacity:1}
