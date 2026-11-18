@@ -70,7 +70,7 @@ test("solving Level 1 persists progress, starts the real comic and unlocks Level
   await expect(page.locator("#level-title")).toHaveText("Three weights in the way");
   await page.reload();
   await expect(page.locator("#site-home")).toBeVisible();
-  await expect(page.locator("#home-play")).toContainText("Continue at level 2");
+  await expect(page.locator("#home-play")).toContainText("Continue Stage 1 · Level 2");
   await page.locator('[data-screen="worlds"]').first().click();
   await page.getByRole("button",{name:"Explore stages"}).click();
   await page.getByRole("button",{name:"Choose Stage 1 levels"}).click();
