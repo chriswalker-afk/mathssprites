@@ -1880,6 +1880,74 @@ $("next-level").addEventListener("click", () => {
     window.dispatchEvent(new CustomEvent("mathssprites:advance"));
   } else startLevel(levelIndex + 1);
 });
+/** PR20 notebook sandbox: Stage 3 puzzle content and saved progress arrive
+ * in PR21. No notebook preview ever dispatches mathssprites:solved. */
+window.addEventListener("mathssprites:notebook-preview",event=>{
+  if(busy)return;
+  const level=event.detail?.level;
+  startLevel(0,"positive",level,null);
+  notebookSession=startNotebook(level);
+  notebookPhase="writing";
+  mode="auto";
+  notebookMessage("Write the next balanced equation. Each line must be one whole-object operation on both sides.");
+  renderNotebookPaper();
+  render();
+  $("notebook-equation").value="";
+  $("notebook-equation").focus({preventScroll:true});
+});
+window.addEventListener("mathssprites:notebook-close",()=>{
+  if(busy)return;
+  notebookSession=null;
+  notebookPhase="idle";
+  document.body.classList.remove("notebook-mode");
+  renderNotebookVisibility();
+});
+$("notebook-form").addEventListener("submit",event=>{
+  event.preventDefault();
+  if(!notebookSession || notebookPhase!=="writing" || busy)return;
+  const input=$("notebook-equation");
+  const result=tryNotebookLine(notebookSession,input.value);
+  if(!result.ok){
+    notebookMessage(result.message,"error");
+    input.focus();
+    return;
+  }
+  notebookSession=result.session;
+  input.value="";
+  renderNotebookPaper();
+  notebookMessage(result.solved
+    ? "Solution checked! Your complete route is ready. Choose Replay with sprites to watch YOUR steps."
+    : "Balanced step accepted: "+result.explanation+". Write the next equation.",
+    "success");
+  if(!result.solved)input.focus();
+  else $("notebook-replay").focus({preventScroll:true});
+});
+$("notebook-undo").addEventListener("click",()=>{
+  if(!notebookSession || notebookPhase!=="writing" || busy)return;
+  notebookSession=undoNotebookLine(notebookSession);
+  renderNotebookPaper();
+  notebookMessage("The last algebra line has been removed. Try another valid route.");
+  $("notebook-equation").focus();
+});
+$("notebook-reset").addEventListener("click",()=>{
+  if(!notebookSession || notebookPhase!=="writing" || busy)return;
+  notebookSession=startNotebook(notebookSession.level);
+  state=initialState(notebookSession.level);
+  $("notebook-equation").value="";
+  renderNotebookPaper();
+  notebookMessage("Fresh page. The original equation is still balanced.");
+  $("notebook-equation").focus();
+});
+$("notebook-replay").addEventListener("click",replayNotebookWithSprites);
+$("notebook-back-paper").addEventListener("click",()=>{
+  if(!notebookSession || notebookPhase!=="complete" || busy)return;
+  notebookPhase="writing";
+  renderNotebookPaper();
+  render();
+  notebookMessage("These are your checked algebra steps. You can replay them again or undo a line.","success");
+  $("notebook-replay").focus({preventScroll:true});
+});
+$("notebook-watch-again").addEventListener("click",replayNotebookWithSprites);
 window.addEventListener("mathssprites:launch",event=>{
   const {number,legacyIndex,level,stage}=event.detail;
   startLevel(legacyIndex,"positive",level,number,stage);
