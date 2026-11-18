@@ -592,6 +592,7 @@ async function animateRejectedAction(action, failure, preferredSide, rollbackPen
     const message = attemptMessage(issue, action, side);
     $("feedback").textContent = message;
     setSpeech(message, reducedMotion ? 4500 : 7600);
+    $("speech").classList.add("trial-speech");
     await sleep(reducedMotion ? 650 : 2450);
     $(side + "-attempt-stage").classList.add("rewinding");
     $("scene").classList.add("scene-rewinding");
