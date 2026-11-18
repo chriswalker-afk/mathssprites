@@ -1,4 +1,15 @@
 /**
+ * Chapter handovers explain the NEW idea without instructing a specific
+ * mathematical operation or showing an equation in the game scene.
+ */
+export const CHAPTER_BRIEFINGS = Object.freeze({
+  5: "NEW SKILL · Equal baskets. Each basket needs the same whole objects. Keep one complete group from each room.",
+  9: "NEW SKILL · Two-step experiments. You may need more than one kind of action, and their order matters.",
+  13: "NEW SKILL · Across the hall. Dark sprites may appear in both rooms. Equal removals still keep the balance.",
+  17: "NEW CHALLENGE · Master of the balance. Choose an efficient strategy; adding or grouping first can sometimes help."
+});
+
+/**
  * First-visit apprenticeship cues, separate from the equation engine.
  * Hints explain the physical controls and never disclose hidden algebra.
  */
