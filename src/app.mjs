@@ -435,9 +435,9 @@ async function handAct(side, action, applyAtContact) {
   const target = $(side + "-chamber");
   const scene = $("scene").getBoundingClientRect();
   const items = $(side + "-items").getBoundingClientRect();
-  const motion = handMotionPlan(action, reducedMotion);
   const areaEffect = action.op === "square" || action.op === "sqrt"
     ? areaArrangement(visible()[side], action.op) : null;
+  const motion = handMotionPlan(action, reducedMotion, areaEffect);
 
   // Find the actual geometry of this room at any viewport width. The updated
   // art's fingertips reach ~95% of its box (not 78% as in the original outline).
@@ -505,13 +505,20 @@ async function handAct(side, action, applyAtContact) {
           hand.dataset.phase = motion.placing ? "carry" : "aim";
           if (reaction === "dodge") hand.classList.add("tracking-sprite");
           break;
-        case "arrange":
-          showAreaPreview(side, action);
+        case "frame":
+        case "edge":
+        case "column":
+        case "quadratic":
+        case "mixed":
+        case "units":
+          advanceAreaPreview(side, action, beat.name);
           hand.classList.add("arranging");
+          hand.dataset.boxStep = beat.name;
           hand.dataset.phase = action.op === "square" ? "aim" : "reach";
           break;
         case "grip":
           hand.classList.remove("tracking-sprite", "arranging");
+          delete hand.dataset.boxStep;
           hand.classList.add("grasping");
           hand.dataset.phase = "grip";
           if (reaction) actor.dataset.reactPhase = "caught";
@@ -555,6 +562,7 @@ async function handAct(side, action, applyAtContact) {
       actor.style.removeProperty("--dodge-shift");
     }
     hand.style.removeProperty("--hand-chase");
+    delete hand.dataset.boxStep;
     clearAreaPreview(side);
     cargo.classList.remove("sprite-captured");
     cargo.hidden = true;
