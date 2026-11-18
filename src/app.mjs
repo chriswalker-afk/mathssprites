@@ -210,7 +210,7 @@ function renderFirstGuide() {
   const visible = activeFirstGuide() && !isSolved(state);
   $("apprentice-guide").hidden = !visible;
   if (!visible) return;
-  const cue = introductionCue(guideStep, { mode, pending:!!state.pending, busy });
+  const cue = introductionCue(guideStep, { mode, pending:state.pending?.first || null, busy });
   $("guide-progress").textContent = cue.progress;
   $("guide-title").textContent = cue.title;
   $("guide-message").textContent = cue.text;
