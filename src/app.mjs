@@ -984,7 +984,19 @@ function miniRooms(pair) {
     '<div class="mini-room"><span class="mini-caption">EAST</span><div class="mini-floor">' + miniItems(pair.right) + '</div></div>' +
     '</div>';
 }
+function recordedZeroEvents(entry) {
+  return [...(entry.cancellationEvents?.left||[]),
+    ...(entry.cancellationEvents?.right||[])];
+}
+function replayZeroPairNotes(entry) {
+  return recordedZeroEvents(entry).map(event=>({
+    type:"zero-pair",
+    text:(event.side==="right"?"East":"West")+" room: "+
+      (event.type==="sprites"?"(+x) + (−x) = 0":"(+1) + (−1) = 0")
+  }));
+}
 function panelHTML(entry, index, active) {
+  const zeroPairs=recordedZeroEvents(entry);
   const title = index === 0 ? "Before the hand began" : "Move " + index;
   const subtitle = index === 0 ? "Every object has a hidden value..." : operationDescription(entry.action);
   return '<article class="comic-panel ' + (active ? "current-panel" : "old-panel") + '" data-panel="' + index + '">' +
@@ -992,6 +1004,8 @@ function panelHTML(entry, index, active) {
     '<div class="mini-stage" id="mini-stage-' + index + '">' +
     miniRooms(index === 0 ? entry.after : entry.after) +
     '</div><div class="panel-footnote">' + (index === 0 ? "The two little rooms start in balance." :
+      zeroPairs.length ? "The same operation on both sides; "+neutralPairSummary(zeroPairs)+
+        " cancelled inside their rooms (each pair has value zero)." :
       "The same mathematical change happened on both sides.") + '</div></article>';
 }
 /**
@@ -1008,6 +1022,7 @@ function notebookLines(entry, index) {
   if (index === 0) return [{ type: "equation", text: equation(entry.after) }];
   return [
     { type: "operation", text: algebraOperation(entry.action) },
+    ...replayZeroPairNotes(entry),
     { type: "equation", text: equation(entry.after) }
   ];
 }
@@ -1178,6 +1193,13 @@ function drawReplay(index, { animate = !reducedMotion, complete = false } = {}) 
     activeStage.innerHTML = miniRooms(mini.before) +
       '<svg class="mini-hand-cue" viewBox="0 0 38 55" aria-hidden="true" focusable="false">' +
       '<path fill="#cfa384" stroke="#6e5140" stroke-width="1.8" d="M13 3 Q16 0 18 5 L21 27 L20 7 Q22 3 25 8 L28 28 L28 13 Q29 10 32 13 L34 30 Q38 37 30 48 L23 53 L11 47 L5 35 Q1 28 5 26 Q9 24 13 32 Z"/></svg>';
+    for(const event of recordedZeroEvents(mini)){
+      activeStage.innerHTML+='<div class="mini-neutral-pair" data-pair-type="'+event.type+
+        '" data-side="'+event.side+'">'+
+        '<span class="mini-token '+event.positive+'"></span>'+
+        '<span class="mini-token '+event.negative+'"></span>'+
+        '<span>→ 0 in '+(event.side==="left"?"west":"east")+'</span></div>';
+    }
     activeStage.classList.add("reenacting");
   }
 
