@@ -116,3 +116,10 @@ The signed experiments are:
 - **13 Two ways to make zero:** 2x−2=x+2. Use weight/balloon cancellation followed by black/white cancellation to leave x=4.
 
 **Truthfulness and constraints:** signed objects still count as whole items. Before division, any visible zero pairs cancel FIRST, so the remaining integer objects form honest equal baskets. Adding/removing a balloon retains its negative algebraic meaning; the comic replay writes equations such as − (−1) for removing a balloon and includes the actual zero-pair subevents. A signed action that is not permitted in positive-only mode is blocked by the pure engine, not only by hiding a button. The current square/root geometry remains restricted to nonnegative areas. We intentionally do NOT introduce negative values of x, signed square roots or fractional objects in PR12; those need their own physical metaphors.
+
+
+## PR13: When division needs little pieces
+
+A whole-object division that would produce fractions is now demonstrated **on the actual chamber floor**. The hand brings a brass cutter to the leftover sprite or weight, visibly tries cutting that very object into the required number of parts, and lets the fragments separate and wriggle. Because each fragment is clipped from the original artwork, half a black sprite really looks like part of a sprite, not a new small creature. Square sprites, balloons and pale sprites work too. The other intact objects stay where they were.
+
+After a visible pause, a first-person speech bubble explains why those tiny fractional pieces are not being used in the current experiment. The hand then joins them back together, and the entire failed attempt is undone. No fractional operation is committed, no balance equation changes and no replay panel is created. The old detached fraction-basket cards have been replaced for this failure case; legitimate whole-number division still makes physical baskets. In signed rooms, zero-pair cancellation happens before the attempted cut so the correct remainder is shown.
