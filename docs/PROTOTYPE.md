@@ -30,7 +30,7 @@ There is no `npm install` requirement for gameplay or tests.
 3. Use **Remove / Add** with dark sprites or weights, and select how many.
 4. Use **Divide** to temporarily display the room contents in two to five equal transparent baskets. The hand keeps one basket per room; all terms are divided. **Multiply** duplicates entire rooms.
 5. Leave exactly one dark sprite alone in one chamber, with only weights opposite it.
-6. A comic notebook appears automatically. Each completed two-room operation has an animated panel, while a pencil writes what the objects meant as equations. Use pause, back, next, restart and final working controls.
+6. A comic notebook appears automatically. Each completed two-room operation has its own animated panel. **An illustrated pencil physically follows the symbols and reveals each one separately**, with a rest between lines and a reading pause before the next panel. Use **Writing pace** (Careful / Natural / Quick), pause/resume mid-equation, previous/next, watch again, or show final working. The manual panel buttons show the complete selected panel for studying.
 
 **No equations or x-labels appear during solving.** The recap is the first formal algebra.
 
