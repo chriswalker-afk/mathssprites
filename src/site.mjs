@@ -239,7 +239,7 @@ function renderSettings() {
 }
 function showScreen(name) {
   if (!screenNames.includes(name)) return;
-  if(currentScreen==="notebook-preview")
+  if(currentScreen==="notebook-preview" || playingStage==="notebook")
     window.dispatchEvent(new Event("mathssprites:notebook-close"));
   currentScreen = name;
   playingNumber = null;
@@ -259,23 +259,30 @@ function showScreen(name) {
   window.scrollTo?.(0,0);
 }
 function launch(number,stage=selectedStage) {
-  if(!stageCanOpen(stage) || !["guided","independent"].includes(stage))return false;
-  const independent=stage==="independent";
-  const slot=independent?findIndependentLevel(number):findWorld1Level(number);
-  const allowed=independent?independentUnlocked(number):unlocked(number);
+  if(!stageCanOpen(stage)||!["guided","independent","notebook"].includes(stage))return false;
+  const slot=stage==="independent"?findIndependentLevel(number):
+    stage==="notebook"?findApprenticeLevel(number):findWorld1Level(number);
+  const allowed=stage==="independent"?independentUnlocked(number):
+    stage==="notebook"?apprenticeUnlocked(number):unlocked(number);
   if(!slot?.level||!allowed)return false;
   selectedStage=stage;
   playingStage=stage;
   playingNumber=slot.number;
   currentScreen="game";
-  if(independent) stage2Progress=saveStage2Progress({...stage2Progress,lastPlayed:slot.number});
+  if(stage==="independent")
+    stage2Progress=saveStage2Progress({...stage2Progress,lastPlayed:slot.number});
+  else if(stage==="notebook")
+    stage3Progress=saveStage3Progress({...stage3Progress,lastPlayed:slot.number});
   else progress=saveProgress({...progress,lastPlayed:slot.number});
   $("site-shell").hidden=true;
   $("game-shell").hidden=false;
   document.body.classList.remove("preview-mode");
-  window.dispatchEvent(new CustomEvent("mathssprites:launch",{
-    detail:{stage,number:slot.number,legacyIndex:slot.legacyIndex,level:slot.level}
-  }));
+  if(stage==="notebook")
+    window.dispatchEvent(new CustomEvent("mathssprites:notebook-campaign",
+      {detail:{stage,number:slot.number,level:slot.level}}));
+  else
+    window.dispatchEvent(new CustomEvent("mathssprites:launch",
+      {detail:{stage,number:slot.number,legacyIndex:slot.legacyIndex,level:slot.level}}));
   $("level-title").setAttribute("tabindex","-1");
   $("level-title").focus({preventScroll:true});
   window.scrollTo?.(0,0);
@@ -294,8 +301,11 @@ $("site-shell").addEventListener("click", event => {
   if (target.dataset.level) return launch(Number(target.dataset.level));
 });
 $("home-play").addEventListener("click", () => {
-  if(stageOneComplete(progress.completed) && stageTwoComplete(stage2Progress.completed))
-    return showScreen("stages");
+  if(stageOneComplete(progress.completed) && stageTwoComplete(stage2Progress.completed)){
+    if(stageThreeComplete(stage3Progress.completed))return showScreen("stages");
+    if(stageCanOpen("notebook"))
+      return launch(apprenticeUnlocked(stage3Progress.lastPlayed)?stage3Progress.lastPlayed:1,"notebook");
+  }
   if(stageOneComplete(progress.completed) && stageCanOpen("independent"))
     return launch(independentUnlocked(stage2Progress.lastPlayed)?stage2Progress.lastPlayed:1,"independent");
   return launch(unlocked(progress.lastPlayed)?progress.lastPlayed:1,"guided");
@@ -360,6 +370,8 @@ window.addEventListener("mathssprites:solved",event=>{
      event.detail?.stage!==playingStage)return;
   if(playingStage==="independent")
     stage2Progress=saveStage2Progress(markStage2Complete(stage2Progress,playingNumber));
+  else if(playingStage==="notebook")
+    stage3Progress=saveStage3Progress(markStage3Complete(stage3Progress,playingNumber));
   else
     progress=saveProgress(markWorld1Complete(progress,playingNumber));
   renderWorlds();
@@ -377,7 +389,9 @@ window.addEventListener("mathssprites:advance",()=>{
   if(playingNumber===null)return showScreen("levels");
   const next=playingStage==="independent"
     ? nextIndependentLevel(playingNumber,stage2Progress.completed,teacher)
-    : nextWorld1Level(playingNumber,progress.completed,teacher);
+    : playingStage==="notebook"
+      ? nextApprenticeLevel(playingNumber,stage3Progress.completed,teacher)
+      : nextWorld1Level(playingNumber,progress.completed,teacher);
   if(next)launch(next.number,playingStage);
   else showScreen("stages");
 });
