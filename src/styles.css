@@ -36,6 +36,20 @@ h1,h2,h3{font-family:Georgia,"Times New Roman",serif}
 select,.top-icon{color:var(--text);background:#273333;border:1px solid rgba(215,184,126,.29);border-radius:8px;min-height:40px;padding:8px 12px}
 .labelled-select select{min-width:180px}
 .top-icon{margin-bottom:0;white-space:nowrap;font-size:.76rem}
+/* An unambiguous, accessible explanation when system/browser accessibility
+   settings have paused all the playful animations. It is not shown otherwise. */
+.motion-notice{margin:9px 5px 12px;padding:13px 17px;border:1px solid rgba(222,190,129,.65);
+  border-radius:11px;background:linear-gradient(110deg,#303c38,#263330);
+  box-shadow:0 4px 12px rgba(0,0,0,.2);
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+.motion-notice-copy{display:flex;flex-direction:column;gap:4px;flex:1 1 270px;
+  font-size:.83rem;line-height:1.4;color:#e8dcc5}
+.motion-notice-copy strong{font:600 .97rem Georgia,serif;color:#f4d7a2}
+.motion-enable{flex:none;min-height:42px;padding:10px 16px;border-radius:8px;
+  border:1px solid #f4d7a1;background:linear-gradient(#e9d09f,#c7a16d);
+  color:#28291f;font-weight:800;font-size:.82rem}
+.motion-enable:hover{filter:brightness(1.07)}
+@media(max-width:600px){.motion-enable{width:100%}}
 .chapter-strip{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:22px 5px 17px}
 .chapter-strip h2{font-size:clamp(1.45rem,2.7vw,2.3rem);font-weight:400;margin-top:5px}
 .step-dots{display:flex;gap:10px;align-items:center}
