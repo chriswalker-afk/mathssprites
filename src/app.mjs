@@ -1081,20 +1081,25 @@ async function animateMismatchedManualAction(side, firstAction, action) {
 async function finishTurn() {
   if (isSolved(state)) {
     if (activeFirstGuide()) {
-      guideSeen = writeGuideSeen(true);
-      guideDismissed = true;
+      guideSeen=writeGuideSeen(true);
+      guideDismissed=true;
     }
-    if (campaignLevelNumber !== null)
+    if (activeIndependentGuide()) {
+      independentGuideSeen=writeIndependentGuideSeen(true);
+      guideDismissed=true;
+    }
+    if(campaignLevelNumber!==null)
       window.dispatchEvent(new CustomEvent("mathssprites:solved",
-        {detail:{number:campaignLevelNumber,levelId:currentLevel().id}}));
+        {detail:{stage:campaignStage,number:campaignLevelNumber,levelId:currentLevel().id}}));
     busy = true; render();
     // The student must be able to SEE the final physical balance before
     // the comic-book retrospective covers the laboratory.
     $("scene").classList.add("solved-scene");
-    $("level-clear-title").textContent = campaignLevelNumber === 20
-      ? "Guided Balance mastered!"
-      : campaignLevelNumber !== null && campaignLevelNumber % 4 === 0
-        ? "Chapter complete!" : "Balance restored!";
+    $("level-clear-title").textContent =
+      campaignStage==="guided" && campaignLevelNumber===20?"Guided Balance mastered!":
+      campaignStage==="independent" && campaignLevelNumber===16?"Independent Balance mastered!":
+      campaignLevelNumber!==null && campaignLevelNumber%4===0?"Chapter complete!":
+      "Balance restored!";
     $("level-clear").hidden = false;
     $("feedback").textContent = state.goal === "square" || state.goal==="area"
       ? "A complete in-room square! Its physical regions match the squared side."
@@ -1109,7 +1114,8 @@ async function finishTurn() {
   }
 }
 async function guidedMove() {
-  if (busy || isSolved(state)) return;
+  // Stage 2 is manual-only, even if the hidden Guided Mirror control is called.
+  if (campaignStage==="independent" || busy || isSolved(state)) return;
   const action=currentAction();
   const outcome=perform(state,action,"auto");
   if(!outcome.ok) {
@@ -1165,7 +1171,7 @@ async function guidedMove() {
 async function manualMove(side) {
   // A student-facing Stage 1 cannot perform one-sided actions, even if an
   // invisible prototype button is activated programmatically.
-  if(campaignLevelNumber !== null || busy || isSolved(state))return;
+  if(campaignStage==="guided" || busy || isSolved(state))return;
   const wasPending=!!state.pending,action=currentAction();
   const outcome=perform(state,action,"manual",side);
   if(!outcome.ok){
@@ -1203,21 +1209,31 @@ async function manualMove(side) {
   }finally{
     override=null;groups[side]=0;busy=false;render();clearNeutralEffect(side);
   }
-  if(state.pending)
-    $("feedback").textContent="One room done. Now perform the matching move in the other room.";
-  else await finishTurn();
+  if(state.pending) {
+    $("feedback").textContent="One room done. The scale is tilted! Now make the matching move in the other room.";
+    renderFirstGuide();
+  } else {
+    if(activeIndependentGuide()) {
+      independentGuideSeen=writeIndependentGuideSeen(true);
+      guideDismissed=true;
+      renderFirstGuide();
+    }
+    await finishTurn();
+  }
 }
-function startLevel(index, quantityMode, levelOverride = null, campaignNumber = null) {
+function startLevel(index, quantityMode, levelOverride=null, campaignNumber=null, stage="guided") {
   stopReplay();
   replayEntries = [];
   levelIndex = (index + LEVELS.length) % LEVELS.length;
   const level = levelOverride || LEVELS[levelIndex];
   activeLevel = level;
-  campaignLevelNumber = campaignNumber;
-  if (campaignLevelNumber !== null) mode = "auto";
-  guideStep = 0;
-  guideDismissed = false;
-  guideWasActive = activeFirstGuide();
+  campaignLevelNumber=campaignNumber;
+  campaignStage=campaignNumber===null?null:stage;
+  if(campaignStage==="guided")mode="auto";
+  if(campaignStage==="independent")mode="manual";
+  guideStep=0;
+  guideDismissed=false;
+  guideWasActive=activeCampaignGuide();
   state=initialState(level,quantityMode||levelQuantityMode(level));
   operation = level.startingOperation ||
     ((levelIndex === 1 || levelIndex === 4) ? "divide" : "remove");
@@ -1247,8 +1263,10 @@ function startLevel(index, quantityMode, levelOverride = null, campaignNumber = 
   $("level-clear").hidden = true;
   clearSpeech();
   $("replay-backdrop").hidden = true;
-  $("feedback").textContent = level.lockPositive
-    ? "Positive whole numbers only. Choose an action and keep the rooms balanced."
+  $("feedback").textContent = campaignStage==="independent"
+    ? "Your turn: choose an operation and move the hand in one room. Match it in the other to level the scale."
+    : level.lockPositive
+      ? "Positive whole numbers only. Choose an action and keep the rooms balanced."
     : state.quantityMode==="signed"
       ? "Signed objects are active: white sprites and balloons are opposites. Make a zero pair!"
       : "Positive objects only. Signed objects can be enabled with Maths mode.";
@@ -1468,9 +1486,11 @@ function updateReplayEndNote() {
   const note = $("replay-end-note");
   note.hidden = !ready || campaignLevelNumber === null;
   if (ready && campaignLevelNumber !== null)
-    note.textContent = campaignLevelNumber === 20
-      ? "Stage 1 complete. More ways to learn are coming soon!"
-      : "Level " + campaignLevelNumber + " solved · keep exploring!";
+    note.textContent=campaignStage==="independent" && campaignLevelNumber===16
+      ? "Stage 2 complete. Algebra Apprentice is coming next!"
+      : campaignStage==="guided" && campaignLevelNumber===20
+        ? "Guided Balance complete. Independent Balance is unlocked!"
+        : "Level "+campaignLevelNumber+" solved · keep exploring!";
 }
 function drawReplay(index, { animate = !reducedMotion, complete = false } = {}) {
   stopReplay();
@@ -1516,7 +1536,9 @@ function drawReplay(index, { animate = !reducedMotion, complete = false } = {}) 
   $("replay-back").disabled = replayIndex === 0;
   $("replay-next").disabled = replayIndex >= replayEntries.length - 1;
   $("next-level").textContent = campaignLevelNumber !== null
-    ? (campaignLevelNumber === 20 ? "Finish Stage 1 →" : "Next level →")
+    ? (campaignStage==="guided" && campaignLevelNumber===20?"Finish Stage 1 →":
+       campaignStage==="independent" && campaignLevelNumber===16?"Finish Stage 2 →":
+       "Next level →")
     : levelIndex === LEVELS.length - 1
       ? "Play from the beginning →" : "Next experiment →";
   $("next-level").disabled = replayIndex !== replayEntries.length - 1 ||
@@ -1534,11 +1556,14 @@ function showReplay() {
   stopReplay();
   replayEntries = [{ after: state.history[0]?.before || { left: state.left, right: state.right } },
     ...state.history.map(entry => ({ ...entry }))];
-  $("replay-level-stamp").textContent = campaignLevelNumber === null
+  $("replay-level-stamp").textContent = campaignLevelNumber===null
     ? "THE EXPERIMENT REVEALED"
-    : "LEVEL " + String(campaignLevelNumber).padStart(2,"0") +
-      " / 20 · " + (guideWasActive && campaignLevelNumber === 1
-        ? "FIRST DISCOVERY" : "BALANCE RESTORED");
+    : "STAGE "+(campaignStage==="independent"?2:1)+" · LEVEL "+
+      String(campaignLevelNumber).padStart(2,"0")+" / "+
+      (campaignStage==="independent"?16:20)+" · "+
+      (guideWasActive && campaignLevelNumber===1
+        ? (campaignStage==="independent"?"FIRST INDEPENDENT DISCOVERY":"FIRST DISCOVERY")
+        : "BALANCE RESTORED");
   $("replay-backdrop").hidden = false;
   setReplayPaused(true);
   drawReplay(0);
