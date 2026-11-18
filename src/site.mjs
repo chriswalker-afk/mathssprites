@@ -211,6 +211,8 @@ function renderSettings() {
 }
 function showScreen(name) {
   if (!screenNames.includes(name)) return;
+  if(currentScreen==="notebook-preview")
+    window.dispatchEvent(new Event("mathssprites:notebook-close"));
   currentScreen = name;
   playingNumber = null;
   playingStage = null;
