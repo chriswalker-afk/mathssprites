@@ -96,3 +96,16 @@ The large illustrated hand brings a wooden/brass square frame into the existing 
 **Never render duplicate persistent tokens on the edge rulers.** The edges are dimensional ghosts. The 4+6+6+9 interior objects of (2x+3)² are the resulting inventory. Variable-length edges are longer than unit-length edges (same proportional sizing on both axes), while the overall frame is square.
 
 The same room-scale frame is reconstructed in reverse for a principal root: remove weights, then both cross regions, then the square-creature corner, then the duplicate perpendicular edge, leaving only one dimension. Objects return to the original floor row after hand contact. All existing moonlit colours, laboratory brass, sprite eyes/idle movement, accessible reduced motion, and animated hand articulation remain in place.
+
+
+### PR12: the opposite-creature animations are now real
+
+**White negative sprite:** retain the living round body but use a pale ink-and-fog palette, dark eyes and a more **pointed, airy tuft silhouette** so it is recognisable without colour alone. It has independent hop/wiggle/blink timing just like the black creature. The user selects this in Signed Maths mode as an object with value −x, not as a negative value of x.
+
+**Variable cancellation:** let the black and white creatures be seen together on the floor. They glance, hop at one another, bump, then disappear into a little warm-grey puff with separate floating soot particles. Only the selected pair leaves, not every creature in the chamber. With several pairs, replay the individual collision in order.
+
+**Balloon cancellation:** a rosy tethered balloon is −1, a brass weight is +1. Show the balloon drawing near the weight, gathering it and pulling it upwards. Both depart together, leaving an empty space. Never use the black-white soot puff for a weight/balloon pair. The held hand now also has a little balloon silhouette for add/remove controls.
+
+**Feedback and notebook:** a scene-level caption and first-person bubble briefly name the pair's zero value. In the victory replay the miniature comic shows the specific opposing objects, and the pencil writes the zero relation in the same room; no independent unequal hand operation is implied.
+
+**Movement safety:** reduced-motion mode displays the two objects and static pair label without their bounce, collision, fall or floating effects, then removes them. The underlying quantity-mode permissions remain mathematically enforced, and signed objects are locked away in positive-only mode.
