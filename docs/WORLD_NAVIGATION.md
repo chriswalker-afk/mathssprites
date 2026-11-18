@@ -4,9 +4,10 @@
 
 1. Home: a contextual introduction, Play/Continue, World Select, How to Play and Settings.
 2. World Select: four thematic laboratories. Only World 1 is enabled. Future worlds are intentionally visible but inaccessible.
-3. World 1 Level Select: five chapters with four fully implemented slots each (20 playable), showing ready / completed / locked according to the player's progress.
-4. Play: original two-room balancing scene, Guided Mirror / Your Turn and hand feedback.
-5. Success: the actual transaction history is replayed as comic panels with handwritten algebra. The next-level control advances only to an implemented, accessible level; otherwise it returns to level selection.
+3. World 1 Stage Select (PR18): Guided Balance (playable), Independent Balance (planned), Algebra Apprentice (planned) and Equation Workshop (planned).
+4. Stage 1 Level Select: five chapters with four fully implemented slots each (20 playable), showing ready / completed / locked according to progress.
+5. Play: original two-room balancing scene with Guided Mirror **fixed** for Stage 1. The player still chooses operations, objects and amounts.
+6. Success: actual transactions replay as comic panels with handwritten algebra. After Level 20 the player returns to Stage Select, not a falsely unlocked future stage.
 
 ### World definitions
 
@@ -36,7 +37,7 @@ All 20 puzzles are playable following PR16, organised from simple one-step manip
 - Unlocks are sequential; completion cannot unlock an unimplemented level.
 - `mathssprites.teacher-unlock.v1` allows all **implemented** World 1 levels to be used individually in class. It never unlocks placeholders or changes a level's mathematical restrictions.
 - Reading or writing blocked browser storage is non-fatal. When persistence is unavailable, progress is retained in the current page only.
-- All navigation and actions use ordinary buttons, accessible labels and focusable page headings. Existing motion preferences and hand-control modes remain intact.
+- All navigation and actions use buttons, accessible labels and focusable page headings. Stage 1 locks automatic mirroring, while the preview route preserves both hand modes and existing reduced-motion controls.
 - The site uses only repository-local HTML, CSS and ES modules. No network services or accounts are required.
 
 ## Browser QA / acceptance
@@ -55,6 +56,8 @@ The World 1 campaign now has five distinct chapter visual themes, optional first
 
 See [PR17_EXPERIENCE.md](PR17_EXPERIENCE.md) for the intended walkthrough and browser QA criteria.
 
-## Next after PR17
+## PR18 — Stage-first World 1
 
-Classroom-test onboarding and mobile usability, then begin planning World 2's negative numbers and the existing zero-pair visual mechanics. The future worlds remain locked until their own curricula are validated.
+World 1 now presents Stage 1 · Guided Balance with the original 20 chapters and saved progress. Stage 2 · Independent Balance (16 levels), Stage 3 · Algebra Apprentice (12 levels), and the Equation Workshop are clear, inaccessible placeholders. The Stage 1 hand always acts on both rooms, even if code tries to switch the hidden selector. See [WORLD1_STAGES.md](WORLD1_STAGES.md).
+
+**Next: PR19.** Add the 16 Independent Balance puzzles, turn the current manual hand behaviour into Stage 2's dedicated control scheme, teach matching actions on each side, and validate every level. Worlds 2–4 remain separate future mathematics.

@@ -236,7 +236,7 @@ function render() {
   $("chapter-briefing").hidden =
     campaignLevelNumber === null || !CHAPTER_BRIEFINGS[campaignLevelNumber];
   if (campaignLevelNumber !== null) {
-    $("chapter-status").textContent = "WORLD 1 · LEVEL " +
+    $("chapter-status").textContent = "WORLD 1 · STAGE 1 · LEVEL " +
       String(campaignLevelNumber).padStart(2,"0") + " / 20";
     if (CHAPTER_BRIEFINGS[campaignLevelNumber])
       $("chapter-briefing").textContent = CHAPTER_BRIEFINGS[campaignLevelNumber];
@@ -282,8 +282,11 @@ function render() {
   $("amount-value").textContent = grouped ? factor : amount;
   $("amount-down").disabled = busy || isSolved(state) || (grouped ? factor <= 2 : amount <= 1);
   $("amount-up").disabled = busy || isSolved(state) || (grouped ? factor >= 5 : amount >= 12);
-  $("mode-select").value = mode;
-  $("mode-select").disabled = busy || awaiting;
+  const stageOne = campaignLevelNumber !== null;
+  $("mode-wrapper").hidden = stageOne;
+  $("campaign-hand-mode").hidden = !stageOne;
+  $("mode-select").value = stageOne ? "auto" : mode;
+  $("mode-select").disabled = stageOne || busy || awaiting;
   $("quantity-mode").value=state.quantityMode;
   $("quantity-mode").disabled=busy||awaiting||!!lvl.lockPositive;
   $("quantity-mode").querySelector('option[value="positive"]').disabled=
@@ -1049,7 +1052,7 @@ async function finishTurn() {
     // the comic-book retrospective covers the laboratory.
     $("scene").classList.add("solved-scene");
     $("level-clear-title").textContent = campaignLevelNumber === 20
-      ? "Workshop mastered!"
+      ? "Guided Balance mastered!"
       : campaignLevelNumber !== null && campaignLevelNumber % 4 === 0
         ? "Chapter complete!" : "Balance restored!";
     $("level-clear").hidden = false;
@@ -1120,7 +1123,9 @@ async function guidedMove() {
   await finishTurn();
 }
 async function manualMove(side) {
-  if(busy||isSolved(state))return;
+  // A student-facing Stage 1 cannot perform one-sided actions, even if an
+  // invisible prototype button is activated programmatically.
+  if(campaignLevelNumber !== null || busy || isSolved(state))return;
   const wasPending=!!state.pending,action=currentAction();
   const outcome=perform(state,action,"manual",side);
   if(!outcome.ok){
@@ -1169,6 +1174,7 @@ function startLevel(index, quantityMode, levelOverride = null, campaignNumber = 
   const level = levelOverride || LEVELS[levelIndex];
   activeLevel = level;
   campaignLevelNumber = campaignNumber;
+  if (campaignLevelNumber !== null) mode = "auto";
   guideStep = 0;
   guideDismissed = false;
   guideWasActive = activeFirstGuide();
@@ -1423,7 +1429,7 @@ function updateReplayEndNote() {
   note.hidden = !ready || campaignLevelNumber === null;
   if (ready && campaignLevelNumber !== null)
     note.textContent = campaignLevelNumber === 20
-      ? "Every experiment completed. Your workshop awaits!"
+      ? "Stage 1 complete. More ways to learn are coming soon!"
       : "Level " + campaignLevelNumber + " solved · keep exploring!";
 }
 function drawReplay(index, { animate = !reducedMotion, complete = false } = {}) {
@@ -1470,7 +1476,7 @@ function drawReplay(index, { animate = !reducedMotion, complete = false } = {}) 
   $("replay-back").disabled = replayIndex === 0;
   $("replay-next").disabled = replayIndex >= replayEntries.length - 1;
   $("next-level").textContent = campaignLevelNumber !== null
-    ? (campaignLevelNumber === 20 ? "Finish World 1 →" : "Next level →")
+    ? (campaignLevelNumber === 20 ? "Finish Stage 1 →" : "Next level →")
     : levelIndex === LEVELS.length - 1
       ? "Play from the beginning →" : "Next experiment →";
   $("next-level").disabled = replayIndex !== replayEntries.length - 1 ||
@@ -1540,7 +1546,14 @@ $("amount-up").addEventListener("click", () => {
 $("do-both").addEventListener("click", guidedMove);
 $("left-action").addEventListener("click", () => manualMove("left"));
 $("right-action").addEventListener("click", () => manualMove("right"));
-$("mode-select").addEventListener("change", event => { mode = event.target.value; render(); });
+$("mode-select").addEventListener("change", event => {
+  // The campaign sets the hand-control method. Only authoring previews may
+  // choose manual actions independently in PR18.
+  if (campaignLevelNumber !== null) { mode = "auto"; return render(); }
+  if (busy || state.pending) return render();
+  mode = event.target.value === "manual" ? "manual" : "auto";
+  render();
+});
 $("guide-next").addEventListener("click", () => {
   if (!activeFirstGuide() || guideStep >= 3) return;
   guideStep++;

@@ -9,6 +9,7 @@
   <link rel="stylesheet" href="./src/styles.css" />
   <link rel="stylesheet" href="./src/site.css" />
   <link rel="stylesheet" href="./src/polish.css" />
+  <link rel="stylesheet" href="./src/stages.css" />
   <script type="module" src="./src/app.mjs"></script>
   <script type="module" src="./src/site.mjs"></script>
 </head>
@@ -63,23 +64,35 @@
       </div></div>
       <div id="world-cards" class="world-grid"></div>
     </main>
-    <main class="site-page" id="site-levels" hidden>
-      <button type="button" id="site-back" class="site-back-link">← Back to worlds</button>
+    <main class="site-page" id="site-stages" hidden>
+      <button type="button" id="stages-back" class="site-back-link">← Back to worlds</button>
       <div class="portal-heading">
-        <div><div class="portal-kicker">WORLD 01 · POSITIVE WHOLE NUMBERS</div>
-          <h1 tabindex="-1">The Balance Workshop</h1>
-          <p>Start with matching moves. Build up to solving the mystery on your own.</p></div>
+        <div><div class="portal-kicker">WORLD 01 · THE BALANCE WORKSHOP</div>
+          <h1 tabindex="-1">Three ways to master a balance.</h1>
+          <p>First the hand helps. Then you control the two rooms. Finally, you solve on paper and let the sprites show your working.</p>
+        </div>
+      </div>
+      <div id="world1-stage-cards" class="world1-stage-grid" aria-label="World 1 learning stages"></div>
+      <section id="world1-workshop" class="workshop-card" aria-label="Equation Workshop"></section>
+      <p id="stage-teacher-note" class="teacher-note" hidden>Teacher access unlocks completed content within Stage 1. It cannot unlock future stages that have not yet been built.</p>
+    </main>
+    <main class="site-page" id="site-levels" hidden>
+      <button type="button" id="site-back" class="site-back-link">← Back to stages</button>
+      <div class="portal-heading">
+        <div><div class="portal-kicker">WORLD 01 · STAGE 1 · POSITIVE WHOLE NUMBERS</div>
+          <h1 tabindex="-1">Guided Balance</h1>
+          <p>Choose the operation. The hand automatically makes the same change to both rooms.</p></div>
         <span id="level-progress" class="landing-progress" aria-live="polite"></span>
       </div>
       <div class="world1-progress-panel" aria-label="World 1 completion">
-        <div class="world1-progress-labels"><span id="world1-progress-description">Your workshop journey</span><span id="world1-progress-number">0 of 20 complete</span></div>
+        <div class="world1-progress-labels"><span id="world1-progress-description">Stage 1 · Guided Balance</span><span id="world1-progress-number">0 of 20 complete</span></div>
         <progress id="world1-progress-bar" value="0" max="20" aria-label="Completed World 1 experiments"></progress>
       </div>
-      <section id="world1-finale" class="world1-finale" aria-label="World 1 completed" hidden>
+      <section id="world1-finale" class="world1-finale" aria-label="Stage 1 completed" hidden>
         <span class="finale-emblem" aria-hidden="true">✦</span>
-        <div><div class="portal-kicker">WORKSHOP MASTERY EARNED</div>
-          <h2>Every balance restored!</h2>
-          <p>All 20 experiments are complete. Revisit any level to try a different route, or explore the worlds that will open next.</p>
+        <div><div class="portal-kicker">STAGE 1 COMPLETE</div>
+          <h2>Guided Balance mastered!</h2>
+          <p>You've completed all 20 guided experiments. Revisit a level to try another strategy. Stage 2 will ask you to balance each room yourself.</p>
         </div>
       </section>
       <div id="level-sections"></div>
@@ -94,7 +107,8 @@
           <li>Choose an action: add, remove, multiply or split into equal groups.</li>
           <li>Keep the rooms balanced by making matching changes to both.</li>
           <li>When one sprite is left facing only weights, watch the hand's moves turn into algebra in the comic replay.</li></ol>
-        <p><strong>Guided Mirror</strong> makes the second move for you. In <strong>Your Turn</strong>, you make it yourself. A failed experiment is safe: the hand shows what went wrong and puts everything back.</p>
+        <p><strong>Stage 1 · Guided Balance:</strong> choose an action and the hand mirrors it automatically in both rooms. <strong>Stage 2 · Independent Balance:</strong> you will act on each room separately. <strong>Stage 3 · Algebra Apprentice:</strong> you will write the solution first, then see your steps replayed with sprites. The next two stages are under construction.</p>
+        <p>In Stage 1, an inadvisable experiment is safe: the hand shows what went wrong, explains it and restores the objects. The Equation Workshop will eventually let you create your own equations.</p>
         <button type="button" class="primary-btn" data-screen="worlds">Choose your first world →</button>
       </div>
     </main>
@@ -107,7 +121,7 @@
         <label class="settings-option"><input id="site-guided-help" type="checkbox" checked />
           <span><strong>First-visit guide</strong> — show short, step-by-step instructions in Level 1. You can dismiss them at any time.</span></label>
         <button type="button" class="secondary-btn" id="site-replay-intro">Replay the guided introduction</button>
-        <p>Progress is stored on this browser only. No account is needed. All 20 World 1 levels are available, and later mathematical worlds remain locked until developed.</p>
+        <p>Progress is stored on this browser only. No account is needed. Your original 20 World 1 levels and their saved progress are now Stage 1. Teacher access unlocks all 20 Guided Balance levels, but does not open unfinished stages or mathematical worlds.</p>
         <button type="button" class="secondary-btn" id="site-motion">Use reduced motion</button>
         <p>Animation settings also apply to the hand, sprites and pencil inside levels.</p>
         <button type="button" class="primary-btn" data-screen="home">Back to the workshop →</button>
@@ -126,7 +140,8 @@
         <button class="top-icon game-nav-button" id="game-levels" type="button">▦ Levels</button>
         <button class="top-icon game-nav-button" id="game-guide-restart" type="button" aria-label="Restart Level 1 guided introduction">? Guide</button>
         <label class="labelled-select legacy-controls" for="level-select"><span>Experiment</span><select id="level-select" aria-label="Choose an experiment"></select></label>
-        <label class="labelled-select" for="mode-select"><span>Hand control</span><select id="mode-select" aria-label="Choose hand control mode"><option value="auto">Guided mirror</option><option value="manual">Your turn</option></select></label>
+        <div id="campaign-hand-mode" class="campaign-hand-mode" hidden role="status"><span class="eyebrow">STAGE 1 · HAND CONTROL</span><strong>Guided Mirror</strong><small>The hand acts on both rooms.</small></div>
+        <label class="labelled-select" id="mode-wrapper" for="mode-select"><span>Hand control</span><select id="mode-select" aria-label="Choose hand control mode"><option value="auto">Guided mirror</option><option value="manual">Your turn</option></select></label>
         <label class="labelled-select legacy-controls" for="quantity-mode"><span>Maths mode</span><select id="quantity-mode" aria-label="Choose positive-only or signed objects"><option value="positive">Positive objects</option><option value="signed">Signed objects</option></select></label>
         <button class="top-icon" id="motion-toggle" type="button" aria-pressed="false" title="Toggle reduced motion">Motion: on</button>
       </div>

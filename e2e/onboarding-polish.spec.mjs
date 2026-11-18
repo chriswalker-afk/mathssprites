@@ -30,12 +30,14 @@ test("Level 1 gives four sequential cues pointing at the real controls", async({
   await expect(page.locator("#apprentice-guide")).toBeHidden();
 });
 
-test("the guide responds to Your Turn and can restart the first lesson", async({page})=>{
+test("Stage 1 tutorial follows Guided Mirror and can restart the first lesson", async({page})=>{
   await openFirst(page);
   for(let n=0;n<3;n++)await page.locator("#guide-next").click();
-  await page.locator("#mode-select").selectOption("manual");
-  await expect(page.locator("#left-action")).toHaveClass(/coach-focus/);
-  await expect(page.locator("#guide-message")).toContainText("west room");
+  await expect(page.locator("#do-both")).toHaveClass(/coach-focus/);
+  await expect(page.locator("#guide-message")).toContainText("both rooms");
+  await expect(page.locator("#mode-select")).toBeHidden();
+  await expect(page.locator("#campaign-hand-mode")).toContainText("Guided Mirror");
+  await expect(page.locator("#left-action")).toBeHidden();
   await page.locator("#guide-skip").click();
   await expect(page.locator("#apprentice-guide")).toBeHidden();
   await page.locator("#game-guide-restart").click();
@@ -81,7 +83,8 @@ test("completing every workshop level reveals the mastery banner and themed chap
   await page.evaluate(value=>localStorage.setItem("mathssprites.progress.v1",value),data);
   await page.reload();
   await page.locator('[data-screen="worlds"]').first().click();
-  await expect(page.locator(".world-ready")).toContainText("WORKSHOP MASTERED");
+  await expect(page.locator(".world-ready")).toContainText("STAGE 1 MASTERED");
+  await page.locator('[data-screen="stages"]').first().click();
   await page.locator('[data-screen="levels"]').first().click();
   await expect(page.locator("#world1-finale")).toBeVisible();
   await expect(page.locator("#world1-progress-bar")).toHaveJSProperty("value",20);
@@ -95,6 +98,7 @@ test("phone menus and replay keep touch actions in view",async({page})=>{
   test.setTimeout(60000);
   await page.setViewportSize({width:375,height:725});
   await page.locator('[data-screen="worlds"]').first().click();
+  await page.locator('[data-screen="stages"]').first().click();
   await page.locator('[data-screen="levels"]').first().click();
   await expect(page.locator(".chapter-illustration").first()).toBeVisible();
   await expect(page.locator(".level-tile")).toHaveCount(20);
@@ -118,6 +122,7 @@ test("chapter-opening levels show new ideas without exposing the hidden equation
   await page.locator('[data-screen="settings"]').first().click();
   await page.locator("#teacher-unlock").check();
   await page.locator('[data-screen="worlds"]').first().click();
+  await page.locator('[data-screen="stages"]').first().click();
   await page.locator('[data-screen="levels"]').first().click();
   for (const [number,skill,theme] of [
     [5,"Equal baskets","2"],

@@ -1,6 +1,6 @@
-# World 1 — The Balance Workshop (PR16)
+# World 1 — Stage 1 Guided Balance (20 existing puzzles, PR16 and PR18)
 
-World 1 is a complete **20-level** positive-whole-number campaign. The player sees physical rooms only: no symbolic equation is revealed until the animated comic replay. The original experiment library remains available separately via the authoring preview.
+World 1 Stage 1 is a complete **20-level** positive-whole-number campaign. Stage 1 uses **automatic Guided Mirror only**: the player chooses an action and the hand applies it to both rooms. The player sees physical rooms only, with the symbolic equation revealed in the comic replay. Stage 2 and 3 will add different control methods and new levels; see [WORLD1_STAGES.md](WORLD1_STAGES.md). The original experiment library remains separately available through the authoring preview.
 
 ## Curriculum progression and reference solutions
 

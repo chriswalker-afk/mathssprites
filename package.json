@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "test": "node --test tests/*.test.mjs",
-    "check": "node --check src/engine.mjs && node --check src/app.mjs && node --check src/site.mjs && node --check src/worlds.mjs && node --check src/progress.mjs && node --check src/onboarding.mjs && npm test"
+    "check": "node --check src/engine.mjs && node --check src/app.mjs && node --check src/site.mjs && node --check src/worlds.mjs && node --check src/progress.mjs && node --check src/onboarding.mjs && node --check src/stages.mjs && npm test"
   },
   "engines": { "node": ">=20" }
 }

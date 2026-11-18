@@ -1,0 +1,67 @@
+/* PR18 - Learning stages are choices within World 1, not separate number worlds. */
+.world1-stage-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+.stage-card{position:relative;display:flex;flex-direction:column;gap:11px;min-width:0;
+  padding:24px 21px;border:1px solid #5b6a60;border-radius:17px;
+  background:linear-gradient(145deg,#2b3733,#1a2929 75%);
+  box-shadow:0 12px 25px #0003;overflow:hidden}
+.stage-card::after{content:"";position:absolute;inset:7px;border:1px solid #cbb08d22;
+  border-radius:11px;pointer-events:none}
+.stage-card.stage-ready{border-color:#c7a56f;
+  background:radial-gradient(circle at 92% 4%,#967b4b52,transparent 57%),
+  linear-gradient(145deg,#384539,#1b2a28)}
+.stage-card.stage-planned{border-color:#4e5a55}
+.stage-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.stage-no{font-size:.72rem;letter-spacing:.14em;color:#e4c591;font-weight:800}
+.stage-tag{font-size:.67rem;letter-spacing:.06em;color:#d2cfbd;text-transform:uppercase;
+  border:1px solid #87908770;border-radius:25px;padding:5px 9px}
+.stage-ready .stage-tag{color:#b7e1c5;border-color:#7ca88f}
+.stage-ornament{display:grid;place-items:center;height:85px;align-self:stretch;
+  font:normal 3.6rem Georgia,serif;color:#cdb27c;text-shadow:0 0 22px #dfb56e77;
+  background:radial-gradient(ellipse at center,#879f8760,transparent 70%);user-select:none}
+.stage-planned .stage-ornament{opacity:.65}
+.stage-card h2{font:normal 1.7rem Georgia,serif;color:#f0e0c6;line-height:1.12;margin:0}
+.stage-card p{font-size:.85rem;color:#c1d0c5;line-height:1.55}
+.stage-card .stage-tagline{color:#e0cda9;font-size:.93rem;font-weight:600}
+.stage-card-bottom{margin-top:auto;padding-top:15px;border-top:1px solid #9fb09b35;
+  display:flex;flex-direction:column;align-items:stretch;gap:9px}
+.stage-card-bottom .primary-btn{width:100%;min-height:44px}
+.stage-card-bottom .stage-count{font-size:.73rem;color:#b5c6b9}
+.stage-coming{display:flex;align-items:center;gap:7px;min-height:44px;
+  color:#dcc396;font-size:.85rem;font-weight:700}
+.stage-path-note{margin:18px 0 24px;color:#abbcae;font-size:.83rem}
+.workshop-card{display:flex;align-items:center;gap:18px;padding:23px;
+  border:1px dashed #8a795b;border-radius:15px;
+  background:radial-gradient(ellipse at 8% 30%,#74654855,transparent 63%),#253330}
+.workshop-glyph{display:grid;place-items:center;flex:none;width:68px;height:68px;
+  border:1px solid #b69b6e;border-radius:13px;font:normal 2.6rem Georgia,serif;color:#ddc48e}
+.workshop-content{flex:1;min-width:0}
+.workshop-content h2{font:normal 1.6rem Georgia,serif;margin:4px 0;color:#f2dec3}
+.workshop-content p{font-size:.86rem;color:#c7d4c9}
+.workshop-planned{flex:none;color:#e0c695;font-size:.78rem;font-weight:800;border:1px solid #877b62;
+  padding:9px 12px;border-radius:24px}
+#mode-wrapper[hidden],#campaign-hand-mode[hidden]{display:none!important}
+.campaign-hand-mode{display:flex;flex-direction:column;justify-content:center;
+  gap:2px;padding:5px 13px;border:1px solid #c5a76f;
+  border-radius:10px;background:#2b3730;color:#f4e4c7;min-height:51px}
+.campaign-hand-mode .eyebrow{font-size:.59rem;color:#d6b77f}
+.campaign-hand-mode strong{font:normal 1.04rem Georgia,serif}
+.campaign-hand-mode small{color:#bfcec2;font-size:.65rem}
+@media(max-width:850px){
+ .world1-stage-grid{grid-template-columns:1fr;gap:12px}
+ .stage-card{display:grid;grid-template-columns:65px 1fr;gap:8px 15px;padding:19px}
+ .stage-card .stage-top{grid-column:1/-1}
+ .stage-ornament{grid-column:1;grid-row:2/span 3;height:110px;font-size:2.7rem}
+ .stage-card h2,.stage-card .stage-tagline,.stage-card p{grid-column:2}
+ .stage-card-bottom{grid-column:1/-1}
+}
+@media(max-width:600px){
+ .stage-card{padding:16px}
+ .stage-card h2{font-size:1.38rem}
+ .stage-card p{font-size:.81rem}
+ .stage-ornament{height:95px;width:55px;font-size:2.4rem}
+ .workshop-card{flex-wrap:wrap;gap:11px;padding:16px}
+ .workshop-glyph{width:50px;height:50px;font-size:2rem}
+ .workshop-planned{margin-left:auto}
+ .header-actions .campaign-hand-mode{grid-column:1/span 2;min-width:0}
+ .header-actions .campaign-hand-mode .eyebrow{font-size:.55rem}
+}
