@@ -82,3 +82,19 @@ The original single-outline hand has been replaced with an **illustrated SVG han
 - \`e2e/hand-art.spec.mjs\` saves screenshots of the grasp, release, baskets, and mobile hand for review.
 
 This is an original vector illustration, editable without adding an external image dependency. It remains a stylised hand, not photorealistic animation, and can be refined further after seeing the on-screen screenshots.
+
+
+## Sprite idle animation - PR6
+
+The inhabitants should look restless even when the learner does nothing:
+
+- Each round dust sprite **jumps and gently bobs**, with a soft landing squash and a little floor-dust reaction.
+- The **body wiggles independently** from the jump, giving an organic sense of movement rather than one repeating transform.
+- The eyes **glance around and occasionally blink** at long, varied intervals.
+- Different creatures have **distinct, deterministic** jump heights, frequencies, wiggle speeds and phase offsets, including between the two rooms. This does not re-randomize on every render.
+- The visual body and its floor shadow use separate layers, so the shadow stays on the ground while the creature is airborne.
+- The animated layers **pause only in the chamber the hand is manipulating**; the other chamber's residents keep moving.
+- Sprites within division baskets have a smaller, quieter bob. Phone sizing scales the actor without cancelling its hop.
+- The **Motion: reduced** setting displays fully stationary actors without fast blinking, and the existing **Motion: on** toggle restores independent motion.
+
+The pure timing model lives in src/sprite-motion.mjs. The unit and Chrome browser suites check the independent motion and interaction states. All movement is **presentational only**: balance values still come exclusively from src/engine.mjs.
