@@ -98,3 +98,18 @@ The inhabitants should look restless even when the learner does nothing:
 - The **Motion: reduced** setting displays fully stationary actors without fast blinking, and the existing **Motion: on** toggle restores independent motion.
 
 The pure timing model lives in src/sprite-motion.mjs. The unit and Chrome browser suites check the independent motion and interaction states. All movement is **presentational only**: balance values still come exclusively from src/engine.mjs.
+
+
+## Occasional hand-and-sprite interactions - PR7
+
+Not every pickup is routine! When the hand removes a **dark or pale sprite**, a little creature can react to its approach:
+
+- Approximately **28%** of eligible pickups make the selected sprite **duck down**, with a startled punctuation mark, before the fingers close and collect it.
+- Approximately **27%** make it **dodge sideways** towards the middle of the room. The hand makes a small corrective reach and still captures it.
+- The remaining **45%** are ordinary pickups. Each physical hand visit rolls once, so the reactions are a surprise rather than an unavoidable cutscene.
+- The particular sprite that reacts is the **last sprite of the removed kind** in that room. That's the one whose visual token disappears when the equation engine applies the removal at contact.
+- The creature briefly wriggles as it is lifted away. Other idle sprites remain paused in the active chamber, and the other chamber continues its usual bounce and wiggle.
+- No reaction is played when adding a sprite, changing weights, grouping/dividing, or multiplying rooms. In reduced-motion mode all these comedy reactions are skipped.
+- Reactions change only the visual presentation, **never the physical token counts, balance calculation, hand transaction history or replay algebra**.
+
+For developers: the pure chance selector and safe wall-avoiding dodge direction are in src/sprite-reactions.mjs. The SVG hand's existing approach / reach / grip / contact / lift contract remains authoritative. Visual reactions end as the hand closes, **before the one and only mathematical change** at contact. Unit and Chrome tests cover ducking, dodging, normal pickup, manual matching and reduced motion.

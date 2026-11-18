@@ -5,6 +5,7 @@ import {
 import { buildWritingTimeline, symbolsOf } from "./replay-timeline.mjs";
 import { handMotionPlan } from "./hand-timeline.mjs";
 import { spriteMotionProfile, spriteMotionStyle } from "./sprite-motion.mjs";
+import { pickSpriteHandReaction, dodgeOffsetPx } from "./sprite-reactions.mjs";
 
 const $ = id => document.getElementById(id);
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
@@ -59,10 +60,10 @@ function token(kind, i, mini = false, side = "left") {
       '" style="' + spriteMotionStyle(profile) + '" title="' +
       (kind === "posX" ? "A little dark sprite" : "A little pale sprite") + '">' +
       '<span class="sprite-ground-shadow"></span>' +
-      '<span class="sprite-motion">' +
+      '<span class="sprite-reaction-shell"><span class="sprite-motion">' +
       '<span class="sprite-feet"></span><span class="sprite-body">' +
       '<span class="sprite-eyes"><i></i><i></i></span></span>' +
-      '</span></span>';
+      '</span></span></span>';
   }
   if (kind === "posOne")
     return '<span class="token weight" title="A brass weight"><i class="weight-handle"></i><i class="weight-shine"></i></span>';
@@ -207,8 +208,9 @@ function handProp(action) {
   if (action.op === "multiply") {
     return '<span class="held-basket held-basket-double" title="A complete group of objects"></span>';
   }
-  const picture = action.kind === "posX"
-    ? '<span class="held-sprite"><i></i><i></i></span>'
+  const picture = action.kind === "posX" || action.kind === "negX"
+    ? '<span class="held-sprite' + (action.kind === "negX" ? " held-sprite-pale" : "") +
+      '"><i></i><i></i></span>'
     : '<span class="held-weight"></span>';
   return picture + (action.count > 1 ? '<span class="held-count">×' + action.count + '</span>' : "");
 }
@@ -245,10 +247,30 @@ async function handAct(side, action, applyAtContact) {
   const reach = Math.max(160, targetTip - restingTip);
   hand.style.setProperty("--hand-reach", reach + "px");
 
+  // Pick one sprite which is actually being removed. The room renderer removes
+  // the last matching token first, so the actor that reacts is precisely the
+  // one that disappears when the hand makes contact. We roll only for real,
+  // whole-sprite pickups, never for weights, division, addition or fractions.
+  const tokens = !reducedMotion && action.op === "remove" &&
+    (action.kind === "posX" || action.kind === "negX")
+    ? [...$(side + "-items").querySelectorAll(
+        action.kind === "posX" ? ".sprite-black" : ".sprite-white"
+      )] : [];
+  const actor = tokens.length >= action.count ? tokens.at(-1) : null;
+  const reaction = actor ? pickSpriteHandReaction(action, Math.random()) : null;
+  if (reaction === "dodge") {
+    const actorBox = actor.getBoundingClientRect();
+    const roomBox = $(side + "-items").getBoundingClientRect();
+    const shift = dodgeOffsetPx(actorBox.left + actorBox.width / 2, roomBox.left + roomBox.width / 2);
+    actor.style.setProperty("--dodge-shift", shift + "px");
+    hand.style.setProperty("--hand-chase", Math.round(shift * .6) + "px");
+  }
+
   const caption = $("action-caption");
   caption.textContent = roomOperationText(action, side);
   caption.hidden = false;
   cargo.innerHTML = handProp(action);
+  cargo.classList.remove("sprite-captured");
   cargo.hidden = !motion.cargoOnApproach;
   hand.classList.remove("approaching", "reaching", "grasping", "lifting");
   hand.classList.add("acting");
@@ -267,15 +289,23 @@ async function handAct(side, action, applyAtContact) {
           hand.classList.remove("approaching");
           hand.classList.add("reaching");
           hand.dataset.phase = motion.placing ? "carry" : "reach";
+          if (reaction) {
+            actor.dataset.reaction = reaction;
+            actor.dataset.reactPhase = "start";
+            actor.classList.add("sprite-reacting");
+          }
           break;
         case "aim":
           // A short settle before making contact. The target light guides the
           // eye without suggesting the unbalanced half-move is a finished step.
           hand.dataset.phase = motion.placing ? "carry" : "aim";
+          if (reaction === "dodge") hand.classList.add("tracking-sprite");
           break;
         case "grip":
+          hand.classList.remove("tracking-sprite");
           hand.classList.add("grasping");
           hand.dataset.phase = "grip";
+          if (reaction) actor.dataset.reactPhase = "caught";
           break;
         case "contact":
           // The only place physical objects change. The hand is still *down*,
@@ -284,6 +314,7 @@ async function handAct(side, action, applyAtContact) {
           applied = true;
           target.classList.add("hand-contact");
           cargo.hidden = motion.placing;
+          if (reaction) cargo.classList.add("sprite-captured");
           hand.dataset.phase = motion.placing ? "release" : "carry";
           break;
         case "lift":
@@ -302,9 +333,17 @@ async function handAct(side, action, applyAtContact) {
     }
   } finally {
     // No animation state should leak into the next room or next level.
-    hand.classList.remove("approaching", "lifting", "grasping", "reaching", "acting");
+    hand.classList.remove("approaching", "lifting", "grasping", "reaching", "acting", "tracking-sprite");
     hand.dataset.phase = "rest";
     target.classList.remove("hand-target", "hand-contact");
+    if (actor) {
+      actor.classList.remove("sprite-reacting");
+      delete actor.dataset.reaction;
+      delete actor.dataset.reactPhase;
+      actor.style.removeProperty("--dodge-shift");
+    }
+    hand.style.removeProperty("--hand-chase");
+    cargo.classList.remove("sprite-captured");
     cargo.hidden = true;
     caption.hidden = true;
   }
@@ -394,7 +433,9 @@ function startLevel(index) {
   override = null; groups = { left: 0, right: 0 };
   busy = false;
   // Clear any half-finished visual state when changing levels.
-  $("hand").classList.remove("approaching", "reaching", "grasping", "lifting", "acting");
+  $("hand").classList.remove("approaching", "reaching", "grasping", "lifting", "acting", "tracking-sprite");
+  $("hand").style.removeProperty("--hand-chase");
+  $("hand-cargo").classList.remove("sprite-captured");
   $("hand").dataset.phase = "rest";
   for (const side of ["left", "right"]) $(side + "-chamber").classList.remove("hand-target", "hand-contact");
   $("hand-cargo").hidden = true;
