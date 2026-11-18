@@ -408,10 +408,11 @@ async function handAct(side, action, applyAtContact) {
           break;
         case "arrange":
           showAreaPreview(side, action);
+          hand.classList.add("arranging");
           hand.dataset.phase = action.op === "square" ? "aim" : "reach";
           break;
         case "grip":
-          hand.classList.remove("tracking-sprite");
+          hand.classList.remove("tracking-sprite", "arranging");
           hand.classList.add("grasping");
           hand.dataset.phase = "grip";
           if (reaction) actor.dataset.reactPhase = "caught";
@@ -445,7 +446,7 @@ async function handAct(side, action, applyAtContact) {
     }
   } finally {
     // No animation state should leak into the next room or next level.
-    hand.classList.remove("approaching", "lifting", "grasping", "reaching", "acting", "tracking-sprite");
+    hand.classList.remove("approaching", "lifting", "grasping", "reaching", "acting", "tracking-sprite", "arranging");
     hand.dataset.phase = "rest";
     target.classList.remove("hand-target", "hand-contact");
     if (actor) {
@@ -549,7 +550,7 @@ function startLevel(index) {
   override = null; groups = { left: 0, right: 0 };
   busy = false;
   // Clear any half-finished visual state when changing levels.
-  $("hand").classList.remove("approaching", "reaching", "grasping", "lifting", "acting", "tracking-sprite");
+  $("hand").classList.remove("approaching", "reaching", "grasping", "lifting", "acting", "tracking-sprite", "arranging");
   $("hand").style.removeProperty("--hand-chase");
   $("hand-cargo").classList.remove("sprite-captured");
   $("hand").dataset.phase = "rest";
