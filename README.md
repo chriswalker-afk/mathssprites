@@ -43,7 +43,7 @@ At success, **comic-book panels appear automatically, one for each actual mathem
 
 ## Play the first prototype
 
-The repository now includes a **dependency-free browser game** with four curated whole-number levels.
+The repository now includes a **dependency-free browser game** with five curated whole-number levels.
 
 - **Guided mirror**: choose an operation and the hand performs it in both rooms.
 - **Your turn**: make a change in one room; the balance tips until you repeat it in the other.
