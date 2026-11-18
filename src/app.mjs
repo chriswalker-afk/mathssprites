@@ -1265,6 +1265,7 @@ async function replayNotebookWithSprites() {
   if(!notebookSession || !isSolved(notebookSession.state) || busy)return;
   const script=notebookReplayScript(notebookSession);
   notebookPhase="replaying";
+  notebookReplaySuccessful=false;
   mode="auto";
   busy=true;
   state=initialState(notebookSession.level);
@@ -1337,19 +1338,25 @@ async function replayNotebookWithSprites() {
       "Your "+script.length+" checked algebra step"+(script.length===1?"":"s")+
       " just happened in the rooms. Every move stayed balanced.";
     await sleep(reducedMotion?650:1250);
+    notebookReplaySuccessful=true;
+    // Only a fully completed, physically verified Stage 3 replay earns credit.
+    // The teacher sandbox keeps its own zero-credit behaviour.
+    if(campaignStage==="notebook"&&campaignLevelNumber!==null)
+      window.dispatchEvent(new CustomEvent("mathssprites:solved",
+        {detail:{stage:"notebook",number:campaignLevelNumber,levelId:currentLevel().id}}));
   } catch {
     state=initialState(notebookSession.level);
-    $("notebook-playback-message").textContent=
-      "The sprite replay was interrupted. Your checked paper working is safe; try the replay again.";
+    notebookMessage("The sprite replay was interrupted. Your checked paper working is safe; try the replay again.","error");
   } finally {
     override=null;groups={left:0,right:0};
     $("scene").classList.remove("solved-scene");
     $("level-clear").hidden=true;
     clearNeutralEffect("left");clearNeutralEffect("right");
     busy=false;
-    notebookPhase="complete";
+    notebookPhase=notebookReplaySuccessful?"complete":"writing";
     render();
-    $("notebook-back-paper").focus({preventScroll:true});
+    (notebookReplaySuccessful?$("notebook-back-paper"):$("notebook-replay"))
+      .focus({preventScroll:true});
   }
 }
 async function manualMove(side) {
