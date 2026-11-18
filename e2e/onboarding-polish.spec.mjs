@@ -113,3 +113,24 @@ test("phone menus and replay keep touch actions in view",async({page})=>{
   await page.locator("#replay-skip").click();
   await expect(page.locator("#next-level")).toBeEnabled();
 });
+
+test("chapter-opening levels show new ideas without exposing the hidden equation",async({page})=>{
+  await page.locator('[data-screen="settings"]').first().click();
+  await page.locator("#teacher-unlock").check();
+  await page.locator('[data-screen="worlds"]').first().click();
+  await page.locator('[data-screen="levels"]').first().click();
+  for (const [number,skill,theme] of [
+    [5,"Equal baskets","2"],
+    [9,"Two-step experiments","3"],
+    [13,"Across the hall","4"],
+    [17,"Master of the balance","5"]
+  ]) {
+    await page.locator('[data-level="'+number+'"]').click();
+    await expect(page.locator("#chapter-briefing")).toBeVisible();
+    await expect(page.locator("#chapter-briefing")).toContainText(skill);
+    await expect(page.locator("#chapter-status")).toContainText("LEVEL "+String(number).padStart(2,"0"));
+    await expect(page.locator("body")).toHaveAttribute("data-workshop-chapter",theme);
+    await page.locator("#game-levels").click();
+  }
+  await expect(page.locator("#chapter-briefing")).toBeHidden();
+});
