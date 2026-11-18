@@ -249,6 +249,62 @@ function renderFirstGuide() {
   const target = guideTarget(cue.target);
   if (target && !target.hidden) target.classList.add("coach-focus");
 }
+/** Notebook is always on paper FIRST. The existing scene appears only after
+ * validated working is complete and the student explicitly requests replay. */
+function renderNotebookVisibility() {
+  const active=!!notebookSession;
+  document.body.classList.toggle("notebook-mode",active);
+  $("notebook-workspace").hidden=!active || notebookPhase!=="writing";
+  $("notebook-playback").hidden=!active ||
+    (notebookPhase!=="replaying" && notebookPhase!=="complete");
+  $("scene").hidden=active && notebookPhase==="writing";
+  document.querySelector(".experiment-controls").hidden=active;
+  if(active){
+    $("chapter").textContent="STAGE 3 · ALGEBRA APPRENTICE PROTOTYPE";
+    $("chapter-status").hidden=false;
+    $("chapter-status").textContent="PAPER FIRST · SPRITE REPLAY SECOND · NO PROGRESS";
+    $("apprentice-guide").hidden=true;
+    $("game-guide-restart").hidden=true;
+    $("campaign-hand-mode").hidden=true;
+    $("mode-wrapper").hidden=true;
+    $("notebook-back-paper").hidden=notebookPhase!=="complete";
+    $("notebook-watch-again").hidden=notebookPhase!=="complete";
+  }
+}
+function notebookMessage(message,status="info"){
+  $("notebook-feedback").textContent=message;
+  $("notebook-feedback").dataset.status=status;
+  $("notebook-equation").setAttribute("aria-invalid",String(status==="error"));
+}
+function renderNotebookPaper() {
+  if(!notebookSession)return;
+  const lines=$("notebook-lines");
+  lines.replaceChildren();
+  const addLine=(text,explanation,original=false)=>{
+    const item=document.createElement("li");
+    if(original)item.className="notebook-original";
+    const value=document.createElement("span");
+    value.className="notebook-line-equation";
+    value.textContent=text; // never inject a student's equation as HTML
+    item.appendChild(value);
+    if(explanation){
+      const note=document.createElement("small");
+      note.textContent=explanation;
+      item.appendChild(note);
+    }
+    lines.appendChild(item);
+  };
+  const initial=initialState(notebookSession.level);
+  addLine(equation({left:initial.left,right:initial.right}),
+    "Starting equation · the mystery you must solve",true);
+  for(const step of notebookSession.steps)
+    addLine(step.line,step.explanation);
+  const finished=isSolved(notebookSession.state);
+  $("notebook-form").hidden=finished;
+  $("notebook-replay").disabled=!finished||notebookPhase==="replaying";
+  $("notebook-undo").disabled=!notebookSession.steps.length||notebookPhase==="replaying";
+  $("notebook-reset").disabled=notebookPhase==="replaying";
+}
 function render() {
   const lvl = currentLevel();
   if (campaignLevelNumber !== null)
