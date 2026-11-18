@@ -239,7 +239,7 @@ export function areaArrangement(r, op) {
   const k = a ? "posX2" : "posOne";
   return {op,kind:k,side:n,cells:n*n,symbolic:!!a};
 }
-function transform(source, action) {
+function transform(source, action, side = "room") {
   const next = room(source);
   let priorCancellations = { sprites: 0, constants: 0 };
   let preDivisionEvents = [];
@@ -287,7 +287,7 @@ function transform(source, action) {
   if (action.op === "divide") {
     const normalized = normalize(next);
     const compact = normalized.after;
-    preDivisionEvents = neutralPairSequence(next);
+    preDivisionEvents = neutralPairSequence(next,side);
     priorCancellations = normalized.cancellations;
     const splitKind = TOKEN_KINDS.find(kind => compact[kind] % action.factor !== 0);
     if (splitKind) {
@@ -302,7 +302,7 @@ function transform(source, action) {
   const raw = room(next);
   const reduced = normalize(next);
   const cancellationEvents = action.op === "divide" ?
-    preDivisionEvents : neutralPairSequence(raw);
+    preDivisionEvents : neutralPairSequence(raw,side);
   if (countTokens(reduced.after) > 48)
     return { ok: false, code: "overflow", total: countTokens(reduced.after),
       capacity: 48, excess: countTokens(reduced.after) - 48,
@@ -318,12 +318,12 @@ function transform(source, action) {
 }
 /** Preview exactly one room. This never commits a step or changes the opposite
  * chamber. Used for teaching failed attempts and mismatched manual moves. */
-export function previewRoomAction(source, action, quantityMode = "signed") {
+export function previewRoomAction(source, action, quantityMode = "signed", side = "room") {
   const error = check(action);
   if (error) return { ok: false, code: "invalid", reason: error };
   const permission=quantityPermission(quantityMode,action);
   if (!permission.ok) return permission;
-  return transform(source, action);
+  return transform(source, action, side);
 }
 export function prepare(state, action) {
   if (state.pending) return { ok: false, reason: "Finish the matching move, or undo the first one." };
@@ -331,9 +331,9 @@ export function prepare(state, action) {
   if (error) return { ok: false, reason: error };
   const permission=quantityPermission(state.quantityMode||"positive",action);
   if(!permission.ok)return permission;
-  const left = transform(state.left, action);
+  const left = transform(state.left, action,"left");
   if (!left.ok) return { ...left, side: "left" };
-  const right = transform(state.right, action);
+  const right = transform(state.right, action,"right");
   if (!right.ok) return { ...right, side: "right" };
   return { ok: true, pair: { left, right } };
 }
@@ -381,9 +381,9 @@ export function perform(state, action, mode = "auto", side) {
     // room. Students can try a different second action and learn why it
     // unbalances the scale. An invalid matching second action is still
     // rejected and visually undone; no unilateral step can be committed.
-    const first = previewRoomAction(state[side], action, state.quantityMode);
+    const first = previewRoomAction(state[side], action, state.quantityMode,side);
     if (!first.ok) return { ...first, side };
-    const second = previewRoomAction(state[opposite], action, state.quantityMode);
+    const second = previewRoomAction(state[opposite], action, state.quantityMode,opposite);
     const pair = side === "left" ? {left:first,right:second} :
       {left:second,right:first};
     return { ok: true, committed: false,
