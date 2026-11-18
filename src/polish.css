@@ -174,7 +174,7 @@ body[data-workshop-chapter] .progress-dot.lit{background:var(--chapter-accent);b
   .level-clear .clear-spark{font-size:1.8rem}
 }
 @media(max-width:390px){
-  .chapter-illustration{display:none}
+  .chapter-illustration{display:grid;width:38px;height:42px;font-size:1.4rem;flex:none}
   .world1-progress-labels{font-size:.72rem}
   .replay-header{gap:5px}
   .replay-header h2{font-size:1.3rem}
