@@ -8,6 +8,12 @@ on:
 permissions:
   contents: read
 
+# New commits supersede earlier browser runs for the same PR. This avoids
+# stacking several 3-minute animation suites while a PR is being developed.
+concurrency:
+  group: browser-qa-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 # All browser specs run, but distributed across independent runners. Each
 # shard has its own server and browser to keep animation timing reliable.
 jobs:
