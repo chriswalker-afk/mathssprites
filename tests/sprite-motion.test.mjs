@@ -24,6 +24,7 @@ test("two rooms and different levels have independent phases", () => {
   assert.notDeepEqual(a, b);
   assert.notDeepEqual(a, c);
   assert.notDeepEqual(a, d);
+  assert.notDeepEqual(a, spriteMotionProfile("across", "left", "posX2", 0));
 });
 test("restless but bounded motion does not physically displace the balance", () => {
   for (let i = 0; i < 50; i++) {
