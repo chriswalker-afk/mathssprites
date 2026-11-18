@@ -1,12 +1,13 @@
 import {
   LEVELS, TOKEN_KINDS, initialState, visibleRooms, evaluate,
-  perform, undo, isSolved, equation, operationDescription, algebraOperation, areaArrangement
+  perform, previewRoomAction, undo, isSolved, equation, operationDescription, algebraOperation, areaArrangement
 } from "./engine.mjs";
 import { buildWritingTimeline, symbolsOf } from "./replay-timeline.mjs";
 import { handMotionPlan } from "./hand-timeline.mjs";
 import { spriteMotionProfile, spriteMotionStyle } from "./sprite-motion.mjs";
 import { pickSpriteHandReaction, dodgeOffsetPx } from "./sprite-reactions.mjs";
 import { floorScaleToFit, previewCells, areaMathLabel } from "./area-layout.mjs";
+import { fractionDisplay, itemWord, attemptMessage, mismatchedMoveMessage } from "./attempt-feedback.mjs";
 
 const $ = id => document.getElementById(id);
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
@@ -39,6 +40,7 @@ let state = initialState(LEVELS[0]);
 let busy = false;
 let override = null;
 let groups = { left: 0, right: 0 };
+let failureTilt = 0; // transient presentation only; no effect on the math engine
 // Start with the creatures moving, regardless of the device motion preference.
 // The explicit in-game Motion toggle can still reduce animations, and that
 // choice persists on subsequent visits. Do not overwrite a saved choice.
@@ -180,7 +182,7 @@ function render() {
     (i === levelIndex ? " current" : "") + '" title="' + item.title + '"></span>').join("");
 
   const balance = currentDifference(shown);
-  const degrees = balance === 0 ? 0 : (balance < 0 ? 3.5 : -3.5);
+  const degrees = failureTilt || (balance === 0 ? 0 : (balance < 0 ? 3.5 : -3.5));
   $("rooms-row").style.transform = "rotate(" + degrees + "deg)";
   $("scale-beam").style.transform = "rotate(" + degrees + "deg)";
   $("dial-needle").style.transform = "translateX(-50%) rotate(" + (degrees * -7) + "deg)";
@@ -191,12 +193,12 @@ function render() {
   $("balance-caption").classList.toggle("unbalanced", balance !== 0);
   for (const button of document.querySelectorAll("[data-operation]")) {
     button.classList.toggle("selected", button.dataset.operation === operation);
-    button.disabled = busy || awaiting || isSolved(state);
+    button.disabled = busy || isSolved(state);
     button.setAttribute("aria-pressed", String(button.dataset.operation === operation));
   }
   for (const button of document.querySelectorAll("[data-kind]")) {
     button.classList.toggle("selected", button.dataset.kind === kind);
-    button.disabled = busy || awaiting || isSolved(state);
+    button.disabled = busy || isSolved(state);
     button.setAttribute("aria-pressed", String(button.dataset.kind === kind));
   }
   const grouped = operation === "divide" || operation === "multiply";
@@ -205,8 +207,8 @@ function render() {
   $("amount-control").hidden = geometric;
   $("amount-label").textContent = grouped ? "3 · How many groups?" : "3 · How many?";
   $("amount-value").textContent = grouped ? factor : amount;
-  $("amount-down").disabled = busy || awaiting || isSolved(state) || (grouped ? factor <= 2 : amount <= 1);
-  $("amount-up").disabled = busy || awaiting || isSolved(state) || (grouped ? factor >= 5 : amount >= 12);
+  $("amount-down").disabled = busy || isSolved(state) || (grouped ? factor <= 2 : amount <= 1);
+  $("amount-up").disabled = busy || isSolved(state) || (grouped ? factor >= 5 : amount >= 12);
   $("mode-select").value = mode;
   $("mode-select").disabled = busy || awaiting;
   $("level-select").value = String(levelIndex);
@@ -220,14 +222,22 @@ function render() {
   $("do-both").disabled = busy || awaiting || isSolved(state);
   $("manual-explanation").hidden = mode !== "manual";
   $("manual-explanation").textContent = awaiting
-    ? "The first room has changed. Select the other room to finish the same action."
-    : "Select a room above. Then repeat the same move in the other room.";
+    ? "The first room has changed. You can choose a different tool or amount for the other room — if it changes the balance, the hand will show why and undo the experiment."
+    : "Choose a room, then make an equivalent move in the other room. You can also experiment with a different move and see what happens.";
   for (const side of ["left", "right"]) {
     const button = $(side + "-action");
     button.hidden = mode !== "manual";
     button.disabled = busy || isSolved(state) || (awaiting && state.pending.first === side);
+    const selected = currentAction();
+    const expected = awaiting ? state.pending.action : null;
+    const same = awaiting && selected.op === expected.op &&
+      ((selected.op === "add" || selected.op === "remove")
+        ? selected.kind === expected.kind && selected.count === expected.count
+        : (selected.op === "multiply" || selected.op === "divide")
+          ? selected.factor === expected.factor : true);
     button.textContent = awaiting
-      ? (state.pending.first === side ? "First move made" : "Match the move here")
+      ? (state.pending.first === side ? "First move made" :
+        same ? "Match the move here" : "Try different move here")
       : "Use hand here";
     $(side + "-chamber").classList.toggle("needs-match", awaiting && state.pending.first !== side);
     $(side + "-chamber").classList.toggle("already-moved", awaiting && state.pending.first === side);
@@ -848,7 +858,7 @@ $("level-select").innerHTML = LEVELS.map((lvl, i) =>
   '<option value="' + i + '">' + (i + 1) + " · " + lvl.title + "</option>").join("");
 for (const button of document.querySelectorAll("[data-operation]")) {
   button.addEventListener("click", () => {
-    if (state.pending || busy) return;
+    if (busy) return;
     operation = button.dataset.operation;
     if (operation === "divide" && levelIndex === 1) factor = 3;
     if (operation === "divide" && levelIndex === 4) factor = 5;
@@ -856,16 +866,16 @@ for (const button of document.querySelectorAll("[data-operation]")) {
   });
 }
 for (const button of document.querySelectorAll("[data-kind]")) {
-  button.addEventListener("click", () => { if (!state.pending && !busy) { kind = button.dataset.kind; render(); } });
+  button.addEventListener("click", () => { if (!busy) { kind = button.dataset.kind; render(); } });
 }
 $("amount-down").addEventListener("click", () => {
-  if (state.pending || busy) return;
+  if (busy) return;
   if (operation === "multiply" || operation === "divide") factor = Math.max(2, factor - 1);
   else amount = Math.max(1, amount - 1);
   render();
 });
 $("amount-up").addEventListener("click", () => {
-  if (state.pending || busy) return;
+  if (busy) return;
   if (operation === "multiply" || operation === "divide") factor = Math.min(5, factor + 1);
   else amount = Math.min(12, amount + 1);
   render();
