@@ -1,0 +1,85 @@
+/* PR20 — Algebra Apprentice's notebook-first interface.
+ * Reuse the warm brass and paper materials from the journal/comic.
+ * Every control is keyboard operable; the CSS supplies no mathematical logic. */
+.notebook-prototype-option{display:grid;gap:11px;margin:20px 0;padding:17px;
+  border:1px dashed #ae9464;border-radius:12px;background:#263630}
+.notebook-prototype-option p{font-size:.87rem;line-height:1.55;color:#d6dccf}
+.notebook-prototype-option strong{color:#edcc8c}
+.notebook-prototype-option button{justify-self:start}
+.notebook-workspace{display:grid;grid-template-columns:minmax(210px,.75fr) minmax(0,1.55fr);
+  align-items:start;gap:28px;max-width:1120px;margin:12px auto 28px}
+.notebook-intro{padding:32px 23px;border:1px solid #716449;border-radius:17px;
+  background:radial-gradient(circle at 88% 5%,#7d755d45,transparent 55%),#273331;
+  box-shadow:0 14px 29px #0003}
+.notebook-intro h3{font-size:clamp(1.6rem,2.45vw,2.3rem);font-weight:400;
+  color:#f5e1bd;margin:17px 0 15px;line-height:1.13}
+.notebook-intro p{font-size:.93rem;line-height:1.6;color:#d3dacf}
+.notebook-preview-warning{display:block;margin-top:23px;border-top:1px solid #9c957b66;
+  padding-top:13px;font-size:.73rem;letter-spacing:.04em;color:#e4c58f}
+.notebook-paper{position:relative;min-width:0;border:9px solid #77654b;
+  border-radius:14px;overflow:hidden;padding:27px clamp(18px,4.2vw,43px) 31px;
+  color:#293732;background:
+  repeating-linear-gradient(180deg,transparent 0 37px,#b7a78055 38px,#b7a78055 39px),
+  linear-gradient(110deg,#f0e5ce,#e3d2ad 78%);
+  box-shadow:inset 0 0 0 1px #fff7d383,0 16px 42px #0006;
+}
+.notebook-paper::before{content:"";position:absolute;top:0;bottom:0;left:clamp(10px,3.1vw,28px);
+  width:1px;background:#be86828c;pointer-events:none}
+.notebook-paper-head{display:flex;justify-content:space-between;align-items:center;
+  font-size:.65rem;letter-spacing:.17em;font-weight:bold;color:#786e59}
+.notebook-paper-head span:last-child{font:normal 1.9rem Georgia,serif;color:#897154}
+.notebook-paper h4{font:normal 1.72rem Georgia,serif;color:#273832;margin:13px 0}
+.notebook-lines{counter-reset:algebra;list-style:none;margin:12px 0 20px;padding:0;min-height:80px}
+.notebook-lines li{position:relative;min-height:41px;padding:3px 7px 7px 46px;line-height:1.65;
+  border-radius:5px;overflow-wrap:anywhere}
+.notebook-lines li::before{counter-increment:algebra;content:counter(algebra) ".";
+  position:absolute;left:9px;top:4px;font-size:.68rem;color:#887759}
+.notebook-line-equation{font:normal 1.2rem "Trebuchet MS",sans-serif;letter-spacing:.01em;color:#253e3b}
+.notebook-lines .notebook-original{font-weight:700}
+.notebook-lines .notebook-original .notebook-line-equation{font-weight:700}
+.notebook-lines li small{display:block;color:#70634c;font-size:.71rem;line-height:1.35}
+.notebook-form{display:grid;gap:8px;margin-top:17px}
+.notebook-form label{font-size:.78rem;font-weight:800;color:#5b5546}
+.notebook-input-row{display:flex;gap:9px;align-items:stretch;min-width:0}
+.notebook-input-row input{flex:1;min-width:0;min-height:49px;padding:10px 14px;
+  font:normal 1.05rem "Trebuchet MS",sans-serif;color:#1b302f;background:#fff9e8;
+  border:2px solid #a28a66;border-radius:8px}
+.notebook-input-row input:focus-visible{outline:3px solid #315c65;outline-offset:2px}
+.notebook-input-row input[aria-invalid="true"]{border-color:#8b3832}
+.notebook-input-row button{flex:none;font-size:.83rem;white-space:nowrap}
+.notebook-feedback{min-height:41px;font-size:.85rem;line-height:1.5;margin:13px 0 7px;
+  color:#4a4b37;font-weight:600}
+.notebook-feedback[data-status="error"]{color:#812f29}
+.notebook-feedback[data-status="success"]{color:#226040}
+.notebook-actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:13px}
+.notebook-actions button{font-size:.8rem}
+.notebook-actions .primary-btn{margin-left:auto}
+.notebook-help{margin-top:24px;font-size:.72rem;line-height:1.55;color:#5b634f}
+.notebook-playback{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;
+  gap:12px;padding:15px 18px;margin:0 0 15px;border:1px solid #ad8d5c;
+  border-radius:12px;background:#2b3832}
+.notebook-playback p{margin-top:4px;color:#f0e2c7;font-size:.94rem}
+.notebook-playback-actions{display:flex;flex-wrap:wrap;gap:9px}
+.notebook-playback-actions button{min-height:42px}
+body.notebook-mode .footer-note{display:none}
+body.notebook-mode .chapter-strip{padding-bottom:9px}
+body.notebook-mode .chapter-strip .step-dots{display:none}
+@media(max-width:870px){
+  .notebook-workspace{grid-template-columns:1fr;gap:13px;max-width:740px}
+  .notebook-intro{padding:21px}
+  .notebook-intro h3{margin:8px 0}
+  .notebook-preview-warning{margin-top:12px}
+  .notebook-paper{padding:19px 23px}
+}
+@media(max-width:540px){
+  .notebook-intro h3{font-size:1.55rem}
+  .notebook-paper{border-width:5px;padding:15px 15px 23px}
+  .notebook-paper::before{left:9px}
+  .notebook-paper h4{font-size:1.45rem}
+  .notebook-input-row{flex-direction:column}
+  .notebook-input-row button{width:100%;min-height:46px}
+  .notebook-lines li{padding-left:29px}
+  .notebook-lines li::before{left:2px}
+  .notebook-actions button{flex:1 1 120px}
+  .notebook-actions .primary-btn{flex-basis:100%;margin-left:0}
+}

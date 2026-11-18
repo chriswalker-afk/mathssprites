@@ -13,6 +13,9 @@ import {neutralPairSequence, neutralPairSummary} from "./neutral-pairs.mjs";
 import { WORLD1_LEVELS } from "./worlds.mjs";
 import {INDEPENDENT_LEVELS} from "./independent-levels.mjs";
 import {
+  startNotebook,tryNotebookLine,undoNotebookLine,notebookReplayScript
+} from "./notebook-engine.mjs";
+import {
   CHAPTER_BRIEFINGS, INDEPENDENT_BRIEFINGS,
   introductionCue,independentIntroductionCue,readGuideEnabled,readGuideSeen,
   writeGuideEnabled,writeGuideSeen,readIndependentGuideSeen,writeIndependentGuideSeen
@@ -49,6 +52,8 @@ let state = initialState(LEVELS[0]);
 let activeLevel = LEVELS[0];
 let campaignLevelNumber = null;
 let campaignStage = null; // null = separate advanced prototype preview
+let notebookSession=null; // only teacher prototype in PR20; never campaign progress
+let notebookPhase="idle"; // idle | writing | replaying | complete
 let guideEnabled = readGuideEnabled();
 let guideSeen = readGuideSeen();
 let independentGuideSeen=readIndependentGuideSeen();
@@ -244,6 +249,65 @@ function renderFirstGuide() {
   const target = guideTarget(cue.target);
   if (target && !target.hidden) target.classList.add("coach-focus");
 }
+/** Notebook is always on paper FIRST. The existing scene appears only after
+ * validated working is complete and the student explicitly requests replay. */
+function renderNotebookVisibility() {
+  const active=!!notebookSession;
+  document.body.classList.toggle("notebook-mode",active);
+  $("notebook-workspace").hidden=!active || notebookPhase!=="writing";
+  $("notebook-playback").hidden=!active ||
+    (notebookPhase!=="replaying" && notebookPhase!=="complete");
+  $("scene").hidden=active && notebookPhase==="writing";
+  document.querySelector(".experiment-controls").hidden=active;
+  $("level-clear-subtitle").textContent=active
+    ? "The sprites followed your checked steps, exactly as written."
+    : "Let's discover the algebra behind those moves.";
+  if(active){
+    $("chapter").textContent="STAGE 3 · ALGEBRA APPRENTICE PROTOTYPE";
+    $("chapter-status").hidden=false;
+    $("chapter-status").textContent="PAPER FIRST · SPRITE REPLAY SECOND · NO PROGRESS";
+    $("apprentice-guide").hidden=true;
+    $("game-guide-restart").hidden=true;
+    $("campaign-hand-mode").hidden=true;
+    $("mode-wrapper").hidden=true;
+    $("notebook-back-paper").hidden=notebookPhase!=="complete";
+    $("notebook-watch-again").hidden=notebookPhase!=="complete";
+  }
+}
+function notebookMessage(message,status="info"){
+  $("notebook-feedback").textContent=message;
+  $("notebook-feedback").dataset.status=status;
+  $("notebook-equation").setAttribute("aria-invalid",String(status==="error"));
+}
+function renderNotebookPaper() {
+  if(!notebookSession)return;
+  const lines=$("notebook-lines");
+  lines.replaceChildren();
+  const addLine=(text,explanation,original=false)=>{
+    const item=document.createElement("li");
+    if(original)item.className="notebook-original";
+    const value=document.createElement("span");
+    value.className="notebook-line-equation";
+    value.textContent=text; // never inject a student's equation as HTML
+    item.appendChild(value);
+    if(explanation){
+      const note=document.createElement("small");
+      note.textContent=explanation;
+      item.appendChild(note);
+    }
+    lines.appendChild(item);
+  };
+  const initial=initialState(notebookSession.level);
+  addLine(equation({left:initial.left,right:initial.right}),
+    "Starting equation · the mystery you must solve",true);
+  for(const step of notebookSession.steps)
+    addLine(step.line,step.explanation);
+  const finished=isSolved(notebookSession.state);
+  $("notebook-form").hidden=finished;
+  $("notebook-replay").disabled=!finished||notebookPhase==="replaying";
+  $("notebook-undo").disabled=!notebookSession.steps.length||notebookPhase==="replaying";
+  $("notebook-reset").disabled=notebookPhase==="replaying";
+}
 function render() {
   const lvl = currentLevel();
   if (campaignLevelNumber !== null)
@@ -376,6 +440,7 @@ function render() {
       '<button id="watch-again" class="inline-link" type="button">Watch the comic again</button>';
   }
   renderFirstGuide();
+  renderNotebookVisibility();
 }
 /**
  * A two-stage hand movement, not an instant model update followed by an effect.
@@ -1115,7 +1180,7 @@ async function finishTurn() {
 }
 async function guidedMove() {
   // Stage 2 is manual-only, even if the hidden Guided Mirror control is called.
-  if (campaignStage==="independent" || busy || isSolved(state)) return;
+  if (notebookSession || campaignStage==="independent" || busy || isSolved(state)) return;
   const action=currentAction();
   const outcome=perform(state,action,"auto");
   if(!outcome.ok) {
@@ -1168,10 +1233,105 @@ async function guidedMove() {
   }
   await finishTurn();
 }
+/** Replay a CHECKED algebra notebook as consecutive real hand movements.
+ * The pure engine's committed history, never user text, provides the actions.
+ * This deliberately does NOT call finishTurn/showReplay: paper already came
+ * first, so showing the standard paper-after-sprites comic would reverse PR20. */
+async function replayNotebookWithSprites() {
+  if(!notebookSession || !isSolved(notebookSession.state) || busy)return;
+  const script=notebookReplayScript(notebookSession);
+  notebookPhase="replaying";
+  mode="auto";
+  busy=true;
+  state=initialState(notebookSession.level);
+  override=null;
+  groups={left:0,right:0};
+  $("scene").hidden=false; // let geometry exist BEFORE hand measurements
+  $("notebook-workspace").hidden=true;
+  $("notebook-playback").hidden=false;
+  $("notebook-playback-message").textContent="The hand is getting ready to follow your checked steps...";
+  render();
+  try {
+    await sleep(60);
+    for(const [i,step] of script.entries()){
+      const action=step.action;
+      const previous=state;
+      const result=perform(previous,action,"auto");
+      if(!result.ok)throw new Error("Checked notebook action became invalid");
+      const next=result.state;
+      const exact=["left","right"].every(side=>
+        TOKEN_KINDS.every(kind=>next[side][kind]===step.after[side][kind]));
+      if(!exact)throw new Error("Notebook script disagrees with engine history");
+      const previews={
+        left:previewRoomAction(previous.left,action,state.quantityMode,"left"),
+        right:previewRoomAction(previous.right,action,state.quantityMode,"right")
+      };
+      if(!previews.left.ok||!previews.right.ok)
+        throw new Error("A notebook room preview was invalid");
+      $("notebook-playback-message").textContent=
+        "Step "+(i+1)+" of "+script.length+": "+step.explanation;
+      if(action.op==="divide"){
+        await neutraliseBeforeDivision(action,previews);
+        groups={left:action.factor,right:action.factor};
+        render();
+        await sleep(reducedMotion?350:900);
+      } else render();
+      const beforeRight=action.op==="divide"
+        ? room(previews.right.beforeGroups) : previous.right;
+      await handAct("left",action,async()=>{
+        const trial=previews.left;
+        if(action.op!=="divide"&&trial.cancellationEvents.length){
+          override={left:room(trial.raw),right:beforeRight};render();
+          await animateNeutralEvents("left",trial.cancellationEvents,r=>{
+            override={left:room(r),right:beforeRight};render();
+          });
+        }
+        override={left:next.left,right:beforeRight};
+        groups.left=0;
+        render();
+      });
+      await handAct("right",action,async()=>{
+        state=next;
+        const trial=previews.right;
+        if(action.op!=="divide"&&trial.cancellationEvents.length){
+          override={left:next.left,right:room(trial.raw)};render();
+          await animateNeutralEvents("right",trial.cancellationEvents,r=>{
+            override={left:next.left,right:room(r)};render();
+          });
+        }
+        override=null;groups.right=0;render();
+      });
+      override=null;groups={left:0,right:0};render();
+      clearNeutralEffect("left");clearNeutralEffect("right");
+      if(i<script.length-1)await sleep(reducedMotion?120:450);
+    }
+    if(!isSolved(state))throw new Error("Replay did not reach the validated solution");
+    $("scene").classList.add("solved-scene");
+    $("level-clear-title").textContent="Your algebra came to life!";
+    $("level-clear").hidden=false;
+    $("notebook-playback-message").textContent=
+      "Your "+script.length+" checked algebra step"+(script.length===1?"":"s")+
+      " just happened in the rooms. Every move stayed balanced.";
+    await sleep(reducedMotion?650:1250);
+  } catch {
+    state=initialState(notebookSession.level);
+    $("notebook-playback-message").textContent=
+      "The sprite replay was interrupted. Your checked paper working is safe; try the replay again.";
+  } finally {
+    override=null;groups={left:0,right:0};
+    $("scene").classList.remove("solved-scene");
+    $("level-clear").hidden=true;
+    clearNeutralEffect("left");clearNeutralEffect("right");
+    busy=false;
+    notebookPhase="complete";
+    render();
+    $("notebook-back-paper").focus({preventScroll:true});
+  }
+}
 async function manualMove(side) {
   // A student-facing Stage 1 cannot perform one-sided actions, even if an
   // invisible prototype button is activated programmatically.
-  if(campaignStage==="guided" || busy || isSolved(state))return;
+  if(notebookSession || campaignStage==="guided" || busy || isSolved(state))return;
   const wasPending=!!state.pending,action=currentAction();
   const outcome=perform(state,action,"manual",side);
   if(!outcome.ok){
@@ -1224,6 +1384,9 @@ async function manualMove(side) {
 function startLevel(index, quantityMode, levelOverride=null, campaignNumber=null, stage="guided") {
   stopReplay();
   replayEntries = [];
+  notebookSession=null;
+  notebookPhase="idle";
+  document.body.classList.remove("notebook-mode");
   levelIndex = (index + LEVELS.length) % LEVELS.length;
   const level = levelOverride || LEVELS[levelIndex];
   activeLevel = level;
@@ -1665,20 +1828,22 @@ $("quantity-mode").addEventListener("change", event => {
     : "Only positive sprites and weights are available in this lesson.",5300);
 });
 $("level-select").addEventListener("change", event => {
-  if (campaignLevelNumber !== null) return render();
+  if (notebookSession || campaignLevelNumber !== null) return render();
   startLevel(Number(event.target.value));
 });
 $("motion-toggle").addEventListener("click", () => chooseMotion(!reducedMotion));
 $("motion-enable").addEventListener("click", () => chooseMotion(false));
 $("undo").addEventListener("click", () => {
-  if (busy) return;
+  if (notebookSession || busy) return;
   state = undo(state); clearSpeech();
   $("feedback").textContent = "The hand has put everything back.";
   render();
 });
-$("reset").addEventListener("click", () =>
+$("reset").addEventListener("click", () => {
+  if(notebookSession)return;
   startLevel(levelIndex,state.quantityMode,campaignLevelNumber===null?null:currentLevel(),
-    campaignLevelNumber,campaignStage));
+    campaignLevelNumber,campaignStage);
+});
 $("hint").addEventListener("click", () => setSpeech(currentLevel().suggested, 6200));
 $("feedback").addEventListener("click", event => {
   if (event.target?.id === "watch-again") showReplay();
@@ -1718,6 +1883,74 @@ $("next-level").addEventListener("click", () => {
     window.dispatchEvent(new CustomEvent("mathssprites:advance"));
   } else startLevel(levelIndex + 1);
 });
+/** PR20 notebook sandbox: Stage 3 puzzle content and saved progress arrive
+ * in PR21. No notebook preview ever dispatches mathssprites:solved. */
+window.addEventListener("mathssprites:notebook-preview",event=>{
+  if(busy)return;
+  const level=event.detail?.level;
+  startLevel(0,"positive",level,null);
+  notebookSession=startNotebook(level);
+  notebookPhase="writing";
+  mode="auto";
+  notebookMessage("Write the next balanced equation. Each line must be one whole-object operation on both sides.");
+  renderNotebookPaper();
+  render();
+  $("notebook-equation").value="";
+  $("notebook-equation").focus({preventScroll:true});
+});
+window.addEventListener("mathssprites:notebook-close",()=>{
+  if(busy)return;
+  notebookSession=null;
+  notebookPhase="idle";
+  document.body.classList.remove("notebook-mode");
+  renderNotebookVisibility();
+});
+$("notebook-form").addEventListener("submit",event=>{
+  event.preventDefault();
+  if(!notebookSession || notebookPhase!=="writing" || busy)return;
+  const input=$("notebook-equation");
+  const result=tryNotebookLine(notebookSession,input.value);
+  if(!result.ok){
+    notebookMessage(result.message,"error");
+    input.focus();
+    return;
+  }
+  notebookSession=result.session;
+  input.value="";
+  renderNotebookPaper();
+  notebookMessage(result.solved
+    ? "Solution checked! Your complete route is ready. Choose Replay with sprites to watch YOUR steps."
+    : "Balanced step accepted: "+result.explanation+". Write the next equation.",
+    "success");
+  if(!result.solved)input.focus();
+  else $("notebook-replay").focus({preventScroll:true});
+});
+$("notebook-undo").addEventListener("click",()=>{
+  if(!notebookSession || notebookPhase!=="writing" || busy)return;
+  notebookSession=undoNotebookLine(notebookSession);
+  renderNotebookPaper();
+  notebookMessage("The last algebra line has been removed. Try another valid route.");
+  $("notebook-equation").focus();
+});
+$("notebook-reset").addEventListener("click",()=>{
+  if(!notebookSession || notebookPhase!=="writing" || busy)return;
+  notebookSession=startNotebook(notebookSession.level);
+  state=initialState(notebookSession.level);
+  $("notebook-equation").value="";
+  renderNotebookPaper();
+  notebookMessage("Fresh page. The original equation is still balanced.");
+  $("notebook-equation").focus();
+});
+$("notebook-replay").addEventListener("click",replayNotebookWithSprites);
+$("notebook-back-paper").addEventListener("click",()=>{
+  if(!notebookSession || notebookPhase!=="complete" || busy)return;
+  notebookPhase="writing";
+  renderNotebookPaper();
+  render();
+  notebookMessage("These are your checked algebra steps. You can replay them again or undo a line.","success");
+  $("notebook-replay").focus({preventScroll:true});
+});
+$("notebook-watch-again").addEventListener("click",replayNotebookWithSprites);
 window.addEventListener("mathssprites:launch",event=>{
   const {number,legacyIndex,level,stage}=event.detail;
   startLevel(legacyIndex,"positive",level,number,stage);
@@ -1732,7 +1965,7 @@ $("game-home").addEventListener("click", () => leaveGame("home"));
 $("game-levels").addEventListener("click", () => leaveGame("levels"));
 document.addEventListener("keydown", event => {
   if (event.key === "Escape" && !$("replay-backdrop").hidden) { hideReplay(); return; }
-  if (event.altKey && event.key.toLowerCase() === "z" && !busy && $("replay-backdrop").hidden) {
+  if (event.altKey && event.key.toLowerCase() === "z" && !notebookSession && !busy && $("replay-backdrop").hidden) {
     state = undo(state); render();
   }
 });

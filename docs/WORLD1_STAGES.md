@@ -6,7 +6,7 @@ World 1 is entirely about **positive whole-number equations**. Each stage change
 |---|---:|---|---|
 | Stage 1 — Guided Balance | 20 (5 chapters) | Hand automatically mirrors the operation in the other room | **Playable** |
 | Stage 2 — Independent Balance | 16 (4 chapters) | Student deliberately makes a separate hand visit to each room | **Playable (PR19)** |
-| Stage 3 — Algebra Apprentice | 12 planned | Student writes algebra first; sprites reenact the validated working afterwards | Coming soon (PR20–21) |
+| Stage 3 — Algebra Apprentice | 12 planned | Student writes algebra first; sprites reenact the validated working afterwards | Engine + teacher preview built in PR20; campaign locked until PR21 |
 | Equation Workshop | Custom | Input positive-whole-number equations, check representability and choose a method | Coming soon (PR22) |
 
 The Equation Workshop is a free-play laboratory, **not a fourth stage**; it does not count towards campaign progress.
@@ -56,12 +56,14 @@ PR19 introduces mathematical tests for all 16 puzzles' initial equality, positiv
 
 Browser tests cover student/teacher gates, stage-specific chapter maps, tool hiding, real scale tipping, guided help, first room and second room actions, invalid attempts, comic handoff, saved progress and phone touch targets. The existing Stage 1 and prototype browser regressions must remain green.
 
-## Next development: PR20 → PR21 → PR22
+## PR20 — notebook-first foundation
 
-**PR20:** Build the Stage 3 notebook-first interface and algebra-step checker, supporting valid alternate routes, transformation equivalence, and a **reverse-direction** replay: paper first, sprites afterward. Use the existing engine's transaction history as the single mathematical source of truth.
+The **paper-first step checker and sprite replay** are implemented in PR20, with safe line parsing, physically representable one-operation transformations, multiple valid solution routes, undo, reset, and genuine hand replay. The paper is shown before the sprite scene. A teacher-only sandbox in Settings or `?notebook=two-step-09` allows validation using already-published positive-whole-number puzzles **without recording Stage 3 or earlier-stage progress**. The Stage 3 card itself remains locked; see [STAGE3_NOTEBOOK_FOUNDATION.md](STAGE3_NOTEBOOK_FOUNDATION.md).
 
-**PR21:** Write and mathematically verify 12 Algebra Apprentice puzzles with backwards-fading scaffolds and suitable AO1/AO2 progression.
+## Next: PR21 → PR22
 
-**PR22:** Build the Equation Workshop parser, positive-whole-number representability checks, scene generator and open-ended interactive solver.
+**PR21:** Create and verify all twelve Algebra Apprentice levels, three progressive chapters, backwards-faded scaffolds, Stage 2 mastery unlock, stage-specific completion storage, and classroom-friendly end-to-end tests.
+
+**PR22:** Build the independent Equation Workshop's custom equation parser, positive-whole-number representability checks, scene generator and open-ended interactive solver.
 
 No negatives, fractional solutions, or square/root operations are added to World 1 as part of these steps.
