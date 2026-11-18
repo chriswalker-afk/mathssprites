@@ -867,6 +867,18 @@ async function animateRejectedAction(action, failure, preferredSide, rollbackPen
   $("feedback").textContent = "The hand is trying that experiment...";
   render();
   try {
+    if(issue.code==="fraction"){
+      // Cancel existing signed zero pairs before cutting the true remainder.
+      const existing=visible();
+      const events=neutralPairSequence(existing[side],side);
+      if(events.length){
+        override={left:room(existing.left),right:room(existing.right)};
+        await animateNeutralEvents(side,events,r=>{
+          override={...override,[side]:room(r)};render();
+        });
+        clearSpeech();
+      }
+    }
     const sceneAction=issue.code==="fraction"
       ? {...action,fractionAttempt:issue} : action;
     await handAct(side, sceneAction, () => failureStage(side, issue, action));
