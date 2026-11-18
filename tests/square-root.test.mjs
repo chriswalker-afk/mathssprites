@@ -16,7 +16,7 @@ function apply(state,action) {
   return r.state;
 }
 test("the three additional experiments are valid and explicitly assume a nonnegative root", () => {
-  assert.equal(LEVELS.length,8);
+  assert.equal(LEVELS.length,10);
   assert.deepEqual(LEVELS.slice(5).map(l=>l.id),
     ["make-square","take-root","root-then-share"]);
   for (const level of LEVELS) assert.equal(validInitialLevel(level),true,level.id);
@@ -67,11 +67,13 @@ test("square turns 2x=6 into 4x²=36, and sqrt reverses it", () => {
   const restored = apply(sq,sqrt);
   assert.equal(equation(restored),"2x = 6");
 });
-test("squaring mixed expressions is REJECTED rather than incorrectly squaring terms", () => {
+test("squaring the entire mixed expression creates BOTH missing cross-term regions", () => {
   const start = initialState(LEVELS[0]); // x + 2 = 5
   const checked = prepare(start,square);
-  assert.equal(checked.ok,false);
-  assert.match(checked.reason,/mixed rooms|4x/i);
+  assert.equal(checked.ok,true);
+  const result=apply(start,square);
+  assert.equal(equation(result),"x² + 4x + 4 = 25");
+  assert.equal(balanceDifference(result),0);
   assert.equal(start.history.length,0);
   assert.equal(equation(start),"x + 2 = 5");
   assert.equal(prepare(initialState(LEVELS[6]),square).ok,false,
