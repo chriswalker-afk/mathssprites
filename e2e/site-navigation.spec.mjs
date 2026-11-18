@@ -22,15 +22,16 @@ test("home is the real entry point; four distinct world cards, three locked", as
   await expect(page.getByText("The Square Laboratory")).toBeVisible();
 });
 
-test("twenty level cards render in five chapters, but unfinished puzzles cannot be opened", async ({page}) => {
+test("all 20 levels render in five chapters with sequential student unlocking", async ({page}) => {
   await page.locator('[data-screen="worlds"]').first().click();
   await page.getByRole("button",{name:"Explore levels"}).click();
   await expect(page.locator(".chapter-group")).toHaveCount(5);
   await expect(page.locator(".level-tile")).toHaveCount(20);
-  await expect(page.locator(".level-tile.status-upcoming")).toHaveCount(15);
+  await expect(page.locator(".level-tile.status-upcoming")).toHaveCount(0);
   await expect(page.locator('[data-level="1"]')).toBeEnabled();
   await expect(page.locator('[data-level="2"]')).toBeDisabled();
   await expect(page.locator('[data-level="6"]')).toBeDisabled();
+  await expect(page.locator('[data-level="20"]')).toBeDisabled();
 });
 
 test("World 1 uses only positive whole numbers; square/root and signed tools are absent", async ({page}) => {
@@ -70,17 +71,17 @@ test("solving Level 1 persists progress, starts the real comic and unlocks Level
   await expect(page.locator('[data-level="3"]')).toBeDisabled();
 });
 
-test("teacher setting unlocks all available levels, not incomplete placeholders", async ({page}) => {
+test("teacher setting unlocks every World 1 level and persists across reloads", async ({page}) => {
   await page.locator('[data-screen="settings"]').first().click();
   await page.locator("#teacher-unlock").check();
   await page.locator('[data-screen="worlds"]').first().click();
   await page.getByRole("button",{name:"Explore levels"}).click();
-  for (let n = 1; n <= 5; n++) await expect(page.locator('[data-level="'+n+'"]')).toBeEnabled();
-  await expect(page.locator('[data-level="6"]')).toBeDisabled();
+  for (let n = 1; n <= 20; n++)
+    await expect(page.locator('[data-level="'+n+'"]')).toBeEnabled();
   await page.reload();
   await page.locator('[data-screen="worlds"]').first().click();
   await page.getByRole("button",{name:"Explore levels"}).click();
-  await expect(page.locator('[data-level="5"]')).toBeEnabled();
+  await expect(page.locator('[data-level="20"]')).toBeEnabled();
 });
 
 test("legacy deep-link preview retains older signed and square experiments for QA", async ({page}) => {
@@ -93,4 +94,47 @@ test("legacy deep-link preview retains older signed and square experiments for Q
   await page.locator("#level-select").selectOption("10");
   await expect(page.locator("#quantity-mode")).toHaveValue("signed");
   await expect(page.locator('[data-kind="negOne"]')).toBeVisible();
+});
+
+
+test("teacher can open the final multi-step puzzle with only whole-number tools", async ({page}) => {
+  await page.locator('[data-screen="settings"]').first().click();
+  await page.locator("#teacher-unlock").check();
+  await page.locator('[data-screen="worlds"]').first().click();
+  await page.getByRole("button",{name:"Explore levels"}).click();
+  await page.locator('[data-level="20"]').click();
+  await expect(page.locator("#level-title")).toHaveText("The master experiment");
+  await expect(page.locator("#level-prompt")).toContainText("Sometimes adding something helps");
+  await expect(page.locator("#left-items .sprite-black")).toHaveCount(5);
+  await expect(page.locator("#left-items .weight")).toHaveCount(17);
+  await expect(page.locator("#right-items .sprite-black")).toHaveCount(2);
+  await expect(page.locator("#right-items .weight")).toHaveCount(29);
+  await expect(page.locator('[data-operation="square"]')).toBeHidden();
+  await expect(page.locator('[data-operation="sqrt"]')).toBeHidden();
+  await expect(page.locator('[data-kind="posX2"]')).toBeHidden();
+  await page.locator("#hint").click();
+  await expect(page.locator("#speech")).toContainText("ONE weight");
+  await page.locator("#game-levels").click();
+  await expect(page.locator('[data-level="20"]')).toBeEnabled();
+});
+
+test("a reversed, two-sided World 1 level completes and reveals correct algebra", async ({page}) => {
+  test.setTimeout(70000);
+  await page.locator('[data-screen="settings"]').first().click();
+  await page.locator("#teacher-unlock").check();
+  await page.locator('[data-screen="worlds"]').first().click();
+  await page.getByRole("button",{name:"Explore levels"}).click();
+  await page.locator('[data-level="18"]').click();
+  await expect(page.locator("#level-title")).toHaveText("The other way round");
+  await page.locator("#amount-up").click(); // remove two sprites on both sides
+  await page.locator("#do-both").click();
+  await expect(page.locator("#undo")).toBeEnabled();
+  await page.locator('[data-kind="posOne"]').click();
+  await page.locator("#do-both").click(); // remove two weights
+  await expect(page.locator("#replay-backdrop")).toBeVisible({timeout:30000});
+  await page.locator("#replay-skip").click();
+  await expect(page.locator("#pencil-lines")).toContainText("5 = x");
+  await expect(page.locator("#next-level")).toContainText("Next level");
+  await page.locator("#next-level").click();
+  await expect(page.locator("#level-title")).toHaveText("The quicker route");
 });
