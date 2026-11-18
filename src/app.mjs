@@ -1009,7 +1009,7 @@ async function guidedMove() {
   const action=currentAction();
   const outcome=perform(state,action,"auto");
   if(!outcome.ok) {
-    if(["locked-negative","locked-operation","locked-world"].includes(outcome.code))
+    if(["locked-negative","locked-operation","locked-world","locked-kind"].includes(outcome.code))
       return notify(outcome.reason);
     return animateRejectedAction(action,outcome);
   }
@@ -1063,7 +1063,7 @@ async function manualMove(side) {
   const wasPending=!!state.pending,action=currentAction();
   const outcome=perform(state,action,"manual",side);
   if(!outcome.ok){
-    if(["locked-negative","locked-operation","locked-world"].includes(outcome.code))
+    if(["locked-negative","locked-operation","locked-world","locked-kind"].includes(outcome.code))
       return notify(outcome.reason);
     if(wasPending&&outcome.code==="mismatch")
       return animateMismatchedManualAction(side,state.pending.action,action);
@@ -1114,7 +1114,7 @@ function startLevel(index, quantityMode, levelOverride = null, campaignNumber = 
   kind=level.startingKind||"posOne";
   amount=level.startingAmount||
     (levelIndex===0?2:levelIndex===2?4:levelIndex===4?2:1);
-  factor = levelIndex === 1 ? 3 : levelIndex === 4 ? 5 : 2;
+  factor = level.startingFactor || (levelIndex === 1 ? 3 : levelIndex === 4 ? 5 : 2);
   override = null; groups = { left: 0, right: 0 };
   failureTilt = 0;
   $("scene").classList.remove("scene-failed-balance", "scene-rewinding");

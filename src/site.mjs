@@ -30,12 +30,12 @@ function homeAction() {
     : "Begin your first experiment →";
   $("home-progress").textContent = played
     ? progress.completed.length + " of 20 experiments complete · progress saved on this device"
-    : "20 puzzles planned · 5 available now · no sign-in required";
+    : "20 playable experiments · 5 chapters · no sign-in required";
 }
 function renderWorlds() {
   $("world-cards").innerHTML = WORLDS.map(world => {
     const progressLine = world.available
-      ? progress.completed.length + " / 20 levels complete · 5 ready to play"
+      ? progress.completed.length + " / 20 levels complete · all 20 ready to play"
       : "COMING SOON";
     return '<article class="world-card world-' + world.theme +
       (world.available ? ' world-ready' : ' world-planned') + '">' +
@@ -57,7 +57,7 @@ function renderWorlds() {
 function renderLevels() {
   const totalReady = WORLD1_LEVELS.filter(slot => slot.available).length;
   $("level-progress").textContent = progress.completed.length +
-    " / 20 completed · " + totalReady + " playable so far";
+    " / 20 completed · " + totalReady + " playable levels";
   $("level-sections").innerHTML = WORLD1_CHAPTERS.map((chapter, index) => {
     const slots = WORLD1_LEVELS.slice(index*4, index*4+4);
     const cards = slots.map(slot => {
