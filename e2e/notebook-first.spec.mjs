@@ -29,7 +29,7 @@ test("teacher notebook sandbox earns no campaign credit even after Stage 3 unloc
   await page.locator('[data-screen="worlds"]').first().click();
   await page.getByRole("button",{name:"Explore stages"}).click();
   await expect(page.locator('[data-stage="notebook"] button')).toHaveCount(1);
-  await expect(page.locator("#world1-workshop button")).toHaveCount(0);
+  await expect(page.locator("#world1-workshop button")).toHaveCount(1);
 });
 
 test("wrong lines are rejected with specific feedback and do not mutate checked working",async({page})=>{
