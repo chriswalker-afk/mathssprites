@@ -405,7 +405,7 @@ background-image:repeating-linear-gradient(90deg,transparent 0 66px,rgba(0,0,0,.
 .scene-failed-balance .scale-beam{transition-duration:.85s!important;
   transition-timing-function:cubic-bezier(.2,1.34,.3,1)!important}
 .scene-failed-balance .dial-needle{transition-duration:.85s!important}
-.scene-failed-balance .balance-caption{color:#f5b49c}
+.scene-failed-balance .scene-caption{color:#f5b49c}
 .scene-failed-balance .room-interior{box-shadow:inset 0 0 25px #101817,
   0 0 0 3px #ca987e,0 0 21px #b9605380}
 .scene-rewinding .floor-shell{animation:restore-objects .75s ease-out both}
