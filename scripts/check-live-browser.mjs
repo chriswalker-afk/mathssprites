@@ -44,6 +44,19 @@ async function inspect(mode) {
     });
     await page.screenshot({ path: "artifacts/live-" + mode + "-initial.png", fullPage: true });
     if (mode === "reduce") {
+      // Before the default-on change deploys, the published site starts
+      // reduced. Afterwards it starts on. Diagnose both versions fairly.
+      if (details.motionText === "Motion: on") {
+        details.defaultOnDespiteDevicePreference = true;
+        await page.locator("#motion-toggle").click();
+        details.afterExplicitMotionOff = await page.evaluate(() => ({
+          button: document.querySelector("#motion-toggle")?.textContent,
+          spriteAnimation: getComputedStyle(document.querySelector(".sprite-motion")).animationName
+        }));
+        await page.screenshot({ path: "artifacts/live-explicit-motion-off.png", fullPage: true });
+      } else {
+        details.defaultOnDespiteDevicePreference = false;
+      }
       await page.locator("#motion-toggle").click();
       details.afterExplicitMotionOn = await page.evaluate(() => ({
         bodyClass: document.body.className,
