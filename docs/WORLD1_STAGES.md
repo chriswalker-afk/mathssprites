@@ -6,7 +6,7 @@ World 1 is entirely about **positive whole-number equations**. Each stage change
 |---|---:|---|---|
 | Stage 1 — Guided Balance | 20 (5 chapters) | Hand automatically mirrors the operation in the other room | **Playable** |
 | Stage 2 — Independent Balance | 16 (4 chapters) | Student deliberately makes a separate hand visit to each room | **Playable (PR19)** |
-| Stage 3 — Algebra Apprentice | 12 planned | Student writes algebra first; sprites reenact the validated working afterwards | Engine + teacher preview built in PR20; campaign locked until PR21 |
+| Stage 3 — Algebra Apprentice | 12 (3 chapters) | Student writes algebra first; sprites reenact validated steps afterwards | **Playable (PR21)** |
 | Equation Workshop | Custom | Input positive-whole-number equations, check representability and choose a method | Coming soon (PR22) |
 
 The Equation Workshop is a free-play laboratory, **not a fourth stage**; it does not count towards campaign progress.
@@ -17,7 +17,7 @@ The Equation Workshop is a free-play laboratory, **not a fourth stage**; it does
 
 - Guided Balance is accessible to everyone. Its 20 existing puzzles and five chapter definitions are unchanged.
 - Independent Balance is accessible when all 20 Stage 1 levels are complete, or sooner through Teacher access. The 16 new puzzles are sequentially unlocked except for teachers, and level selection shows only this stage's progress.
-- Algebra Apprentice is not built and therefore cannot be opened by teachers or by students who have mastered both stages.
+- Algebra Apprentice unlocks after all 16 Stage 2 levels (or immediately for teachers). Its 12 notebook-first levels have independent progress, backwards-faded working and physical replay.
 - The Equation Workshop is a clear, deliberately non-interactive placeholder until the solver is implemented.
 - The home Continue button resumes Stage 1 until it is mastered, then the next available Stage 2 level. After both are mastered the student can revisit the stage map.
 - Level navigation returns to its own stage's level map. The final level of either stage returns to Stage Select; this is not a claim of whole-World 1 completion.
@@ -58,12 +58,12 @@ Browser tests cover student/teacher gates, stage-specific chapter maps, tool hid
 
 ## PR20 — notebook-first foundation
 
-The **paper-first step checker and sprite replay** are implemented in PR20, with safe line parsing, physically representable one-operation transformations, multiple valid solution routes, undo, reset, and genuine hand replay. The paper is shown before the sprite scene. A teacher-only sandbox in Settings or `?notebook=two-step-09` allows validation using already-published positive-whole-number puzzles **without recording Stage 3 or earlier-stage progress**. The Stage 3 card itself remains locked; see [STAGE3_NOTEBOOK_FOUNDATION.md](STAGE3_NOTEBOOK_FOUNDATION.md).
+The **paper-first step checker and sprite replay** are implemented in PR20, with safe line parsing, physically representable one-operation transformations, multiple valid solution routes, undo, reset, and genuine hand replay. The paper is shown before the sprite scene. A teacher-only sandbox in Settings or `?notebook=two-step-09` allows validation using already-published positive-whole-number puzzles **without recording Stage 3 or earlier-stage progress**. The Stage 3 campaign is now available; see [STAGE3_CAMPAIGN.md](STAGE3_CAMPAIGN.md) for the twelve mathematically validated equations and backwards-faded lesson structure.
 
-## Next: PR21 → PR22
+## Next: PR22 — Equation Workshop
 
-**PR21:** Create and verify all twelve Algebra Apprentice levels, three progressive chapters, backwards-faded scaffolds, Stage 2 mastery unlock, stage-specific completion storage, and classroom-friendly end-to-end tests.
+Stages 1, 2 and 3 of World 1 now offer **20 + 16 + 12 playable puzzles**. Saved progress is independent and the notebook campaign only records completion after a fully successful physical replay. See the [Stage 3 campaign](STAGE3_CAMPAIGN.md).
 
-**PR22:** Build the independent Equation Workshop's custom equation parser, positive-whole-number representability checks, scene generator and open-ended interactive solver.
+**PR22:** Build the separate free-play Equation Workshop, with custom equation entry, strict positive-whole-number representability checks, scene generation and an open-ended interactive solver. Its progress must not be part of the campaign.
 
 No negatives, fractional solutions, or square/root operations are added to World 1 as part of these steps.
