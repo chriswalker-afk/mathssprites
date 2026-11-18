@@ -512,8 +512,8 @@ function failureStage(side, issue, action) {
     const wholeKind = parts.kind === "posOne" || parts.kind === "negOne" ?
       "weight-chip" : parts.kind === "posX2" ? "square-chip" : "";
     const chip = '<span class="whole-chip ' + wholeKind + '"></span>';
-    const fractionKind = parts.kind === "posOne" || parts.kind === "negOne" ?
-      "weight-part" : parts.kind === "posX2" ? "square-part" :
+    const fractionKind = parts.kind === "posOne" ? "weight-part" :
+      parts.kind === "posX2" ? "square-part" :
       parts.kind === "negOne" ? "balloon-part" : "";
     const baskets = parts.parts.map(i => '<div class="attempt-basket" data-basket="' + i + '">' +
       '<span class="basket-label">BASKET ' + (i + 1) + '</span>' +
