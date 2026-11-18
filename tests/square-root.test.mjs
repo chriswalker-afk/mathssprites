@@ -17,7 +17,7 @@ function apply(state,action) {
 }
 test("the three additional experiments are valid and explicitly assume a nonnegative root", () => {
   assert.equal(LEVELS.length,10);
-  assert.deepEqual(LEVELS.slice(5).map(l=>l.id),
+  assert.deepEqual(LEVELS.slice(5,8).map(l=>l.id),
     ["make-square","take-root","root-then-share"]);
   for (const level of LEVELS) assert.equal(validInitialLevel(level),true,level.id);
   for (const level of LEVELS.slice(5)) assert.match(level.prompt,/x ≥ 0|x is nonnegative/);
