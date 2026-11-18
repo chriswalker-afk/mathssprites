@@ -264,10 +264,21 @@ function handProp(action) {
 }
 function roomOperationText(action, side) {
   const roomName = side === "left" ? "west" : "east";
-  if (action.op === "square") return "The hand builds a matching column and fills the " + roomName +
-    " square — a round sprite is pressed into a square one!";
-  if (action.op === "sqrt") return "The hand forms a square in the " + roomName +
-    " room, then keeps one side — a square sprite squishes into a round one!";
+  if (action.op === "square" || action.op === "sqrt") {
+    const area = areaArrangement(visible()[side], action.op);
+    if (action.op === "square") {
+      return area?.symbolic
+        ? "The hand builds a matching column in the " + roomName +
+          " room, fills the area and presses round sprites into square ones!"
+        : "The hand matches the " + area.side + "-weight row with a column and fills a " +
+          area.side + " × " + area.side + " square of weights in the " + roomName + " room!";
+    }
+    return area?.symbolic
+      ? "The hand keeps one side of the square in the " + roomName +
+        " room and squishes square sprites back into round ones!"
+      : "The hand makes a " + area.side + " × " + area.side + " square from " + area.cells +
+        " weights, then keeps one side (" + area.side + " weights) in the " + roomName + " room!";
+  }
   if (action.op === "divide") return "The hand sorts the " + roomName + " room into " + action.factor + " equal baskets...";
   if (action.op === "multiply") return "The hand makes " + action.factor + " complete copies in the " + roomName + " room...";
   const nouns = action.kind === "posX2" ? (action.count === 1 ? "square sprite" : "square sprites") :
