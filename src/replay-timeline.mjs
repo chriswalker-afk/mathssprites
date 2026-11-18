@@ -10,7 +10,7 @@ export const WRITING_PACE = Object.freeze({
   operationDelayMs: 1670,
   actionCompleteMs: 1000,
   characterMs: 235,
-  spaceMs: 135,
+  spaceMs: 185,
   penLeadMs: 145,
   betweenLinesMs: 650,
   lineSettledMs: 240,
