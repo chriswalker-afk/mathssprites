@@ -265,7 +265,7 @@ export function expression(value) {
   return out || "0";
 }
 export function equation(pair) { return expression(pair.left) + " = " + expression(pair.right); }
-const TOKEN_NAME = { posX: "dark sprite", negX: "pale sprite", posOne: "weight", negOne: "balloon" };
+const TOKEN_NAME = { posX: "dark sprite", negX: "pale sprite", posX2: "square x² sprite", posOne: "weight", negOne: "balloon" };
 export function operationDescription(action) {
   if (action.op === "square") return "Square both entire sides (x ≥ 0)";
   if (action.op === "sqrt") return "Take the principal square root of both sides (x ≥ 0)";
