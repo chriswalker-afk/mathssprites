@@ -19,19 +19,23 @@ test("waiting sprite bounces, its body wiggles and its eyes independently blink 
       if (!animation) return { name: null, moving: false };
       animation.pause();
       const cycle = animation.effect.getComputedTiming().duration;
-      animation.currentTime = 0;
-      const start = getComputedStyle(node).transform;
-      animation.currentTime = cycle * (node === eye ? .475 : node === eyes ? .38 : node === body ? .46 : .26);
-      const peak = getComputedStyle(node).transform;
-      const lifted = node === hop ? node.getBoundingClientRect().top : null;
-      if (node === hop) {
-        animation.currentTime = 0;
-        const ground = node.getBoundingClientRect().top;
-        animation.play();
-        return { name: animation.animationName, moving: start !== peak, travel: Math.abs(ground - lifted) };
+      const originalTime = animation.currentTime;
+      const poses = new Set();
+      const heights = [];
+      // Sweep an entire cycle, including the brief blink. Per-sprite delays
+      // intentionally make arbitrary fixed-time snapshots unreliable.
+      for (let i = 0; i <= 120; i++) {
+        animation.currentTime = cycle * i / 120;
+        poses.add(getComputedStyle(node).transform);
+        if (node === hop) heights.push(node.getBoundingClientRect().top);
       }
+      animation.currentTime = originalTime;
       animation.play();
-      return { name: animation.animationName, moving: start !== peak };
+      return {
+        name: animation.animationName,
+        moving: poses.size > 2,
+        travel: node === hop ? Math.max(...heights) - Math.min(...heights) : null
+      };
     });
     return samples;
   });
