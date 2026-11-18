@@ -8,6 +8,7 @@
   <title>Maths Sprites — The Balance Lab</title>
   <link rel="stylesheet" href="./src/styles.css" />
   <link rel="stylesheet" href="./src/site.css" />
+  <link rel="stylesheet" href="./src/polish.css" />
   <script type="module" src="./src/app.mjs"></script>
   <script type="module" src="./src/site.mjs"></script>
 </head>
@@ -70,6 +71,17 @@
           <p>Start with matching moves. Build up to solving the mystery on your own.</p></div>
         <span id="level-progress" class="landing-progress" aria-live="polite"></span>
       </div>
+      <div class="world1-progress-panel" aria-label="World 1 completion">
+        <div class="world1-progress-labels"><span id="world1-progress-description">Your workshop journey</span><span id="world1-progress-number">0 of 20 complete</span></div>
+        <progress id="world1-progress-bar" value="0" max="20" aria-label="Completed World 1 experiments"></progress>
+      </div>
+      <section id="world1-finale" class="world1-finale" aria-label="World 1 completed" hidden>
+        <span class="finale-emblem" aria-hidden="true">✦</span>
+        <div><div class="portal-kicker">WORKSHOP MASTERY EARNED</div>
+          <h2>Every balance restored!</h2>
+          <p>All 20 experiments are complete. Revisit any level to try a different route, or explore the worlds that will open next.</p>
+        </div>
+      </section>
       <div id="level-sections"></div>
       <p id="teacher-note" class="teacher-note" hidden>Teacher access: all 20 World 1 experiments are unlocked for classroom use, without changing their mathematical restrictions.</p>
     </main>
@@ -92,6 +104,9 @@
         <h2 tabindex="-1">Settings</h2>
         <label class="settings-option"><input id="teacher-unlock" type="checkbox" />
           <span><strong>Teacher access</strong> — unlock every currently playable level for classroom use.</span></label>
+        <label class="settings-option"><input id="site-guided-help" type="checkbox" checked />
+          <span><strong>First-visit guide</strong> — show short, step-by-step instructions in Level 1. You can dismiss them at any time.</span></label>
+        <button type="button" class="secondary-btn" id="site-replay-intro">Replay the guided introduction</button>
         <p>Progress is stored on this browser only. No account is needed. All 20 World 1 levels are available, and later mathematical worlds remain locked until developed.</p>
         <button type="button" class="secondary-btn" id="site-motion">Use reduced motion</button>
         <p>Animation settings also apply to the hand, sprites and pencil inside levels.</p>
@@ -109,6 +124,7 @@
       <div class="header-actions">
         <button class="top-icon game-nav-button" id="game-home" type="button">⌂ Home</button>
         <button class="top-icon game-nav-button" id="game-levels" type="button">▦ Levels</button>
+        <button class="top-icon game-nav-button" id="game-guide-restart" type="button">? Guide</button>
         <label class="labelled-select legacy-controls" for="level-select"><span>Experiment</span><select id="level-select" aria-label="Choose an experiment"></select></label>
         <label class="labelled-select" for="mode-select"><span>Hand control</span><select id="mode-select" aria-label="Choose hand control mode"><option value="auto">Guided mirror</option><option value="manual">Your turn</option></select></label>
         <label class="labelled-select legacy-controls" for="quantity-mode"><span>Maths mode</span><select id="quantity-mode" aria-label="Choose positive-only or signed objects"><option value="positive">Positive objects</option><option value="signed">Signed objects</option></select></label>
@@ -121,6 +137,19 @@
         <div><div id="chapter" class="eyebrow">01 · Clearing the room</div><h2 id="level-title">One little resident</h2></div>
         <div class="step-dots" id="step-dots" aria-label="Experiments"></div>
       </div>
+
+      <aside id="apprentice-guide" class="apprentice-guide" aria-label="First experiment guided introduction" hidden>
+        <div class="guide-seal" aria-hidden="true">✧</div>
+        <div class="guide-copy">
+          <span id="guide-progress" class="eyebrow">1 of 4</span>
+          <h3 id="guide-title">Meet the balance</h3>
+          <p id="guide-message">Two rooms are waiting for you.</p>
+        </div>
+        <div class="guide-actions">
+          <button id="guide-next" type="button" class="primary-btn">Show me the tools</button>
+          <button id="guide-skip" type="button" class="secondary-btn">Skip guide</button>
+        </div>
+      </aside>
 
       <div id="motion-notice" class="motion-notice" role="status" hidden>
         <div class="motion-notice-copy">
@@ -278,6 +307,11 @@
         <div class="workbench" aria-hidden="true"></div>
         <div class="action-caption" id="action-caption" aria-live="polite" hidden></div>
         <div class="scene-caption" id="balance-caption">A perfectly balanced mystery</div>
+        <div id="level-clear" class="level-clear" role="status" aria-live="polite" hidden>
+          <span class="clear-spark" aria-hidden="true">✦</span>
+          <strong id="level-clear-title">Balance restored!</strong>
+          <span>Let's discover the algebra behind those moves.</span>
+        </div>
       </section>
 
       <section class="experiment-controls" aria-label="Hand tools">
@@ -329,7 +363,11 @@
   <section class="replay-backdrop" id="replay-backdrop" hidden>
     <div class="replay-card" role="dialog" aria-modal="true" aria-labelledby="replay-title">
       <header class="replay-header">
-        <div><div class="eyebrow">THE EXPERIMENT REVEALED</div><h2 id="replay-title">Your algebra, illustrated.</h2><p>The sprites remember every move. Watch what your hand really did.</p></div>
+        <div>
+          <div class="eyebrow" id="replay-level-stamp">THE EXPERIMENT REVEALED</div>
+          <h2 id="replay-title">Your algebra, illustrated.</h2>
+          <p>The sprites remember every move. Watch what your hand really did.</p>
+        </div>
         <button type="button" id="replay-close" class="replay-exit">← Back to the laboratory</button>
       </header>
       <div class="replay-columns">
@@ -372,6 +410,7 @@
             <option value="1.6">Quick</option>
           </select>
         </label>
+        <span id="replay-end-note" class="replay-end-note" hidden>Ready for the next experiment?</span>
         <div class="replay-end-actions">
           <button id="replay-skip" type="button" class="secondary-btn">Show final working</button>
           <button id="next-level" type="button" class="primary-btn">Next experiment →</button>
