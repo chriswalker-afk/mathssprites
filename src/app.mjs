@@ -3,6 +3,7 @@ import {
   perform, undo, isSolved, equation, operationDescription, algebraOperation
 } from "./engine.mjs";
 import { buildWritingTimeline, symbolsOf } from "./replay-timeline.mjs";
+import { handMotionPlan } from "./hand-timeline.mjs";
 
 const $ = id => document.getElementById(id);
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
@@ -223,15 +224,16 @@ function animateClassFrame() {
 async function handAct(side, action, applyAtContact) {
   const hand = $("hand");
   const cargo = $("hand-cargo");
+  const target = $(side + "-chamber");
   const scene = $("scene").getBoundingClientRect();
   const items = $(side + "-items").getBoundingClientRect();
-  // Position the hand above the room rather than relying on hard-coded
-  // desktop percentages that are wrong at tablet/mobile widths.
+  const motion = handMotionPlan(action, reducedMotion);
+
+  // Find the actual geometry of this room at any viewport width. The updated
+  // art's fingertips reach ~95% of its box (not 78% as in the original outline).
   const centreX = items.left + items.width / 2 - scene.left;
   hand.style.left = centreX + "px";
-  // The hand starts mostly above the top of the scene. Calculate the
-  // travel so its fingers reach the visible objects (not just the room roof).
-  const restingTip = hand.offsetTop + hand.offsetHeight * 0.78;
+  const restingTip = hand.offsetTop + hand.offsetHeight * 0.95;
   const targetTip = items.bottom - scene.top - Math.min(32, items.height * 0.20);
   const reach = Math.max(160, targetTip - restingTip);
   hand.style.setProperty("--hand-reach", reach + "px");
@@ -240,24 +242,67 @@ async function handAct(side, action, applyAtContact) {
   caption.textContent = roomOperationText(action, side);
   caption.hidden = false;
   cargo.innerHTML = handProp(action);
-  cargo.hidden = action.op === "remove";
-  hand.classList.remove("reaching", "grasping");
+  cargo.hidden = !motion.cargoOnApproach;
+  hand.classList.remove("approaching", "reaching", "grasping", "lifting");
   hand.classList.add("acting");
-  await animateClassFrame();
-  hand.classList.add("reaching");
-  await sleep(reducedMotion ? 360 : 850);
-  hand.classList.add("grasping");
-  // The removal, addition, or grouping happens at the bottom of the reach.
-  applyAtContact();
-  if (action.op === "remove") cargo.hidden = false;
-  $(side + "-chamber").classList.add("hand-contact");
-  await sleep(reducedMotion ? 330 : 570);
-  hand.classList.remove("grasping", "reaching");
-  await sleep(reducedMotion ? 330 : 800);
-  hand.classList.remove("acting");
-  $(side + "-chamber").classList.remove("hand-contact");
-  cargo.hidden = true;
-  caption.hidden = true;
+  hand.dataset.phase = motion.placing ? "carry" : "open";
+  let applied = false;
+
+  try {
+    await animateClassFrame();
+    for (const beat of motion.phases) {
+      switch (beat.name) {
+        case "approach":
+          target.classList.add("hand-target");
+          hand.classList.add("approaching");
+          break;
+        case "reach":
+          hand.classList.remove("approaching");
+          hand.classList.add("reaching");
+          hand.dataset.phase = motion.placing ? "carry" : "reach";
+          break;
+        case "aim":
+          // A short settle before making contact. The target light guides the
+          // eye without suggesting the unbalanced half-move is a finished step.
+          hand.dataset.phase = motion.placing ? "carry" : "aim";
+          break;
+        case "grip":
+          hand.classList.add("grasping");
+          hand.dataset.phase = "grip";
+          break;
+        case "contact":
+          // The only place physical objects change. The hand is still *down*,
+          // covering the objects, and the other room has not been touched yet.
+          applyAtContact();
+          applied = true;
+          target.classList.add("hand-contact");
+          cargo.hidden = motion.placing;
+          hand.dataset.phase = motion.placing ? "release" : "carry";
+          break;
+        case "lift":
+          hand.classList.add("lifting");
+          hand.dataset.phase = motion.placing ? "release" : "lift";
+          target.classList.remove("hand-contact");
+          break;
+        case "exit":
+          hand.classList.remove("grasping", "reaching");
+          hand.classList.remove("approaching", "lifting");
+          hand.dataset.phase = "exit";
+          target.classList.remove("hand-target");
+          break;
+      }
+      await sleep(beat.delay);
+    }
+  } finally {
+    // No animation state should leak into the next room or next level.
+    hand.classList.remove("approaching", "lifting", "grasping", "reaching", "acting");
+    hand.dataset.phase = "rest";
+    target.classList.remove("hand-target", "hand-contact");
+    cargo.hidden = true;
+    caption.hidden = true;
+  }
+  // The client must never treat an aborted first-room animation as solved.
+  if (!applied) throw new Error("The hand did not complete its contact move.");
 }
 async function finishTurn() {
   if (isSolved(state)) {
@@ -342,7 +387,9 @@ function startLevel(index) {
   override = null; groups = { left: 0, right: 0 };
   busy = false;
   // Clear any half-finished visual state when changing levels.
-  $("hand").classList.remove("reaching", "grasping", "acting");
+  $("hand").classList.remove("approaching", "reaching", "grasping", "lifting", "acting");
+  $("hand").dataset.phase = "rest";
+  for (const side of ["left", "right"]) $(side + "-chamber").classList.remove("hand-target", "hand-contact");
   $("hand-cargo").hidden = true;
   $("action-caption").hidden = true;
   $("scene").classList.remove("solved-scene");
