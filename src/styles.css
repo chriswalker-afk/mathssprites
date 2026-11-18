@@ -270,7 +270,8 @@ legend{margin-bottom:12px;padding:0}
 /* Every character has a reserved space, but is invisible until the pencil
    reaches it. This deliberately does not reveal whole lines at once. */
 .ink-glyph{display:inline-block;white-space:pre;opacity:0}
-.ink-glyph.written{opacity:1}
+.ink-glyph.written{opacity:1;animation:ink-stroke .16s steps(4,end) both}
+@keyframes ink-stroke{from{clip-path:inset(0 100% 0 0);opacity:.65}to{clip-path:inset(0 0 0 0);opacity:1}}
 .paper-line .answer-line:not(.complete){border-bottom-color:transparent}
 .writing-status{font:italic .79rem Georgia,serif;color:#8f7955;margin-bottom:10px;min-height:18px}
 .pencil-icon{position:absolute;z-index:9;left:20px;top:160px;width:30px;height:70px;pointer-events:none;
