@@ -7,19 +7,111 @@
   <meta name="description" content="Maths Sprites: a mysterious little balancing-lab game where physical puzzles turn into algebraic discoveries." />
   <title>Maths Sprites — The Balance Lab</title>
   <link rel="stylesheet" href="./src/styles.css" />
+  <link rel="stylesheet" href="./src/site.css" />
   <script type="module" src="./src/app.mjs"></script>
+  <script type="module" src="./src/site.mjs"></script>
 </head>
 <body>
-  <div class="app-shell">
+  <div class="site-shell" id="site-shell">
+    <header class="site-nav">
+      <button type="button" class="site-brand" data-screen="home" aria-label="Maths Sprites home">
+        <span class="brand-mark" aria-hidden="true"><i></i><i></i></span>
+        <span>Maths Sprites<span class="title-dot">.</span></span>
+      </button>
+      <nav class="site-nav-links" aria-label="Main menu">
+        <button type="button" data-screen="home">Home</button>
+        <button type="button" data-screen="worlds">Worlds</button>
+        <button type="button" data-screen="help">How to play</button>
+        <button type="button" data-screen="settings">Settings</button>
+      </nav>
+    </header>
+    <main class="site-page" id="site-home">
+      <section class="landing-hero" aria-labelledby="home-title">
+        <div class="landing-copy">
+          <div class="portal-kicker">THE EXPERIMENTAL WORKSHOP · OPEN FOR EXPLORATION</div>
+          <h1 id="home-title" tabindex="-1">A little mystery.<br />A perfectly balanced world.</h1>
+          <p>Meet the restless sprites living inside a pair of miniature laboratory rooms. Use the hand to rearrange their world, keep the balance, and discover the algebra hiding inside.</p>
+          <div class="landing-actions">
+            <button type="button" id="home-play" class="primary-btn">Begin your first experiment →</button>
+            <button type="button" class="secondary-btn" data-screen="worlds">Choose a world</button>
+          </div>
+          <span id="home-progress" class="landing-progress" aria-live="polite"></span>
+        </div>
+        <div class="hero-art" aria-hidden="true">
+          <div class="art-window"></div><div class="hero-shelf"></div>
+          <div class="hero-balance">
+            <div class="hero-beam"></div><div class="hero-post"></div>
+            <div class="hero-pan left"><span class="hero-creature">••</span><span class="hero-weight"></span></div>
+            <div class="hero-pan right"><span class="hero-creature second">••</span><span class="hero-weight right"></span></div>
+          </div>
+        </div>
+      </section>
+      <section class="portal-features" aria-label="Explore the workshop">
+        <article class="portal-feature"><span class="feature-icon" aria-hidden="true">⚖</span>
+          <h3>Keep the balance</h3><p>Whatever you do in one chamber, do the same to the other.</p></article>
+        <article class="portal-feature"><span class="feature-icon" aria-hidden="true">✦</span>
+          <h3>Meet the sprites</h3><p>Watch the little residents react to every carefully chosen move.</p></article>
+        <article class="portal-feature"><span class="feature-icon" aria-hidden="true">✎</span>
+          <h3>Discover the maths</h3><p>Once the puzzle is solved, your moves become an animated algebra comic.</p></article>
+      </section>
+    </main>
+    <main class="site-page" id="site-worlds" hidden>
+      <div class="portal-heading"><div><div class="portal-kicker">CHOOSE YOUR LABORATORY</div>
+        <h1 tabindex="-1">Four worlds. Many discoveries.</h1>
+        <p>Begin with positive whole numbers. The other mathematical worlds will open as they are built.</p>
+      </div></div>
+      <div id="world-cards" class="world-grid"></div>
+    </main>
+    <main class="site-page" id="site-levels" hidden>
+      <button type="button" id="site-back" class="site-back-link">← Back to worlds</button>
+      <div class="portal-heading">
+        <div><div class="portal-kicker">WORLD 01 · POSITIVE WHOLE NUMBERS</div>
+          <h1 tabindex="-1">The Balance Workshop</h1>
+          <p>Start with matching moves. Build up to solving the mystery on your own.</p></div>
+        <span id="level-progress" class="landing-progress" aria-live="polite"></span>
+      </div>
+      <div id="level-sections"></div>
+      <p id="teacher-note" class="teacher-note" hidden>Teacher access: all five available experiments are unlocked. Later levels remain in preparation.</p>
+    </main>
+    <main class="site-page" id="site-help" hidden>
+      <div class="site-content-panel">
+        <div class="portal-kicker">AN APPRENTICE'S GUIDE</div>
+        <h2 tabindex="-1">How to play</h2>
+        <p>Two miniature rooms sit on a perfectly balanced scale. Dark sprites are mysterious quantities; brass weights are ordinary units. Your aim is to leave one dark sprite on its own, with only weights in the other room.</p>
+        <ol><li>Look carefully at what is inside each room.</li>
+          <li>Choose an action: add, remove, multiply or split into equal groups.</li>
+          <li>Keep the rooms balanced by making matching changes to both.</li>
+          <li>When one sprite is left facing only weights, watch the hand's moves turn into algebra in the comic replay.</li></ol>
+        <p><strong>Guided Mirror</strong> makes the second move for you. In <strong>Your Turn</strong>, you make it yourself. A failed experiment is safe: the hand shows what went wrong and puts everything back.</p>
+        <button type="button" class="primary-btn" data-screen="worlds">Choose your first world →</button>
+      </div>
+    </main>
+    <main class="site-page" id="site-settings" hidden>
+      <div class="site-content-panel">
+        <div class="portal-kicker">THE WORKSHOP CONTROLS</div>
+        <h2 tabindex="-1">Settings</h2>
+        <label class="settings-option"><input id="teacher-unlock" type="checkbox" />
+          <span><strong>Teacher access</strong> — unlock every currently playable level for classroom use.</span></label>
+        <p>Progress is stored on this browser only. No account is needed, and unbuilt worlds remain unavailable even with teacher access.</p>
+        <button type="button" class="secondary-btn" id="site-motion">Use reduced motion</button>
+        <p>Animation settings also apply to the hand, sprites and pencil inside levels.</p>
+        <button type="button" class="primary-btn" data-screen="home">Back to the workshop →</button>
+      </div>
+    </main>
+    <footer class="site-footer">Every equation starts with a mystery. Made for curious mathematicians.</footer>
+  </div>
+  <div class="app-shell" id="game-shell" hidden>
     <header class="topbar">
       <div class="identity">
         <span class="brand-mark" aria-hidden="true"><i></i><i></i></span>
         <div><div class="eyebrow">THE EXPERIMENTAL WORKSHOP</div><h1>Maths Sprites<span class="title-dot">.</span></h1></div>
       </div>
       <div class="header-actions">
-        <label class="labelled-select" for="level-select"><span>Experiment</span><select id="level-select" aria-label="Choose an experiment"></select></label>
+        <button class="top-icon game-nav-button" id="game-home" type="button">⌂ Home</button>
+        <button class="top-icon game-nav-button" id="game-levels" type="button">▦ Levels</button>
+        <label class="labelled-select legacy-controls" for="level-select"><span>Experiment</span><select id="level-select" aria-label="Choose an experiment"></select></label>
         <label class="labelled-select" for="mode-select"><span>Hand control</span><select id="mode-select" aria-label="Choose hand control mode"><option value="auto">Guided mirror</option><option value="manual">Your turn</option></select></label>
-        <label class="labelled-select" for="quantity-mode"><span>Maths mode</span><select id="quantity-mode" aria-label="Choose positive-only or signed objects"><option value="positive">Positive objects</option><option value="signed">Signed objects</option></select></label>
+        <label class="labelled-select legacy-controls" for="quantity-mode"><span>Maths mode</span><select id="quantity-mode" aria-label="Choose positive-only or signed objects"><option value="positive">Positive objects</option><option value="signed">Signed objects</option></select></label>
         <button class="top-icon" id="motion-toggle" type="button" aria-pressed="false" title="Toggle reduced motion">Motion: on</button>
       </div>
     </header>

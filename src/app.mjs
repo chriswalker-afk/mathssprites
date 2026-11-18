@@ -10,6 +10,7 @@ import { floorScaleToFit, inRoomBoxPlan, areaMathLabel } from "./area-layout.mjs
 import { itemWord, attemptMessage, mismatchedMoveMessage } from "./attempt-feedback.mjs";
 import { fractionCutPlan } from "./fraction-theatre.mjs";
 import {neutralPairSequence, neutralPairSummary} from "./neutral-pairs.mjs";
+import { WORLD1_LEVELS } from "./worlds.mjs";
 
 const $ = id => document.getElementById(id);
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
@@ -39,6 +40,9 @@ let kind = "posOne";
 let amount = 2;
 let factor = 3;
 let state = initialState(LEVELS[0]);
+let activeLevel = LEVELS[0];
+let campaignLevelNumber = null;
+function currentLevel() { return activeLevel; }
 let busy = false;
 let override = null;
 let groups = { left: 0, right: 0 };
@@ -82,7 +86,7 @@ function token(kind, i, mini = false, side = "left") {
     return '<span class="mini-token ' + kind + '" aria-hidden="true"></span>';
   }
   if (kind === "posX" || kind === "negX" || kind === "posX2") {
-    const profile = spriteMotionProfile(LEVELS[levelIndex].id, side, kind, i);
+    const profile = spriteMotionProfile(currentLevel().id, side, kind, i);
     const square = kind === "posX2";
     const appearance = square ? "sprite-square" : kind === "posX" ? "sprite-black" : "sprite-white";
     return '<span class="token sprite ' + appearance +
@@ -110,7 +114,7 @@ function renderRoom(side, r, groupCount) {
   const node = $(side + "-items");
   // Only rebuild a room when its actual contents change. Otherwise the idle
   // sprites are repeatedly destroyed and their bouncing animations restart.
-  const signature = LEVELS[levelIndex].id + "|" + side + "|" +
+  const signature = currentLevel().id + "|" + side + "|" +
     TOKEN_KINDS.map(key => r[key]).join(":") + "|groups:" + groupCount;
   if (node.dataset.signature === signature) { resizeFloor(side); return; }
   node.dataset.signature = signature;
@@ -180,16 +184,19 @@ function clearSpeech() {
   $("speech").hidden = true;
 }
 function render() {
-  const lvl = LEVELS[levelIndex];
+  const lvl = currentLevel();
   const shown = visible();
   renderRoom("left", shown.left, groups.left);
   renderRoom("right", shown.right, groups.right);
   $("chapter").textContent = lvl.chapter;
   $("level-title").textContent = lvl.title;
   $("level-prompt").textContent = lvl.prompt;
-  $("step-dots").innerHTML = LEVELS.map((item, i) =>
-    '<span class="progress-dot ' + (i <= levelIndex ? "lit" : "") +
-    (i === levelIndex ? " current" : "") + '" title="' + item.title + '"></span>').join("");
+  const chapterStart = campaignLevelNumber === null ? 0 : Math.floor((campaignLevelNumber - 1) / 4) * 4;
+  const dotLevels = campaignLevelNumber === null ? LEVELS : WORLD1_LEVELS.slice(chapterStart, chapterStart + 4);
+  const dotIndex = campaignLevelNumber === null ? levelIndex : campaignLevelNumber - 1 - chapterStart;
+  $("step-dots").innerHTML = dotLevels.map((item, i) =>
+    '<span class="progress-dot ' + (i <= dotIndex ? "lit" : "") +
+    (i === dotIndex ? " current" : "") + '" title="' + item.title + '"></span>').join("");
 
   const balance = currentDifference(shown);
   const degrees = failureTilt || (balance === 0 ? 0 : (balance < 0 ? 3.5 : -3.5));
@@ -202,15 +209,19 @@ function render() {
     : "Two rooms. One perfectly balanced mystery.";
   $("balance-caption").classList.toggle("unbalanced", balance !== 0);
   for (const button of document.querySelectorAll("[data-operation]")) {
+    const available = !lvl.allowedOperations || lvl.allowedOperations.includes(button.dataset.operation);
+    button.hidden = !available;
     button.classList.toggle("selected", button.dataset.operation === operation);
-    button.disabled = busy || isSolved(state);
+    button.disabled = !available || busy || isSolved(state);
     button.setAttribute("aria-pressed", String(button.dataset.operation === operation));
   }
   for (const button of document.querySelectorAll("[data-kind]")) {
     button.classList.toggle("selected", button.dataset.kind === kind);
     const signedObject=button.dataset.kind==="negX"||button.dataset.kind==="negOne";
-    button.hidden=signedObject&&state.quantityMode!=="signed";
-    button.disabled = busy || isSolved(state) || (signedObject&&state.quantityMode!=="signed");
+    const unavailable = (signedObject && state.quantityMode!=="signed") ||
+      (lvl.lockPositive && button.dataset.kind === "posX2");
+    button.hidden=unavailable;
+    button.disabled = busy || isSolved(state) || unavailable;
     button.setAttribute("aria-pressed", String(button.dataset.kind === kind));
   }
   const grouped = operation === "divide" || operation === "multiply";
@@ -224,7 +235,7 @@ function render() {
   $("mode-select").value = mode;
   $("mode-select").disabled = busy || awaiting;
   $("quantity-mode").value=state.quantityMode;
-  $("quantity-mode").disabled=busy||awaiting;
+  $("quantity-mode").disabled=busy||awaiting||!!lvl.lockPositive;
   $("quantity-mode").querySelector('option[value="positive"]').disabled=
     levelQuantityMode(lvl)==="signed";
   document.body.classList.toggle("quantity-mode-positive",state.quantityMode==="positive");
@@ -232,7 +243,9 @@ function render() {
     ? "● black = +x   ·   ◯ white = −x   ·   ◆ weight = +1   ·   ♧ balloon = −1"
     : "● black sprite = +x   ·   ◆ weight = +1";
   $("level-select").value = String(levelIndex);
-  $("level-select").disabled = busy || awaiting;
+  $("level-select").disabled = busy || awaiting || campaignLevelNumber !== null;
+  $("game-home").disabled = busy;
+  $("game-levels").disabled = busy;
   $("motion-toggle").textContent = reducedMotion ? "Motion: reduced" : "Motion: on";
   $("motion-toggle").setAttribute("aria-pressed", String(reducedMotion));
   document.body.classList.toggle("reduce-motion", reducedMotion);
@@ -973,6 +986,10 @@ async function animateMismatchedManualAction(side, firstAction, action) {
 
 async function finishTurn() {
   if (isSolved(state)) {
+    if (campaignLevelNumber !== null)
+      window.dispatchEvent(new CustomEvent("mathssprites:solved",
+        {detail:{number:campaignLevelNumber,levelId:currentLevel().id}}));
+    busy = true; render();
     // The student must be able to SEE the final physical balance before
     // the comic-book retrospective covers the laboratory.
     $("scene").classList.add("solved-scene");
@@ -981,6 +998,7 @@ async function finishTurn() {
       : "One sprite, and its matching weights. The rooms are balanced!";
     await sleep(reducedMotion ? 1100 : 1800);
     $("scene").classList.remove("solved-scene");
+    busy = false; render();
     showReplay();
   } else {
     $("feedback").textContent = "Still balanced. What should the hand try next?";
@@ -991,7 +1009,8 @@ async function guidedMove() {
   const action=currentAction();
   const outcome=perform(state,action,"auto");
   if(!outcome.ok) {
-    if(outcome.code==="locked-negative")return notify(outcome.reason);
+    if(["locked-negative","locked-operation","locked-world"].includes(outcome.code))
+      return notify(outcome.reason);
     return animateRejectedAction(action,outcome);
   }
   const previous=state,next=outcome.state;
@@ -1044,7 +1063,8 @@ async function manualMove(side) {
   const wasPending=!!state.pending,action=currentAction();
   const outcome=perform(state,action,"manual",side);
   if(!outcome.ok){
-    if(outcome.code==="locked-negative")return notify(outcome.reason);
+    if(["locked-negative","locked-operation","locked-world"].includes(outcome.code))
+      return notify(outcome.reason);
     if(wasPending&&outcome.code==="mismatch")
       return animateMismatchedManualAction(side,state.pending.action,action);
     return animateRejectedAction(action,outcome,side,wasPending);
@@ -1081,11 +1101,13 @@ async function manualMove(side) {
     $("feedback").textContent="One room done. Now perform the matching move in the other room.";
   else await finishTurn();
 }
-function startLevel(index,quantityMode) {
+function startLevel(index, quantityMode, levelOverride = null, campaignNumber = null) {
   stopReplay();
   replayEntries = [];
   levelIndex = (index + LEVELS.length) % LEVELS.length;
-  const level=LEVELS[levelIndex];
+  const level = levelOverride || LEVELS[levelIndex];
+  activeLevel = level;
+  campaignLevelNumber = campaignNumber;
   state=initialState(level,quantityMode||levelQuantityMode(level));
   operation = level.startingOperation ||
     ((levelIndex === 1 || levelIndex === 4) ? "divide" : "remove");
@@ -1114,9 +1136,11 @@ function startLevel(index,quantityMode) {
   $("scene").classList.remove("solved-scene");
   clearSpeech();
   $("replay-backdrop").hidden = true;
-  $("feedback").textContent = state.quantityMode==="signed"
-    ? "Signed objects are active: white sprites and balloons are opposites. Make a zero pair!"
-    : "Positive objects only. Signed objects can be enabled with Maths mode.";
+  $("feedback").textContent = level.lockPositive
+    ? "Positive whole numbers only. Choose an action and keep the rooms balanced."
+    : state.quantityMode==="signed"
+      ? "Signed objects are active: white sprites and balloons are opposites. Make a zero pair!"
+      : "Positive objects only. Signed objects can be enabled with Maths mode.";
   render();
 }
 function miniItems(r) {
@@ -1368,8 +1392,10 @@ function drawReplay(index, { animate = !reducedMotion, complete = false } = {}) 
   $("replay-progress").textContent = "Panel " + (replayIndex + 1) + " of " + replayEntries.length;
   $("replay-back").disabled = replayIndex === 0;
   $("replay-next").disabled = replayIndex >= replayEntries.length - 1;
-  $("next-level").textContent = levelIndex === LEVELS.length - 1
-    ? "Play from the beginning →" : "Next experiment →";
+  $("next-level").textContent = campaignLevelNumber !== null
+    ? (WORLD1_LEVELS[campaignLevelNumber]?.available ? "Next level →" : "Back to levels →")
+    : levelIndex === LEVELS.length - 1
+      ? "Play from the beginning →" : "Next experiment →";
   $("next-level").disabled = replayIndex !== replayEntries.length - 1 ||
     (!complete && !reducedMotion);
   if (complete || reducedMotion) {
@@ -1435,14 +1461,18 @@ $("mode-select").addEventListener("change", event => { mode = event.target.value
 $("quantity-mode").addEventListener("change", event => {
   if(busy||state.pending)return render();
   const requested=event.target.value;
-  if(levelQuantityMode(LEVELS[levelIndex])==="signed"&&requested!=="signed")
+  if (currentLevel().lockPositive) return render();
+  if(levelQuantityMode(currentLevel())==="signed"&&requested!=="signed")
     return render();
   startLevel(levelIndex,requested);
   setSpeech(requested==="signed"
     ? "Signed objects are on. White sprites and balloons are opposites to dark sprites and weights. Watch what happens when they meet!"
     : "Only positive sprites and weights are available in this lesson.",5300);
 });
-$("level-select").addEventListener("change", event => startLevel(Number(event.target.value)));
+$("level-select").addEventListener("change", event => {
+  if (campaignLevelNumber !== null) return render();
+  startLevel(Number(event.target.value));
+});
 $("motion-toggle").addEventListener("click", () => chooseMotion(!reducedMotion));
 $("motion-enable").addEventListener("click", () => chooseMotion(false));
 $("undo").addEventListener("click", () => {
@@ -1451,8 +1481,9 @@ $("undo").addEventListener("click", () => {
   $("feedback").textContent = "The hand has put everything back.";
   render();
 });
-$("reset").addEventListener("click", () => startLevel(levelIndex));
-$("hint").addEventListener("click", () => setSpeech(LEVELS[levelIndex].suggested, 6200));
+$("reset").addEventListener("click", () =>
+  startLevel(levelIndex,state.quantityMode,campaignLevelNumber===null?null:currentLevel(),campaignLevelNumber));
+$("hint").addEventListener("click", () => setSpeech(currentLevel().suggested, 6200));
 $("feedback").addEventListener("click", event => {
   if (event.target?.id === "watch-again") showReplay();
 });
@@ -1485,7 +1516,24 @@ $("replay-speed").addEventListener("change", event => {
   // never jumps the pencil to a different symbol.
 });
 document.addEventListener("visibilitychange", () => { replayLastFrame = null; });
-$("next-level").addEventListener("click", () => startLevel(levelIndex + 1));
+$("next-level").addEventListener("click", () => {
+  if (campaignLevelNumber !== null) {
+    hideReplay();
+    window.dispatchEvent(new CustomEvent("mathssprites:advance"));
+  } else startLevel(levelIndex + 1);
+});
+window.addEventListener("mathssprites:launch", event => {
+  const {number,legacyIndex,level} = event.detail;
+  startLevel(legacyIndex, "positive", level, number);
+});
+window.addEventListener("mathssprites:preview", event => startLevel(event.detail.index));
+function leaveGame(screen) {
+  if (busy) return;
+  if (!$("replay-backdrop").hidden) hideReplay();
+  window.dispatchEvent(new CustomEvent("mathssprites:leave", {detail:{screen}}));
+}
+$("game-home").addEventListener("click", () => leaveGame("home"));
+$("game-levels").addEventListener("click", () => leaveGame("levels"));
 document.addEventListener("keydown", event => {
   if (event.key === "Escape" && !$("replay-backdrop").hidden) { hideReplay(); return; }
   if (event.altKey && event.key.toLowerCase() === "z" && !busy && $("replay-backdrop").hidden) {

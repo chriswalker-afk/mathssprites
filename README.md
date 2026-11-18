@@ -2,7 +2,7 @@
 
 *A wordless algebra puzzle that becomes an equation only after you solve it.*
 
-**Status:** first playable browser prototype on this feature branch. The artwork is deliberately provisional; the mathematical mechanics are testable.
+**Status:** first playable game journey (PR14). The home page, four-world map, chapter select and player progress are now implemented; 5 of the 20 planned positive-integer levels are available. The advanced experiment library is deliberately retained for future worlds and regression testing.
 
 ## The idea
 
@@ -37,13 +37,20 @@ At success, **comic-book panels appear automatically, one for each actual mathem
 - [Mathematical model and QA invariants](docs/MATH_RULES.md)
 - [Visual and animation direction](docs/ART_DIRECTION.md)
 - [Level progression and first playable milestone](docs/LEVEL_ROADMAP.md)
+- [Home, worlds and level selection (PR14)](docs/WORLD_NAVIGATION.md)
 - [Two play modes, hand interactions and containers](docs/CONTROL_AND_CONTAINERS.md)
 - [Automatic comic-book equation replay](docs/COMIC_REPLAY.md)
 - [Negative sprites, balloons and zero pairs](docs/SIGNED_TOKENS.md)
 
-## Play the first prototype
+## Play the game
 
-The repository now includes a **dependency-free browser game** with thirteen curated levels: introductory balancing, in-room squares/roots, and three signed-object experiments.
+The default URL now opens the **Maths Sprites home screen**. Choose a world, open the World 1 level map, and play the five currently available positive whole-number puzzles. Levels unlock in order and completion progress stays on this device (with no account). Teachers can temporarily unlock all implemented puzzles in Settings.
+
+The world map also shows locked placeholders for negative numbers, fractions and squares/square roots. The remaining fifteen World 1 levels are deliberately marked **Coming soon** until PR15 designs and tests them.
+
+The original **thirteen curated experiments** have not been deleted. To inspect and regression-test their advanced mechanics before the later worlds go live, use the explicit authoring preview link `?preview=resident`, choose any prototype experiment there, or use a known ID such as `?preview=make-square`. The prototype preview is separate from the student campaign.
+
+The mathematical engine still supports the earlier experiments, including signed objects and genuine in-room square/root constructions. These capabilities cannot be selected inside World 1: its operation permissions are also enforced by the engine.
 
 - **Guided mirror**: choose an operation and the hand performs it in both rooms.
 - **Your turn**: make a change in one room; the balance tips until you repeat it in the other.

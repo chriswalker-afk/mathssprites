@@ -2,7 +2,7 @@ import {test,expect} from "@playwright/test";
 
 test.beforeEach(async({page})=>{
   await page.emulateMedia({reducedMotion:"no-preference"});
-  await page.goto("/");
+  await page.goto("/?preview=resident");
 });
 
 test("maths mode is INDEPENDENT of hand control, and positive-only lessons hide negatives",async({page})=>{

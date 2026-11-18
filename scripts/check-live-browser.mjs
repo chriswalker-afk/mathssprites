@@ -13,7 +13,7 @@ async function inspect(mode) {
   page.on("pageerror", err => errors.push("JS_ERROR: " + String(err)));
   page.on("response", r => { if (r.status() >= 400) errors.push(r.status() + " " + r.url()); });
   try {
-    const response = await page.goto(url + "?live-browser-check=" + mode + "-" +
+    const response = await page.goto(url + "?preview=resident&live-browser-check=" + mode + "-" +
       (process.env.GITHUB_RUN_ID || "manual"), { waitUntil: "networkidle", timeout: 20000 });
     await page.waitForSelector("#left-items .sprite", { timeout: 12000 });
     const details = await page.evaluate(() => {
