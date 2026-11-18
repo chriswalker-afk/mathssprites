@@ -259,6 +259,9 @@ function renderNotebookVisibility() {
     (notebookPhase!=="replaying" && notebookPhase!=="complete");
   $("scene").hidden=active && notebookPhase==="writing";
   document.querySelector(".experiment-controls").hidden=active;
+  $("level-clear-subtitle").textContent=active
+    ? "The sprites followed your checked steps, exactly as written."
+    : "Let's discover the algebra behind those moves.";
   if(active){
     $("chapter").textContent="STAGE 3 · ALGEBRA APPRENTICE PROTOTYPE";
     $("chapter-status").hidden=false;
