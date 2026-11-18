@@ -9,7 +9,6 @@ import { pickSpriteHandReaction, dodgeOffsetPx } from "./sprite-reactions.mjs";
 
 const $ = id => document.getElementById(id);
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
-const readMedia = () => window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 const MOTION_SETTING = "mathssprites.motion-preference.v1";
 function savedMotionPreference() {
   try {
@@ -39,9 +38,10 @@ let state = initialState(LEVELS[0]);
 let busy = false;
 let override = null;
 let groups = { left: 0, right: 0 };
-// Respect the user's device preference unless they explicitly choose a
-// different setting in the game. An explicit override survives a refresh.
-let reducedMotion = savedMotionPreference() ?? !!readMedia();
+// Start with the creatures moving, regardless of the device motion preference.
+// The explicit in-game Motion toggle can still reduce animations, and that
+// choice persists on subsequent visits. Do not overwrite a saved choice.
+let reducedMotion = savedMotionPreference() ?? false;
 let speechTimer = null;
 let replayFrame = null;
 let replayPaused = true;
