@@ -35,8 +35,8 @@ export const WORLD1_STAGES = Object.freeze([
 export const EQUATION_WORKSHOP = Object.freeze({
   id:"equation-workshop",title:"Equation Workshop",
   tagline:"Bring your own balance",
-  description:"Enter a positive whole-number equation, turn it into sprites, and choose how to solve it.",
-  available:false,status:"planned",icon:"✦"
+  description:"Enter a positive whole-number equation, generate real sprite-and-weight chambers, and solve using either hand mode. Free play: no campaign progress.",
+  available:true,status:"playable",icon:"✦"
 });
 export function findWorld1Stage(id) {
   return WORLD1_STAGES.find(stage=>stage.id===id) || null;
