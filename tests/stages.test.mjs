@@ -8,14 +8,14 @@ import {
 import { WORLD1_LEVELS } from "../src/worlds.mjs";
 import {loadProgress,saveProgress,PROGRESS_KEY,markWorld1Complete} from "../src/progress.mjs";
 
-test("World 1 has three teaching stages and a separate, honestly planned free-play tool",()=>{
+test("World 1 has three teaching stages and a separate, playable free-play tool",()=>{
   assert.equal(WORLD1_STAGES.length,3);
   assert.deepEqual(WORLD1_STAGES.map(x=>x.id),["guided","independent","notebook"]);
   assert.deepEqual(WORLD1_STAGES.map(x=>x.method),["auto","manual","notebook"]);
   assert.deepEqual(WORLD1_STAGES.map(x=>x.count),[20,16,12]);
   assert.deepEqual(WORLD1_STAGES.map(x=>x.available),[true,true,true]);
   assert.equal(WORLD1_STAGES[0].count,WORLD1_LEVELS.length);
-  assert.equal(EQUATION_WORKSHOP.available,false);
+  assert.equal(EQUATION_WORKSHOP.available,true);
   assert.equal(findWorld1Stage("guided"),WORLD1_STAGES[0]);
   assert.equal(findWorld1Stage("inexistent"),null);
 });
