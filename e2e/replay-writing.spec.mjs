@@ -83,6 +83,8 @@ test("the pencil remains present on mobile and writes only visible symbols", asy
 test("reduced-motion mode displays complete readable lines without pencil movement", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.reload();
+  await page.locator("#motion-toggle").click();
+  await expect(page.locator("#motion-toggle")).toHaveText("Motion: reduced");
   await solveFirstLevel(page);
   await expect(page.locator("#pencil-lines")).toContainText("x + 2 = 5");
   await expect(page.locator("#pencil-lines .ink-glyph")).toHaveCount(0);
