@@ -480,12 +480,12 @@ async function animateNeutralEvents(side,events,paint) {
     effect.innerHTML=event.type==="sprites"
       ? '<span class="puff-core"></span>'+Array.from({length:5},()=>
           '<span class="soot"></span>').join("")+
-        '<span class="neutral-caption">+x and −x make zero!</span>'
+        '<span class="neutral-caption">Opposite sprites vanish!</span>'
       : '<span class="balloon-trail"></span>'+
-        '<span class="neutral-caption">+1 and −1 float away!</span>';
+        '<span class="neutral-caption">Balloon lifts its weight!</span>';
     const line=event.type==="sprites"
       ? "The black and white sprites hop together — their values cancel to zero!"
-      : "Watch the balloon lift its matching weight! +1 and −1 make zero.";
+      : "Watch the balloon lift its matching weight! They make zero.";
     $("action-caption").textContent=line;
     $("action-caption").hidden=false;
     setSpeech(line,reducedMotion?1800:3000);
@@ -1301,7 +1301,7 @@ $("quantity-mode").addEventListener("change", event => {
     return render();
   startLevel(levelIndex,requested);
   setSpeech(requested==="signed"
-    ? "Signed objects are on. A white sprite is −x; a balloon is −1. Make opposite pairs to get zero!"
+    ? "Signed objects are on. White sprites and balloons are opposites to dark sprites and weights. Watch what happens when they meet!"
     : "Only positive sprites and weights are available in this lesson.",5300);
 });
 $("level-select").addEventListener("change", event => startLevel(Number(event.target.value)));
