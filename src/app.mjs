@@ -438,6 +438,10 @@ async function handAct(side, action, applyAtContact) {
   const areaEffect = action.op === "square" || action.op === "sqrt"
     ? areaArrangement(visible()[side], action.op) : null;
   const motion = handMotionPlan(action, reducedMotion, areaEffect);
+  // The in-room square is a real piece of scenery. Use a more precise,
+  // smaller hand while arranging it so students can SEE the four regions.
+  // Setting this before geometry measurements keeps the fingertip on target.
+  if (areaEffect?.side > 0) hand.dataset.boxOperation = action.op;
 
   // Find the actual geometry of this room at any viewport width. The updated
   // art's fingertips reach ~95% of its box (not 78% as in the original outline).
@@ -563,6 +567,7 @@ async function handAct(side, action, applyAtContact) {
     }
     hand.style.removeProperty("--hand-chase");
     delete hand.dataset.boxStep;
+    delete hand.dataset.boxOperation;
     clearAreaPreview(side);
     cargo.classList.remove("sprite-captured");
     cargo.hidden = true;
