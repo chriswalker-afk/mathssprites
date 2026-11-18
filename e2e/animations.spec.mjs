@@ -22,6 +22,8 @@ test("dark sprites are visible and visibly bounce rather than staying still", as
   });
   expect(movement, "Sprite needs a real vertical hop").not.toBeNull();
   expect(movement).toBeGreaterThan(22);
+  // Visual review must include an idle room without the hand obscuring the sprite.
+  await page.screenshot({ path: "artifacts/sprites-idle-desktop.png" });
 });
 
 test("hand changes objects while touching EACH room, then waits before algebra reveal", async ({ page }) => {
