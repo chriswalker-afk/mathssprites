@@ -196,7 +196,11 @@ background-image:repeating-linear-gradient(90deg,transparent 0 66px,rgba(0,0,0,.
 .floor-count{position:absolute;bottom:68px;left:50%;transform:translateX(-50%);
   white-space:nowrap;font:italic .67rem Georgia,serif;letter-spacing:.02em;color:#decba1;
   text-shadow:0 2px 5px #000;pointer-events:none}
-.area-active .room-items{opacity:.16;transition:opacity .28s ease}
+.area-active .room-items{opacity:.16;transition:opacity .2s ease}
+/* Hide the old row while the grid is arranged, but REVEAL the result at the
+   exact contact moment so children can see the creature shape change. */
+.area-active.area-after-square .room-items,
+.area-active.area-after-sqrt .room-items{opacity:1}
 .room-empty{font:italic .8rem Georgia,serif;color:rgba(215,203,166,.45);padding-bottom:15px}
 .room-floor{position:absolute;bottom:0;left:0;right:0;height:31px;background:
  repeating-linear-gradient(90deg,transparent 0 30px,#2d251e 31px 33px),
