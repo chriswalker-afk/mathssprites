@@ -418,7 +418,7 @@ async function handAct(side, action, applyAtContact) {
           applied = true;
           if (action.op === "square" || action.op === "sqrt") finishAreaPreview(side, action);
           target.classList.add("hand-contact");
-          cargo.hidden = motion.placing;
+          cargo.hidden = motion.placing || action.op === "sqrt";
           if (reaction) cargo.classList.add("sprite-captured");
           hand.dataset.phase = action.op === "square" ? "pound" :
             action.op === "sqrt" ? "squish" :
