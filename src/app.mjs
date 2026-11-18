@@ -401,6 +401,10 @@ async function handAct(side, action, applyAtContact) {
           hand.dataset.phase = motion.placing ? "carry" : "aim";
           if (reaction === "dodge") hand.classList.add("tracking-sprite");
           break;
+        case "arrange":
+          showAreaPreview(side, action);
+          hand.dataset.phase = action.op === "square" ? "aim" : "reach";
+          break;
         case "grip":
           hand.classList.remove("tracking-sprite");
           hand.classList.add("grasping");
@@ -412,10 +416,13 @@ async function handAct(side, action, applyAtContact) {
           // covering the objects, and the other room has not been touched yet.
           applyAtContact();
           applied = true;
+          if (action.op === "square" || action.op === "sqrt") finishAreaPreview(side, action);
           target.classList.add("hand-contact");
           cargo.hidden = motion.placing;
           if (reaction) cargo.classList.add("sprite-captured");
-          hand.dataset.phase = motion.placing ? "release" : "carry";
+          hand.dataset.phase = action.op === "square" ? "pound" :
+            action.op === "sqrt" ? "squish" :
+              motion.placing ? "release" : "carry";
           break;
         case "lift":
           hand.classList.add("lifting");
@@ -443,6 +450,7 @@ async function handAct(side, action, applyAtContact) {
       actor.style.removeProperty("--dodge-shift");
     }
     hand.style.removeProperty("--hand-chase");
+    clearAreaPreview(side);
     cargo.classList.remove("sprite-captured");
     cargo.hidden = true;
     caption.hidden = true;
@@ -455,7 +463,9 @@ async function finishTurn() {
     // The student must be able to SEE the final physical balance before
     // the comic-book retrospective covers the laboratory.
     $("scene").classList.add("solved-scene");
-    $("feedback").textContent = "One sprite, and its matching weights. The rooms are balanced!";
+    $("feedback").textContent = state.goal === "square"
+      ? "A complete area! The x² sprite matches the squared number of weights."
+      : "One sprite, and its matching weights. The rooms are balanced!";
     await sleep(reducedMotion ? 1100 : 1800);
     $("scene").classList.remove("solved-scene");
     showReplay();
@@ -526,7 +536,8 @@ function startLevel(index) {
   replayEntries = [];
   levelIndex = (index + LEVELS.length) % LEVELS.length;
   state = initialState(LEVELS[levelIndex]);
-  operation = (levelIndex === 1 || levelIndex === 4) ? "divide" : "remove";
+  operation = LEVELS[levelIndex].startingOperation ||
+    ((levelIndex === 1 || levelIndex === 4) ? "divide" : "remove");
   kind = "posOne";
   amount = levelIndex === 0 ? 2 : levelIndex === 2 ? 4 : levelIndex === 4 ? 2 : 1;
   factor = levelIndex === 1 ? 3 : levelIndex === 4 ? 5 : 2;
@@ -537,7 +548,10 @@ function startLevel(index) {
   $("hand").style.removeProperty("--hand-chase");
   $("hand-cargo").classList.remove("sprite-captured");
   $("hand").dataset.phase = "rest";
-  for (const side of ["left", "right"]) $(side + "-chamber").classList.remove("hand-target", "hand-contact");
+  for (const side of ["left", "right"]) {
+    $(side + "-chamber").classList.remove("hand-target", "hand-contact");
+    clearAreaPreview(side);
+  }
   $("hand-cargo").hidden = true;
   $("action-caption").hidden = true;
   $("scene").classList.remove("solved-scene");
