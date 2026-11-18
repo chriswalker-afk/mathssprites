@@ -125,6 +125,7 @@ test("manual matching still requires both sides, even if a sprite dodges", async
 test("reduced motion and weight removal are reaction-free", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.reload();
+  await page.locator("#motion-toggle").click();
   await prepareSpritePickup(page, 0.02);
   await recordReactions(page);
   await page.locator("#do-both").click();
