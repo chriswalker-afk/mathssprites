@@ -21,7 +21,7 @@ At success, **comic-book panels appear automatically, one for each actual mathem
 5. **Discover before explaining.** Each completed move becomes a newly revealed animated comic panel with handwritten algebra alongside. The replay begins automatically and remains pausable, rewindable and skippable.
 6. **Atmospheric rather than childish.** Warm, mysterious laboratory, charcoal sprites, brass, glass, aged timber, restraint in UI and colour.
 7. **Gentle mistakes, no guessing penalty.** A temporary tilt and a clear recovery path let players experiment. The hand's unseen owner occasionally offers contextual, first-person speech bubbles.
-8. **Negatives have a physical language.** Black sprites are +x, white sprites −x, weights +1 and balloons −1. Opposites make visible zero pairs through a puff or flight. Negative-token art comes after the initial four levels, but the engine is designed for it from the outset.
+8. **Negatives have a physical language.** Black sprites are +x, white sprites −x, weights +1 and balloons −1. Opposites make visible zero pairs through a puff or flight, and Undo restores every original object.
 
 ## Example: the first two-sided-variable puzzle
 
@@ -43,14 +43,14 @@ At success, **comic-book panels appear automatically, one for each actual mathem
 
 ## Play the first prototype
 
-The repository now includes a **dependency-free browser game** with ten curated levels, including five lessons on building and undoing squares.
+The repository now includes a **dependency-free browser game** with thirteen curated levels: introductory balancing, in-room squares/roots, and three signed-object experiments.
 
 - **Guided mirror**: choose an operation and the hand performs it in both rooms.
 - **Your turn**: make a change in one room; the balance tips until you repeat it in the other.
 - **Transparent baskets**: dividing means making two to five identical groups *within each room*, then retaining one group on each side.
 - **Pencil-paced comic replay**: once a lone dark sprite faces the correct number of weights, the hand's actual steps unfold as comic panels. The pencil moves to each **individual algebra symbol**, draws it, pauses between lines, and only then advances to the next panel. Pause, continue, manual steps, and writing-speed choices are available.
 - **Hints, Undo, Reset, reduced motion and responsive layout** are included.
-- **Signed algebra is supported in the isolated engine**, but white sprites, balloons and animated zero pairs remain planned for the next chapter rather than falsely advertised as part of this prototype.
+- **Maths mode (separate from hand control):** positive-only lessons hide white sprites and balloons by default; Signed objects enables them for experimentation. The signed chapters require Signed mode. Positive/negative opposite pairs physically cancel, and the history records exactly which objects left the room. Fractions and negative solutions for x are still separate future features.
 
 ### Run locally
 
@@ -101,3 +101,18 @@ There are two hand modes, original hand/sprite interactions, and the same animat
 **Unbuild the square:** start from 4x²+12x+9=25. The hand reverse-fills and removes the box until only 2x+3=5 remains. The student then removes three weights and divides by two to isolate x.
 
 This is a *single in-world interaction*, not a teaching diagram layered beside the action. The edge rulers are translucent **dimension markers**, not counted tokens. Only interior cells become algebra tokens, which are committed by the engine at hand contact. The box never pollutes Undo, the notebook or the normal floor-only view. On small screens it scales within the chamber; reduced motion retains the complete sequence as quick static stages.
+
+
+## PR12: white sprites, balloons and signed mathematics modes (chapters 11–13)
+
+The header now includes a **Maths mode** selector independent of Guided Mirror / Your Turn. Introductory chapters start in *Positive objects*: only black sprites, square sprites and brass weights can be selected. Choosing *Signed objects* exposes the white sprite (−x) and tethered balloon (−1) controls and resets that experiment safely. Chapters 11–13 are signed from the start and cannot be switched into a positive-only representation incompatible with their opening contents.
+
+The same equation engine handles four primitive signed objects: a black sprite contributes +x, a white one −x, a weight +1, and a balloon −1. A black/white pair hops together, bumps and disappears in a little soot puff; a balloon grabs a brass weight and **lifts them both out of the room**. Each pair is a zero-valued simplification of ONE room, not an additional operation on both sides. The hand still performs the initiating add/remove/copy operation to **both** rooms; a completed step still has exactly one commit, and every cancellation is recorded as an ordered subevent.
+
+The signed experiments are:
+
+- **11 Balloon rescue:** x−2=2. Add two weights to both sides. The two balloons each lift away their opposite weight on the left; the right becomes four weights, leaving x=4.
+- **12 A white sprite arrives:** 2x+3=x+7. Add a white sprite to both rooms. A black/white pair cancels in each chamber, leaving x+3=7; remove three weights to get x=4.
+- **13 Two ways to make zero:** 2x−2=x+2. Use weight/balloon cancellation followed by black/white cancellation to leave x=4.
+
+**Truthfulness and constraints:** signed objects still count as whole items. Before division, any visible zero pairs cancel FIRST, so the remaining integer objects form honest equal baskets. Adding/removing a balloon retains its negative algebraic meaning; the comic replay writes equations such as − (−1) for removing a balloon and includes the actual zero-pair subevents. A signed action that is not permitted in positive-only mode is blocked by the pure engine, not only by hiding a button. The current square/root geometry remains restricted to nonnegative areas. We intentionally do NOT introduce negative values of x, signed square roots or fractional objects in PR12; those need their own physical metaphors.
