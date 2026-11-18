@@ -689,6 +689,111 @@ async function handAct(side, action, applyAtContact) {
   // The client must never treat an aborted first-room animation as solved.
   if (!applied) throw new Error("The hand did not complete its contact move.");
 }
+// The hand cuts the ACTUAL leftover floor objects. The intact ones stay
+// put; there is no separate basket diagram or pile of invented tokens.
+function fractionTokenSelector(kind){
+  return {posX:".sprite-black",negX:".sprite-white",
+    posX2:".sprite-square",posOne:".weight",negOne:".balloon"}[kind]||"";
+}
+async function showFractionCut(side,issue){
+  const plan=fractionCutPlan(issue);
+  const stage=$(side+"-attempt-stage");
+  const roomItems=$(side+"-items");
+  const selector=".floor-track > "+fractionTokenSelector(plan.kind);
+  const targets=[...roomItems.querySelectorAll(selector)].slice(-plan.remainder);
+  if(targets.length!==plan.remainder)
+    throw new Error("The hand cannot cut a missing physical object");
+  stage.hidden=false;
+  stage.innerHTML="";
+  stage.classList.remove("rewinding");
+  stage.classList.add("fraction-floor-stage");
+  stage.dataset.issue="fraction";
+  stage.dataset.cutPhase="intact";
+  stage.dataset.cutFactor=String(plan.factor);
+  stage.dataset.cutSources=String(plan.sources.length);
+  stage.setAttribute("aria-label",plan.remainder+" "+itemWord(plan.kind,plan.remainder)+
+    " will each be cut into "+plan.factor+
+    " equal, visibly separated pieces before the hand restores them");
+  $(side+"-chamber").classList.add("attempt-fraction");
+  const frame=stage.getBoundingClientRect();
+
+  targets.forEach((original,index)=>{
+    const bounds=original.getBoundingClientRect();
+    // The floor is compressed when crowded. The selected object can be
+    // picked up and enlarged slightly, but still appears in the same room
+    // immediately over its original floor position.
+    const width=Math.max(bounds.width,Math.min(48,stage.clientWidth*.12));
+    const height=width*Math.max(.5,bounds.height/Math.max(1,bounds.width));
+    const nativeWidth=Math.max(1,original.offsetWidth);
+    const nativeHeight=Math.max(1,original.offsetHeight);
+    const x=Math.min(stage.clientWidth-width-3,
+      Math.max(3,bounds.left-frame.left+(bounds.width-width)/2));
+    const y=Math.min(stage.clientHeight-height-15,
+      Math.max(25,bounds.top-frame.top+(bounds.height-height)/2));
+    const actor=document.createElement("div");
+    actor.className="fraction-cut-source";
+    actor.dataset.kind=plan.kind;
+    actor.dataset.sourceIndex=String(index);
+    actor.style.left=x+"px";
+    actor.style.top=y+"px";
+    actor.style.width=width+"px";
+    actor.style.height=height+"px";
+    const mat=document.createElement("span");
+    mat.className="fraction-cut-mat";
+    actor.appendChild(mat);
+    for(const slice of plan.sources[index].pieces){
+      const j=slice.sliceIndex;
+      const piece=document.createElement("span");
+      piece.className="fraction-cut-piece";
+      piece.dataset.part=String(j);
+      piece.dataset.basket=String(slice.basket);
+      piece.style.left=(100*slice.start)+"%";
+      piece.style.width=(100/plan.factor)+"%";
+      piece.style.setProperty("--split-x",
+        Math.round((j-(plan.factor-1)/2)*Math.min(19,10+width*.17))+"px");
+      piece.style.setProperty("--split-y",(j%2 ? 8 : -7)+"px");
+      piece.style.setProperty("--split-rotation",
+        Math.round((j-(plan.factor-1)/2)*9)+"deg");
+      const jitter=document.createElement("span");
+      jitter.className="fraction-fragment-wiggle";
+      const art=original.cloneNode(true);
+      art.removeAttribute("title");
+      art.setAttribute("aria-hidden","true");
+      art.classList.add("fraction-cut-art");
+      art.style.width=nativeWidth+"px";
+      art.style.height=nativeHeight+"px";
+      art.style.left=-(j/plan.factor)*nativeWidth+"px";
+      art.style.top="0";
+      art.style.transformOrigin="top left";
+      art.style.transform="scale("+(width/nativeWidth)+","+(height/nativeHeight)+")";
+      jitter.appendChild(art);
+      piece.appendChild(jitter);
+      actor.appendChild(piece);
+    }
+    // One cut mark per boundary, not one invented whole object per basket.
+    for(let j=1;j<plan.factor;j++){
+      const seam=document.createElement("span");
+      seam.className="fraction-cut-seam";
+      seam.style.left=(j/plan.factor*100)+"%";
+      seam.style.setProperty("--seam-delay",((j-1)*170)+"ms");
+      actor.appendChild(seam);
+    }
+    const blade=document.createElement("span");
+    blade.className="fraction-cut-swoosh";
+    actor.appendChild(blade);
+    stage.appendChild(actor);
+    original.classList.add("fraction-original-hidden");
+  });
+  await animateClassFrame();
+  stage.dataset.cutPhase="cutting";
+  $("hand").dataset.phase="chop";
+  await sleep(reducedMotion?210:820);
+  stage.dataset.cutPhase="chopped";
+  $("hand").classList.add("fraction-observing");
+  // Leave the tiny pieces twitching where the object used to stand.
+  await sleep(reducedMotion?180:610);
+}
+
 // A failed attempt is allowed to become a dramatic *visual experiment*, but
 // never a transaction. Only valid, matching moves can enter state.history.
 function failureStage(side, issue, action) {
