@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 
 test("animations start ON by default even when the device prefers reduced motion", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
-  await page.goto("/");
+  await page.goto("/?preview=resident");
   await expect(page.locator("#motion-toggle")).toHaveText("Motion: on");
   await expect(page.locator("#motion-notice")).toBeHidden();
   await expect(page.locator("#left-items .sprite-motion").first()).toHaveCSS("animation-name", "sprite-hop");
@@ -12,7 +12,7 @@ test("animations start ON by default even when the device prefers reduced motion
 
 test("turning motion OFF explains the choice and provides a clear enable button", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
-  await page.goto("/");
+  await page.goto("/?preview=resident");
   await page.locator("#motion-toggle").click();
   await expect(page.locator("#motion-toggle")).toHaveText("Motion: reduced");
   await expect(page.locator("#motion-notice")).toBeVisible();
@@ -31,7 +31,7 @@ test("turning motion OFF explains the choice and provides a clear enable button"
 
 test("explicitly reduced motion persists through refresh until user turns it back on", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
-  await page.goto("/");
+  await page.goto("/?preview=resident");
   await expect(page.locator("#motion-notice")).toBeHidden();
 
   await page.locator("#motion-toggle").click();
@@ -50,7 +50,7 @@ test("explicitly reduced motion persists through refresh until user turns it bac
 
 test("normal-motion visitors see bouncing sprites and no warning", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "no-preference" });
-  await page.goto("/");
+  await page.goto("/?preview=resident");
   await expect(page.locator("#motion-notice")).toBeHidden();
   await expect(page.locator("#motion-toggle")).toHaveText("Motion: on");
   await expect(page.locator("#left-items .sprite-motion").first()).toHaveCSS("animation-name", "sprite-hop");
@@ -63,7 +63,7 @@ test("motion controls work even when browser storage is unavailable", async ({ p
     });
   });
   await page.emulateMedia({ reducedMotion: "reduce" });
-  await page.goto("/");
+  await page.goto("/?preview=resident");
   await expect(page.locator("#motion-notice")).toBeHidden();
   await expect(page.locator("#left-items .sprite-motion").first()).toHaveCSS("animation-name", "sprite-hop");
   await page.locator("#motion-toggle").click();
