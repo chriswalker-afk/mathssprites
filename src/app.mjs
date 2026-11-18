@@ -741,7 +741,10 @@ function restoreExperiment({rollbackPending = false} = {}) {
   override = null;
   groups = {left:0,right:0};
   failureTilt = 0;
-  for (const side of ["left","right"]) clearFailureStage(side);
+  for (const side of ["left","right"]){
+    clearFailureStage(side);
+    clearNeutralEffect(side);
+  }
   $("scene").classList.remove("scene-failed-balance");
   render();
 }
@@ -789,14 +792,26 @@ async function animateMismatchedManualAction(side, firstAction, action) {
   $("feedback").textContent = "Let's see what happens when the rooms receive different moves...";
   render();
   try {
-    if (action.op === "divide") {
-      groups[side] = action.factor;
-      render();
-      await sleep(reducedMotion ? 80 : 860);
+    const before=visibleRooms(state);
+    if(action.op==="divide"){
+      if(attempted.cancellationEvents.length){
+        override={left:room(before.left),right:room(before.right)};
+        await animateNeutralEvents(side,attempted.cancellationEvents,r=>{
+          override={...override,[side]:room(r)};render();
+        });
+      }
+      override={...before,[side]:room(attempted.beforeGroups)};
+      groups[side]=action.factor;render();
+      await sleep(reducedMotion?160:860);
     }
-    await handAct(side, action, () => {
-      const before = visibleRooms(state);
-      override = {left:before.left,right:before.right,[side]:attempted.after};
+    await handAct(side, action, async() => {
+      if(action.op!=="divide"&&attempted.cancellationEvents.length){
+        override={...before,[side]:room(attempted.raw)};render();
+        await animateNeutralEvents(side,attempted.cancellationEvents,r=>{
+          override={...override,[side]:room(r)};render();
+        });
+      }
+      override={left:before.left,right:before.right,[side]:attempted.after};
       groups[side] = 0;
       const difference = currentDifference(override);
       // Equally valued but differently described operations do not magically
