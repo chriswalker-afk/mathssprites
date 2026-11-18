@@ -3,7 +3,7 @@
  * The existing twenty puzzle IDs and math stay in WORLD1_LEVELS untouched.
  *
  * PR21 activates Stage 3 on Stage 2 mastery (or teacher access).
- * The separate Equation Workshop (PR22) remains unavailable.
+ * PR22 makes the separate Equation Workshop available as non-campaign free play.
  */
 import { WORLD1_LEVELS } from "./worlds.mjs";
 import { INDEPENDENT_LEVELS } from "./independent-levels.mjs";
