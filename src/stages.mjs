@@ -2,11 +2,12 @@
  * World 1 is a curriculum of representations, not just increasing equations.
  * The existing twenty puzzle IDs and math stay in WORLD1_LEVELS untouched.
  *
- * PR19 activates Stage 2 (after Stage 1 completion, or for teachers).
- * Stage 3 (PR20-21) and the Equation Workshop (PR22) remain unavailable.
+ * PR21 activates Stage 3 on Stage 2 mastery (or teacher access).
+ * The separate Equation Workshop (PR22) remains unavailable.
  */
 import { WORLD1_LEVELS } from "./worlds.mjs";
 import { INDEPENDENT_LEVELS } from "./independent-levels.mjs";
+import { APPRENTICE_LEVELS } from "./apprentice-levels.mjs";
 
 export const WORLD1_STAGES = Object.freeze([
   Object.freeze({
@@ -27,8 +28,8 @@ export const WORLD1_STAGES = Object.freeze([
     id:"notebook",number:3,title:"Algebra Apprentice",
     tagline:"Write the maths before the sprites move.",
     description:"Solve twelve equations using the notebook. Your working will be replayed as physical sprite movements afterwards.",
-    method:"notebook",count:12,available:false,unlockAfter:"independent",
-    icon:"✎",status:"planned"
+    method:"notebook",count:APPRENTICE_LEVELS.length,available:true,unlockAfter:"independent",
+    icon:"✎",status:"playable"
   })
 ]);
 export const EQUATION_WORKSHOP = Object.freeze({
@@ -47,6 +48,9 @@ export function canOpenWorld1Stage(id,{teacher=false,stage1Completed=false,stage
   if (teacher) return true;
   if (stage.id==="independent") return stage1Completed;
   return stage2Completed;
+}
+export function stageThreeComplete(completed=[]) {
+  return APPRENTICE_LEVELS.every(slot=>completed.includes(slot.number));
 }
 export function stageTwoComplete(completed=[]) {
   return INDEPENDENT_LEVELS.every(slot=>completed.includes(slot.number));
