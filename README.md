@@ -2,7 +2,7 @@
 
 *A wordless algebra puzzle that becomes an equation only after you solve it.*
 
-**Status:** first playable game journey (PR14). The home page, four-world map, chapter select and player progress are now implemented; 5 of the 20 planned positive-integer levels are available. The advanced experiment library is deliberately retained for future worlds and regression testing.
+**Status:** complete first mathematical world (PR16). All 20 positive whole-number levels are playable across five progressive chapters, with saved progress, teacher access and chapter navigation. The advanced experiment library remains intact for future worlds and regression testing.
 
 ## The idea
 
@@ -44,9 +44,9 @@ At success, **comic-book panels appear automatically, one for each actual mathem
 
 ## Play the game
 
-The default URL now opens the **Maths Sprites home screen**. Choose a world, open the World 1 level map, and play the five currently available positive whole-number puzzles. Levels unlock in order and completion progress stays on this device (with no account). Teachers can temporarily unlock all implemented puzzles in Settings.
+The default URL now opens the **Maths Sprites home screen**. Choose a world, open the World 1 level map, and play all **20 positive whole-number puzzles** in five chapters. Levels unlock in order and completion progress stays on this device (with no account). Teachers can unlock all 20 puzzles in Settings.
 
-The world map also shows locked placeholders for negative numbers, fractions and squares/square roots. The remaining fifteen World 1 levels are deliberately marked **Coming soon** until PR15 designs and tests them.
+The world map also shows locked placeholders for negative numbers, fractions and squares/square roots. All twenty World 1 levels are implemented; there are no empty level placeholders in this world. See [the full teacher-facing World 1 campaign guide](docs/WORLD1_CAMPAIGN.md) for puzzles, strategies and validated operations.
 
 The original **thirteen curated experiments** have not been deleted. To inspect and regression-test their advanced mechanics before the later worlds go live, use the explicit authoring preview link `?preview=resident`, choose any prototype experiment there, or use a known ID such as `?preview=make-square`. The prototype preview is separate from the student campaign.
 
