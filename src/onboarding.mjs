@@ -47,7 +47,8 @@ export function introductionCue(step, { mode = "auto", pending = false, busy = f
   if (pending && mode === "manual") return {
     title: "3 · Now match the other room",
     text: "You've made the first change. Use the matching action in the other room to restore the balance.",
-    target: "right-action", action: null, progress: "4 of 4"
+    target: pending === "left" ? "right-action" : "left-action",
+    action: null, progress: "4 of 4"
   };
   if (busy) return {
     title: "3 · Watch the hand",
