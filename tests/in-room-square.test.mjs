@@ -120,7 +120,7 @@ test("too-large boxes give the reversible overflow effect, not a silently clippe
 });
 
 test("the two new levels keep their intended goals and require full equal operations",()=>{
-  assert.equal(LEVELS.length,10);
+  assert.equal(LEVELS.length,13);
   const drawing=LEVELS[8],unbuilding=LEVELS[9];
   assert.equal(drawing.id,"mixed-area");
   assert.equal(unbuilding.id,"mixed-root");
