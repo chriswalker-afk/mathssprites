@@ -1114,7 +1114,7 @@ function startLevel(index, quantityMode, levelOverride = null, campaignNumber = 
   kind=level.startingKind||"posOne";
   amount=level.startingAmount||
     (levelIndex===0?2:levelIndex===2?4:levelIndex===4?2:1);
-  factor = levelIndex === 1 ? 3 : levelIndex === 4 ? 5 : 2;
+  factor = level.startingFactor || (levelIndex === 1 ? 3 : levelIndex === 4 ? 5 : 2);
   override = null; groups = { left: 0, right: 0 };
   failureTilt = 0;
   $("scene").classList.remove("scene-failed-balance", "scene-rewinding");
