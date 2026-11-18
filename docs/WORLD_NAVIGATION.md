@@ -60,4 +60,6 @@ See [PR17_EXPERIENCE.md](PR17_EXPERIENCE.md) for the intended walkthrough and br
 
 PR18 introduced the stage map and fixed automatic mirroring in Stage 1. PR19 adds all **16 Independent Balance** puzzles, the separate-room hand tutorial, real provisional scale tipping, stage-specific progress and Stage 2 unlocking (Stage 1 mastered or teacher access). The unfinished Stage 3 and Equation Workshop remain clearly unavailable. See [WORLD1_STAGES.md](WORLD1_STAGES.md) and [STAGE2_CAMPAIGN.md](STAGE2_CAMPAIGN.md).
 
-**Next: PR20.** Build the notebook-first algebra editor and the validated transformation-to-sprite replay used in Stage 3. PR21 will add twelve Stage 3 puzzles; PR22 will develop the custom Equation Workshop. Worlds 2–4 remain distinct, later mathematical work.
+**PR20:** The Stage 3 notebook-first checker and actual hand replay are now available in a clearly identified teacher sandbox via Settings or a test URL such as `?notebook=two-step-09`. Stage 3's own level cards, progress and unlocks are not released. See [the notebook design and QA checklist](STAGE3_NOTEBOOK_FOUNDATION.md).
+
+**Next: PR21.** Build and validate the twelve Stage 3 levels, backwards-faded help and independent progress/unlock journey. PR22 will develop the separate Equation Workshop. Worlds 2–4 remain distinct mathematical work.
