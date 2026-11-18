@@ -11,6 +11,10 @@ import { itemWord, attemptMessage, mismatchedMoveMessage } from "./attempt-feedb
 import { fractionCutPlan } from "./fraction-theatre.mjs";
 import {neutralPairSequence, neutralPairSummary} from "./neutral-pairs.mjs";
 import { WORLD1_LEVELS } from "./worlds.mjs";
+import {
+  CHAPTER_BRIEFINGS, introductionCue, readGuideEnabled, readGuideSeen,
+  writeGuideEnabled, writeGuideSeen
+} from "./onboarding.mjs";
 
 const $ = id => document.getElementById(id);
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
@@ -42,6 +46,11 @@ let factor = 3;
 let state = initialState(LEVELS[0]);
 let activeLevel = LEVELS[0];
 let campaignLevelNumber = null;
+let guideEnabled = readGuideEnabled();
+let guideSeen = readGuideSeen();
+let guideStep = 0;
+let guideDismissed = false;
+let guideWasActive = false;
 function currentLevel() { return activeLevel; }
 let busy = false;
 let override = null;
@@ -183,14 +192,55 @@ function clearSpeech() {
   clearTimeout(speechTimer);
   $("speech").hidden = true;
 }
+function activeFirstGuide() {
+  return campaignLevelNumber === 1 && guideEnabled && !guideSeen && !guideDismissed;
+}
+function guideTarget(name) {
+  if (name === "scene") return $("scene");
+  if (name === "remove") return document.querySelector('[data-operation="remove"]');
+  if (name === "amount") return $("amount-control");
+  if (name === "do-both") return $("do-both");
+  if (name === "left-action") return $("left-action");
+  if (name === "right-action") return $("right-action");
+  return null;
+}
+function renderFirstGuide() {
+  for (const item of document.querySelectorAll(".coach-focus"))
+    item.classList.remove("coach-focus");
+  $("game-guide-restart").hidden = campaignLevelNumber !== 1;
+  $("game-guide-restart").disabled = busy;
+  const visible = activeFirstGuide() && !isSolved(state);
+  $("apprentice-guide").hidden = !visible;
+  if (!visible) return;
+  const cue = introductionCue(guideStep, { mode, pending:state.pending?.first || null, busy });
+  $("guide-progress").textContent = cue.progress;
+  $("guide-title").textContent = cue.title;
+  $("guide-message").textContent = cue.text;
+  $("guide-next").hidden = !cue.action;
+  if (cue.action) $("guide-next").textContent = cue.action + " →";
+  const target = guideTarget(cue.target);
+  if (target && !target.hidden) target.classList.add("coach-focus");
+}
 function render() {
   const lvl = currentLevel();
+  if (campaignLevelNumber !== null)
+    document.body.dataset.workshopChapter = String(Math.ceil(campaignLevelNumber / 4));
+  else delete document.body.dataset.workshopChapter;
   const shown = visible();
   renderRoom("left", shown.left, groups.left);
   renderRoom("right", shown.right, groups.right);
   $("chapter").textContent = lvl.chapter;
   $("level-title").textContent = lvl.title;
   $("level-prompt").textContent = lvl.prompt;
+  $("chapter-status").hidden = campaignLevelNumber === null;
+  $("chapter-briefing").hidden =
+    campaignLevelNumber === null || !CHAPTER_BRIEFINGS[campaignLevelNumber];
+  if (campaignLevelNumber !== null) {
+    $("chapter-status").textContent = "WORLD 1 · LEVEL " +
+      String(campaignLevelNumber).padStart(2,"0") + " / 20";
+    if (CHAPTER_BRIEFINGS[campaignLevelNumber])
+      $("chapter-briefing").textContent = CHAPTER_BRIEFINGS[campaignLevelNumber];
+  }
   const chapterStart = campaignLevelNumber === null ? 0 : Math.floor((campaignLevelNumber - 1) / 4) * 4;
   const dotLevels = campaignLevelNumber === null ? LEVELS : WORLD1_LEVELS.slice(chapterStart, chapterStart + 4);
   const dotIndex = campaignLevelNumber === null ? levelIndex : campaignLevelNumber - 1 - chapterStart;
@@ -282,6 +332,7 @@ function render() {
     $("feedback").innerHTML = '<span class="success-mark">✦</span> Mystery solved. ' +
       '<button id="watch-again" class="inline-link" type="button">Watch the comic again</button>';
   }
+  renderFirstGuide();
 }
 /**
  * A two-stage hand movement, not an instant model update followed by an effect.
@@ -986,6 +1037,10 @@ async function animateMismatchedManualAction(side, firstAction, action) {
 
 async function finishTurn() {
   if (isSolved(state)) {
+    if (activeFirstGuide()) {
+      guideSeen = writeGuideSeen(true);
+      guideDismissed = true;
+    }
     if (campaignLevelNumber !== null)
       window.dispatchEvent(new CustomEvent("mathssprites:solved",
         {detail:{number:campaignLevelNumber,levelId:currentLevel().id}}));
@@ -993,11 +1048,17 @@ async function finishTurn() {
     // The student must be able to SEE the final physical balance before
     // the comic-book retrospective covers the laboratory.
     $("scene").classList.add("solved-scene");
+    $("level-clear-title").textContent = campaignLevelNumber === 20
+      ? "Workshop mastered!"
+      : campaignLevelNumber !== null && campaignLevelNumber % 4 === 0
+        ? "Chapter complete!" : "Balance restored!";
+    $("level-clear").hidden = false;
     $("feedback").textContent = state.goal === "square" || state.goal==="area"
       ? "A complete in-room square! Its physical regions match the squared side."
       : "One sprite, and its matching weights. The rooms are balanced!";
     await sleep(reducedMotion ? 1100 : 1800);
     $("scene").classList.remove("solved-scene");
+    $("level-clear").hidden = true;
     busy = false; render();
     showReplay();
   } else {
@@ -1108,6 +1169,9 @@ function startLevel(index, quantityMode, levelOverride = null, campaignNumber = 
   const level = levelOverride || LEVELS[levelIndex];
   activeLevel = level;
   campaignLevelNumber = campaignNumber;
+  guideStep = 0;
+  guideDismissed = false;
+  guideWasActive = activeFirstGuide();
   state=initialState(level,quantityMode||levelQuantityMode(level));
   operation = level.startingOperation ||
     ((levelIndex === 1 || levelIndex === 4) ? "divide" : "remove");
@@ -1134,6 +1198,7 @@ function startLevel(index, quantityMode, levelOverride = null, campaignNumber = 
   $("hand-cargo").hidden = true;
   $("action-caption").hidden = true;
   $("scene").classList.remove("solved-scene");
+  $("level-clear").hidden = true;
   clearSpeech();
   $("replay-backdrop").hidden = true;
   $("feedback").textContent = level.lockPositive
@@ -1314,6 +1379,7 @@ function processReplayEvent(event) {
       $("replay-progress").textContent = "Panel " + (replayIndex + 1) +
         " of " + replayEntries.length + " · Written";
       if (replayIndex === replayEntries.length - 1) $("next-level").disabled = false;
+      updateReplayEndNote();
       break;
   }
 }
@@ -1343,11 +1409,22 @@ function tickReplay(timestamp) {
       replayPanelFinished = true;
       $("replay-progress").textContent = "All " + replayEntries.length + " panels complete";
       $("next-level").disabled = false;
+      updateReplayEndNote();
       setReplayPaused(true);
     }
     return;
   }
   scheduleReplayFrame();
+}
+function updateReplayEndNote() {
+  const ready = replayIndex === replayEntries.length - 1 &&
+    (replayPanelFinished || reducedMotion);
+  const note = $("replay-end-note");
+  note.hidden = !ready || campaignLevelNumber === null;
+  if (ready && campaignLevelNumber !== null)
+    note.textContent = campaignLevelNumber === 20
+      ? "Every experiment completed. Your workshop awaits!"
+      : "Level " + campaignLevelNumber + " solved · keep exploring!";
 }
 function drawReplay(index, { animate = !reducedMotion, complete = false } = {}) {
   stopReplay();
@@ -1393,11 +1470,12 @@ function drawReplay(index, { animate = !reducedMotion, complete = false } = {}) 
   $("replay-back").disabled = replayIndex === 0;
   $("replay-next").disabled = replayIndex >= replayEntries.length - 1;
   $("next-level").textContent = campaignLevelNumber !== null
-    ? (WORLD1_LEVELS[campaignLevelNumber]?.available ? "Next level →" : "Back to levels →")
+    ? (campaignLevelNumber === 20 ? "Finish World 1 →" : "Next level →")
     : levelIndex === LEVELS.length - 1
       ? "Play from the beginning →" : "Next experiment →";
   $("next-level").disabled = replayIndex !== replayEntries.length - 1 ||
     (!complete && !reducedMotion);
+  updateReplayEndNote();
   if (complete || reducedMotion) {
     $("replay-announcement").textContent = lines.join(". ");
   }
@@ -1410,6 +1488,11 @@ function showReplay() {
   stopReplay();
   replayEntries = [{ after: state.history[0]?.before || { left: state.left, right: state.right } },
     ...state.history.map(entry => ({ ...entry }))];
+  $("replay-level-stamp").textContent = campaignLevelNumber === null
+    ? "THE EXPERIMENT REVEALED"
+    : "LEVEL " + String(campaignLevelNumber).padStart(2,"0") +
+      " / 20 · " + (guideWasActive && campaignLevelNumber === 1
+        ? "FIRST DISCOVERY" : "BALANCE RESTORED");
   $("replay-backdrop").hidden = false;
   setReplayPaused(true);
   drawReplay(0);
@@ -1458,6 +1541,32 @@ $("do-both").addEventListener("click", guidedMove);
 $("left-action").addEventListener("click", () => manualMove("left"));
 $("right-action").addEventListener("click", () => manualMove("right"));
 $("mode-select").addEventListener("change", event => { mode = event.target.value; render(); });
+$("guide-next").addEventListener("click", () => {
+  if (!activeFirstGuide() || guideStep >= 3) return;
+  guideStep++;
+  renderFirstGuide();
+  const target = guideTarget(introductionCue(guideStep, {mode,pending:!!state.pending,busy}).target);
+  target?.scrollIntoView?.({block:"nearest",behavior:reducedMotion?"instant":"smooth"});
+});
+$("guide-skip").addEventListener("click", () => {
+  guideSeen = writeGuideSeen(true);
+  guideDismissed = true;
+  guideWasActive = false;
+  renderFirstGuide();
+});
+window.addEventListener("mathssprites:guide-setting", event => {
+  guideEnabled = !!event.detail.enabled;
+  if (event.detail.reset) {
+    guideSeen = writeGuideSeen(false);
+    guideStep = 0;
+    guideDismissed = false;
+  }
+  render();
+});
+$("game-guide-restart").addEventListener("click", () => {
+  if (busy || campaignLevelNumber !== 1) return;
+  window.dispatchEvent(new CustomEvent("mathssprites:restart-guide"));
+});
 $("quantity-mode").addEventListener("change", event => {
   if(busy||state.pending)return render();
   const requested=event.target.value;

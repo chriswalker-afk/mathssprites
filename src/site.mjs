@@ -7,10 +7,14 @@ import {
   loadProgress, saveProgress, markWorld1Complete,
   loadTeacherSetting, saveTeacherSetting
 } from "./progress.mjs";
+import {
+  readGuideEnabled, writeGuideEnabled, writeGuideSeen
+} from "./onboarding.mjs";
 
 const $ = id => document.getElementById(id);
 let progress = loadProgress();
 let teacher = loadTeacherSetting();
+let guideEnabled = readGuideEnabled();
 let currentScreen = "home";
 let playingNumber = null;
 const screenNames = ["home","worlds","levels","help","settings"];
@@ -35,7 +39,9 @@ function homeAction() {
 function renderWorlds() {
   $("world-cards").innerHTML = WORLDS.map(world => {
     const progressLine = world.available
-      ? progress.completed.length + " / 20 levels complete · all 20 ready to play"
+      ? (progress.completed.length === 20
+        ? "20 / 20 complete · WORKSHOP MASTERED"
+        : progress.completed.length + " / 20 complete · all 20 playable")
       : "COMING SOON";
     return '<article class="world-card world-' + world.theme +
       (world.available ? ' world-ready' : ' world-planned') + '">' +
@@ -55,20 +61,29 @@ function renderWorlds() {
   }).join("");
 }
 function renderLevels() {
-  const totalReady = WORLD1_LEVELS.filter(slot => slot.available).length;
-  $("level-progress").textContent = progress.completed.length +
-    " / 20 completed · " + totalReady + " playable levels";
+  const completed = progress.completed.length;
+  const nextNumber = WORLD1_LEVELS.find(slot =>
+    slot.available && !progress.completed.includes(slot.number) && unlocked(slot.number))?.number;
+  $("level-progress").textContent = completed + " / 20 experiments complete";
+  $("world1-progress-bar").value = completed;
+  $("world1-progress-number").textContent = completed + " of 20 complete";
+  $("world1-finale").hidden = completed !== 20;
+  const emblems = ["−", "÷", "→", "⇄", "✦"];
   $("level-sections").innerHTML = WORLD1_CHAPTERS.map((chapter, index) => {
     const slots = WORLD1_LEVELS.slice(index*4, index*4+4);
+    const finished = slots.filter(slot=>progress.completed.includes(slot.number)).length;
     const cards = slots.map(slot => {
       const complete = progress.completed.includes(slot.number);
       const open = unlocked(slot.number);
+      const current = slot.number === nextNumber;
       const tag = !slot.available ? "Coming soon" : complete ? "Completed" :
         open ? "Ready to play" : "Locked";
       const status = !slot.available ? "upcoming" : complete ? "complete" :
         open ? "ready" : "locked";
       return '<button type="button" class="level-tile status-' + status +
+        (current ? ' level-next' : '') +
         '" data-level="' + slot.number + '"' + (open ? "" : " disabled") +
+        (current ? ' aria-current="step"' : '') +
         ' aria-label="Level ' + slot.number + ': ' + clean(slot.title) + '. ' + tag + '">' +
         '<span class="tile-number">' + String(slot.number).padStart(2,"0") + '</span>' +
         '<span class="tile-name">' + clean(slot.title) + '</span>' +
@@ -76,16 +91,23 @@ function renderLevels() {
           (complete ? "✓ " : open ? "✦ " : "◇ ") + tag + '</span>' +
         '</button>';
     }).join("");
-    return '<section class="chapter-group" aria-label="Chapter ' + (index+1) + ': ' + clean(chapter.title) + '">' +
-      '<div class="chapter-group-heading"><span class="chapter-badge">' +
-      String(index+1).padStart(2,"0") + '</span><div><h3>' +
-      clean(chapter.title) + '</h3><p>' + clean(chapter.description) +
-      '</p></div></div><div class="level-grid">' + cards + '</div></section>';
+    return '<section class="chapter-group chapter-theme-' + (index+1) +
+      (finished === 4 ? ' chapter-complete' : '') +
+      '" aria-label="Chapter ' + (index+1) + ': ' + clean(chapter.title) + '">' +
+      '<div class="chapter-group-heading">' +
+        '<div class="chapter-intro"><span class="chapter-badge">' +
+        String(index+1).padStart(2,"0") + '</span><div><h3>' +
+        clean(chapter.title) + '</h3><p>' + clean(chapter.description) +
+        '</p><p class="chapter-stat">' + (finished === 4 ? 'CHAPTER MASTERED' :
+         finished + ' of 4 experiments complete') + '</p></div></div>' +
+        '<div class="chapter-illustration" aria-hidden="true">' + emblems[index] + '</div>' +
+      '</div><div class="level-grid">' + cards + '</div></section>';
   }).join("");
   $("teacher-note").hidden = !teacher;
 }
 function renderSettings() {
   $("teacher-unlock").checked = teacher;
+  $("site-guided-help").checked = guideEnabled;
   const motion = $("motion-toggle").textContent;
   $("site-motion").textContent = motion === "Motion: reduced"
     ? "Turn animations on" : "Use reduced motion";
@@ -97,6 +119,7 @@ function showScreen(name) {
   $("site-shell").hidden = false;
   $("game-shell").hidden = true;
   document.body.classList.remove("preview-mode");
+  delete document.body.dataset.workshopChapter;
   for (const screen of screenNames) $("site-" + screen).hidden = screen !== name;
   if (name === "home") homeAction();
   if (name === "worlds") renderWorlds();
@@ -138,6 +161,21 @@ $("teacher-unlock").addEventListener("change", event => {
   renderSettings();
   renderLevels();
 });
+$("site-guided-help").addEventListener("change", event => {
+  guideEnabled = writeGuideEnabled(event.target.checked);
+  window.dispatchEvent(new CustomEvent("mathssprites:guide-setting",
+    {detail:{enabled:guideEnabled}}));
+  renderSettings();
+});
+function restartFirstExperimentGuide() {
+  guideEnabled = writeGuideEnabled(true);
+  writeGuideSeen(false);
+  window.dispatchEvent(new CustomEvent("mathssprites:guide-setting",
+    {detail:{enabled:true, reset:true}}));
+  launch(1);
+}
+$("site-replay-intro").addEventListener("click", restartFirstExperimentGuide);
+window.addEventListener("mathssprites:restart-guide", restartFirstExperimentGuide);
 $("site-motion").addEventListener("click", () => {
   $("motion-toggle").click();
   renderSettings();

@@ -2,7 +2,7 @@
 
 *A wordless algebra puzzle that becomes an equation only after you solve it.*
 
-**Status:** complete first mathematical world (PR16). All 20 positive whole-number levels are playable across five progressive chapters, with saved progress, teacher access and chapter navigation. The advanced experiment library remains intact for future worlds and regression testing.
+**Status:** complete first mathematical world (PR16) with player-experience polish (PR17). All 20 positive whole-number levels are playable across five visually distinct chapters, with saved progress, optional first-visit guidance, teacher access and a clear completion journey. The advanced experiment library remains intact for future worlds and regression testing.
 
 ## The idea
 
@@ -44,7 +44,7 @@ At success, **comic-book panels appear automatically, one for each actual mathem
 
 ## Play the game
 
-The default URL now opens the **Maths Sprites home screen**. Choose a world, open the World 1 level map, and play all **20 positive whole-number puzzles** in five chapters. Levels unlock in order and completion progress stays on this device (with no account). Teachers can unlock all 20 puzzles in Settings.
+The default URL now opens the **Maths Sprites home screen**. Choose a world, open the World 1 level map, and play all **20 positive whole-number puzzles** in five chapters. Levels unlock in order and completion progress stays on this device (with no account). Teachers can unlock all 20 puzzles in Settings. First-time players get an optional four-step introduction with highlighted controls in Level 1. After solving, the real balance remains visible before the animated algebra comic, and the final level earns a workshop mastery celebration.
 
 The world map also shows locked placeholders for negative numbers, fractions and squares/square roots. All twenty World 1 levels are implemented; there are no empty level placeholders in this world. See [the full teacher-facing World 1 campaign guide](docs/WORLD1_CAMPAIGN.md) for puzzles, strategies and validated operations.
 
