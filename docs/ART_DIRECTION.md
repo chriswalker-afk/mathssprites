@@ -78,3 +78,12 @@ Full [comic replay storyboard](COMIC_REPLAY.md).
 11. Owner bubble frame and lettering animation.
 
 Prioritise basic mechanics, control modes and comic replay over polishing negative-character artwork; the latter belongs to the first signed chapter.
+
+
+## Approved next visual pass: articulated hand
+
+Move beyond a single static silhouette. The browser prototype now contains a layered, original vector laboratory hand with a dark woven sleeve, thin cuff piping, shaded palm, separate finger drawings, joints and subtle nail/crease details. The hand moves through hover → descend → grip → contact → lift → exit. Independent transforms in each finger group make the grip visibly different from an open reach.
+
+The animation must not become decorative sleight of hand: the room's object counts only change when the hand physically touches the relevant chamber. The held object is visible when picked up or brought into the room. Grouping baskets represent entire room expressions, not individual coefficients.
+
+Visual QA should look for convincing thumb/index opposition, clear held-item silhouettes, overlap with the room instead of the roof, smooth movement on mobile, and a readable pause at the contact beat.

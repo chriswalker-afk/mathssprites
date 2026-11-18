@@ -37,12 +37,102 @@
         <div class="scene-heading">THE BALANCE CHAMBERS <span class="scene-heading-rule"></span> LAB № 04</div>
         <div id="speech" class="speech" role="status" aria-live="polite" hidden></div>
 
-        <div id="hand" class="giant-hand" aria-hidden="true"><div id="hand-cargo" class="hand-cargo" aria-hidden="true"></div>
-          <svg viewBox="0 0 185 242" focusable="false">
-            <path class="hand-sleeve" d="M58 -2 L152 -2 L144 95 L74 98 Z" />
-            <path class="hand-cuff" d="M72 83 L147 78 L149 109 L73 114 Z" />
-            <path class="hand-skin" d="M84 107 C83 130 77 145 69 161 C64 171 58 172 53 168 C46 163 50 151 58 134 C63 121 65 112 65 109 C64 101 53 104 45 114 C32 129 20 144 15 148 C6 156 -2 151 1 142 C7 128 28 101 48 85 C58 76 71 77 86 84 C98 77 115 79 125 86 C137 93 137 111 130 124 C128 135 122 155 120 174 C117 186 105 185 101 176 C99 173 99 167 100 160 L102 128 C99 151 93 179 87 190 C82 201 70 198 67 190 C66 185 68 179 69 172 C71 153 79 126 84 107 Z" />
-            <path class="hand-detail" d="M102 126 L103 104 M121 126 L120 108 M70 143 Q64 152 60 160" />
+        <div id="hand" class="giant-hand" data-phase="rest" aria-hidden="true">
+          <div id="hand-cargo" class="hand-cargo" aria-hidden="true" hidden></div>
+          <svg class="hand-art" viewBox="0 0 200 270" focusable="false" aria-hidden="true">
+            <defs>
+              <linearGradient id="glove-leather" x1="0" y1="0" x2="1" y2="0.85">
+                <stop offset="0" stop-color="#f2cfaa"/>
+                <stop offset=".29" stop-color="#d7a681"/>
+                <stop offset=".68" stop-color="#bb8669"/>
+                <stop offset="1" stop-color="#825943"/>
+              </linearGradient>
+              <linearGradient id="glove-finger" x1="0" y1="0" x2="1" y2="0.2">
+                <stop offset="0" stop-color="#ecc39e"/>
+                <stop offset=".4" stop-color="#cf9876"/>
+                <stop offset="1" stop-color="#94664f"/>
+              </linearGradient>
+              <linearGradient id="lab-sleeve-fabric" x1="0" y1="0" x2="1" y2=".75">
+                <stop offset="0" stop-color="#66716b"/>
+                <stop offset=".32" stop-color="#374541"/>
+                <stop offset=".75" stop-color="#293631"/>
+                <stop offset="1" stop-color="#1c2927"/>
+              </linearGradient>
+              <linearGradient id="lab-cuff-metal" x1="0" y1="0" x2="1" y2=".4">
+                <stop offset="0" stop-color="#e1c9a1"/>
+                <stop offset=".34" stop-color="#ac895f"/>
+                <stop offset=".75" stop-color="#6f583c"/>
+                <stop offset="1" stop-color="#d2b485"/>
+              </linearGradient>
+              <radialGradient id="glove-palm-highlight">
+                <stop offset="0" stop-color="#ffddb8" stop-opacity=".48"/>
+                <stop offset="1" stop-color="#ebad81" stop-opacity="0"/>
+              </radialGradient>
+            </defs>
+            <!-- Forest-green linen laboratory sleeve, embroidered piping and seams -->
+            <g class="hand-sleeve-detail">
+              <path d="M62 -20 L167 -20 Q166 34 157 88 L150 113 Q116 132 78 110 L73 85 Z"
+                    fill="url(#lab-sleeve-fabric)" stroke="#1b2523" stroke-width="3"/>
+              <path d="M76 -3 Q82 54 83 98 M155 -4 Q151 61 148 98"
+                    fill="none" stroke="#c4b58e" stroke-width="1.6" opacity=".54" stroke-dasharray="4 7"/>
+              <path d="M97 9 Q113 28 111 89 M129 4 Q124 49 126 94"
+                    fill="none" stroke="#101e1b" stroke-width="4.2" opacity=".4"/>
+              <path d="M73 87 Q110 103 155 86 L157 101 Q120 119 76 101 Z"
+                    fill="#262e2c" stroke="#887b63" stroke-width="2"/>
+              <path d="M72 104 Q107 126 159 105 L154 129 Q111 146 77 127 Z"
+                    fill="url(#lab-cuff-metal)" stroke="#453d30" stroke-width="3"/>
+              <path d="M79 114 Q111 135 151 116" fill="none" stroke="#f2d9a7" stroke-width="2" opacity=".75"/>
+              <path d="M82 127 Q112 139 149 126" fill="none" stroke="#594c38" stroke-width="2" opacity=".52"/>
+              <circle cx="133" cy="121" r="3.7" fill="#e7cb91" stroke="#4e3d2c" stroke-width="1"/>
+            </g>
+            <!-- Separate digits: these rotate into a true grip, unlike a flat silhouette -->
+            <g class="hand-digit digit-pinky">
+              <path d="M141 174 Q147 167 156 174 L163 213 Q163 226 154 232 Q144 234 140 220 L134 189 Q132 180 141 174 Z"
+                    fill="url(#glove-finger)" stroke="#745442" stroke-width="2.3"/>
+              <path d="M150 203 Q155 202 159 207 M150 216 Q154 215 158 218" class="skin-crease"/>
+              <path d="M148 219 Q152 217 155 220" class="skin-nail"/>
+            </g>
+            <g class="hand-digit digit-ring">
+              <path d="M120 177 Q129 171 137 181 L143 238 Q143 248 134 251 Q123 252 121 240 L114 196 Q111 184 120 177 Z"
+                    fill="url(#glove-finger)" stroke="#775744" stroke-width="2.4"/>
+              <path d="M126 218 Q133 215 138 218 M128 232 Q132 229 139 233" class="skin-crease"/>
+              <path d="M127 240 Q134 236 138 241" class="skin-nail"/>
+            </g>
+            <g class="hand-digit digit-middle">
+              <path d="M101 177 Q110 169 119 178 L120 247 Q120 260 110 262 Q99 263 97 252 L96 195 Q94 183 101 177 Z"
+                    fill="url(#glove-finger)" stroke="#76533f" stroke-width="2.5"/>
+              <path d="M101 218 Q108 215 117 218 M101 237 Q109 234 117 237" class="skin-crease"/>
+              <path d="M103 250 Q110 247 115 251" class="skin-nail"/>
+            </g>
+            <g class="hand-digit digit-index">
+              <path d="M81 178 Q89 172 99 180 L97 242 Q96 254 86 255 Q76 254 75 243 L74 202 Q71 185 81 178 Z"
+                    fill="url(#glove-finger)" stroke="#714f3c" stroke-width="2.5"/>
+              <path d="M78 215 Q86 212 94 217 M78 233 Q86 231 93 235" class="skin-crease"/>
+              <path d="M80 242 Q85 240 91 244" class="skin-nail"/>
+            </g>
+            <!-- Palm has its own volume, painted highlights and wrist wrinkles -->
+            <g class="hand-palm">
+              <path d="M83 120 Q107 113 139 123 Q154 135 154 157 L157 188
+                    Q153 207 142 215 Q124 218 108 209 Q96 220 82 211
+                    Q71 201 66 182 Q55 160 71 143 Q74 130 83 120 Z"
+                    fill="url(#glove-leather)" stroke="#72503d" stroke-width="3" stroke-linejoin="round"/>
+              <ellipse cx="101" cy="157" rx="47" ry="57" fill="url(#glove-palm-highlight)"/>
+              <path d="M83 141 Q103 135 118 140 M89 149 Q113 145 131 151"
+                    fill="none" stroke="#fff1cb" stroke-width="2" opacity=".28"/>
+              <path d="M96 183 Q111 193 130 186 M83 194 Q92 202 102 204"
+                    class="skin-crease"/>
+              <path d="M81 128 Q109 132 144 127" fill="none" stroke="#694a3b" stroke-width="1.7" opacity=".35"/>
+              <path d="M84 159 Q78 166 80 181 M143 156 Q148 173 144 183" class="skin-crease"/>
+            </g>
+            <!-- Opposable thumb closes toward the index finger -->
+            <g class="hand-digit digit-thumb">
+              <path d="M75 143 Q67 140 59 149 L38 179 Q28 193 35 202 Q43 213 53 203
+                    L78 176 Q89 158 75 143 Z"
+                    fill="url(#glove-finger)" stroke="#795543" stroke-width="2.6"/>
+              <path d="M41 186 Q47 182 54 187 M47 194 Q50 190 57 191" class="skin-crease"/>
+              <path d="M38 197 Q41 201 47 198" class="skin-nail"/>
+            </g>
+            <path class="hand-outline-light" d="M83 120 Q108 115 137 122" fill="none" stroke="#f1d2ac" stroke-width="2.3" opacity=".65"/>
           </svg>
         </div>
 

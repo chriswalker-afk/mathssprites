@@ -67,3 +67,18 @@ For initial visual QA, inspect 16:9 desktop, narrow desktop and phone widths; te
 ## GitHub Pages
 
 The site uses **relative paths** and includes `.nojekyll`, so the repository is ready to publish as a static site. Once the prototype PR is merged, enable Pages from `main` at repository **Settings → Pages → Deploy from a branch → main / (root)**. Do not confuse the code PR URL with a deployed site URL; Pages may require separate activation.
+
+
+## Hand illustration and animation (art pass)
+
+The original single-outline hand has been replaced with an **illustrated SVG hand built from independently posed parts**:
+
+- A forest-green laboratory sleeve with stitched seams and a brass-trimmed cuff.
+- Shaded palm, thumb, four separately drawn fingers, small knuckle creases, fingernails and warm highlights.
+- The thumb and fingers flex into a visible **grip**; after a removal the hand carries away the exact kind of item shown on-screen, while an addition brings it in and opens at the placement.
+- Seven distinct stages: **approach, descend, aim, grip, contact, lift, withdraw**. A pure stage schedule lives in \`src/hand-timeline.mjs\`.
+- The mathematics changes **once, at the contact stage**. The hand reaches and grips before the change, stays down during it, and rises while carrying/removing or releasing/adding the object. The next room is still untouched until its own hand action.
+- Reduced-motion uses the **same mathematical stages** at much shorter durations without flourish. Mobile uses actual chamber geometry, not hardcoded desktop coordinates.
+- \`e2e/hand-art.spec.mjs\` saves screenshots of the grasp, release, baskets, and mobile hand for review.
+
+This is an original vector illustration, editable without adding an external image dependency. It remains a stylised hand, not photorealistic animation, and can be refined further after seeing the on-screen screenshots.
