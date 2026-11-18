@@ -307,6 +307,131 @@ background-image:repeating-linear-gradient(90deg,transparent 0 66px,rgba(0,0,0,.
   .area-extract-label{font-size:.53rem;min-height:12px}
 }
 
+/* PR10: unsuccessful actions are VISUAL EXPERIMENTS, never algebra commits.
+   Fractions are shown as sliced objects in baskets; crowded rooms spill props;
+   different one-sided actions tip the actual beam before the hand undoes them. */
+.attempt-stage[hidden]{display:none!important}
+.attempt-stage{position:absolute;z-index:10;left:1%;right:1%;bottom:34px;height:150px;
+  display:flex;flex-direction:column;align-items:center;justify-content:flex-end;
+  gap:7px;pointer-events:none;filter:drop-shadow(0 5px 9px #0009);
+  animation:attempt-reveal .36s ease-out both}
+.attempt-stage .attempt-caption{background:#273633eb;border:1px solid #dec091;
+  color:#f6e0b9;padding:5px 9px;border-radius:9px;text-align:center;
+  font:700 .69rem/1.3 Georgia,serif;max-width:100%}
+.attempt-stage .attempt-hint{color:#ecd6b3;font:italic .67rem Georgia,serif;
+  text-shadow:0 2px 5px #000;text-align:center}
+.attempt-stage.rewinding{animation:attempt-reverse .7s ease-in both}
+@keyframes attempt-reveal{from{opacity:0;transform:translateY(-12px) scale(.93)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes attempt-reverse{from{opacity:1;transform:scale(1)}to{opacity:0;transform:translateY(-12px) scale(.82)}}
+.attempt-baskets{display:flex;justify-content:center;align-items:flex-end;gap:5px;
+  width:100%;height:91px}
+.attempt-basket{border:2px solid #c4a36d;border-top:5px solid #e1bf85;
+  border-radius:6px 6px 15px 15px;background:#e1c6901c;width:min(19%,79px);
+  height:84px;min-width:0;display:flex;align-items:center;justify-content:flex-end;
+  flex-direction:column;position:relative;gap:3px;padding:4px 2px 6px;
+  animation:basket-in .45s both}
+.attempt-basket .basket-label{font:bold .59rem Georgia,serif;color:#eed4a6}
+.attempt-basket .whole-chips{display:flex;flex-wrap:nowrap;gap:2px;
+  height:22px;justify-content:center;align-items:center;max-width:100%}
+.attempt-basket .whole-chip{display:inline-flex;width:14px;height:15px;
+  background:radial-gradient(circle at 25% 25%,#67786f,#121a1a 85%);
+  border:1px solid #ddc18a;border-radius:50%;box-shadow:0 2px 2px #0009}
+.attempt-basket .whole-chip.weight-chip{border-radius:3px 3px 6px 6px;
+  background:linear-gradient(90deg,#765335,#e3c58e,#805c3e)}
+.attempt-basket .whole-chip.square-chip{border-radius:3px}
+.slice-object{width:31px;height:31px;position:relative;display:block;
+  transform-origin:center;animation:split-surprise .8s ease-out both}
+.slice-object .slice-ghost{position:absolute;inset:0;border:2px dashed #d3c0a5;
+  background:#28393661;border-radius:50%}
+.slice-object .slice-actual{position:absolute;inset:0;
+  clip-path:polygon(0 0,var(--slice-percent,50%) 0,var(--slice-percent,50%) 100%,0 100%);
+  border-radius:50%;background:radial-gradient(circle at 30% 28%,#70837b,#152222 78%);
+  box-shadow:inset 1px -2px 5px #0009}
+.slice-object .slice-actual:before{content:"";position:absolute;left:9px;top:8px;
+  width:4px;height:6px;border-radius:50%;background:#f7f1d9;
+  box-shadow:10px 0 #f7f1d9}
+.slice-object.weight-part .slice-ghost,.slice-object.weight-part .slice-actual{
+  border-radius:5px;background:linear-gradient(95deg,#795633,#efcd94,#8a633d)}
+.slice-object.weight-part .slice-actual:before{display:none}
+.slice-object.square-part .slice-ghost,.slice-object.square-part .slice-actual{border-radius:5px}
+.slice-object.balloon-part .slice-ghost,.slice-object.balloon-part .slice-actual{background:#d39897}
+.slice-object .slice-cut{position:absolute;left:var(--slice-percent,50%);top:-4px;height:38px;
+  border-left:3px dashed #f9d09b;transform:rotate(5deg);
+  animation:blade-cut .8s ease-out both}
+.slice-fraction{font:bold .66rem Georgia,serif;color:#ffdda4;
+  background:#293633dc;border-radius:4px;padding:1px 4px}
+@keyframes split-surprise{
+  0%{transform:scale(1.12) rotate(-3deg)}35%{transform:scale(.7,1.2)}
+  70%{transform:translateX(6px) rotate(8deg) scale(.92)}
+  100%{transform:translateX(4px) rotate(3deg) scale(1)}
+}
+@keyframes blade-cut{
+  0%{opacity:0;transform:translateY(-24px) rotate(-15deg)}
+  40%{opacity:1;transform:translateY(0) rotate(8deg)}
+  100%{opacity:.8;transform:translateY(0) rotate(5deg)}
+}
+.attempt-overflow .room-interior{overflow:visible}
+.attempt-overflow .attempt-stage{left:-16%;right:-17%;height:156px}
+.overflow-trail{width:100%;height:98px;position:relative}
+.overflow-piece{position:absolute;left:var(--start-x,43%);bottom:0;
+  width:38px;height:38px;border:2px solid #c3a576;border-radius:50%;
+  background:radial-gradient(circle at 26% 25%,#667c73,#172320 80%);
+  box-shadow:inset -3px -4px 4px #0007,0 3px 5px #0009;
+  animation:object-spill 1.15s cubic-bezier(.22,.75,.35,1) var(--spill-delay,0ms) both}
+.overflow-piece.weight-spill{border-radius:6px 6px 10px 10px;
+  background:linear-gradient(95deg,#835a32,#e1bb83,#725131)}
+.overflow-piece.weight-spill:before{content:"";position:absolute;left:10px;top:-6px;
+  width:13px;height:8px;border:3px solid #d4ad76;border-radius:6px}
+.overflow-piece.sprite-spill:before{content:"";position:absolute;left:10px;top:10px;
+  background:#f3edd8;width:6px;height:9px;border-radius:50%;box-shadow:11px 0 #f3edd8}
+.overflow-piece.square-spill{border-radius:7px}
+@keyframes object-spill{
+  0%{opacity:0;transform:translate(0,-8px) rotate(0) scale(.7)}
+  15%{opacity:1;transform:translate(0,0) rotate(0) scale(1)}
+  42%{opacity:1;transform:translate(calc(var(--spill-x,30px) * .52),-55px) rotate(55deg)}
+  75%{opacity:1;transform:translate(var(--spill-x,30px),0) rotate(130deg)}
+  100%{opacity:1;transform:translate(var(--spill-x,30px),14px) rotate(160deg)}
+}
+.attempt-missing .attempt-stage,.attempt-unsupported-area .attempt-stage{height:122px}
+.ghost-object{width:47px;height:45px;border:3px dashed #f4d69e;
+  border-radius:47%;opacity:.76;
+  animation:missing-reach 1.15s ease-in-out infinite alternate}
+.ghost-object.weight-ghost{border-radius:6px}
+@keyframes missing-reach{from{transform:scale(1) translateY(0);opacity:.75}
+  to{transform:scale(.75) translateY(-7px);opacity:.25}}
+/* A deliberate manual mismatch produces a DRAMATIC but honest balance tip.
+   If two different actions are algebraically equivalent, it must not tilt. */
+.scene-failed-balance .rooms-row,
+.scene-failed-balance .scale-beam{transition-duration:.85s!important;
+  transition-timing-function:cubic-bezier(.2,1.34,.3,1)!important}
+.scene-failed-balance .dial-needle{transition-duration:.85s!important}
+.scene-failed-balance .balance-caption{color:#f5b49c}
+.scene-failed-balance .room-interior{box-shadow:inset 0 0 25px #101817,
+  0 0 0 3px #ca987e,0 0 21px #b9605380}
+.scene-rewinding .floor-shell{animation:restore-objects .75s ease-out both}
+@keyframes restore-objects{
+  0%{opacity:.35;filter:blur(2px);transform:translateY(-12px)}
+  100%{opacity:1;filter:none;transform:translateY(0)}
+}
+.reduce-motion .attempt-stage,.reduce-motion .attempt-stage *,
+.reduce-motion .scene-rewinding .floor-shell{animation:none!important;
+  transition:none!important}
+@media(max-width:600px){
+  .attempt-stage{bottom:20px;height:98px;gap:2px}
+  .attempt-stage .attempt-caption{font-size:.49rem;padding:2px 3px}
+  .attempt-stage .attempt-hint{font-size:.48rem}
+  .attempt-baskets{height:64px;gap:2px}
+  .attempt-basket{height:57px;border-width:1px;border-top-width:3px;padding:2px}
+  .attempt-basket .basket-label{font-size:.44rem}
+  .attempt-basket .whole-chips{height:11px}
+  .attempt-basket .whole-chip{width:9px;height:10px}
+  .slice-object{transform:scale(.62);margin:-5px}
+  .slice-fraction{font-size:.45rem}
+  .attempt-overflow .attempt-stage{height:102px}
+  .overflow-trail{height:58px}
+  .overflow-piece{width:21px;height:21px}
+}
+
 /* Actors and props */
 .token{position:relative;flex:none;display:inline-block;vertical-align:bottom}
 /* A sprite has separate LAYERS. The outer token keeps the layout position and
