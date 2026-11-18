@@ -39,8 +39,8 @@ Matching means identical **algebraic operation**, signed token type, count and g
 2. **Remove signed term(s):** physically remove matching existing objects from each room. Removing `−1` means **subtract `(-1)`**, not subtract `1`. In more advanced chapters, adding the opposite token is an equivalent operation but should remain a distinct recorded physical action.
 3. **Multiply by positive integer `k`:** build `k` complete copies of **each room's entire expression**; never duplicate only one chosen type.
 4. **Divide by positive integer `k`:** after zero-pair normalization, place the *entire* contents of **each room** into `k` baskets that have identical contents **within that room**. Remove `k−1` full baskets from each side, retaining one group in each room. The group's container itself contributes **zero** weight.
-5. **Square pure rows:** with x≥0, `n` round x sprites become `n²` square x² sprites, or `n` weights become `n²` weights. This models `(nx)²=n²x²`. Reject mixed expressions such as `x+2`: squaring them would also require cross terms, which the pure-row geometry model does not yet represent.
-6. **Principal square root:** arrange `n²` square x² sprites or `n²` weights into an n×n grid, then keep one side: `n` round x sprites or `n` weights. This assumes x≥0 so `√(x²)=x`. Reject mixed expressions, imperfect-square counts and negative areas.
+5. **Square whole nonnegative linear sides:** a room with a round x sprites and b unit weights represents ax+b. Building a matching perpendicular side forms a² square x² sprites, 2ab round x sprites from the TWO cross regions, and b² unit weights: (ax+b)²=a²x²+2abx+b². Pure rows are the a=0 or b=0 cases. Reject signed terms or existing x² pieces, which would need different/higher-power structures.
+6. **Principal square root:** reconstruct a real square area with a² square sprites, 2ab round sprites and b² weights. Require the two corner coefficients to be perfect squares AND the cross coefficient exactly 2ab. Remove the area in reverse and keep one side, giving ax+b under x≥0. Reject incomplete mixed regions, imperfect squares, signed pieces or a higher-degree result.
 7. **Cancel a zero pair:** `(+x)+(-x)=0` and `(+1)+(-1)=0`. These are **local algebraic simplifications** with no value change, so they may occur in one room without a parallel action. Log them as ordered **visual subevents** attached to the triggering transaction, not new bilateral operation steps.
 
 ### Whole-item chapter restrictions
@@ -106,13 +106,13 @@ Rejections:
 ## Future mathematical chapters
 - **Fractions:** split containers and fractional tokens, with explicit semantics and correct symbolic fractions.
 - **Multiple variables:** separate creature family with actual constraints / linked balances; a single equation in two unknowns is generally insufficient.
-- **Further quadratic operations:** mixed squares such as `(x+a)²` will require explicit rectangular cross-terms. The current square tool correctly rejects mixed rooms rather than falsely squaring each term independently.
+- **Further quadratic operations:** signed lengths, conjugate squares, fractional area sides, higher powers such as (x²+1)² and general polynomial factorisation remain future work. Mixed positive squares (x+a)² ARE now built correctly with their two explicit cross regions.
 - **Negative solutions of x:** revisit the mass/anti-mass metaphor before allowing `s<0` rather than silently reversing what black and white creatures do.
 
 
-## Implemented square and square-root chapters (6–8)
+## Implemented square and square-root chapters (6–10)
 
-The default arrangement of every chamber is one floor-aligned row, even when it must be scaled to fit. To square a pure row, the hand animates a matching column and the remaining cells of an n-by-n grid **before** atomically changing the algebra at contact. A round x sprite becomes a distinct square x² sprite. Square-rooting builds the complete area and keeps a single side; square sprites squish back to round sprites. The row returns to the floor after the demonstration. These transformations are visual explanations of an already validated equation operation, never independent math.
+The default arrangement of every chamber is one floor-aligned row, even when it must be scaled to fit. When squaring, a full wooden/brass frame is physically erected INSIDE the chamber, the hand arranges its original row as one edge, matches the perpendicular edge, then fills 4 geometric regions with a² square sprites, ab+ab round sprites and b² weights. Rooting takes those same physical objects out in the reverse order and keeps one side. The row returns to the floor at hand contact. The stage visuals are educational and never independently mutate algebra.
 
 Chapter 6 builds `x²=9` from `x=3` as an *area-building goal*; chapter 7 reverses the process; chapter 8 takes `√(4x²)=√36`, giving `2x=6`, then divides by two. Since the course assumes `x≥0`, principal rooting is valid within the stated domain: outside that domain, `x²=9` has both `x=3` and `x=−3` solutions. The game must not imply otherwise. Both Guided Mirror and Your Turn remain two-sided transactions. Add, remove, multiply and divide preserve distinct x and x² token types without conflating their coefficients.
 
@@ -126,3 +126,14 @@ Fractional pieces are **temporary diagrams**, not algebraic tokens silently intr
 After an observation pause, the hand narrates why the move is inadvisable, announces that it will undo the attempt, then returns the physical arrangement to the last committed equality. A matched, valid two-sided action still commits exactly once at contact. A manual mismatch uses two provisional previews and is rolled back; it must not generate a notebook panel or Undo entry.
 
 **Physical-truth exception:** two nonidentical actions can have mathematically identical effects (e.g. adding one weight versus removing one negative weight). The balance must remain level when the values are equal, even though the chapter may still ask pupils to use matching moves. Misleading tilting would teach false algebra.
+
+
+## PR11: exact four-region in-room construction and principal unbuilding
+
+The linked teaching reference uses (2x+3)². The interior grid consists of **four x² sprites, six x sprites in the upper-right crossing region, six x sprites in the lower-left crossing region, and nine weights**. The result is 4x²+12x+9. The top and left edge markers represent two copies of the same length 2x+3 but are marked as guides, NOT counted twice. Their variable segments are 1.5 illustrated length units while their unit-weight segments are one illustrated unit; rows and columns use identical tracks so the assembled box is geometrically square.
+
+Maths invariant for any a,b nonnegative integers: the square's cell total is a² + 2ab + b² = (a+b)². Squaring (ax+b) returns a² x² + 2ab x + b². Taking the principal square root requires c2=a² and c0=b² as integer perfect squares, c1=2ab, and no signed tokens. When any condition is false, the square-root attempt uses PR10's animated reversible refusal, not a false factorisation. The area must contain at most 48 interior objects; exceeding that count triggers the existing overflow illustration.
+
+Under the stated x≥0 condition, sqrt((ax+b)²)=ax+b because ax+b≥0. In the unrestricted real domain the result is |ax+b|. Chapters 9 and 10 use x=1, so 2x+3=5 and 4x²+12x+9=25 stay safely inside the limit. The new area-building chapter has an explicit goal target, so a victory cannot be triggered before the four interior regions are completed. The square-root chapter continues with ordinary subtract/divide to reach x=1.
+
+Atomicity and accessibility: a hand beat called contact is still the ONE mathematical mutation. During the frame, edge and four filling stages the box is a UI-only preview, and the opposite room is unchanged. Undo, manual mode, the scale needle, and the pencil-written algebra recap read only committed engine state. Reduced motion compresses the same stages without losing the information.
