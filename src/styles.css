@@ -214,6 +214,82 @@ background-image:repeating-linear-gradient(90deg,transparent 0 66px,rgba(0,0,0,.
 .scene-caption{position:absolute;z-index:8;bottom:15px;left:29px;font:italic .81rem Georgia,serif;letter-spacing:.035em;color:#e9d8b5;text-shadow:0 2px 3px #1b1715}
 .scene-caption.unbalanced{color:#ffdca8}
 
+/* The hand temporarily turns a FLOOR ROW into a visual n by n array.
+   Row appears, matching column follows, then interior cells fill. On a
+   principal root the interior disappears, leaving exactly one side. */
+.area-preview{position:absolute;z-index:7;left:7%;right:7%;bottom:33px;height:203px;
+  display:flex;align-items:center;justify-content:flex-end;flex-direction:column;gap:7px;
+  pointer-events:none;filter:drop-shadow(0 4px 7px #0009)}
+.area-math{padding:4px 8px;border:1px solid #ad996e;border-radius:8px;background:#263330ed;
+  color:#f5ddb1;font:700 .81rem Georgia,serif;text-align:center;white-space:nowrap}
+.area-preview .area-guide{display:flex;gap:7px;align-items:center;color:#d3bb92;
+  font:italic .69rem Georgia,serif;white-space:nowrap}
+.area-preview .area-guide strong{color:#f4d9a5}
+.area-grid{width:min(94%,calc(var(--area-side,3) * 41px));
+  aspect-ratio:1;max-height:132px;display:grid;
+  grid-template-columns:repeat(var(--area-side,3),minmax(0,1fr));
+  grid-template-rows:repeat(var(--area-side,3),minmax(0,1fr));
+  gap:4px;padding:5px;border:2px dashed rgba(220,196,141,.85);border-radius:7px;
+  background:radial-gradient(ellipse,#6a6f56a1,#293a36d9);
+  box-shadow:0 0 0 3px #18232096,inset 0 0 17px #0006}
+.area-cell{min-width:0;min-height:0;border:1px solid #f4d9a9;border-radius:7px;
+  background:linear-gradient(130deg,#d3b786,#86613c);box-shadow:inset 1px 1px #f1dab0a8,0 1px 3px #0009;
+  display:flex;align-items:center;justify-content:center;opacity:0;
+  transform:scale(.4);font:700 clamp(.5rem,.8vw,.85rem) Georgia,serif;color:#30261c}
+.area-cell.area-symbolic{border-radius:5px;background:linear-gradient(135deg,#50685d,#203532);
+  color:#f5dfaf;box-shadow:inset 0 0 0 2px #caa977,0 2px 3px #0009}
+.area-preview[data-phase="arranging"] .area-cell{
+  animation:area-cell-enter .31s cubic-bezier(.22,.86,.24,1.2) var(--cell-delay,0ms) both}
+.area-preview[data-phase="arranging"] .area-cell.role-row{
+  box-shadow:inset 0 0 0 2px #fae3af,0 0 10px #f9d4859c}
+.area-preview[data-phase="arranging"] .area-cell.role-column{
+  box-shadow:inset 0 0 0 2px #e5d2ad,0 0 10px #d9ac6888}
+.area-preview[data-phase="result"] .area-cell{opacity:1;transform:scale(1)}
+.area-preview[data-phase="result"][data-operation="sqrt"] .area-cell:not(.role-row){
+  animation:area-cell-disappear .48s ease-in both}
+.area-preview[data-phase="result"][data-operation="sqrt"] .area-cell.role-row{
+  animation:area-side-kept .58s ease-in-out both}
+.area-preview[data-phase="result"][data-operation="square"] .area-cell{
+  animation:area-cells-complete .48s ease-out both}
+.area-extract-label{opacity:0;min-height:16px;color:#f8e1b3;font:bold .68rem Georgia,serif;letter-spacing:.06em}
+.area-preview[data-phase="result"] .area-extract-label{animation:area-label-in .45s .12s both}
+@keyframes area-cell-enter{from{opacity:0;transform:translateY(-12px) scale(.4)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes area-cell-disappear{from{opacity:1;transform:scale(1)}to{opacity:0;transform:scale(.18) translateY(-15px)}}
+@keyframes area-side-kept{0%,100%{opacity:1;transform:scale(1)}50%{opacity:1;transform:scale(1.13);filter:brightness(1.45)}}
+@keyframes area-cells-complete{from{filter:brightness(1.7);transform:scale(.93)}to{filter:brightness(1);transform:scale(1)}}
+@keyframes area-label-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+/* The illustrated hand visibly presses the round x into a square x² and
+   pinches/squishes the reverse transformation. */
+.giant-hand[data-phase="pound"] .hand-art{animation:hand-area-pound .46s cubic-bezier(.25,.6,.34,1) both}
+.giant-hand[data-phase="squish"] .hand-art{animation:hand-area-squish .48s ease-in-out both}
+@keyframes hand-area-pound{
+  0%{transform:translateY(-13px) rotate(-7deg)}
+  44%{transform:translateY(17px) rotate(5deg) scaleY(.93)}
+  69%{transform:translateY(-4px) rotate(-2deg)}
+  100%{transform:translateY(0) rotate(0)}
+}
+@keyframes hand-area-squish{
+  0%{transform:scaleX(1.04)}
+  38%{transform:scaleX(.86) scaleY(1.07) rotate(-4deg)}
+  65%{transform:scaleX(.93) rotate(3deg)}
+  100%{transform:scale(1)}
+}
+.held-square-press{position:absolute;left:11px;top:8px;width:42px;height:35px;
+  background:linear-gradient(120deg,#e2c28c,#765332);border:3px solid #5c432d;border-radius:5px;
+  box-shadow:inset 0 2px #f7e4bb,0 3px 4px #000a}
+.held-square-press:after{content:"";position:absolute;top:-24px;left:13px;width:12px;height:25px;
+  border-radius:4px;background:linear-gradient(90deg,#735138,#b99162,#69432e);border:1px solid #573e29}
+.held-square-press:before{content:"x²";position:absolute;inset:6px 0 0;text-align:center;
+  font:700 .76rem Georgia,serif;color:#4e3424}
+.mini-token.posX2{border-radius:3px!important;box-shadow:inset 0 0 0 1.5px #c5a877!important}
+@media(max-width:600px){
+  .area-preview{left:2%;right:2%;bottom:21px;height:146px;gap:3px}
+  .area-grid{max-height:100px;gap:2px;padding:3px}
+  .area-math{font-size:.58rem;padding:3px 5px}
+  .area-preview .area-guide{font-size:.55rem}
+  .area-extract-label{font-size:.53rem;min-height:12px}
+}
+
 /* Actors and props */
 .token{position:relative;flex:none;display:inline-block;vertical-align:bottom}
 /* A sprite has separate LAYERS. The outer token keeps the layout position and
