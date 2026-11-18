@@ -8,7 +8,7 @@
  */
 import {parseNotebookEquation} from "./notebook-engine.mjs";
 import {
-  initialState,isSolved,perform,equation,validInitialLevel
+  initialState,isSolved,perform,equation,room,validInitialLevel
 } from "./engine.mjs";
 import {WORLD1_OPERATIONS} from "./worlds.mjs";
 
@@ -88,8 +88,8 @@ export function createWorkshopEquation(input){
 
   const level={
     id:"workshop-custom",title:"Your own balance · "+equation({
-      left:{posX:left.x,posOne:left.constant},
-      right:{posX:right.x,posOne:right.constant}
+      left:room({posX:left.x,posOne:left.constant}),
+      right:room({posX:right.x,posOne:right.constant})
     }),
     chapter:"FREE PLAY · EQUATION WORKSHOP",
     prompt:"Your equation has become two rooms. Use the hand to isolate one dark sprite. Your actual moves will appear in the algebra comic.",
@@ -108,5 +108,5 @@ export function createWorkshopEquation(input){
     return fail("unrepresentable","This equation has a whole-number answer, but the current hand cannot reach it using groups of two to five and complete objects. Try a different sprite coefficient.");
   // Never return the route or numerical answer as UI hints. The route proof
   // remains callable only by mathematical tests and other developer tooling.
-  return {ok:true,level,normalizedEquation:equation({left:level.left,right:level.right})};
+  return {ok:true,level,normalizedEquation:equation({left:room(level.left),right:room(level.right)})};
 }
