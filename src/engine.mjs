@@ -80,21 +80,21 @@ export const LEVELS = [
   },
   {
     id:"balloon-rescue",title:"The balloon rescue",chapter:"11 · Opposite units",
-    prompt:"White balloons pull up with value −1. Can adding weights make the balloon-and-weight pairs lift away? Solve x − 2 = 2.",
+    prompt:"Two balloons are tugging against a dark sprite. Can new weights help the balloons lift away the things opposing them?",
     left:{posX:1,negOne:2},right:{posOne:2},solution:4,
     quantityMode:"signed",startingOperation:"add",startingKind:"posOne",startingAmount:2,
     suggested:"Add two weights to BOTH rooms. Watch each balloon lift one weight away, leaving x = 4."
   },
   {
     id:"opposite-sprites",title:"A white sprite arrives",chapter:"12 · Opposite sprites",
-    prompt:"The white sprites are opposite to dark sprites. Add one white sprite to each room and watch who disappears. Assume x > 0.",
+    prompt:"White sprites are the opposites of dark sprites. Let one white sprite meet the dark sprites in each room, then clear the remaining weights.",
     left:{posX:2,posOne:3},right:{posX:1,posOne:7},solution:4,
     quantityMode:"signed",startingOperation:"add",startingKind:"negX",startingAmount:1,
     suggested:"Add a white sprite to BOTH rooms, then take away three weights from each. A dark and white sprite make zero."
   },
   {
     id:"two-zero-pairs",title:"Two ways to make zero",chapter:"13 · Balloon and sprite",
-    prompt:"Two black sprites and two balloons face a black sprite and two weights. Use BOTH sorts of opposite pair to leave x = 4.",
+    prompt:"Two dark sprites and two balloons face one dark sprite and some weights. Try BOTH sorts of opposite pair to restore the quiet laboratory.",
     left:{posX:2,negOne:2},right:{posX:1,posOne:2},solution:4,
     quantityMode:"signed",startingOperation:"add",startingKind:"posOne",startingAmount:2,
     suggested:"Add two weights to cancel the balloons, then add one white sprite to cancel a dark sprite."
