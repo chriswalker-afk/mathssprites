@@ -217,8 +217,13 @@ test("no active bouncing is required to understand the six physical stages",asyn
   const box=page.locator("#left-area-box");
   await expect(box).toBeVisible();
   await expect(box.locator(".box-cell")).toHaveCount(25);
+  // Reduced-motion stages are intentionally fast: check the actor while the
+  // box is first erected, BEFORE the last stage causes it to be dismantled.
+  const stillActor=await box.locator(".box-actor-x2").first().evaluate(
+    actor=>getComputedStyle(actor).animationName
+  );
+  expect(stillActor).toBe("none");
   await expect(box.locator(".box-cell.stage-units.placed")).toHaveCount(9);
-  await expect(box.locator(".box-actor-x2").first()).toHaveCSS("animation-name","none");
   await expect(page.locator("#left-items .sprite-square")).toHaveCount(4);
   await expect(page.locator("#right-items .weight")).toHaveCount(25);
 });
