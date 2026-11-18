@@ -3,22 +3,23 @@
 ## Mathematical truth beneath the toys
 There is **one canonical algebra engine**, shared by Guided Mirror, Your Turn, the balance needle, the hand's preview, the comic panels and the pencil's symbolic notation.
 
-The **first four playable puzzles** use one unknown with nonnegative integer coefficients and constants and a uniquely solvable positive integer answer. **Design the engine for signed terms from the start** so the later white-sprite and balloon chapters do not require changing what an operation means. Fractions and extra variables are separate later features.
+The **first five playable puzzles** use one unknown with nonnegative integer coefficients and constants and a uniquely solvable positive integer answer. **Design the engine for signed terms from the start** so the later white-sprite and balloon chapters do not require changing what an operation means. Fractions and extra variables are separate later features.
 
 The equation is never shown during play. The engine holds it regardless.
 
-### Four token kinds
+### Five token kinds
 
 | Physical token | Algebraic value | Signed contribution |
 |---|---|---|
 | Black dust sprite | `+x` | positive variable term |
 | White dust sprite | `−x` | negative variable term |
+| Square black dust sprite | `+x²` | quadratic area term |
 | Unit weight / stone | `+1` | positive constant |
 | Balloon | `−1` | negative constant |
 
-Each room holds an array of physical objects with persistent IDs, kinds, positions and optional container membership. The mathematical projection is
+Each room stores integer counts for each token kind. Visual positions, bouncing and temporary area arrangements are presentation only. The mathematical projection is
 
-`Room(x) = (blackCount - whiteCount)·x + (weightCount - balloonCount)`.
+`Room(x) = squareCount·x² + (blackCount - whiteCount)·x + (weightCount - balloonCount)`.
 
 For the first signed chapter, the level's solution `s` remains positive. The fantasy balance maps signed contributions to downward/upward force, **never to the sprite's animated vertical coordinate**.
 
@@ -38,7 +39,9 @@ Matching means identical **algebraic operation**, signed token type, count and g
 2. **Remove signed term(s):** physically remove matching existing objects from each room. Removing `−1` means **subtract `(-1)`**, not subtract `1`. In more advanced chapters, adding the opposite token is an equivalent operation but should remain a distinct recorded physical action.
 3. **Multiply by positive integer `k`:** build `k` complete copies of **each room's entire expression**; never duplicate only one chosen type.
 4. **Divide by positive integer `k`:** after zero-pair normalization, place the *entire* contents of **each room** into `k` baskets that have identical contents **within that room**. Remove `k−1` full baskets from each side, retaining one group in each room. The group's container itself contributes **zero** weight.
-5. **Cancel a zero pair:** `(+x)+(-x)=0` and `(+1)+(-1)=0`. These are **local algebraic simplifications** with no value change, so they may occur in one room without a parallel action. Log them as ordered **visual subevents** attached to the triggering transaction, not new bilateral operation steps.
+5. **Square pure rows:** with x≥0, `n` round x sprites become `n²` square x² sprites, or `n` weights become `n²` weights. This models `(nx)²=n²x²`. Reject mixed expressions such as `x+2`: squaring them would also require cross terms, which the pure-row geometry model does not yet represent.
+6. **Principal square root:** arrange `n²` square x² sprites or `n²` weights into an n×n grid, then keep one side: `n` round x sprites or `n` weights. This assumes x≥0 so `√(x²)=x`. Reject mixed expressions, imperfect-square counts and negative areas.
+7. **Cancel a zero pair:** `(+x)+(-x)=0` and `(+1)+(-1)=0`. These are **local algebraic simplifications** with no value change, so they may occur in one room without a parallel action. Log them as ordered **visual subevents** attached to the triggering transaction, not new bilateral operation steps.
 
 ### Whole-item chapter restrictions
 - A divide by `k` move is permitted only if **each room** can form `k` identical groups from **whole** sprites, whole weights and whole balloons, after permitted zero-pair normalization. Operationally, the canonical variable coefficient and constant coefficient of each room must both be divisible by `k`. The animation must be able to realise that partition with real visible tokens.
@@ -103,5 +106,12 @@ Rejections:
 ## Future mathematical chapters
 - **Fractions:** split containers and fractional tokens, with explicit semantics and correct symbolic fractions.
 - **Multiple variables:** separate creature family with actual constraints / linked balances; a single equation in two unknowns is generally insufficient.
-- **Square sprites:** `x²` requires a distinct quadratic model and meaningful operations (such as factor/area structures); it is *not* solved by pretending square sprites are extra `x` sprites.
+- **Further quadratic operations:** mixed squares such as `(x+a)²` will require explicit rectangular cross-terms. The current square tool correctly rejects mixed rooms rather than falsely squaring each term independently.
 - **Negative solutions of x:** revisit the mass/anti-mass metaphor before allowing `s<0` rather than silently reversing what black and white creatures do.
+
+
+## Implemented square and square-root chapters (6–8)
+
+The default arrangement of every chamber is one floor-aligned row, even when it must be scaled to fit. To square a pure row, the hand animates a matching column and the remaining cells of an n-by-n grid **before** atomically changing the algebra at contact. A round x sprite becomes a distinct square x² sprite. Square-rooting builds the complete area and keeps a single side; square sprites squish back to round sprites. The row returns to the floor after the demonstration. These transformations are visual explanations of an already validated equation operation, never independent math.
+
+Chapter 6 builds `x²=9` from `x=3` as an *area-building goal*; chapter 7 reverses the process; chapter 8 takes `√(4x²)=√36`, giving `2x=6`, then divides by two. Since the course assumes `x≥0`, principal rooting is valid within the stated domain: outside that domain, `x²=9` has both `x=3` and `x=−3` solutions. The game must not imply otherwise. Both Guided Mirror and Your Turn remain two-sided transactions. Add, remove, multiply and divide preserve distinct x and x² token types without conflating their coefficients.
