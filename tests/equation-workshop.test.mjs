@@ -30,7 +30,7 @@ test("safe creation of arbitrary valid equations, both orientations, both-sided 
 test("each generated equation has a physically legal route to one isolated sprite",()=>{
   for(const text of [
     ...WORKSHOP_EXAMPLES,"6x=42","25x=25","x+47=48",
-    "15x + 5 = 5x + 45","30x + 10 = 20x + 40",
+    "12x + 5 = 2x + 45","15x + 5 = 5x + 35",
     "48 = 3x + 12","2x+4=3x+1"
   ]){
     const {level}=accepted(text);
