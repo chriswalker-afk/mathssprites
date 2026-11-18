@@ -139,3 +139,17 @@ New whole-room operations:
 The engine's posX2 token is a new quadratic area term. New unit and Chrome tests cover physical floor geometry, matching row/column/fill order, literal counts, negative/mixed-case refusal, principal roots, manual matching, Undo, replay and phone layouts.
 
 **Accessibility:** reduced-motion users still receive equivalent static area arrangements while the engine operations and written equations remain available. The original Motion control is unchanged.
+
+
+## Failed experiments become visible and reversible (PR10)
+
+Instead of rejecting an inadvisable move immediately, the game now teaches through a **temporary failed physical experiment** without changing its algebraic truth.
+
+- **Fractional division:** the hand attempts to share a row into baskets. When this requires fractional creatures or weights, the little objects are shown sliced (for example, 3 sprites into two groups of 1 + 1/2). Fractions are *visual teaching previews only*; the whole-object engine rejects them.
+- **Overflow:** an add or duplication which would exceed the 48-object cap visibly spills bouncing sprites or tumbling weights beyond the chamber. The exact attempted count and the capacity are given.
+- **Missing or unsuitable pieces:** the hand shows a ghost object, or explains why a mixed room cannot form a square, rather than displaying incorrect algebra.
+- **Order:** hand attempts the action; the learner watches the problem; a short pause; the hand explains the problem and explicitly says it will undo the change; a reversal animates; the previous whole-object rooms are restored. The attempt never enters Undo or comic history.
+- **Your Turn:** after the first-side provisional move, students may change the operation, object or count before clicking the second room. If the different move has an unequal algebraic effect, the scale tips dramatically, a speech bubble explains the unequal changes and the hand restores **both** sides. The second change is only a preview. Mathematically equivalent but visually different operations are acknowledged as equivalent; a balanced scale must not falsely tip. The exercise still asks to match actions and resets both provisional attempts.
+- **Reduced motion:** still shows partial-object arrangements, error explanations and reversibility, without gratuitous fast movement.
+
+The pure engine exposes previewRoomAction and structured failure codes (fraction, overflow, missing, unsupported-area, mismatch). The separate attempt-feedback module generates exact fractional basket shares and concise hand dialogue. A temporary DOM stage is cleared after the rollback; no invalid step is committed, solved or written into the notebook. Node and Chrome tests check the calculations, visual states and recovery.

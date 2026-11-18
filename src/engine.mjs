@@ -158,12 +158,14 @@ function transform(source, action) {
   if (action.op === "add") next[action.kind] += action.count;
   if (action.op === "remove") {
     if (next[action.kind] < action.count)
-      return { ok: false, reason: "I can't take away something that isn't in that room." };
+      return { ok: false, code: "missing", kind: action.kind, needed: action.count,
+        available: next[action.kind],
+        reason: "I can't take away something that isn't in that room." };
     next[action.kind] -= action.count;
   }
   if (action.op === "square" || action.op === "sqrt") {
     const area = areaArrangement(next, action.op);
-    if (!area) return { ok: false, reason: action.op === "square"
+    if (!area) return { ok: false, code: "unsupported-area", reason: action.op === "square"
       ? "First make one row of only round sprites or only weights. Squaring (x + 2) also needs 4x, so mixed rooms cannot use this tool."
       : "The principal square root needs one perfect-square group (square sprites or weights), with no mixed terms." };
     if (area.kind !== "zero") {
@@ -183,27 +185,42 @@ function transform(source, action) {
     const normalized = normalize(next);
     const compact = normalized.after;
     priorCancellations = normalized.cancellations;
-    if (TOKEN_KINDS.some(kind => compact[kind] % action.factor !== 0)) {
-      return { ok: false, reason: "That would leave part of a sprite or weight. I'm saving fractions for another experiment." };
+    const splitKind = TOKEN_KINDS.find(kind => compact[kind] % action.factor !== 0);
+    if (splitKind) {
+      const splitCount = compact[splitKind];
+      return { ok: false, code: "fraction", kind: splitKind, count: splitCount,
+        factor: action.factor, whole: Math.floor(splitCount / action.factor),
+        remainder: splitCount % action.factor,
+        reason: "That would leave part of a sprite or weight. I'm saving fractions for another experiment." };
     }
     TOKEN_KINDS.forEach(kind => { next[kind] = compact[kind] / action.factor; });
   }
   const reduced = normalize(next);
   if (countTokens(reduced.after) > 48)
-    return { ok: false, reason: "There would be too many things in the rooms. Let's try a smaller change." };
+    return { ok: false, code: "overflow", total: countTokens(reduced.after),
+      capacity: 48, excess: countTokens(reduced.after) - 48,
+      kind: action.kind || TOKEN_KINDS.find(kind => reduced.after[kind] >= 3) || "posOne",
+      reason: "There would be too many things in the rooms. Let's try a smaller change." };
   return { ok: true, after: reduced.after, cancellations: {
     sprites: priorCancellations.sprites + reduced.cancellations.sprites,
     constants: priorCancellations.constants + reduced.cancellations.constants
   } };
+}
+/** Preview exactly one room. This never commits a step or changes the opposite
+ * chamber. Used for teaching failed attempts and mismatched manual moves. */
+export function previewRoomAction(source, action) {
+  const error = check(action);
+  if (error) return { ok: false, code: "invalid", reason: error };
+  return transform(source, action);
 }
 export function prepare(state, action) {
   if (state.pending) return { ok: false, reason: "Finish the matching move, or undo the first one." };
   const error = check(action);
   if (error) return { ok: false, reason: error };
   const left = transform(state.left, action);
-  if (!left.ok) return left;
+  if (!left.ok) return { ...left, side: "left" };
   const right = transform(state.right, action);
-  if (!right.ok) return right;
+  if (!right.ok) return { ...right, side: "right" };
   return { ok: true, pair: { left, right } };
 }
 function commit(state, action, pair, mode) {
@@ -221,25 +238,37 @@ function commit(state, action, pair, mode) {
 export function perform(state, action, mode = "auto", side) {
   if (state.pending) {
     if (side !== (state.pending.first === "left" ? "right" : "left"))
-      return { ok: false, reason: "Now make the matching move in the other room." };
+      return { ok: false, code: "wrong-side", reason: "Now make the matching move in the other room." };
     const expected = state.pending.action;
     if (!action || action.op !== expected.op ||
         ((expected.op === "add" || expected.op === "remove") &&
          (action.kind !== expected.kind || action.count !== expected.count)) ||
         ((expected.op === "divide" || expected.op === "multiply") &&
          action.factor !== expected.factor))
-      return { ok: false, reason: "The other room needs the same action, kind and amount." };
+      return { ok: false, code: "mismatch", reason: "The other room needs the same action, kind and amount." };
+    const second = state.pending.pair[side];
+    if (!second.ok) return { ...second, side };
     return { ok: true, committed: true,
       state: commit(state, state.pending.action, state.pending.pair, "manual") };
   }
-  const prepared = prepare(state, action);
-  if (!prepared.ok) return prepared;
   if (mode === "manual") {
     if (side !== "left" && side !== "right")
       return { ok: false, reason: "Choose the room to act in first." };
+    const opposite = side === "left" ? "right" : "left";
+    // In Your Turn the first hand visit need only be possible in the chosen
+    // room. Students can try a different second action and learn why it
+    // unbalances the scale. An invalid matching second action is still
+    // rejected and visually undone; no unilateral step can be committed.
+    const first = previewRoomAction(state[side], action);
+    if (!first.ok) return { ...first, side };
+    const second = previewRoomAction(state[opposite], action);
+    const pair = side === "left" ? {left:first,right:second} :
+      {left:second,right:first};
     return { ok: true, committed: false,
-      state: { ...state, pending: { first: side, action: { ...action }, pair: prepared.pair } } };
+      state: { ...state, pending: { first:side, action:{...action}, pair } } };
   }
+  const prepared = prepare(state, action);
+  if (!prepared.ok) return prepared;
   return { ok: true, committed: true, state: commit(state, action, prepared.pair, "auto") };
 }
 export function undo(state) {

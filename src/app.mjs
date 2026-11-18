@@ -1,12 +1,13 @@
 import {
   LEVELS, TOKEN_KINDS, initialState, visibleRooms, evaluate,
-  perform, undo, isSolved, equation, operationDescription, algebraOperation, areaArrangement
+  perform, previewRoomAction, undo, isSolved, equation, operationDescription, algebraOperation, areaArrangement
 } from "./engine.mjs";
 import { buildWritingTimeline, symbolsOf } from "./replay-timeline.mjs";
 import { handMotionPlan } from "./hand-timeline.mjs";
 import { spriteMotionProfile, spriteMotionStyle } from "./sprite-motion.mjs";
 import { pickSpriteHandReaction, dodgeOffsetPx } from "./sprite-reactions.mjs";
 import { floorScaleToFit, previewCells, areaMathLabel } from "./area-layout.mjs";
+import { fractionDisplay, itemWord, attemptMessage, mismatchedMoveMessage } from "./attempt-feedback.mjs";
 
 const $ = id => document.getElementById(id);
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
@@ -39,6 +40,7 @@ let state = initialState(LEVELS[0]);
 let busy = false;
 let override = null;
 let groups = { left: 0, right: 0 };
+let failureTilt = 0; // transient presentation only; no effect on the math engine
 // Start with the creatures moving, regardless of the device motion preference.
 // The explicit in-game Motion toggle can still reduce animations, and that
 // choice persists on subsequent visits. Do not overwrite a saved choice.
@@ -156,8 +158,16 @@ function setSpeech(message, ms = 4000) {
   clearTimeout(speechTimer);
   const box = $("speech");
   box.hidden = false;
+  box.classList.remove("trial-speech");
   box.textContent = "“" + message + "”";
   speechTimer = setTimeout(() => { box.hidden = true; }, ms);
+}
+function showTrialSpeech(message, ms) {
+  setSpeech(message, ms);
+  $("speech").classList.add("trial-speech");
+  // Manual action buttons can scroll the page low enough to clip a bubble at
+  // the top of the laboratory. Bring the scene back into view for the lesson.
+  $("scene").scrollIntoView({block:"center", behavior:"auto"});
 }
 function notify(message) {
   $("feedback").textContent = message;
@@ -180,7 +190,7 @@ function render() {
     (i === levelIndex ? " current" : "") + '" title="' + item.title + '"></span>').join("");
 
   const balance = currentDifference(shown);
-  const degrees = balance === 0 ? 0 : (balance < 0 ? 3.5 : -3.5);
+  const degrees = failureTilt || (balance === 0 ? 0 : (balance < 0 ? 3.5 : -3.5));
   $("rooms-row").style.transform = "rotate(" + degrees + "deg)";
   $("scale-beam").style.transform = "rotate(" + degrees + "deg)";
   $("dial-needle").style.transform = "translateX(-50%) rotate(" + (degrees * -7) + "deg)";
@@ -191,12 +201,12 @@ function render() {
   $("balance-caption").classList.toggle("unbalanced", balance !== 0);
   for (const button of document.querySelectorAll("[data-operation]")) {
     button.classList.toggle("selected", button.dataset.operation === operation);
-    button.disabled = busy || awaiting || isSolved(state);
+    button.disabled = busy || isSolved(state);
     button.setAttribute("aria-pressed", String(button.dataset.operation === operation));
   }
   for (const button of document.querySelectorAll("[data-kind]")) {
     button.classList.toggle("selected", button.dataset.kind === kind);
-    button.disabled = busy || awaiting || isSolved(state);
+    button.disabled = busy || isSolved(state);
     button.setAttribute("aria-pressed", String(button.dataset.kind === kind));
   }
   const grouped = operation === "divide" || operation === "multiply";
@@ -205,8 +215,8 @@ function render() {
   $("amount-control").hidden = geometric;
   $("amount-label").textContent = grouped ? "3 · How many groups?" : "3 · How many?";
   $("amount-value").textContent = grouped ? factor : amount;
-  $("amount-down").disabled = busy || awaiting || isSolved(state) || (grouped ? factor <= 2 : amount <= 1);
-  $("amount-up").disabled = busy || awaiting || isSolved(state) || (grouped ? factor >= 5 : amount >= 12);
+  $("amount-down").disabled = busy || isSolved(state) || (grouped ? factor <= 2 : amount <= 1);
+  $("amount-up").disabled = busy || isSolved(state) || (grouped ? factor >= 5 : amount >= 12);
   $("mode-select").value = mode;
   $("mode-select").disabled = busy || awaiting;
   $("level-select").value = String(levelIndex);
@@ -220,14 +230,22 @@ function render() {
   $("do-both").disabled = busy || awaiting || isSolved(state);
   $("manual-explanation").hidden = mode !== "manual";
   $("manual-explanation").textContent = awaiting
-    ? "The first room has changed. Select the other room to finish the same action."
-    : "Select a room above. Then repeat the same move in the other room.";
+    ? "The first room has changed. You can choose a different tool or amount for the other room — if it changes the balance, the hand will show why and undo the experiment."
+    : "Choose a room, then make an equivalent move in the other room. You can also experiment with a different move and see what happens.";
   for (const side of ["left", "right"]) {
     const button = $(side + "-action");
     button.hidden = mode !== "manual";
     button.disabled = busy || isSolved(state) || (awaiting && state.pending.first === side);
+    const selected = currentAction();
+    const expected = awaiting ? state.pending.action : null;
+    const same = awaiting && selected.op === expected.op &&
+      ((selected.op === "add" || selected.op === "remove")
+        ? selected.kind === expected.kind && selected.count === expected.count
+        : (selected.op === "multiply" || selected.op === "divide")
+          ? selected.factor === expected.factor : true);
     button.textContent = awaiting
-      ? (state.pending.first === side ? "First move made" : "Match the move here")
+      ? (state.pending.first === side ? "First move made" :
+        same ? "Match the move here" : "Try different move here")
       : "Use hand here";
     $(side + "-chamber").classList.toggle("needs-match", awaiting && state.pending.first !== side);
     $(side + "-chamber").classList.toggle("already-moved", awaiting && state.pending.first === side);
@@ -277,13 +295,15 @@ function roomOperationText(action, side) {
       return area?.symbolic
         ? "The hand builds a matching column in the " + roomName +
           " room, fills the area and presses round sprites into square ones!"
-        : "The hand matches the " + area.side + "-weight row with a column and fills a " +
+        : !area ? "I can't form that square from this room's objects."
+          : "The hand matches the " + area.side + "-weight row with a column and fills a " +
           area.side + " × " + area.side + " square of weights in the " + roomName + " room!";
     }
     return area?.symbolic
       ? "The hand keeps one side of the square in the " + roomName +
         " room and squishes square sprites back into round ones!"
-      : "The hand makes a " + area.side + " × " + area.side + " square from " + area.cells +
+      : !area ? "This room will not form a complete square — I need to see why."
+        : "The hand makes a " + area.side + " × " + area.side + " square from " + area.cells +
         " weights, then keeps one side (" + area.side + " weights) in the " + roomName + " room!";
   }
   if (action.op === "divide") return "The hand sorts the " + roomName + " room into " + action.factor + " equal baskets...";
@@ -487,6 +507,160 @@ async function handAct(side, action, applyAtContact) {
   // The client must never treat an aborted first-room animation as solved.
   if (!applied) throw new Error("The hand did not complete its contact move.");
 }
+// A failed attempt is allowed to become a dramatic *visual experiment*, but
+// never a transaction. Only valid, matching moves can enter state.history.
+function failureStage(side, issue, action) {
+  const stage = $(side + "-attempt-stage");
+  const chamber = $(side + "-chamber");
+  stage.dataset.issue = issue.code || "invalid";
+  let html = "";
+  if (issue.code === "fraction") {
+    const parts = fractionDisplay(issue);
+    const visibleWhole = Math.min(parts.whole, 3);
+    const wholeKind = parts.kind === "posOne" || parts.kind === "negOne" ?
+      "weight-chip" : parts.kind === "posX2" ? "square-chip" : "";
+    const chip = '<span class="whole-chip ' + wholeKind + '"></span>';
+    const fractionKind = parts.kind === "posOne" ? "weight-part" :
+      parts.kind === "posX2" ? "square-part" :
+      parts.kind === "negOne" ? "balloon-part" : "";
+    const baskets = parts.parts.map(i => '<div class="attempt-basket" data-basket="' + i + '">' +
+      '<span class="basket-label">BASKET ' + (i + 1) + '</span>' +
+      '<span class="whole-chips">' + chip.repeat(visibleWhole) +
+      (parts.whole > 3 ? '<small>+' + (parts.whole - 3) + '</small>' : "") + '</span>' +
+      '<span class="slice-object ' + fractionKind + '" style="--slice-percent:' + parts.portion + '%">' +
+      '<span class="slice-ghost"></span><span class="slice-actual"></span><span class="slice-cut"></span></span>' +
+      '<span class="slice-fraction">' + (parts.whole ? parts.whole + ' + ' : "") +
+      parts.numerator + '/' + parts.denominator + '</span></div>').join("");
+    html = '<div class="attempt-caption">' + issue.count + ' ' +
+      itemWord(issue.kind,issue.count) + ' in ' + parts.baskets +
+      ' baskets — some would be cut into pieces!</div>' +
+      '<div class="attempt-baskets">' + baskets + '</div>' +
+      '<span class="attempt-hint">Those are fractional pieces, not whole objects.</span>';
+  } else if (issue.code === "overflow") {
+    const type = issue.kind === "posX" || issue.kind === "negX" ? "sprite-spill" :
+      issue.kind === "posX2" ? "square-spill sprite-spill" :
+      issue.kind === "negOne" ? "balloon-spill" : "weight-spill";
+    const props = Array.from({length:12}, (_,i) =>
+      '<span class="overflow-piece ' + type +
+      '" style="--start-x:' + (12 + i * 6) +
+      '%;--spill-x:' + (i%2 ? 110 + i * 10 : -95 - i*10) +
+      'px;--spill-delay:' + (i * 66) + 'ms"></span>').join("");
+    html = '<div class="attempt-caption">' + issue.total + ' objects — only ' +
+      issue.capacity + ' fit!</div><div class="overflow-trail">' + props +
+      '</div><span class="attempt-hint">They are bouncing and tumbling out!</span>';
+  } else {
+    const klass = issue.kind === "posOne" ? "weight-ghost" : "";
+    html = '<div class="attempt-caption">The hand tries, but the pieces do not fit...</div>' +
+      '<div class="ghost-object ' + klass + '"></div>' +
+      '<span class="attempt-hint">' + (issue.code === "missing" ?
+        "There aren't enough objects to pick up." :
+        "That shape cannot be made from these whole objects.") + '</span>';
+  }
+  stage.innerHTML = html;
+  stage.setAttribute("aria-label", issue.reason || "An impossible arrangement of objects");
+  stage.hidden = false;
+  stage.classList.remove("rewinding");
+  chamber.classList.add("attempt-" + (issue.code || "invalid"));
+}
+function clearFailureStage(side) {
+  const stage = $(side + "-attempt-stage");
+  stage.hidden = true;
+  stage.innerHTML = "";
+  stage.classList.remove("rewinding");
+  delete stage.dataset.issue;
+  $(side + "-chamber").classList.remove("attempt-fraction", "attempt-overflow",
+    "attempt-missing", "attempt-unsupported-area", "attempt-invalid");
+}
+function restoreExperiment({rollbackPending = false} = {}) {
+  // Clear *every* temporary representation before returning to the last
+  // committed state. No failed step ever changes the mathematical history.
+  if (rollbackPending && state.pending) state = undo(state);
+  override = null;
+  groups = {left:0,right:0};
+  failureTilt = 0;
+  for (const side of ["left","right"]) clearFailureStage(side);
+  $("scene").classList.remove("scene-failed-balance");
+  render();
+}
+async function animateRejectedAction(action, failure, preferredSide, rollbackPending = false) {
+  if (busy) return;
+  const current = preferredSide || failure.side || "left";
+  const preview = previewRoomAction(state[current], action);
+  const side = preview.ok ? (failure.side || current) : current;
+  const issue = preview.ok ? failure : preview;
+  busy = true;
+  clearSpeech();
+  $("feedback").textContent = "The hand is trying that experiment...";
+  render();
+  try {
+    await handAct(side, action, () => failureStage(side, issue, action));
+    // A visual pause comes BEFORE the speech bubble; learners can notice the
+    // cut pieces or spilling tokens for themselves.
+    await sleep(reducedMotion ? 220 : 850);
+    const message = attemptMessage(issue, action, side);
+    $("feedback").textContent = message;
+    showTrialSpeech(message, reducedMotion ? 4500 : 7600);
+    await sleep(reducedMotion ? 650 : 2450);
+    $(side + "-attempt-stage").classList.add("rewinding");
+    $("scene").classList.add("scene-rewinding");
+    await sleep(reducedMotion ? 120 : 750);
+  } finally {
+    restoreExperiment({rollbackPending});
+    busy = false;
+    render();
+    await sleep(reducedMotion ? 1 : 180);
+    $("scene").classList.remove("scene-rewinding");
+  }
+}
+async function animateMismatchedManualAction(side, firstAction, action) {
+  if (busy || !state.pending) return;
+  const attempted = previewRoomAction(state[side], action);
+  if (!attempted.ok) {
+    // A second move that cannot physically happen still gets a demonstration,
+    // and BOTH provisional sides return to the last committed equation.
+    return animateRejectedAction(action, attempted, side, true);
+  }
+  const firstSide = state.pending.first;
+  busy = true;
+  clearSpeech();
+  $("feedback").textContent = "Let's see what happens when the rooms receive different moves...";
+  render();
+  try {
+    if (action.op === "divide") {
+      groups[side] = action.factor;
+      render();
+      await sleep(reducedMotion ? 80 : 860);
+    }
+    await handAct(side, action, () => {
+      const before = visibleRooms(state);
+      override = {left:before.left,right:before.right,[side]:attempted.after};
+      groups[side] = 0;
+      const difference = currentDifference(override);
+      // Equally valued but differently described operations do not magically
+      // unbalance a scale. Do not teach a false physical consequence.
+      failureTilt = difference === 0 ? 0 : difference > 0 ? -13 : 13;
+      $("scene").classList.add("scene-failed-balance");
+      $("scene").dataset.balanceOutcome = difference === 0 ? "equivalent" : "tipped";
+      render();
+    });
+    await sleep(reducedMotion ? 200 : 1100); // Observe the new balance pose.
+    const difference = currentDifference(override);
+    const message = mismatchedMoveMessage(firstAction, action, firstSide, difference);
+    $("feedback").textContent = message;
+    showTrialSpeech(message, reducedMotion ? 5000 : 8000);
+    await sleep(reducedMotion ? 750 : 2300); // Explain before restoring.
+    $("scene").classList.add("scene-rewinding");
+    await sleep(reducedMotion ? 100 : 500);
+  } finally {
+    restoreExperiment({rollbackPending:true});
+    delete $("scene").dataset.balanceOutcome;
+    busy = false;
+    render();
+    await sleep(reducedMotion ? 1 : 370);
+    $("scene").classList.remove("scene-rewinding");
+  }
+}
+
 async function finishTurn() {
   if (isSolved(state)) {
     // The student must be able to SEE the final physical balance before
@@ -506,7 +680,7 @@ async function guidedMove() {
   if (busy || isSolved(state)) return;
   const action = currentAction();
   const outcome = perform(state, action, "auto");
-  if (!outcome.ok) return notify(outcome.reason);
+  if (!outcome.ok) return animateRejectedAction(action, outcome);
   const previous = state;
   const next = outcome.state;
   busy = true;
@@ -537,9 +711,13 @@ async function guidedMove() {
 async function manualMove(side) {
   if (busy || isSolved(state)) return;
   const wasPending = !!state.pending;
-  const action = wasPending ? state.pending.action : currentAction();
+  const action = currentAction();
   const outcome = perform(state, action, "manual", side);
-  if (!outcome.ok) return notify(outcome.reason);
+  if (!outcome.ok) {
+    if (wasPending && outcome.code === "mismatch")
+      return animateMismatchedManualAction(side, state.pending.action, action);
+    return animateRejectedAction(action, outcome, side, wasPending);
+  }
   busy = true;
   clearSpeech();
   if (action.op === "divide") {
@@ -571,6 +749,9 @@ function startLevel(index) {
   amount = levelIndex === 0 ? 2 : levelIndex === 2 ? 4 : levelIndex === 4 ? 2 : 1;
   factor = levelIndex === 1 ? 3 : levelIndex === 4 ? 5 : 2;
   override = null; groups = { left: 0, right: 0 };
+  failureTilt = 0;
+  $("scene").classList.remove("scene-failed-balance", "scene-rewinding");
+  delete $("scene").dataset.balanceOutcome;
   busy = false;
   // Clear any half-finished visual state when changing levels.
   $("hand").classList.remove("approaching", "reaching", "grasping", "lifting", "acting", "tracking-sprite", "arranging");
@@ -580,6 +761,7 @@ function startLevel(index) {
   for (const side of ["left", "right"]) {
     $(side + "-chamber").classList.remove("hand-target", "hand-contact");
     clearAreaPreview(side);
+    clearFailureStage(side);
   }
   $("hand-cargo").hidden = true;
   $("action-caption").hidden = true;
@@ -848,7 +1030,7 @@ $("level-select").innerHTML = LEVELS.map((lvl, i) =>
   '<option value="' + i + '">' + (i + 1) + " · " + lvl.title + "</option>").join("");
 for (const button of document.querySelectorAll("[data-operation]")) {
   button.addEventListener("click", () => {
-    if (state.pending || busy) return;
+    if (busy) return;
     operation = button.dataset.operation;
     if (operation === "divide" && levelIndex === 1) factor = 3;
     if (operation === "divide" && levelIndex === 4) factor = 5;
@@ -856,16 +1038,16 @@ for (const button of document.querySelectorAll("[data-operation]")) {
   });
 }
 for (const button of document.querySelectorAll("[data-kind]")) {
-  button.addEventListener("click", () => { if (!state.pending && !busy) { kind = button.dataset.kind; render(); } });
+  button.addEventListener("click", () => { if (!busy) { kind = button.dataset.kind; render(); } });
 }
 $("amount-down").addEventListener("click", () => {
-  if (state.pending || busy) return;
+  if (busy) return;
   if (operation === "multiply" || operation === "divide") factor = Math.max(2, factor - 1);
   else amount = Math.max(1, amount - 1);
   render();
 });
 $("amount-up").addEventListener("click", () => {
-  if (state.pending || busy) return;
+  if (busy) return;
   if (operation === "multiply" || operation === "divide") factor = Math.min(5, factor + 1);
   else amount = Math.min(12, amount + 1);
   render();
