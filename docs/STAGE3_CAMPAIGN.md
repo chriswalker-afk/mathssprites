@@ -40,10 +40,10 @@ These are verified by `tests/apprentice-campaign.test.mjs` against `startNoteboo
 - **View my notebook**, **Replay my steps**, Undo, Reset and optional hints remain usable. Failed animation restores the paper workspace without incorrectly awarding credit.
 - New storage key `mathssprites.apprentice-progress.v1`: same resilient `{completed,lastPlayed}` shape, tolerant of blocked storage. No change to `mathssprites.progress.v1` or `mathssprites.independent-progress.v1`.
 - **Teacher sandbox remains separate**, in Settings or `?notebook=two-step-09`: it earns no campaign credit even if a teacher uses it after Stage 3 unlocks.
-- The *separate* Equation Workshop for entering arbitrary equations is still planned for PR22, and negative-number, fraction and square/root worlds remain unimplemented.
+- The *separate* Equation Workshop for entering physically supported positive whole-number equations is playable in PR22; negative-number, fraction and square/root worlds remain unimplemented.
 
 ## Verification
 
 Tests cover 12 nontrivial initially balanced and valid whole-number linear puzzles, every exact route, two alternate valid strategies on Level 5, strict one-operation-per-line checks, fractional and negative rejections, backwards fading, 12 sequential gates, teacher access, saved-progress isolation, paper hidden/visible ordering, no early completion, actual hand movements, mobile controls and final mastery.
 
-**Next: PR22 — Equation Workshop.** Add a free-play equation entry/parsing/scene-generation tool with full positive whole-number representability checks; decide how to present unsolvable, negative/fractional, excessively large and ambiguous inputs. Keep it separate from campaign progress and retain the same physical-operation validator so a generated scene cannot teach inaccurate transformations.
+**PR22 delivered — Equation Workshop.** Free-play equation entry, physical scene generation and strict mathematical checks are described in [EQUATION_WORKSHOP.md](EQUATION_WORKSHOP.md). It remains separate from campaign progress. Next: World 2 · Opposite Chambers.
