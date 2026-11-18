@@ -11,7 +11,7 @@ export const HAND_BEATS = Object.freeze({
   contact: 450,
   lift: 430,
   withdraw: 680,
-  arrange: 1160
+  arrange: 1600
 });
 export const HAND_BEATS_REDUCED = Object.freeze({
   hover: 90,
