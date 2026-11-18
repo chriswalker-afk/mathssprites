@@ -11,9 +11,11 @@ import { itemWord, attemptMessage, mismatchedMoveMessage } from "./attempt-feedb
 import { fractionCutPlan } from "./fraction-theatre.mjs";
 import {neutralPairSequence, neutralPairSummary} from "./neutral-pairs.mjs";
 import { WORLD1_LEVELS } from "./worlds.mjs";
+import {INDEPENDENT_LEVELS} from "./independent-levels.mjs";
 import {
-  CHAPTER_BRIEFINGS, introductionCue, readGuideEnabled, readGuideSeen,
-  writeGuideEnabled, writeGuideSeen
+  CHAPTER_BRIEFINGS, INDEPENDENT_BRIEFINGS,
+  introductionCue,independentIntroductionCue,readGuideEnabled,readGuideSeen,
+  writeGuideEnabled,writeGuideSeen,readIndependentGuideSeen,writeIndependentGuideSeen
 } from "./onboarding.mjs";
 
 const $ = id => document.getElementById(id);
@@ -46,8 +48,10 @@ let factor = 3;
 let state = initialState(LEVELS[0]);
 let activeLevel = LEVELS[0];
 let campaignLevelNumber = null;
+let campaignStage = null; // null = separate advanced prototype preview
 let guideEnabled = readGuideEnabled();
 let guideSeen = readGuideSeen();
+let independentGuideSeen=readIndependentGuideSeen();
 let guideStep = 0;
 let guideDismissed = false;
 let guideWasActive = false;
@@ -193,7 +197,20 @@ function clearSpeech() {
   $("speech").hidden = true;
 }
 function activeFirstGuide() {
-  return campaignLevelNumber === 1 && guideEnabled && !guideSeen && !guideDismissed;
+  return campaignStage==="guided" && campaignLevelNumber===1 &&
+    guideEnabled && !guideSeen && !guideDismissed;
+}
+function activeIndependentGuide() {
+  return campaignStage==="independent" && campaignLevelNumber===1 &&
+    guideEnabled && !independentGuideSeen && !guideDismissed;
+}
+function activeCampaignGuide() {
+  return activeFirstGuide() || activeIndependentGuide();
+}
+function currentGuideCue() {
+  return activeIndependentGuide()
+    ? independentIntroductionCue(guideStep,{pending:state.pending?.first||null,busy})
+    : introductionCue(guideStep,{mode,pending:state.pending?.first||null,busy});
 }
 function guideTarget(name) {
   if (name === "scene") return $("scene");
@@ -207,12 +224,18 @@ function guideTarget(name) {
 function renderFirstGuide() {
   for (const item of document.querySelectorAll(".coach-focus"))
     item.classList.remove("coach-focus");
-  $("game-guide-restart").hidden = campaignLevelNumber !== 1;
+  $("game-guide-restart").hidden = campaignLevelNumber !== 1 || campaignStage===null;
   $("game-guide-restart").disabled = busy;
-  const visible = activeFirstGuide() && !isSolved(state);
+  $("game-guide-restart").setAttribute("aria-label",
+    campaignStage==="independent"?"Replay Independent Balance introduction":
+    "Replay Guided Balance introduction");
+  const visible = activeCampaignGuide() && !isSolved(state);
   $("apprentice-guide").hidden = !visible;
   if (!visible) return;
-  const cue = introductionCue(guideStep, { mode, pending:state.pending?.first || null, busy });
+  $("apprentice-guide").setAttribute("aria-label",
+    campaignStage==="independent"?"Independent hand-control introduction":
+    "Guided Mirror introduction");
+  const cue = currentGuideCue();
   $("guide-progress").textContent = cue.progress;
   $("guide-title").textContent = cue.title;
   $("guide-message").textContent = cue.text;
@@ -226,6 +249,8 @@ function render() {
   if (campaignLevelNumber !== null)
     document.body.dataset.workshopChapter = String(Math.ceil(campaignLevelNumber / 4));
   else delete document.body.dataset.workshopChapter;
+  if(campaignStage)document.body.dataset.workshopStage=campaignStage;
+  else delete document.body.dataset.workshopStage;
   const shown = visible();
   renderRoom("left", shown.left, groups.left);
   renderRoom("right", shown.right, groups.right);
@@ -233,16 +258,20 @@ function render() {
   $("level-title").textContent = lvl.title;
   $("level-prompt").textContent = lvl.prompt;
   $("chapter-status").hidden = campaignLevelNumber === null;
+  const briefings=campaignStage==="independent"?INDEPENDENT_BRIEFINGS:CHAPTER_BRIEFINGS;
   $("chapter-briefing").hidden =
-    campaignLevelNumber === null || !CHAPTER_BRIEFINGS[campaignLevelNumber];
+    campaignLevelNumber===null || !briefings[campaignLevelNumber];
   if (campaignLevelNumber !== null) {
-    $("chapter-status").textContent = "WORLD 1 · STAGE 1 · LEVEL " +
-      String(campaignLevelNumber).padStart(2,"0") + " / 20";
-    if (CHAPTER_BRIEFINGS[campaignLevelNumber])
-      $("chapter-briefing").textContent = CHAPTER_BRIEFINGS[campaignLevelNumber];
+    const stageNumber=campaignStage==="independent"?2:1;
+    $("chapter-status").textContent = "WORLD 1 · STAGE " + stageNumber +
+      " · LEVEL " + String(campaignLevelNumber).padStart(2,"0") +
+      " / " + (stageNumber===2?16:20);
+    if(briefings[campaignLevelNumber])
+      $("chapter-briefing").textContent=briefings[campaignLevelNumber];
   }
-  const chapterStart = campaignLevelNumber === null ? 0 : Math.floor((campaignLevelNumber - 1) / 4) * 4;
-  const dotLevels = campaignLevelNumber === null ? LEVELS : WORLD1_LEVELS.slice(chapterStart, chapterStart + 4);
+  const chapterStart = campaignLevelNumber===null?0:Math.floor((campaignLevelNumber-1)/4)*4;
+  const dotLevels = campaignLevelNumber===null?LEVELS:
+    (campaignStage==="independent"?INDEPENDENT_LEVELS:WORLD1_LEVELS).slice(chapterStart,chapterStart+4);
   const dotIndex = campaignLevelNumber === null ? levelIndex : campaignLevelNumber - 1 - chapterStart;
   $("step-dots").innerHTML = dotLevels.map((item, i) =>
     '<span class="progress-dot ' + (i <= dotIndex ? "lit" : "") +
@@ -282,11 +311,18 @@ function render() {
   $("amount-value").textContent = grouped ? factor : amount;
   $("amount-down").disabled = busy || isSolved(state) || (grouped ? factor <= 2 : amount <= 1);
   $("amount-up").disabled = busy || isSolved(state) || (grouped ? factor >= 5 : amount >= 12);
-  const stageOne = campaignLevelNumber !== null;
-  $("mode-wrapper").hidden = stageOne;
-  $("campaign-hand-mode").hidden = !stageOne;
-  $("mode-select").value = stageOne ? "auto" : mode;
-  $("mode-select").disabled = stageOne || busy || awaiting;
+  const inCampaign=campaignLevelNumber!==null;
+  $("mode-wrapper").hidden=inCampaign;
+  $("campaign-hand-mode").hidden=!inCampaign;
+  $("campaign-hand-label").textContent=campaignStage==="independent"
+    ?"STAGE 2 · HAND CONTROL":"STAGE 1 · HAND CONTROL";
+  $("campaign-hand-title").textContent=campaignStage==="independent"
+    ?"Your Turn":"Guided Mirror";
+  $("campaign-hand-help").textContent=campaignStage==="independent"
+    ?"You make both hand visits.":"The hand acts on both rooms.";
+  $("mode-select").value=inCampaign
+    ? (campaignStage==="independent"?"manual":"auto") : mode;
+  $("mode-select").disabled=inCampaign||busy||awaiting;
   $("quantity-mode").value=state.quantityMode;
   $("quantity-mode").disabled=busy||awaiting||!!lvl.lockPositive;
   $("quantity-mode").querySelector('option[value="positive"]').disabled=
@@ -307,9 +343,13 @@ function render() {
   $("do-both").hidden = mode !== "auto";
   $("do-both").disabled = busy || awaiting || isSolved(state);
   $("manual-explanation").hidden = mode !== "manual";
-  $("manual-explanation").textContent = awaiting
-    ? "The first room has changed. You can choose a different tool or amount for the other room — if it changes the balance, the hand will show why and undo the experiment."
-    : "Choose a room, then make an equivalent move in the other room. You can also experiment with a different move and see what happens.";
+  $("manual-explanation").textContent=campaignStage==="independent"
+    ? (awaiting
+      ? "The scale is tilted. Finish the matching move in the other chamber to restore the balance; different moves will be shown and undone."
+      : "Choose an action, visit ONE room, then repeat the same action in the OTHER room. Watch the scale tip and settle.")
+    : awaiting
+      ? "The first room has changed. You can choose a different tool or amount for the other room — if it changes the balance, the hand will show why and undo the experiment."
+      : "Choose a room, then make an equivalent move in the other room. You can also experiment with a different move and see what happens.";
   for (const side of ["left", "right"]) {
     const button = $(side + "-action");
     button.hidden = mode !== "manual";
