@@ -32,7 +32,7 @@ test("algebra notebook starts hidden and appears only on a solved state", () => 
 });
 test("the room visuals have grouping, hand and responsive style rules", () => {
   for (const selector of [".group-basket", ".basket-row", ".giant-hand", ".mini-stage",
-    ".sprite-black", ".sprite-white", ".balloon", ".paper-line", ".needs-match"])
+    ".sprite", ".sprite-white", ".balloon", ".paper-line", ".needs-match"])
     assert.ok(css.includes(selector), "Missing " + selector);
   assert.match(css, /prefers-reduced-motion:reduce/);
   assert.match(css, /max-width:600px/);
