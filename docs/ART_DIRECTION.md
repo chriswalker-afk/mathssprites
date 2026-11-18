@@ -9,7 +9,7 @@ A two-room balance apparatus built from aged timber, black iron and brushed bras
 - **Black / positive sprite:** original charcoal dust creature; irregular fuzzy perimeter; two off-white eyes; tiny feet and arms; subtle squash on landing. Later revealed as `+x`.
 - **White / negative sprite:** pale fuzzy creature with a distinct silhouette and airy hop style, not just the black sprite recoloured. Later revealed as `−x`.
 - **Black + white together:** briefly notice one another, spring into contact and disappear in a **small, warm-grey puff of smoke**. They represent an exact zero pair.
-- **Square sprite (future):** rounded-square dust silhouette; distinct from round even when monochrome. Explicit `x²` only in replay; requires separate quadratic mechanics.
+- **Square sprite:** a live rounded-square dust creature, visually distinct from round even when monochrome. It fills the variable×variable corner of the physical in-room square; the `x²` label appears only in the retrospective notebook.
 - **Different variable (future):** unmistakable unique silhouette / accessory; colour only supplements distinction, never supplies it alone.
 - Sprite identities stay stable within a level. Create original character designs rather than replicating characters from existing films.
 
@@ -87,3 +87,12 @@ Move beyond a single static silhouette. The browser prototype now contains a lay
 The animation must not become decorative sleight of hand: the room's object counts only change when the hand physically touches the relevant chamber. The held object is visible when picked up or brought into the room. Grouping baskets represent entire room expressions, not individual coefficients.
 
 Visual QA should look for convincing thumb/index opposition, clear held-item silhouettes, overlap with the room instead of the roof, smooth movement on mobile, and a readable pause at the contact beat.
+
+
+### PR11: in-room carpenter's square, not a teaching inset
+
+The large illustrated hand brings a wooden/brass square frame into the existing chamber itself. The current floor objects become its top side; translucent corner guides make the perpendicular matching side. The hand then places real creatures and weights in the four quadrants in the order used in the rough Google Slides teaching sequence: first the square creatures, then both cross regions, and finally the weights. Squaring a sprite includes a visible downward press; square-rooting a square creature includes a pinch/squish back to round.
+
+**Never render duplicate persistent tokens on the edge rulers.** The edges are dimensional ghosts. The 4+6+6+9 interior objects of (2x+3)² are the resulting inventory. Variable-length edges are longer than unit-length edges (same proportional sizing on both axes), while the overall frame is square.
+
+The same room-scale frame is reconstructed in reverse for a principal root: remove weights, then both cross regions, then the square-creature corner, then the duplicate perpendicular edge, leaving only one dimension. Objects return to the original floor row after hand contact. All existing moonlit colours, laboratory brass, sprite eyes/idle movement, accessible reduced motion, and animated hand articulation remain in place.
