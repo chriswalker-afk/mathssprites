@@ -36,7 +36,8 @@ test("the room visuals have grouping, hand and responsive style rules", () => {
     assert.ok(css.includes(selector), "Missing " + selector);
   // The user can explicitly switch Motion back on even if the OS suggests
   // reduced motion; CSS must not permanently suppress that choice.
-  assert.match(app, /prefers-reduced-motion: reduce/);
+  assert.match(app, /let reducedMotion = savedMotionPreference\(\) \?\? false/);
+  assert.doesNotMatch(app, /!!readMedia\(\)/);
   assert.match(css, /\.reduce-motion/);
   assert.doesNotMatch(css, /@media\s*\(prefers-reduced-motion:\s*reduce\)/);
   assert.match(css, /max-width:600px/);
