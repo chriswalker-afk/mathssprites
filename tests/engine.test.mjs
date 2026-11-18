@@ -66,7 +66,9 @@ test("manual mode requires second room and records only one step", () => {
   assert.equal(visibleRooms(first.state).right.posOne, 5);
   const wrong = perform(first.state, act("remove", "posX", 1), "manual", "left");
   assert.equal(wrong.ok, false);
-  const second = perform(first.state, act("remove", "posX", 1), "manual", "right");
+  const wrongKind = perform(first.state, act("remove", "posX", 1), "manual", "right");
+  assert.equal(wrongKind.ok, false);
+  const second = perform(first.state, act("remove", "posOne", 2), "manual", "right");
   assert.equal(second.ok, true);
   assert.equal(second.committed, true);
   assert.equal(second.state.history.length, 1);
@@ -143,4 +145,14 @@ test("a failed second action cannot corrupt committed history", () => {
   assert.equal(bad.ok,false);
   assert.equal(first.state.history.length,0);
   assert.equal(equation(undo(first.state)),equation(start));
+});
+
+test("divide records zero-pair normalisation before making groups", () => {
+  const level = { id:"signed-groups", solution:3,
+    left:{posX:3,negX:1,posOne:4,negOne:2}, right:{posOne:8} };
+  const next = committed(initialState(level),factor("divide",2));
+  assert.equal(equation(next),"x + 1 = 4");
+  assert.equal(next.history[0].cancellations.left.sprites,1);
+  assert.equal(next.history[0].cancellations.left.constants,2);
+  assert.equal(balanceDifference(next),0);
 });
