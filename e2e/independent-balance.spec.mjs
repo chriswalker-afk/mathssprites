@@ -27,7 +27,7 @@ test("Stage 2 is locked before Stage 1 mastery but available after it",async({pa
   await page.getByRole("button",{name:"Explore stages"}).click();
   await expect(page.locator('[data-stage="independent"] button')).toBeVisible();
   await expect(page.locator('[data-stage="notebook"] button')).toHaveCount(0);
-  await expect(page.locator("#world1-workshop button")).toHaveCount(0);
+  await expect(page.locator("#world1-workshop button")).toHaveCount(1);
   await page.getByRole("button",{name:"Choose Stage 2 levels"}).click();
   await expect(page.locator(".chapter-group")).toHaveCount(4);
   await expect(page.locator(".level-tile")).toHaveCount(16);
