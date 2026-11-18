@@ -14,12 +14,17 @@ test("dark sprites are visible and visibly bounce rather than staying still", as
     if (!anim) return null;
     anim.pause();
     const cycle = anim.effect.getComputedTiming().duration;
-    anim.currentTime = 0;
-    const resting = el.getBoundingClientRect().top;
-    anim.currentTime = cycle * .26;
-    const airborne = el.getBoundingClientRect().top;
+    const originalTime = anim.currentTime;
+    const heights = [];
+    // The sprites now have individual negative phase delays. Sweep one whole
+    // cycle instead of assuming the peak occurs at the same absolute time.
+    for (let i = 0; i <= 60; i++) {
+      anim.currentTime = cycle * i / 60;
+      heights.push(el.getBoundingClientRect().top);
+    }
+    anim.currentTime = originalTime;
     anim.play();
-    return Math.abs(resting - airborne);
+    return Math.max(...heights) - Math.min(...heights);
   });
   expect(movement, "Sprite needs a real vertical hop").not.toBeNull();
   expect(movement).toBeGreaterThan(22);
