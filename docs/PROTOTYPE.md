@@ -25,7 +25,7 @@ There is no `npm install` requirement for gameplay or tests.
 
 ## How to play
 
-1. Choose experiment 1–4 at the top. Each has the same hidden algebra rules but different physical starting objects.
+1. Choose experiment 1–5 at the top. Each has the same hidden algebra rules but different physical starting objects.
 2. Choose **Guided mirror** for one action that the hand automatically repeats in both chambers, or **Your turn** to direct the hand in one room and then match it in the other. Your second room remains mandatory: the beam tips after just one.
 3. Use **Remove / Add** with dark sprites or weights, and select how many.
 4. Use **Divide** to temporarily display the room contents in two to five equal transparent baskets. The hand keeps one basket per room; all terms are divided. **Multiply** duplicates entire rooms.
@@ -42,12 +42,13 @@ There is no `npm install` requirement for gameplay or tests.
 | A roomful of sprites | `3x=9` | divide into 3 equal groups |
 | Clear, then group | `2x+4=12` | take 4 weights, divide by 2 |
 | Across the hall | `2x+3=x+7` | take one sprite, then 3 weights |
+| Five little baskets | `5x+10=20` | divide the complete rooms into 5 equal baskets, then remove 2 weights |
 
 The equations above are **teacher notes only**; the browser UI keeps them hidden until replay.
 
 ## Deliberate first-prototype limitations
 
-- Only dark sprites (positive variable) and brass weights (positive units) are selectable in the four current levels. **White negative sprites, balloons, cancellation puffs and signed-number levels** are documented and partially supported by the pure mathematical engine but **not yet playable or illustrated**. Do not present them as shipped features.
+- Only dark sprites (positive variable) and brass weights (positive units) are selectable in the five current levels. **White negative sprites, balloons, cancellation puffs and signed-number levels** are documented and partially supported by the pure mathematical engine but **not yet playable or illustrated**. Do not present them as shipped features.
 - Visual elements are original **CSS / inline-SVG placeholders**, not the final painted art library. The hand uses a simplified SVG pose; comic miniatures currently use DOM-rendered token symbols.
 - Containers are temporarily displayed during division; there is no freeform drag-and-drop of baskets yet.
 - The manual mode requires a second matching room selection, with the chosen action and count carried over. We can make the student reselect the action as a later difficulty setting.
@@ -57,7 +58,7 @@ The equations above are **teacher notes only**; the browser UI keeps them hidden
 
 ## Technical / testing
 
-The algebra engine lives in `src/engine.mjs`, with immutable state and complete before/after snapshots for history and replay. The browser code is in `src/app.mjs` and CSS in `src/styles.css`. The test suite (`tests/engine.test.mjs`) covers validity of the four levels, solving paths, manual pending state, undo, equal grouping, whole-number restriction, signed zero pairs, and algebraic replay correspondence.
+The algebra engine lives in `src/engine.mjs`, with immutable state and complete before/after snapshots for history and replay. The browser code is in `src/app.mjs` and CSS in `src/styles.css`. The test suite (`tests/engine.test.mjs`) covers validity of the five levels, solving paths, manual pending state, undo, equal grouping, whole-number restriction, signed zero pairs, and algebraic replay correspondence.
 
 The browser should preserve keyboard and pointer accessibility; the motion toggle and OS reduced-motion preference disable the decorative animations.
 
