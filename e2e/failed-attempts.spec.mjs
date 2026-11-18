@@ -44,19 +44,24 @@ test("a rejected division actually CHOPS the floor sprite in half, pauses, then 
   await expect(page.locator("#replay-backdrop")).toBeHidden();
 });
 
-test("manual first-side fraction cuts a WEIGHT, not a sprite in the other room",async ({page})=>{
+test("manual division really chips the remaining WEIGHT on the east floor",async({page})=>{
+  test.setTimeout(45000);
   await page.locator("#mode-select").selectOption("manual");
   await page.locator('[data-operation="divide"]').click();
   await page.locator("#right-action").click();
   const stage=page.locator("#right-attempt-stage");
   await expect(stage).toHaveAttribute("data-issue","fraction",{timeout:12000});
-  await expect(stage.locator(".slice-object.weight-part")).toHaveCount(2);
-  await expect(stage.locator(".attempt-basket")).toHaveCount(2);
-  await expect(stage.locator(".slice-fraction").first()).toHaveText("2 + 1/2");
-  await expect(page.locator("#hand")).toHaveAttribute("data-phase","rest",{timeout:10000});
-  await page.screenshot({path:"artifacts/rejected-weight-cut-into-halves.png"});
-  await expect(page.locator("#speech")).toContainText("1/2 of a weight",{timeout:12000});
-  await expect(stage).toBeHidden({timeout:12000});
+  await expect(stage.locator(".fraction-cut-source[data-kind='posOne']")).toHaveCount(1);
+  await expect(stage.locator(".fraction-cut-art.weight")).toHaveCount(2);
+  await expect(stage.locator(".fraction-cut-piece")).toHaveCount(2);
+  await expect(stage).toHaveAttribute("data-cut-phase","chopped",{timeout:13000});
+  await expect(page.locator("#right-items .weight")).toHaveCount(5);
+  await expect(page.locator("#right-items .weight.fraction-original-hidden")).toHaveCount(1);
+  await expect(stage.locator(".attempt-basket")).toHaveCount(0);
+  await page.screenshot({path:"artifacts/pr13-west-is-unchanged-east-weight-chopped.png"});
+  await expect(page.locator("#speech")).toContainText("1/2 of a weight",{timeout:14000});
+  await expect(stage).toBeHidden({timeout:13000});
+  await expect(page.locator("#right-items .weight.fraction-original-hidden")).toHaveCount(0);
   await expect(page.locator("#right-items .weight")).toHaveCount(5);
   await expect(page.locator("#left-items .sprite-black")).toHaveCount(1);
   await expect(page.locator("#undo")).toBeDisabled();
@@ -146,8 +151,9 @@ test("reducing motion still gives an understandable fractional preview and rever
   await page.locator("#do-both").click();
   const stage=page.locator("#left-attempt-stage");
   await expect(stage).toHaveAttribute("data-issue","fraction",{timeout:10000});
-  await expect(stage.locator(".slice-object")).toHaveCount(2);
-  await expect(stage.locator(".slice-object").first()).toHaveCSS("animation-name","none");
+  await expect(stage.locator(".fraction-cut-piece")).toHaveCount(2);
+  await expect(stage).toHaveAttribute("data-cut-phase","chopped",{timeout:10000});
+  await expect(stage.locator(".fraction-cut-piece").first()).toHaveCSS("transition-duration","0s");
   await expect(page.locator("#speech")).toContainText("small",{timeout:8000});
   await expect(stage).toBeHidden({timeout:8000});
   await expect(page.locator("#left-items .sprite-black")).toHaveCount(1);
