@@ -223,8 +223,11 @@ async function handAct(side, action, applyAtContact) {
   // desktop percentages that are wrong at tablet/mobile widths.
   const centreX = items.left + items.width / 2 - scene.left;
   hand.style.left = centreX + "px";
-  const handInitialTip = hand.getBoundingClientRect().height * 0.78;
-  const reach = Math.max(170, items.bottom - scene.top - items.height * 0.45 + 145 - handInitialTip);
+  // The hand starts mostly above the top of the scene. Calculate the
+  // travel so its fingers reach the visible objects (not just the room roof).
+  const restingTip = hand.offsetTop + hand.offsetHeight * 0.78;
+  const targetTip = items.bottom - scene.top - Math.min(32, items.height * 0.20);
+  const reach = Math.max(160, targetTip - restingTip);
   hand.style.setProperty("--hand-reach", reach + "px");
 
   const caption = $("action-caption");
