@@ -12,7 +12,8 @@ import { fractionCutPlan } from "./fraction-theatre.mjs";
 import {neutralPairSequence, neutralPairSummary} from "./neutral-pairs.mjs";
 import { WORLD1_LEVELS } from "./worlds.mjs";
 import {
-  introductionCue, readGuideEnabled, readGuideSeen, writeGuideEnabled, writeGuideSeen
+  CHAPTER_BRIEFINGS, introductionCue, readGuideEnabled, readGuideSeen,
+  writeGuideEnabled, writeGuideSeen
 } from "./onboarding.mjs";
 
 const $ = id => document.getElementById(id);
@@ -231,6 +232,15 @@ function render() {
   $("chapter").textContent = lvl.chapter;
   $("level-title").textContent = lvl.title;
   $("level-prompt").textContent = lvl.prompt;
+  $("chapter-status").hidden = campaignLevelNumber === null;
+  $("chapter-briefing").hidden =
+    campaignLevelNumber === null || !CHAPTER_BRIEFINGS[campaignLevelNumber];
+  if (campaignLevelNumber !== null) {
+    $("chapter-status").textContent = "WORLD 1 · LEVEL " +
+      String(campaignLevelNumber).padStart(2,"0") + " / 20";
+    if (CHAPTER_BRIEFINGS[campaignLevelNumber])
+      $("chapter-briefing").textContent = CHAPTER_BRIEFINGS[campaignLevelNumber];
+  }
   const chapterStart = campaignLevelNumber === null ? 0 : Math.floor((campaignLevelNumber - 1) / 4) * 4;
   const dotLevels = campaignLevelNumber === null ? LEVELS : WORLD1_LEVELS.slice(chapterStart, chapterStart + 4);
   const dotIndex = campaignLevelNumber === null ? levelIndex : campaignLevelNumber - 1 - chapterStart;
