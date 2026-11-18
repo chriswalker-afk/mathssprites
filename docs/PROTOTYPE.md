@@ -113,3 +113,12 @@ Not every pickup is routine! When the hand removes a **dark or pale sprite**, a 
 - Reactions change only the visual presentation, **never the physical token counts, balance calculation, hand transaction history or replay algebra**.
 
 For developers: the pure chance selector and safe wall-avoiding dodge direction are in src/sprite-reactions.mjs. The SVG hand's existing approach / reach / grip / contact / lift contract remains authoritative. Visual reactions end as the hand closes, **before the one and only mathematical change** at contact. Unit and Chrome tests cover ducking, dodging, normal pickup, manual matching and reduced motion.
+
+
+## When the public site looks completely static
+
+A real public-site Chrome probe confirmed (18 November 2026) that the GitHub Pages URL serves the same index.html, CSS, JavaScript and sprite-reaction modules as main. Browser checks at that URL found the sprite hop and body wiggle **running normally** when no reduced-motion preference is set. In contrast, when the browser/device requests reduced motion, the app intentionally removes these animations, including hand/replay flourishes.
+
+Previously this was difficult to notice: the small header toggle merely displayed "Motion: reduced". The UI now exposes a clear explanatory notice and **Enable animations** button in this state. Clicking it explicitly overrides the device preference for this game and persists the selection across reloads in localStorage, when storage is available. By default, an unmodified visitor's accessibility preference is still respected.
+
+Deployment verification sources live in scripts/check-public-site.mjs and scripts/check-live-browser.mjs. The optional GitHub Actions workflow Diagnose published Maths Sprites checks the real public URL and retains its screenshots and audit JSON. The normal Chrome test suite also checks the new enable button, persistence, default behavior and storage-disabled browsers.
