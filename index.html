@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="./src/site.css" />
   <link rel="stylesheet" href="./src/polish.css" />
   <link rel="stylesheet" href="./src/stages.css" />
+  <link rel="stylesheet" href="./src/notebook.css" />
   <script type="module" src="./src/app.mjs"></script>
   <script type="module" src="./src/site.mjs"></script>
 </head>
@@ -122,6 +123,10 @@
           <span><strong>First-visit guide</strong> — show short, step-by-step instructions in Level 1. You can dismiss them at any time.</span></label>
         <button type="button" class="secondary-btn" id="site-replay-intro">Replay the Guided Balance introduction</button>
         <button type="button" class="secondary-btn" id="site-replay-independent" hidden>Replay the Independent Balance introduction</button>
+        <div class="notebook-prototype-option" id="site-notebook-option" hidden>
+          <p><strong>Teacher preview · Stage 3</strong> — try the paper-first equation editor with a sample positive whole-number puzzle. This is a prototype, not a Stage 3 level, and earns no campaign progress.</p>
+          <button type="button" class="secondary-btn" id="site-notebook-preview">Preview the Algebra Apprentice notebook →</button>
+        </div>
         <p>Progress is stored on this browser only. No account is needed. Your existing 20 Stage 1 completions are preserved. The 16 new Stage 2 levels have separate progress. Stage 2 unlocks after Stage 1, or through Teacher access; Stage 3 and later worlds remain unfinished.</p>
         <button type="button" class="secondary-btn" id="site-motion">Use reduced motion</button>
         <p>Animation settings also apply to the hand, sprites and pencil inside levels.</p>
@@ -176,6 +181,40 @@
         <button id="motion-enable" type="button" class="motion-enable">Enable animations</button>
       </div>
 
+      <section id="notebook-workspace" class="notebook-workspace" aria-label="Algebra Apprentice paper-first notebook" hidden>
+        <div class="notebook-intro">
+          <span class="eyebrow">STAGE 3 · ALGEBRA APPRENTICE · TEACHER PROTOTYPE</span>
+          <h3>First the paper. Then the sprites.</h3>
+          <p>You already have the equation. Write one balanced operation per line, just as you would on paper. When you have isolated a single sprite, the hand will replay <em>your</em> method in both chambers.</p>
+          <span class="notebook-preview-warning">Practice preview · No levels or progress earned</span>
+        </div>
+        <div class="notebook-paper">
+          <div class="notebook-paper-head"><span>THE WORKSHOP JOURNAL</span><span aria-hidden="true">✎</span></div>
+          <h4>Show your working</h4>
+          <ol id="notebook-lines" class="notebook-lines" aria-label="Your checked algebra lines"></ol>
+          <form id="notebook-form" class="notebook-form">
+            <label for="notebook-equation">Next equation (for example, 2x = 8)</label>
+            <div class="notebook-input-row">
+              <input id="notebook-equation" type="text" inputmode="text" maxlength="80" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Write your next line..." aria-describedby="notebook-feedback" />
+              <button id="notebook-check" type="submit" class="primary-btn">Check this line</button>
+            </div>
+          </form>
+          <p id="notebook-feedback" class="notebook-feedback" role="status" aria-live="polite">Choose the same operation for both sides of the equation. The sprites will stay hidden until your solution is checked.</p>
+          <div class="notebook-actions">
+            <button id="notebook-undo" class="secondary-btn" type="button">↶ Undo a line</button>
+            <button id="notebook-reset" class="secondary-btn" type="button">↺ Start again</button>
+            <button id="notebook-replay" class="primary-btn" type="button" disabled>Replay with sprites →</button>
+          </div>
+          <p class="notebook-help">Allowed: positive whole numbers, x, addition and subtraction of complete objects, multiplying or dividing both sides by a whole number. Write each new equation, not just a final answer.</p>
+        </div>
+      </section>
+      <section id="notebook-playback" class="notebook-playback" role="status" aria-live="polite" hidden>
+        <div><span class="eyebrow">PAPER → SPRITES</span><p id="notebook-playback-message">The hand is following your checked algebra...</p></div>
+        <div class="notebook-playback-actions">
+          <button id="notebook-back-paper" type="button" class="secondary-btn" hidden>← View my notebook</button>
+          <button id="notebook-watch-again" type="button" class="primary-btn" hidden>↺ Replay my steps</button>
+        </div>
+      </section>
       <section class="playfield" id="scene" aria-label="Balance laboratory scene">
         <div class="ambient-window" aria-hidden="true"><div class="moon"></div></div>
         <div class="shelf shelf-left" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
