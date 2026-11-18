@@ -67,6 +67,52 @@ test("manual division really chips the remaining WEIGHT on the east floor",async
   await expect(page.locator("#undo")).toBeDisabled();
 });
 
+test("the hand splits one REAL square sprite into three shaped fragments",async({page})=>{
+  test.setTimeout(45000);
+  await page.locator("#level-select").selectOption("7"); // 4 square x² sprites facing 36 weights
+  await page.locator('[data-operation="divide"]').click();
+  await page.locator("#amount-up").click();
+  await expect(page.locator("#amount-value")).toHaveText("3");
+  await page.locator("#do-both").click();
+  const stage=page.locator("#left-attempt-stage");
+  await expect(stage).toHaveAttribute("data-issue","fraction",{timeout:12000});
+  await expect(stage).toHaveAttribute("data-cut-factor","3");
+  await expect(stage.locator(".fraction-cut-source[data-kind='posX2']")).toHaveCount(1);
+  await expect(stage.locator(".fraction-cut-piece")).toHaveCount(3);
+  await expect(stage.locator(".fraction-cut-art.sprite-square")).toHaveCount(3);
+  await expect(stage.locator(".fraction-cut-seam")).toHaveCount(2);
+  await expect(stage).toHaveAttribute("data-cut-phase","chopped",{timeout:13000});
+  await page.screenshot({path:"artifacts/pr13-square-sprite-three-actual-fragments.png"});
+  await expect(page.locator("#speech")).toContainText("1/3 of a square sprite",{timeout:13000});
+  await expect(stage).toBeHidden({timeout:13000});
+  await expect(page.locator("#left-items .sprite-square")).toHaveCount(4);
+  await expect(page.locator("#right-items .weight")).toHaveCount(36);
+  await expect(page.locator("#undo")).toBeDisabled();
+});
+
+test("the fractional creature stays in the real chamber on a small phone",async({page})=>{
+  test.setTimeout(35000);
+  await page.setViewportSize({width:390,height:844});
+  await page.locator('[data-operation="divide"]').click();
+  await page.locator("#do-both").click();
+  const stage=page.locator("#left-attempt-stage");
+  await expect(stage).toHaveAttribute("data-cut-phase","chopped",{timeout:15000});
+  const bounds=await stage.locator(".fraction-cut-source").evaluate(actor=>{
+    const r=actor.getBoundingClientRect();
+    const chamber=actor.closest(".room-interior").getBoundingClientRect();
+    return {left:r.left,right:r.right,top:r.top,bottom:r.bottom,
+      roomLeft:chamber.left,roomRight:chamber.right,
+      roomTop:chamber.top,roomBottom:chamber.bottom};
+  });
+  expect(bounds.left).toBeGreaterThanOrEqual(bounds.roomLeft-2);
+  expect(bounds.right).toBeLessThanOrEqual(bounds.roomRight+2);
+  expect(bounds.top).toBeGreaterThanOrEqual(bounds.roomTop-2);
+  expect(bounds.bottom).toBeLessThanOrEqual(bounds.roomBottom+2);
+  await page.screenshot({path:"artifacts/pr13-fraction-cut-in-actual-phone-room.png"});
+  await expect(page.locator("#speech")).toContainText("These pieces are too small",{timeout:13000});
+  await expect(stage).toBeHidden({timeout:13000});
+});
+
 test("an overfull room spills weights out, then the hand undoes the attempted duplication",async ({page})=>{
   await page.locator("#level-select").selectOption("7");
   await page.locator('[data-operation="multiply"]').click();
