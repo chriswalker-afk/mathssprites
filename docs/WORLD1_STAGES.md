@@ -7,7 +7,7 @@ World 1 is entirely about **positive whole-number equations**. Each stage change
 | Stage 1 — Guided Balance | 20 (5 chapters) | Hand automatically mirrors the operation in the other room | **Playable** |
 | Stage 2 — Independent Balance | 16 (4 chapters) | Student deliberately makes a separate hand visit to each room | **Playable (PR19)** |
 | Stage 3 — Algebra Apprentice | 12 (3 chapters) | Student writes algebra first; sprites reenact validated steps afterwards | **Playable (PR21)** |
-| Equation Workshop | Custom | Input positive-whole-number equations, check representability and choose a method | Coming soon (PR22) |
+| Equation Workshop | Custom | Type a supported positive-whole-number equation and choose the hand method | **Playable free play (PR22)** |
 
 The Equation Workshop is a free-play laboratory, **not a fourth stage**; it does not count towards campaign progress.
 
@@ -18,7 +18,7 @@ The Equation Workshop is a free-play laboratory, **not a fourth stage**; it does
 - Guided Balance is accessible to everyone. Its 20 existing puzzles and five chapter definitions are unchanged.
 - Independent Balance is accessible when all 20 Stage 1 levels are complete, or sooner through Teacher access. The 16 new puzzles are sequentially unlocked except for teachers, and level selection shows only this stage's progress.
 - Algebra Apprentice unlocks after all 16 Stage 2 levels (or immediately for teachers). Its 12 notebook-first levels have independent progress, backwards-faded working and physical replay.
-- The Equation Workshop is a clear, deliberately non-interactive placeholder until the solver is implemented.
+- The Equation Workshop opens a validated custom equation builder, freely accessible to every student. It is not a campaign stage and records no campaign completion.
 - The home Continue button resumes Stage 1 until it is mastered, then the next available Stage 2 level. After both are mastered the student can revisit the stage map.
 - Level navigation returns to its own stage's level map. The final level of either stage returns to Stage Select; this is not a claim of whole-World 1 completion.
 
@@ -60,10 +60,10 @@ Browser tests cover student/teacher gates, stage-specific chapter maps, tool hid
 
 The **paper-first step checker and sprite replay** are implemented in PR20, with safe line parsing, physically representable one-operation transformations, multiple valid solution routes, undo, reset, and genuine hand replay. The paper is shown before the sprite scene. A teacher-only sandbox in Settings or `?notebook=two-step-09` allows validation using already-published positive-whole-number puzzles **without recording Stage 3 or earlier-stage progress**. The Stage 3 campaign is now available; see [STAGE3_CAMPAIGN.md](STAGE3_CAMPAIGN.md) for the twelve mathematically validated equations and backwards-faded lesson structure.
 
-## Next: PR22 — Equation Workshop
+## PR22 — Equation Workshop implemented
 
-Stages 1, 2 and 3 of World 1 now offer **20 + 16 + 12 playable puzzles**. Saved progress is independent and the notebook campaign only records completion after a fully successful physical replay. See the [Stage 3 campaign](STAGE3_CAMPAIGN.md).
+Stages 1, 2 and 3 of World 1 offer **20 + 16 + 12 campaign puzzles**, and PR22 adds a **separate free-play custom equation builder**. Students can enter physically representable, positive-whole-number linear equations, generate real rooms, choose either hand method and see the algebra comic. Their campaign progress is not changed. See [EQUATION_WORKSHOP.md](EQUATION_WORKSHOP.md) for supported input and rejection rules.
 
-**PR22:** Build the separate free-play Equation Workshop, with custom equation entry, strict positive-whole-number representability checks, scene generation and an open-ended interactive solver. Its progress must not be part of the campaign.
+**Next:** Begin World 2 · Opposite Chambers, with negative numbers and the existing white-sprite/balloon prototype, in a separate campaign without weakening World 1 restrictions.
 
 No negatives, fractional solutions, or square/root operations are added to World 1 as part of these steps.
