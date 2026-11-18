@@ -250,10 +250,10 @@ function startLevel(index) {
   replaySerial++;
   levelIndex = (index + LEVELS.length) % LEVELS.length;
   state = initialState(LEVELS[levelIndex]);
-  operation = levelIndex === 1 ? "divide" : "remove";
+  operation = (levelIndex === 1 || levelIndex === 4) ? "divide" : "remove";
   kind = "posOne";
   amount = levelIndex === 0 ? 2 : levelIndex === 2 ? 4 : 1;
-  factor = levelIndex === 1 ? 3 : 2;
+  factor = levelIndex === 1 ? 3 : levelIndex === 4 ? 5 : 2;
   override = null; groups = { left: 0, right: 0 };
   busy = false;
   clearSpeech();
@@ -376,6 +376,7 @@ for (const button of document.querySelectorAll("[data-operation]")) {
     if (state.pending || busy) return;
     operation = button.dataset.operation;
     if (operation === "divide" && levelIndex === 1) factor = 3;
+    if (operation === "divide" && levelIndex === 4) factor = 5;
     render();
   });
 }
