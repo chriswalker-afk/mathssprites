@@ -54,6 +54,7 @@ let campaignLevelNumber = null;
 let campaignStage = null; // null = separate advanced prototype preview
 let notebookSession=null; // only teacher prototype in PR20; never campaign progress
 let notebookPhase="idle"; // idle | writing | replaying | complete
+let notebookReplaySuccessful=false;
 let guideEnabled = readGuideEnabled();
 let guideSeen = readGuideSeen();
 let independentGuideSeen=readIndependentGuideSeen();
@@ -253,26 +254,49 @@ function renderFirstGuide() {
  * validated working is complete and the student explicitly requests replay. */
 function renderNotebookVisibility() {
   const active=!!notebookSession;
+  const campaign=active&&campaignStage==="notebook"&&campaignLevelNumber!==null;
   document.body.classList.toggle("notebook-mode",active);
-  $("notebook-workspace").hidden=!active || notebookPhase!=="writing";
-  $("notebook-playback").hidden=!active ||
-    (notebookPhase!=="replaying" && notebookPhase!=="complete");
-  $("scene").hidden=active && notebookPhase==="writing";
+  $("notebook-workspace").hidden=!active||notebookPhase!=="writing";
+  $("notebook-playback").hidden=!active||
+    (notebookPhase!=="replaying"&&notebookPhase!=="complete");
+  $("scene").hidden=active&&notebookPhase==="writing";
   document.querySelector(".experiment-controls").hidden=active;
   $("level-clear-subtitle").textContent=active
     ? "The sprites followed your checked steps, exactly as written."
     : "Let's discover the algebra behind those moves.";
-  if(active){
-    $("chapter").textContent="STAGE 3 · ALGEBRA APPRENTICE PROTOTYPE";
-    $("chapter-status").hidden=false;
-    $("chapter-status").textContent="PAPER FIRST · SPRITE REPLAY SECOND · NO PROGRESS";
-    $("apprentice-guide").hidden=true;
-    $("game-guide-restart").hidden=true;
-    $("campaign-hand-mode").hidden=true;
-    $("mode-wrapper").hidden=true;
-    $("notebook-back-paper").hidden=notebookPhase!=="complete";
-    $("notebook-watch-again").hidden=notebookPhase!=="complete";
+  if(!active)return;
+  $("chapter").textContent=campaign
+    ?"STAGE 3 · "+currentLevel().chapter:"STAGE 3 · ALGEBRA APPRENTICE PROTOTYPE";
+  $("chapter-status").hidden=false;
+  $("chapter-status").textContent=campaign
+    ?"WORLD 1 · STAGE 3 · LEVEL "+String(campaignLevelNumber).padStart(2,"0")+" / 12"
+    :"PAPER FIRST · SPRITE REPLAY SECOND · NO PROGRESS";
+  $("notebook-stage-kicker").textContent=campaign
+    ?"WORLD 1 · STAGE 3 · LEVEL "+String(campaignLevelNumber).padStart(2,"0")+" / 12"
+    :"STAGE 3 · ALGEBRA APPRENTICE · TEACHER PROTOTYPE";
+  $("notebook-stage-note").textContent=campaign
+    ?"Campaign experiment · Progress saved after a successful sprite replay"
+    :"Practice preview · No levels or progress earned";
+  $("notebook-level-prompt").textContent=campaign
+    ? currentLevel().prompt
+    : "You already have the equation. Write one balanced operation per line. When a single sprite is isolated, watch the hand replay your method.";
+  const support=campaign?currentLevel().scaffold:null;
+  const showSupport=!!support&&support.kind!=="none"&&notebookPhase==="writing";
+  $("notebook-scaffold").hidden=!showSupport;
+  if(showSupport){
+    $("notebook-scaffold-heading").textContent=support.heading;
+    $("notebook-scaffold-text").textContent=support.text;
   }
+  $("apprentice-guide").hidden=true;
+  $("game-guide-restart").hidden=true;
+  $("campaign-hand-mode").hidden=true;
+  $("mode-wrapper").hidden=true;
+  $("notebook-back-paper").hidden=notebookPhase!=="complete";
+  $("notebook-watch-again").hidden=notebookPhase!=="complete";
+  $("notebook-next").hidden=!campaign||notebookPhase!=="complete"||
+    !notebookReplaySuccessful;
+  $("notebook-next").textContent=campaignLevelNumber===12
+    ?"Finish Stage 3 →":"Next notebook level →";
 }
 function notebookMessage(message,status="info"){
   $("notebook-feedback").textContent=message;
@@ -1386,6 +1410,7 @@ function startLevel(index, quantityMode, levelOverride=null, campaignNumber=null
   replayEntries = [];
   notebookSession=null;
   notebookPhase="idle";
+  notebookReplaySuccessful=false;
   document.body.classList.remove("notebook-mode");
   levelIndex = (index + LEVELS.length) % LEVELS.length;
   const level = levelOverride || LEVELS[levelIndex];
