@@ -71,7 +71,22 @@ background-image:repeating-linear-gradient(90deg,transparent 0 66px,rgba(0,0,0,.
 .hand-cuff{fill:#d8d5bf;stroke:#6f604c;stroke-width:3}
 .hand-skin{fill:#c89c7d;stroke:#755748;stroke-width:3;stroke-linejoin:round}
 .hand-detail{fill:none;stroke:#956d59;stroke-width:2;stroke-linecap:round}
-.giant-hand.reaching{animation:hand-reach .85s ease-in-out both}
+.giant-hand{transition:transform .78s cubic-bezier(.2,.7,.25,1);will-change:transform}
+.giant-hand.reaching{transform:translateX(-50%) translateY(var(--hand-reach,300px))}
+.giant-hand.grasping svg{filter:brightness(1.07)}
+.giant-hand.acting{filter:drop-shadow(8px 11px 10px rgba(0,0,0,.6))}
+.hand-cargo{position:absolute;z-index:2;top:72%;left:30%;width:54px;height:58px;transform:translate(-50%,-9px);pointer-events:none;filter:drop-shadow(2px 4px 5px rgba(0,0,0,.7))}
+.held-weight{position:absolute;left:16px;top:10px;width:33px;height:33px;background:linear-gradient(100deg,#82603e,#dfc18c,#80603e);clip-path:polygon(33% 4%,67% 4%,94% 95%,10% 95%);border-radius:5px}
+.held-sprite{position:absolute;left:13px;top:6px;width:39px;height:38px;background:radial-gradient(circle at 30% 20%,#444c4b,#111516 70%);border-radius:46%;box-shadow:0 0 0 2px #4a4d47}
+.held-sprite i{position:absolute;top:12px;left:11px;width:6px;height:8px;border-radius:50%;background:#f1eddd}
+.held-sprite i+i{left:23px}
+.held-basket{position:absolute;left:4px;top:4px;width:56px;height:46px;border:4px solid #d9bb84;border-top:8px solid #c89f66;border-radius:5px 5px 16px 16px;background:repeating-linear-gradient(0deg,rgba(196,161,101,.25) 0 6px,rgba(207,218,204,.14) 6px 12px)}
+.held-basket-double:after{content:"";position:absolute;top:5px;left:21px;width:44px;height:36px;border:3px solid #e4cda3;border-radius:5px 5px 12px 12px;background:rgba(124,154,136,.22)}
+.held-count{position:absolute;right:-8px;bottom:0;padding:2px 6px;border-radius:8px;background:#dfc18c;color:#352b20;font:bold .77rem Georgia,serif}
+.action-caption{position:absolute;z-index:23;left:50%;bottom:48px;max-width:92%;transform:translateX(-50%);padding:8px 15px;border:1px solid #e4c792;border-radius:22px;background:rgba(24,34,32,.96);color:#f5e6c7;box-shadow:0 5px 18px #0008;font:.83rem/1.25 Georgia,serif;text-align:center}
+.hand-contact .room-interior{box-shadow:inset 0 0 30px #101817,0 0 0 3px #ae8b60,0 0 32px rgba(234,203,136,.46)}
+.solved-scene .room-interior{box-shadow:inset 0 0 25px #101817,0 0 0 3px #e7c68d,0 0 36px rgba(234,203,136,.64)}
+.solved-scene .scene-caption{color:#eed9a0}
 @keyframes hand-reach{0%{transform:translateX(-50%) translateY(-35px)}35%{transform:translateX(-50%) translateY(285px)}55%{transform:translateX(-50%) translateY(297px)}100%{transform:translateX(-50%) translateY(-35px)}}
 
 .rooms-row{position:absolute;z-index:5;left:4.5%;width:91%;top:101px;display:flex;justify-content:space-between;align-items:flex-start;gap:7%;transition:transform .45s ease;transform-origin:50% 350px}
@@ -119,18 +134,26 @@ background-image:repeating-linear-gradient(90deg,transparent 0 66px,rgba(0,0,0,.
 
 /* Actors and props */
 .token{position:relative;flex:none;display:inline-block;vertical-align:bottom}
-.sprite{width:46px;height:47px;animation:sprite-hop 2.35s ease-in-out infinite;animation-delay:var(--delay,0s);transform-origin:center bottom;filter:drop-shadow(0 3px 2px rgba(0,0,0,.5))}
+.sprite{width:46px;height:47px;animation:sprite-hop 1.8s cubic-bezier(.33,.1,.33,1) infinite;animation-delay:var(--delay,0s);transform-origin:center bottom;filter:drop-shadow(0 3px 2px rgba(0,0,0,.5));will-change:transform}
 .sprite:before{content:"";position:absolute;left:8px;right:8px;bottom:1px;height:5px;border-radius:50%;background:#0b1213;filter:blur(2px)}
-.sprite-body{position:absolute;left:6px;bottom:5px;width:35px;height:34px;border-radius:49% 51% 45% 45%;background:radial-gradient(circle at 32% 24%,#414b49,#131719 75%);box-shadow:inset -2px -4px 5px #0009,0 0 0 1px #202426;z-index:2}
+.sprite-body{position:absolute;left:2px;bottom:4px;width:43px;height:41px;border-radius:49% 51% 45% 45%;background:radial-gradient(circle at 32% 24%,#56615c,#121719 78%);box-shadow:inset -2px -4px 6px #0009,0 0 0 1px rgba(228,225,197,.48),0 0 11px rgba(172,191,176,.22);z-index:2}
 .sprite-body:before{content:"";position:absolute;inset:-5px;border-radius:48%;background:repeating-conic-gradient(from 5deg,#192022 0deg 17deg,transparent 19deg 27deg);z-index:-1;filter:blur(.3px)}
 .sprite-body:after{content:"";position:absolute;left:-4px;top:19px;width:43px;height:13px;border-radius:50%;border-left:3px solid #161a1b;border-right:3px solid #161a1b;z-index:-1}
 .sprite-feet{position:absolute;left:13px;bottom:2px;width:24px;height:10px;border-left:4px solid #0c1011;border-right:4px solid #0c1011;transform:rotate(8deg)}
-.sprite-eyes{position:absolute;left:8px;top:9px;display:flex;gap:7px;z-index:4}
-.sprite-eyes i{width:6px;height:9px;background:#f2eee0;border-radius:50%;box-shadow:0 0 2px #fff8}
+.sprite-eyes{position:absolute;left:11px;top:10px;display:flex;gap:9px;z-index:4}
+.sprite-eyes i{width:7px;height:11px;background:#fff6dd;border-radius:50%;box-shadow:0 0 4px #fff9}
 .sprite-white .sprite-body{background:radial-gradient(circle at 32% 24%,#f5f2e9,#c9d0d0 78%);box-shadow:0 0 2px #aab0a8}
 .sprite-white .sprite-body:before{background:repeating-conic-gradient(#e7ece8 0deg 16deg,transparent 18deg 27deg)}
 .sprite-white .sprite-eyes i{background:#2e3436}
-@keyframes sprite-hop{0%,24%,58%,100%{transform:translateY(0) scale(1,1)}37%{transform:translateY(-15px) scale(.96,1.04)}44%{transform:translateY(-7px)}63%{transform:scale(1.05,.94)}68%{transform:scale(.98,1.02)}}
+@keyframes sprite-hop{
+  0%,5%,55%,95%,100%{transform:translateY(0) scale(1,1) rotate(0deg)}
+  10%{transform:translateY(2px) scale(1.15,.78)}
+  29%{transform:translateY(-41px) scale(.94,1.09) rotate(-4deg)}
+  42%{transform:translateY(-23px) scale(.98,1.05) rotate(3deg)}
+  55%{transform:translateY(0) scale(1.13,.8)}
+  62%{transform:translateY(-13px) scale(.97,1.04)}
+  73%{transform:translateY(0) scale(1.04,.95)}
+}
 .weight{width:41px;height:41px;z-index:3;background:linear-gradient(108deg,#7b592f 0%,#d5b17c 32%,#8f6a3e 70%,#5b412b);clip-path:polygon(29% 17%,72% 17%,90% 88%,84% 97%,13% 97%,8% 88%);filter:drop-shadow(2px 3px 1px #0008);border-radius:7px}
 .weight:after{content:"";position:absolute;left:10%;bottom:4px;width:80%;height:5px;background:#4b311e;box-shadow:0 -3px #d8b77b}
 .weight-handle{position:absolute;top:0;left:35%;width:30%;height:11px;border:3px solid #e1c085;border-radius:6px;background:#846139}
@@ -325,8 +348,9 @@ legend{margin-bottom:12px;padding:0}
   .rooms-row{transform-origin:50% 208px}
   .workbench{height:25px}
   .giant-hand{width:100px;height:145px;top:-123px}
-  .giant-hand.reaching{animation:hand-reach-mobile .75s both}
-  @keyframes hand-reach-mobile{0%{transform:translateX(-50%) translateY(-25px)}45%{transform:translateX(-50%) translateY(210px)}100%{transform:translateX(-50%) translateY(-25px)}}
+  .giant-hand.reaching{transform:translateX(-50%) translateY(var(--hand-reach,230px))}
+  .hand-cargo{transform:translate(-50%,-9px) scale(.7)}
+  .action-caption{bottom:32px;font-size:.68rem;padding:7px 10px}
   .speech{right:3%;top:29px;max-width:180px;padding:9px;font-size:.78rem}
   .scene-caption{font-size:.65rem}
   .control-top{gap:6px}
@@ -358,7 +382,7 @@ legend{margin-bottom:12px;padding:0}
   .basket-contents{inset:5px 1px}
   .group-basket .token{transform:scale(.39);margin:-6px}
 }
-@media(prefers-reduced-motion:reduce){
-  *,*:before,*:after{animation-duration:.001ms!important;transition-duration:.001ms!important;scroll-behavior:auto!important}
-}
+/* JS initialises from the OS accessibility preference. An explicit Motion: on
+   click must be able to override it; an unconditional media rule would prevent
+   the user's chosen animations from ever appearing. */
 .reduce-motion *,.reduce-motion *:before,.reduce-motion *:after{animation-duration:.001ms!important;transition-duration:.001ms!important;scroll-behavior:auto!important}

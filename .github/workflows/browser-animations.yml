@@ -1,0 +1,33 @@
+name: Browser animation QA
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  browser-animation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install Playwright test (QA-only, not a game dependency)
+        run: npm install --no-save @playwright/test@1.65.1
+      - name: Check live DOM, bounce and hand choreography
+        run: npx playwright test
+      - name: Keep screenshots and traces for design review
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: maths-sprites-browser-qa
+          path: |
+            artifacts/
+            test-results/
+          if-no-files-found: ignore
+          retention-days: 7

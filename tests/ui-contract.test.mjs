@@ -34,7 +34,11 @@ test("the room visuals have grouping, hand and responsive style rules", () => {
   for (const selector of [".group-basket", ".basket-row", ".giant-hand", ".mini-stage",
     ".sprite", ".sprite-white", ".balloon", ".paper-line", ".needs-match"])
     assert.ok(css.includes(selector), "Missing " + selector);
-  assert.match(css, /prefers-reduced-motion:reduce/);
+  // The user can explicitly switch Motion back on even if the OS suggests
+  // reduced motion; CSS must not permanently suppress that choice.
+  assert.match(app, /prefers-reduced-motion: reduce/);
+  assert.match(css, /\.reduce-motion/);
+  assert.doesNotMatch(css, /@media\s*\(prefers-reduced-motion:\s*reduce\)/);
   assert.match(css, /max-width:600px/);
 });
 test("fifth level really exercises a divide-by-five followed by subtraction", () => {
@@ -49,4 +53,25 @@ test("browser imports are local and the prototype has no external runtime depend
   assert.match(html, /href="\.\/src\/styles\.css"/);
   assert.doesNotMatch(html, /https?:\/\//);
   assert.match(app, /from "\.\/engine\.mjs"/);
+});
+
+test("hand performs scene changes at contact, before retracting or revealing the replay", () => {
+  assert.match(html, /id="hand-cargo"/);
+  assert.match(html, /id="action-caption"/);
+  assert.match(app, /async function handAct\(/);
+  assert.match(app, /hand\.classList\.add\("reaching"\)/);
+  assert.match(app, /hand\.classList\.add\("grasping"\)/);
+  assert.match(app, /applyAtContact\(\)/);
+  assert.match(app, /hand\.classList\.remove\("grasping", "reaching"\)/);
+  assert.match(app, /await handAct\("left"/);
+  assert.match(app, /await handAct\("right"/);
+  assert.match(app, /await sleep\(reducedMotion \? 1100 : 1800\)/);
+  assert.match(css, /\.giant-hand\.reaching/);
+  assert.match(css, /\.hand-cargo/);
+});
+test("idle sprite motion is strong and persistent across unrelated room renders", () => {
+  assert.match(css, /@keyframes sprite-hop/);
+  assert.match(css, /translateY\(-41px\)/);
+  assert.match(app, /node\.dataset\.signature === signature/);
+  assert.match(app, /style\.setProperty\("--hand-reach"/);
 });

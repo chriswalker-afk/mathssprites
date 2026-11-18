@@ -65,6 +65,11 @@ function allTokens(r, mini = false) {
 }
 function renderRoom(side, r, groupCount) {
   const node = $(side + "-items");
+  // Only rebuild a room when its actual contents change. Otherwise the idle
+  // sprites are repeatedly destroyed and their bouncing animations restart.
+  const signature = TOKEN_KINDS.map(key => r[key]).join(":") + "|groups:" + groupCount;
+  if (node.dataset.signature === signature) return;
+  node.dataset.signature = signature;
   node.setAttribute("aria-label", (side === "left" ? "West chamber: " : "East chamber: ") + roomSummary(r));
   const total = TOKEN_KINDS.reduce((a, field) => a + r[field], 0);
   node.classList.toggle("crowded", total > 16);
@@ -176,19 +181,86 @@ function render() {
       '<button id="watch-again" class="inline-link" type="button">Watch the comic again</button>';
   }
 }
-async function handVisit(side) {
+/**
+ * A two-stage hand movement, not an instant model update followed by an effect.
+ * The hand descends, interacts, and *while still touching the room* applies the
+ * corresponding visual transformation. Only then does it leave the screen.
+ */
+function handProp(action) {
+  if (action.op === "divide") {
+    return '<span class="held-basket" title="A complete basket of objects"></span>';
+  }
+  if (action.op === "multiply") {
+    return '<span class="held-basket held-basket-double" title="A complete group of objects"></span>';
+  }
+  const picture = action.kind === "posX"
+    ? '<span class="held-sprite"><i></i><i></i></span>'
+    : '<span class="held-weight"></span>';
+  return picture + (action.count > 1 ? '<span class="held-count">×' + action.count + '</span>' : "");
+}
+function roomOperationText(action, side) {
+  const roomName = side === "left" ? "west" : "east";
+  if (action.op === "divide") return "The hand sorts the " + roomName + " room into " + action.factor + " equal baskets...";
+  if (action.op === "multiply") return "The hand makes " + action.factor + " complete copies in the " + roomName + " room...";
+  const nouns = action.kind === "posX" ? (action.count === 1 ? "sprite" : "sprites") :
+    (action.count === 1 ? "weight" : "weights");
+  return "The hand " + (action.op === "remove" ? "lifts away " : "places ") +
+    action.count + " " + nouns + " in the " + roomName + " room...";
+}
+function animateClassFrame() {
+  return new Promise(resolve => {
+    // Requesting a frame ensures the hand starts ABOVE the room before
+    // transitioning down, even immediately after the first scene render.
+    requestAnimationFrame(() => resolve());
+  });
+}
+async function handAct(side, action, applyAtContact) {
   const hand = $("hand");
-  hand.style.left = side === "left" ? "27%" : "73%";
-  hand.classList.remove("reaching");
-  void hand.offsetWidth;
+  const cargo = $("hand-cargo");
+  const scene = $("scene").getBoundingClientRect();
+  const items = $(side + "-items").getBoundingClientRect();
+  // Position the hand above the room rather than relying on hard-coded
+  // desktop percentages that are wrong at tablet/mobile widths.
+  const centreX = items.left + items.width / 2 - scene.left;
+  hand.style.left = centreX + "px";
+  // The hand starts mostly above the top of the scene. Calculate the
+  // travel so its fingers reach the visible objects (not just the room roof).
+  const restingTip = hand.offsetTop + hand.offsetHeight * 0.78;
+  const targetTip = items.bottom - scene.top - Math.min(32, items.height * 0.20);
+  const reach = Math.max(160, targetTip - restingTip);
+  hand.style.setProperty("--hand-reach", reach + "px");
+
+  const caption = $("action-caption");
+  caption.textContent = roomOperationText(action, side);
+  caption.hidden = false;
+  cargo.innerHTML = handProp(action);
+  cargo.hidden = action.op === "remove";
+  hand.classList.remove("reaching", "grasping");
+  hand.classList.add("acting");
+  await animateClassFrame();
   hand.classList.add("reaching");
-  await sleep(reducedMotion ? 80 : 850);
-  hand.classList.remove("reaching");
+  await sleep(reducedMotion ? 360 : 850);
+  hand.classList.add("grasping");
+  // The removal, addition, or grouping happens at the bottom of the reach.
+  applyAtContact();
+  if (action.op === "remove") cargo.hidden = false;
+  $(side + "-chamber").classList.add("hand-contact");
+  await sleep(reducedMotion ? 330 : 570);
+  hand.classList.remove("grasping", "reaching");
+  await sleep(reducedMotion ? 330 : 800);
+  hand.classList.remove("acting");
+  $(side + "-chamber").classList.remove("hand-contact");
+  cargo.hidden = true;
+  caption.hidden = true;
 }
 async function finishTurn() {
   if (isSolved(state)) {
-    $("feedback").textContent = "The rooms have found their answer. The notebook is opening...";
-    await sleep(reducedMotion ? 120 : 600);
+    // The student must be able to SEE the final physical balance before
+    // the comic-book retrospective covers the laboratory.
+    $("scene").classList.add("solved-scene");
+    $("feedback").textContent = "One sprite, and its matching weights. The rooms are balanced!";
+    await sleep(reducedMotion ? 1100 : 1800);
+    $("scene").classList.remove("solved-scene");
     showReplay();
   } else {
     $("feedback").textContent = "Still balanced. What should the hand try next?";
@@ -201,24 +273,29 @@ async function guidedMove() {
   if (!outcome.ok) return notify(outcome.reason);
   const previous = state;
   const next = outcome.state;
-  busy = true; clearSpeech();
+  busy = true;
+  clearSpeech();
   $("feedback").textContent = operationDescription(action) + "...";
   if (action.op === "divide") {
     groups = { left: action.factor, right: action.factor };
     render();
-    await sleep(reducedMotion ? 100 : 900);
+    await sleep(reducedMotion ? 550 : 1350);
   }
   render();
-  await handVisit("left");
-  override = { left: next.left, right: previous.right };
-  groups.left = 0;
+  await handAct("left", action, () => {
+    override = { left: next.left, right: previous.right };
+    groups.left = 0;
+    render();
+  });
+  await handAct("right", action, () => {
+    // Commit *at contact*, before hand exits and before the success replay.
+    state = next;
+    override = null;
+    groups.right = 0;
+    render();
+  });
+  busy = false;
   render();
-  await sleep(reducedMotion ? 40 : 200);
-  await handVisit("right");
-  state = next;
-  override = null;
-  groups = { left: 0, right: 0 };
-  busy = false; render();
   await finishTurn();
 }
 async function manualMove(side) {
@@ -229,18 +306,20 @@ async function manualMove(side) {
   if (!outcome.ok) return notify(outcome.reason);
   busy = true;
   clearSpeech();
-  if (action.op === "divide" && !wasPending) {
+  if (action.op === "divide") {
     groups[side] = action.factor;
     render();
-    await sleep(reducedMotion ? 70 : 800);
+    await sleep(reducedMotion ? 500 : 1100);
   }
-  await handVisit(side);
-  state = outcome.state;
-  groups[side] = 0;
+  await handAct(side, action, () => {
+    state = outcome.state;
+    groups[side] = 0;
+    render();
+  });
   busy = false;
   render();
   if (state.pending) {
-    $("feedback").textContent = "One room done. Make that same move in the other room.";
+    $("feedback").textContent = "One room done. Now perform the matching move in the other room.";
   } else {
     await finishTurn();
   }
@@ -256,6 +335,11 @@ function startLevel(index) {
   factor = levelIndex === 1 ? 3 : levelIndex === 4 ? 5 : 2;
   override = null; groups = { left: 0, right: 0 };
   busy = false;
+  // Clear any half-finished visual state when changing levels.
+  $("hand").classList.remove("reaching", "grasping", "acting");
+  $("hand-cargo").hidden = true;
+  $("action-caption").hidden = true;
+  $("scene").classList.remove("solved-scene");
   clearSpeech();
   $("replay-backdrop").hidden = true;
   $("feedback").textContent = "Choose a hand action, then try it on the rooms.";
