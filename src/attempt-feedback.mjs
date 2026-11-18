@@ -42,12 +42,15 @@ export function attemptMessage(failure, action, side = "left") {
   const rewind = " I'll undo the attempt and put everything back.";
   switch (failure?.code) {
     case "fraction": {
-      const p = fractionDisplay(failure);
-      return "Oh! " + failure.count + " " + itemWord(failure.kind, failure.count) +
-        " won't split into " + p.baskets + " whole baskets. Each needs " +
-        (p.whole ? p.whole + " and " : "") + p.numerator + "/" + p.denominator +
-        " of a " + itemWord(failure.kind) +
-        ". These pieces are too small. I don't want to deal with them!" + rewind;
+      const p=fractionDisplay(failure);
+      const remaining=failure.remainder;
+      return "Oh! I tried chopping " + remaining + " leftover " +
+        itemWord(failure.kind,remaining) + " into " + p.baskets +
+        " little pieces each. Now I can see the problem: every basket would need " +
+        (p.whole ? p.whole + " whole " + itemWord(failure.kind,p.whole) + " and " : "") +
+        p.numerator + "/" + p.denominator + " of a " + itemWord(failure.kind) +
+        ". These pieces are too small. I'm not using fractional objects in this experiment! " +
+        "I'll put the bits back together, undo the attempt and restore the whole objects.";
     }
     case "overflow":
       return "Whoops! That's " + failure.total + " objects in the " + room +
