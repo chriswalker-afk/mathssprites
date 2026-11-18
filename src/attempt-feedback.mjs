@@ -59,8 +59,8 @@ export function attemptMessage(failure, action, side = "left") {
         " here. I can't pick up " + failure.needed + "!" + rewind;
     case "unsupported-area":
       return action?.op === "square"
-        ? "These mixed rooms need extra cross pieces to make a square. I can't just square each part separately." + rewind
-        : "That area doesn't make a complete square of identical pieces. I would need awkward little parts." + rewind;
+        ? "I can square a row of round sprites and weights, including mixed ones. But a square sprite would need higher powers, or these signed pieces will not fit." + rewind
+        : "I tried filling the box, but the corner pieces or two mixed regions do not match a complete square. I can't keep one proper side!" + rewind;
     default:
       return (failure?.reason || "Something doesn't fit in this experiment.") + rewind;
   }

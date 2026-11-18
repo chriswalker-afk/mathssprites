@@ -222,62 +222,123 @@ background-image:repeating-linear-gradient(90deg,transparent 0 66px,rgba(0,0,0,.
 .scene-caption{position:absolute;z-index:8;bottom:15px;left:29px;font:italic .81rem Georgia,serif;letter-spacing:.035em;color:#e9d8b5;text-shadow:0 2px 3px #1b1715}
 .scene-caption.unbalanced{color:#ffdca8}
 
-/* The hand temporarily turns a FLOOR ROW into a visual n by n array.
-   Row appears, matching column follows, then interior cells fill. On a
-   principal root the interior disappears, leaving exactly one side. */
-.area-preview{position:absolute;z-index:7;left:2%;right:51%;bottom:33px;height:203px;
-  display:flex;align-items:center;justify-content:flex-end;flex-direction:column;gap:7px;
-  pointer-events:none;filter:drop-shadow(0 4px 7px #0009)}
-.area-math{padding:4px 8px;border:1px solid #ad996e;border-radius:8px;background:#263330ed;
-  color:#f5ddb1;font:700 .81rem Georgia,serif;text-align:center;white-space:normal;max-width:100%}
-.area-preview .area-guide{display:flex;gap:7px;align-items:center;color:#d3bb92;
-  font:italic .69rem Georgia,serif;white-space:normal;text-align:center}
-.area-preview .area-guide strong{color:#f4d9a5}
-.area-grid{width:min(94%,132px,calc(var(--area-side,3) * 41px));
-  aspect-ratio:1;max-width:132px;max-height:132px;flex:none;display:grid;
-  grid-template-columns:repeat(var(--area-side,3),minmax(0,1fr));
-  grid-template-rows:repeat(var(--area-side,3),minmax(0,1fr));
-  gap:4px;padding:5px;border:2px dashed rgba(220,196,141,.85);border-radius:7px;
-  background:radial-gradient(ellipse,#6a6f56a1,#293a36d9);
-  box-shadow:0 0 0 3px #18232096,inset 0 0 17px #0006}
-.area-cell{min-width:0;min-height:0;border:1px solid #f4d9a9;border-radius:7px;
-  background:linear-gradient(130deg,#d3b786,#86613c);box-shadow:inset 1px 1px #f1dab0a8,0 1px 3px #0009;
-  display:flex;align-items:center;justify-content:center;opacity:0;
-  transform:scale(.4);font:700 clamp(.5rem,.8vw,.85rem) Georgia,serif;color:#30261c}
-.area-cell.area-symbolic{border-radius:5px;background:linear-gradient(135deg,#50685d,#203532);
-  color:#f5dfaf;box-shadow:inset 0 0 0 2px #caa977,0 2px 3px #0009}
-.area-preview[data-phase="arranging"] .area-cell{
-  animation:area-cell-enter .31s cubic-bezier(.22,.86,.24,1.2) var(--cell-delay,0ms) both}
-.area-preview[data-phase="arranging"] .area-cell.role-row{
-  box-shadow:inset 0 0 0 2px #fae3af,0 0 10px #f9d4859c}
-.area-preview[data-phase="arranging"] .area-cell.role-column{
-  box-shadow:inset 0 0 0 2px #e5d2ad,0 0 10px #d9ac6888}
-.area-preview[data-phase="result"] .area-cell{opacity:1;transform:scale(1)}
-.area-preview[data-phase="result"][data-operation="sqrt"] .area-cell:not(.role-row){
-  animation:area-cell-disappear .48s ease-in both}
-.area-preview[data-phase="result"][data-operation="sqrt"] .area-cell.role-row{
-  animation:area-side-kept .58s ease-in-out both}
-.area-preview[data-phase="result"][data-operation="square"] .area-cell{
-  animation:area-cells-complete .48s ease-out both}
-.area-extract-label{opacity:0;min-height:16px;color:#f8e1b3;font:bold .68rem Georgia,serif;letter-spacing:.06em}
-.area-preview[data-phase="result"] .area-extract-label{animation:area-label-in .45s .12s both}
-@keyframes area-cell-enter{from{opacity:0;transform:translateY(-12px) scale(.4)}to{opacity:1;transform:translateY(0) scale(1)}}
-@keyframes area-cell-disappear{from{opacity:1;transform:scale(1)}to{opacity:0;transform:scale(.18) translateY(-15px)}}
-@keyframes area-side-kept{0%,100%{opacity:1;transform:scale(1)}50%{opacity:1;transform:scale(1.13);filter:brightness(1.45)}}
-@keyframes area-cells-complete{from{filter:brightness(1.7);transform:scale(.93)}to{filter:brightness(1);transform:scale(1)}}
-@keyframes area-label-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-/* The illustrated hand visibly presses the round x into a square x² and
-   pinches/squishes the reverse transformation. */
-.giant-hand.arranging .hand-art,.giant-hand.arranging .hand-cargo{
-  animation:hand-trace-area 1.13s cubic-bezier(.25,.7,.3,1) both}
-@keyframes hand-trace-area{
-  0%{transform:translate(-18px,4px) rotate(-9deg)}
-  24%{transform:translate(19px,4px) rotate(5deg)}
-  43%{transform:translate(19px,-21px) rotate(-3deg)}
-  62%{transform:translate(-18px,-21px) rotate(5deg)}
-  81%{transform:translate(10px,-8px) rotate(-4deg)}
-  100%{transform:translate(0,0) rotate(0deg)}
+/* PR11: the hand builds an actual wooden/brass box ON THE FLOOR of each
+   room. Nothing appears in a separate instructional inset. The incoming floor
+   row becomes the top dimensional guide; the copied vertical guide and the
+   interior objects are then physically built, region by region. */
+.room-square-box[hidden]{display:none!important}
+.room-square-box{position:absolute;z-index:7;left:3%;right:3%;bottom:32px;
+  height:225px;display:flex;align-items:flex-end;justify-content:center;
+  pointer-events:none;filter:drop-shadow(3px 6px 5px #0009)}
+.room-square-box .box-workshop{position:relative;
+  width:min(91%,222px);height:auto;aspect-ratio:1;min-width:0;
+  max-height:222px;transform-origin:bottom center;
+  animation:box-unfold .35s cubic-bezier(.2,.8,.3,1) both}
+.box-workshop:before{content:"";position:absolute;inset:23px 0 0 23px;
+  border:4px ridge #a9875a;border-radius:3px;
+  background:linear-gradient(150deg,#303a3370,#26352b88);
+  box-shadow:inset 0 0 15px #101714a5,0 0 0 2px #37271c}
+.box-workshop:after{content:"";position:absolute;inset:26px 3px 3px 26px;
+  border:1px dotted #deca9875;pointer-events:none}
+.box-edge{position:absolute;z-index:2;display:grid;min-width:0;min-height:0;
+  gap:1px;opacity:0;transform:translateY(32px);transition:opacity .25s,transform .38s}
+.box-edge.built{opacity:.83;transform:translate(0,0)}
+.box-edge-top{left:25px;right:4px;top:2px;height:20px}
+.box-edge-left{top:25px;bottom:4px;left:2px;width:20px;transform:translateX(45px)}
+.box-edge-left.built{transform:translateX(0)}
+.box-edge-left.retired{opacity:0;transform:translateX(-35px)}
+.box-edge-top.kept{opacity:1;filter:drop-shadow(0 0 5px #f6c774);
+  transform:translateY(0) scale(1.045)}
+.box-edge-token{position:relative;align-self:stretch;justify-self:stretch;min-width:0;min-height:0;
+  display:grid;place-items:center;border:1px dashed #cbb9898c;
+  border-radius:3px;background:#1d24218c}
+.box-edge-token:after{content:"";width:min(56%,12px);height:min(75%,12px);
+  background:radial-gradient(circle at 27% 22%,#65736a,#1c2623 78%);
+  border:1px solid #baa477;border-radius:50%;box-shadow:0 1px 3px #0007}
+.box-edge-token.edge-weight:after{border-radius:3px 3px 5px 5px;
+  background:linear-gradient(90deg,#7c5937,#edcf96,#805f3b)}
+.box-edge-left .box-edge-token{width:100%;height:100%}
+.box-grid{position:absolute;z-index:1;left:25px;right:4px;top:25px;bottom:4px;
+  display:grid;gap:1px;
+  background:repeating-linear-gradient(90deg,#8b775329 0 12px,transparent 13px 24px);
+  border:1px solid #af95694d}
+.box-cell{min-width:0;min-height:0;position:relative;display:grid;place-items:center;
+  border:1px solid #e2d0a03b;border-radius:2px;opacity:0;
+  background:#c5aa7745;transform:translateY(35px) scale(.7)}
+.box-cell.placed{opacity:1;transform:translate(0,0);
+  animation:box-token-place .53s cubic-bezier(.19,.88,.29,1.24) both}
+.box-cell.removed{animation:box-token-remove .45s ease-in both}
+.box-cell.region-quadratic{background:#6d8d7645}
+.box-cell.region-mixed-top,.box-cell.region-mixed-bottom{background:#4c695b55}
+.box-cell.region-units{background:#ab895942}
+.box-cell.placed .box-actor{animation:box-actor-idle 1.7s ease-in-out infinite alternate}
+.box-cell .box-actor{position:relative;display:block;
+  width:min(75%,27px);height:min(75%,27px);min-width:3px;min-height:3px}
+.box-actor:before,.box-actor:after{content:"";position:absolute;z-index:2;
+  top:29%;width:15%;height:24%;border-radius:50%;background:#f5eed9}
+.box-actor:before{left:29%}.box-actor:after{left:56%}
+.box-actor.box-actor-x2{border:1px solid #dfc790;border-radius:4px;
+  background:radial-gradient(circle at 25% 24%,#5e7c71,#192e29 78%);
+  box-shadow:inset -1px -2px 3px #08110f80,0 2px 2px #0009}
+.box-actor.box-actor-x{border:1px solid #6e8174;border-radius:48%;
+  background:radial-gradient(circle at 27% 25%,#5a6a60,#141f1c 82%);
+  box-shadow:inset -1px -2px 4px #07100d9c,0 2px 2px #0009}
+.box-actor.box-actor-weight{width:min(67%,24px);height:min(71%,27px);
+  border-radius:4px 4px 6px 6px;clip-path:polygon(34% 0,67% 0,87% 26%,100% 100%,0 100%,12% 26%);
+  background:linear-gradient(105deg,#7d5937,#e6c895 54%,#825f3a);border:1px solid #8d673d}
+.box-actor.box-actor-weight:before,.box-actor.box-actor-weight:after{display:none}
+.box-cell.region-mixed-top:before,.box-cell.region-mixed-bottom:before{content:"";position:absolute;
+  inset:3px;border:1px solid #a1c7b45c;pointer-events:none}
+.box-cell.region-mixed-top .box-actor-x{transform:rotate(12deg)}
+.box-cell.region-mixed-bottom .box-actor-x{transform:rotate(-12deg)}
+.room-square-box[data-operation="sqrt"] .box-cell.placed .box-actor{
+  animation:box-actor-idle 2.2s ease-in-out infinite alternate}
+.room-square-box[data-step="result"] .box-workshop{animation:box-return-to-floor .54s ease-out both}
+.room-square-box[data-operation="sqrt"][data-step="edge"] .box-edge-top{
+  border-top:2px solid #e9ca87}
+.room-square-box .box-footnote{position:absolute;z-index:3;left:50%;bottom:-12px;
+  transform:translateX(-50%);width:max-content;max-width:110%;padding:2px 5px;
+  background:#29352de8;border:1px solid #947958;border-radius:5px;color:#e8d5b3;
+  font:italic clamp(.42rem,.66vw,.61rem) Georgia,serif;text-align:center;white-space:normal}
+.area-active .room-items{opacity:.04;transition:opacity .25s ease}
+.area-active.area-after-square .room-items,
+.area-active.area-after-sqrt .room-items{opacity:1;transition:opacity .2s ease}
+@keyframes box-unfold{from{opacity:0;transform:translateY(15px) scale(.88)}
+  to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes box-token-place{0%{opacity:0;transform:translateY(45px) scale(.52)}
+  55%{opacity:1;transform:translateY(-4px) scale(1.08)}
+  100%{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes box-token-remove{from{opacity:1;transform:scale(1)}
+  to{opacity:0;transform:scale(.46) translateY(28px)}}
+@keyframes box-actor-idle{0%{filter:brightness(.94);translate:0 1px}
+  100%{filter:brightness(1.08);translate:0 -1px}}
+@keyframes box-return-to-floor{from{opacity:1;transform:translateY(0) scale(1)}
+  to{opacity:0;transform:translateY(35px) scale(.75)}}
+/* Visual QA: an almost 190px hand hid most of the 5x5 construction,
+   especially on phones. This smaller working pose still reaches the floor,
+   and an end-of-build presentation motion clears the completed box. */
+.giant-hand[data-box-operation]{width:136px;height:190px}
+.giant-hand[data-box-operation] .hand-cargo{
+  transform:translate(-50%,-8px) scale(.82);transform-origin:center}
+.giant-hand[data-box-operation="square"][data-box-step="units"] .hand-art,
+.giant-hand[data-box-operation="sqrt"][data-box-step="edge"] .hand-art{
+  transform:translate(104px,-38px) rotate(9deg)}
+@media(max-width:600px){
+  .giant-hand[data-box-operation]{width:75px;height:111px}
+  .giant-hand[data-box-operation] .hand-cargo{
+    transform:translate(-50%,-8px) scale(.58)}
+  .giant-hand[data-box-operation="square"][data-box-step="units"] .hand-art,
+  .giant-hand[data-box-operation="sqrt"][data-box-step="edge"] .hand-art{
+    transform:translate(52px,-22px) rotate(7deg)}
 }
+/* The illustrated hand traces the physical box's actual quadrants. It pauses
+   to pound x×x into a square sprite or squish an x² square into its side. */
+.giant-hand[data-box-step="frame"] .hand-art{transform:translate(-2px,-12px) rotate(-4deg)}
+.giant-hand[data-box-step="edge"] .hand-art{transform:translate(-21px,8px) rotate(-9deg)}
+.giant-hand[data-box-step="column"] .hand-art{transform:translate(-37px,-22px) rotate(5deg)}
+.giant-hand[data-box-step="quadratic"] .hand-art{transform:translate(-30px,-23px) rotate(-5deg)}
+.giant-hand[data-box-step="mixed"] .hand-art{transform:translate(8px,-9px) rotate(5deg)}
+.giant-hand[data-box-step="units"] .hand-art{transform:translate(20px,13px) rotate(-5deg)}
 .giant-hand[data-phase="pound"] .hand-art{animation:hand-area-pound .46s cubic-bezier(.25,.6,.34,1) both}
 .giant-hand[data-phase="squish"] .hand-art{animation:hand-area-squish .48s ease-in-out both}
 @keyframes hand-area-pound{
@@ -292,6 +353,22 @@ background-image:repeating-linear-gradient(90deg,transparent 0 66px,rgba(0,0,0,.
   65%{transform:scaleX(.93) rotate(3deg)}
   100%{transform:scale(1)}
 }
+/* The room actors reappear at contact and visibly MORPH. Their idle motion
+   resumes naturally when the box is cleared on the hand's exit. */
+.area-after-square .sprite-square .sprite-body{
+  animation:square-form .53s cubic-bezier(.22,.85,.2,1.1) both!important}
+.area-after-sqrt .sprite-black .sprite-body{
+  animation:round-form .53s cubic-bezier(.22,.85,.2,1.1) both!important}
+@keyframes square-form{
+  0%{border-radius:50%;transform:scale(1.13,.75)}
+  55%{border-radius:19%;transform:scale(.84,1.15)}
+  100%{border-radius:10px;transform:scale(1)}
+}
+@keyframes round-form{
+  0%{border-radius:9px;transform:scale(1.2,.72)}
+  48%{border-radius:36%;transform:scale(.89,1.17)}
+  100%{border-radius:50%;transform:scale(1)}
+}
 .held-square-press{position:absolute;left:11px;top:8px;width:42px;height:35px;
   background:linear-gradient(120deg,#e2c28c,#765332);border:3px solid #5c432d;border-radius:5px;
   box-shadow:inset 0 2px #f7e4bb,0 3px 4px #000a}
@@ -301,11 +378,23 @@ background-image:repeating-linear-gradient(90deg,transparent 0 66px,rgba(0,0,0,.
   font:700 .76rem Georgia,serif;color:#4e3424}
 .mini-token.posX2{border-radius:3px!important;box-shadow:inset 0 0 0 1.5px #c5a877!important}
 @media(max-width:600px){
-  .area-preview{left:1%;right:49%;bottom:21px;height:146px;gap:3px}
-  .area-grid{width:min(94%,100px,calc(var(--area-side,3) * 41px));max-width:100px;max-height:100px;gap:2px;padding:3px}
-  .area-math{font-size:.58rem;padding:3px 5px}
-  .area-preview .area-guide{font-size:.55rem}
-  .area-extract-label{font-size:.53rem;min-height:12px}
+  .room-square-box{left:1%;right:1%;bottom:19px;height:152px}
+  .room-square-box .box-workshop{width:min(98%,145px);max-height:145px}
+  .box-edge-top{left:18px;right:2px;height:15px;top:2px}
+  .box-edge-left{top:18px;bottom:2px;width:15px;left:2px}
+  .box-workshop:before{inset:17px 0 0 17px;border-width:3px}
+  .box-workshop:after{inset:19px 2px 2px 19px}
+  .box-grid{left:19px;right:2px;top:19px;bottom:2px;gap:0}
+  .box-cell{border-width:1px}
+  .box-cell .box-actor{width:min(78%,16px);height:min(78%,16px)}
+  .box-cell .box-actor-weight{width:min(68%,15px);height:min(70%,16px)}
+  .box-edge-token:after{width:min(70%,8px);height:min(70%,8px)}
+  .room-square-box .box-footnote{bottom:-9px;font-size:.44rem;padding:1px 3px}
+  .giant-hand[data-box-step="column"] .hand-art{transform:translate(-17px,-11px) rotate(4deg)}
+  .giant-hand[data-box-step="edge"] .hand-art{transform:translate(-9px,4px) rotate(-5deg)}
+  .giant-hand[data-box-step="quadratic"] .hand-art{transform:translate(-14px,-12px) rotate(-4deg)}
+  .giant-hand[data-box-step="mixed"] .hand-art{transform:translate(7px,-5px)}
+  .giant-hand[data-box-step="units"] .hand-art{transform:translate(11px,6px)}
 }
 
 /* PR10: unsuccessful actions are VISUAL EXPERIMENTS, never algebra commits.
@@ -851,3 +940,15 @@ legend{margin-bottom:12px;padding:0}
 .reduce-motion .sprite-ground-shadow:after{opacity:0!important}
 .reduce-motion .sprite-reaction-shell,.reduce-motion .sprite-reacting:after,
 .reduce-motion .hand-cargo .held-sprite{animation:none!important;transform:none!important}
+/* A still, readable in-room square for students choosing Motion: reduced. */
+.reduce-motion .room-square-box .box-cell,
+.reduce-motion .room-square-box .box-workshop,
+.reduce-motion .room-square-box .box-actor,
+.reduce-motion .room-square-box .box-edge,
+.reduce-motion .room-square-box .box-cell.placed .box-actor{
+  animation:none!important;transition:none!important}
+.reduce-motion .room-square-box .box-cell.placed{opacity:1;transform:none}
+.reduce-motion .room-square-box .box-cell.removed{opacity:0;transform:none}
+.reduce-motion .room-square-box .box-edge.built{opacity:.83;transform:none}
+.reduce-motion .room-square-box .box-edge.retired{opacity:0;transform:none}
+.reduce-motion .room-square-box .box-edge.kept{opacity:1;transform:none}

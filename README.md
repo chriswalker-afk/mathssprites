@@ -43,7 +43,7 @@ At success, **comic-book panels appear automatically, one for each actual mathem
 
 ## Play the first prototype
 
-The repository now includes a **dependency-free browser game** with eight curated levels, including three lessons on squaring and square roots.
+The repository now includes a **dependency-free browser game** with ten curated levels, including five lessons on building and undoing squares.
 
 - **Guided mirror**: choose an operation and the hand performs it in both rooms.
 - **Your turn**: make a change in one room; the balance tips until you repeat it in the other.
@@ -80,15 +80,24 @@ No package installation is needed. After merge, publish as GitHub Pages from `ma
 The first prototype prioritises **correct physical mathematics and a delightful reveal** over final art assets or a large level library.
 
 
-## Geometry-of-algebra: square and square root (chapters 6–8)
+## Geometry-of-algebra: the carpenter's box (chapters 6–10)
 
 Ordinary sprites and weights now stand along **one horizontal floor row**, not several stacked rows. If the row is crowded, the entire row shrinks proportionally to remain visible within the chamber; the pieces never wrap onto a second row.
 
 Two new **whole-room** tools make multiplication and inverse operations tangible:
 
-- **Square (²):** the hand lays out the existing row, builds a matching column, and fills the resulting square one cell at a time. Three weights become a visible 3-by-3 arrangement of nine; a round x sprite is pressed into a **square sprite** representing x². If there are two x sprites, the two-by-two arrangement produces four square sprites. After the demonstration, objects return to one floor row for normal play.
-- **Square root (√):** the hand collects a perfect-square array, then removes all but one side. Nine weights become three; a **square sprite** visibly squishes into a round x sprite. An array of four square sprites becomes two round sprites. Chapter eight then uses ordinary division to finish.
+- **Square (²):** inside the actual room the hand erects a wooden/brass frame on the floor, lays out the original row as one dimension, matches it with the perpendicular side, and fills each resulting region with real sprites and weights. Round×round produces square x² sprites, round×weight fills both matching mixed regions with x sprites, weight×weight produces unit weights. Then the result returns to the normal single floor row.
+- **Square root (√):** in the same chamber, the hand places the quadratic, mixed and constant pieces into the original box, removes the four regions in reverse order, and keeps exactly one side. Square sprites squish into round sprites when appropriate. For example, √(4x²+12x+9)=2x+3 under the x≥0 lesson condition.
 
-**Mathematical safeguards:** these geometric actions work on a *pure* row of positive sprites or positive weights, not on a mixed expression. For example, squaring x+2 is **not** represented by x²+4: the full expansion would require the cross-term 4x, so the game asks the learner to simplify first. Square roots require a perfect-square coefficient; new lessons assume x≥0, so the game uses the principal root √(x²)=x and never falsely claims that x²=9 only has one real solution without the domain assumption.
+**Mathematical safeguards:** the square applies to an **entire** nonnegative linear side, so (2x+3)² becomes **4x²+12x+9** rather than the false 4x²+9. The interior contains exactly 4 square sprites, 12 round sprites (6 in each crossing region), and 9 weights. Roots are allowed only when all three coefficients form a complete perfect square, with equal mixed regions. The chapters explicitly assume x≥0, and the 48-object limit prevents an overcrowded box; rejected attempts use the reversible PR10 feedback.
 
 There are two hand modes, original hand/sprite interactions, and the same animated pencil recap. The square-shaped x² sprite has independent bounce, wiggle and blinking just like its round counterpart. Formal algebra labels are retained for the comic-book replay rather than permanently placed on the objects during play.
+
+
+### New linked experiments (chapters 9–10)
+
+**Build every part:** 2x+3=5 with x=1 becomes (2x+3)²=25. The hand builds all four regions in the west room; five weights in the east room become a 5-by-5 box. The completed layout is 4x²+12x+9=25. This is an area-building goal, not an instruction to isolate x.
+
+**Unbuild the square:** start from 4x²+12x+9=25. The hand reverse-fills and removes the box until only 2x+3=5 remains. The student then removes three weights and divides by two to isolate x.
+
+This is a *single in-world interaction*, not a teaching diagram layered beside the action. The edge rulers are translucent **dimension markers**, not counted tokens. Only interior cells become algebra tokens, which are committed by the engine at hand contact. The box never pollutes Undo, the notebook or the normal floor-only view. On small screens it scales within the chamber; reduced motion retains the complete sequence as quick static stages.

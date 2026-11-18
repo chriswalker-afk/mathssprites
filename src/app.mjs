@@ -6,7 +6,7 @@ import { buildWritingTimeline, symbolsOf } from "./replay-timeline.mjs";
 import { handMotionPlan } from "./hand-timeline.mjs";
 import { spriteMotionProfile, spriteMotionStyle } from "./sprite-motion.mjs";
 import { pickSpriteHandReaction, dodgeOffsetPx } from "./sprite-reactions.mjs";
-import { floorScaleToFit, previewCells, areaMathLabel } from "./area-layout.mjs";
+import { floorScaleToFit, inRoomBoxPlan, areaMathLabel } from "./area-layout.mjs";
 import { fractionDisplay, itemWord, attemptMessage, mismatchedMoveMessage } from "./attempt-feedback.mjs";
 
 const $ = id => document.getElementById(id);
@@ -288,84 +288,140 @@ function handProp(action, side) {
   return picture + (action.count > 1 ? '<span class="held-count">×' + action.count + '</span>' : "");
 }
 function roomOperationText(action, side) {
-  const roomName = side === "left" ? "west" : "east";
-  if (action.op === "square" || action.op === "sqrt") {
-    const area = areaArrangement(visible()[side], action.op);
-    if (action.op === "square") {
-      return area?.symbolic
-        ? "The hand builds a matching column in the " + roomName +
-          " room, fills the area and presses round sprites into square ones!"
-        : !area ? "I can't form that square from this room's objects."
-          : "The hand matches the " + area.side + "-weight row with a column and fills a " +
-          area.side + " × " + area.side + " square of weights in the " + roomName + " room!";
+  const roomName=side==="left"?"west":"east";
+  if (action.op==="square"||action.op==="sqrt") {
+    const area=areaArrangement(visible()[side],action.op);
+    if (!area||area.kind==="zero") return "The hand checks the empty box...";
+    const layout=inRoomBoxPlan(area);
+    const {spriteSide:a,weightSide:b,counts}=layout;
+    if (action.op==="square") {
+      if (a&&b) return "The hand builds a square IN the "+roomName+" room: "+
+        counts.posX2+" square sprites, "+counts.posX+
+        " round sprites across two mixed regions, and "+counts.posOne+" weights.";
+      return a
+        ? "The hand builds a complete square in the "+roomName+
+          " room and presses round sprites into square ones."
+        : "The hand fills a "+area.side+" by "+area.side+
+          " box with weights in the "+roomName+" room.";
     }
-    return area?.symbolic
-      ? "The hand keeps one side of the square in the " + roomName +
-        " room and squishes square sprites back into round ones!"
-      : !area ? "This room will not form a complete square — I need to see why."
-        : "The hand makes a " + area.side + " × " + area.side + " square from " + area.cells +
-        " weights, then keeps one side (" + area.side + " weights) in the " + roomName + " room!";
+    return "The hand arranges the complete square in the "+roomName+
+      " room, lifts away the interior, and keeps one side: "+
+      (a?a+" sprites"+(b?" and ":""):"")+(b?b+" weights":"")+".";
   }
-  if (action.op === "divide") return "The hand sorts the " + roomName + " room into " + action.factor + " equal baskets...";
-  if (action.op === "multiply") return "The hand makes " + action.factor + " complete copies in the " + roomName + " room...";
-  const nouns = action.kind === "posX2" ? (action.count === 1 ? "square sprite" : "square sprites") :
-    action.kind === "posX" ? (action.count === 1 ? "sprite" : "sprites") :
-    (action.count === 1 ? "weight" : "weights");
-  return "The hand " + (action.op === "remove" ? "lifts away " : "places ") +
-    action.count + " " + nouns + " in the " + roomName + " room...";
+  if(action.op==="divide") return "The hand sorts the "+roomName+
+    " room into "+action.factor+" equal baskets...";
+  if(action.op==="multiply") return "The hand makes "+action.factor+
+    " complete copies in the "+roomName+" room...";
+  const nouns=action.kind==="posX2"?
+    (action.count===1?"square sprite":"square sprites"):
+    action.kind==="posX"?
+      (action.count===1?"sprite":"sprites"):
+      (action.count===1?"weight":"weights");
+  return "The hand "+(action.op==="remove"?"lifts away ":"places ")+
+    action.count+" "+nouns+" in the "+roomName+" room...";
 }
+function areaBoxActor(kind) {
+  if(kind==="posOne")return '<span class="box-actor box-actor-weight"></span>';
+  return '<span class="box-actor '+(kind==="posX2"?"box-actor-x2":"box-actor-x")+
+    '"></span>';
+}
+const BOX_NOTES={
+  square:{
+    frame:"The hand sets a box onto the floor.",
+    edge:"Place the original row along one side.",
+    column:"Build a matching side at right angles.",
+    quadratic:"Round sprites meet: square sprites appear.",
+    mixed:"Fill both crossing regions with round sprites.",
+    units:"Fill the last corner with weights."
+  },
+  sqrt:{
+    frame:"Arrange all the objects in the square box.",
+    units:"Lift the weights out of the bottom corner.",
+    mixed:"Remove both matching mixed regions.",
+    quadratic:"Squish the square sprites back to a side.",
+    column:"Remove the duplicate vertical side.",
+    edge:"Keep only the remaining side."
+  }
+};
 /**
- * A visual multiplication array, not a change in the algebra. The hand builds
- * the horizontal row, matching vertical column, then fills the interior.
- * Taking roots reverses this: the completed square loses every cell except
- * the first side. Only the later hand contact commits the actual math.
+ * No detached overlay: a real frame is erected at floor level inside the
+ * SAME room as the sprites. Ghost markers show the two physical dimensions;
+ * they are guides, not counted as extra algebraic objects. Only the 4 interior
+ * regions are the new algebraic objects. This scene never changes state:
+ * the hand contact later commits the engine's already-validated result.
  */
 function showAreaPreview(side, action) {
-  const preview = $(side + "-area-preview");
-  const arrangement = areaArrangement(visible()[side], action.op);
-  if (!arrangement || arrangement.side < 1) return;
-  const cells = previewCells(arrangement).map(cell => {
-    const symbol = arrangement.symbolic ? "✦" : "●";
-    return '<span class="area-cell role-' + cell.role +
-      (arrangement.symbolic ? " area-symbolic" : "") +
-      '" data-cell-index="' + cell.index + '" data-cell-row="' + cell.row +
-      '" data-cell-col="' + cell.col + '" style="--cell-delay:' + cell.delay +
-      'ms">' + symbol + '</span>';
+  const node=$(side+"-area-box");
+  const area=areaArrangement(visible()[side],action.op);
+  if(!area||area.kind==="zero")return;
+  const plan=inRoomBoxPlan(area);
+  const tracks=plan.tracks.map(x=>x+"fr").join(" ");
+  const ruler=items=>items.map(({type,index})=>
+    '<span class="box-edge-token edge-'+type+'" data-segment="'+index+
+      '" aria-hidden="true"></span>').join("");
+  const tiles=plan.cells.map(cell=>{
+    const kind=cell.type==="square-sprite"?"posX2":
+      cell.type==="round-sprite"?"posX":"posOne";
+    return '<span class="box-cell region-'+cell.region+' stage-'+cell.stage+
+      '" data-kind="'+kind+'" data-row="'+cell.row+'" data-col="'+cell.col+
+      '" data-cell-index="'+cell.index+'" aria-hidden="true">'+
+      areaBoxActor(kind)+'</span>';
   }).join("");
-  const demonstration = arrangement.symbolic
-    ? (action.op === "square" ? "ROUND → SQUARE" : "SQUARE → ROUND")
-    : (action.op === "square"
-      ? arrangement.side + " × " + arrangement.side + " → " + arrangement.cells
-      : arrangement.cells + " → KEEP " + arrangement.side);
-  preview.dataset.operation = action.op;
-  preview.dataset.phase = "arranging";
-  preview.style.setProperty("--area-side", arrangement.side);
-  preview.setAttribute("aria-label", areaMathLabel(arrangement) + ", a " +
-    arrangement.side + " by " + arrangement.side + " square");
-  preview.innerHTML = '<span class="area-math">' + demonstration + '</span>' +
-    '<div class="area-guide"><strong>' + (action.op === "square" ? "ROW → COLUMN → FILL" :
-      "FULL SQUARE → KEEP ONE SIDE") + '</strong></div>' +
-    '<div class="area-grid" style="--area-side:' + arrangement.side + '">' + cells + '</div>' +
-    '<span class="area-extract-label">' + (action.op === "square" ? "SQUARE COMPLETED" :
-      "ONE SIDE REMAINS") + '</span>';
-  preview.hidden = false;
-  $(side + "-chamber").classList.add("area-active");
+  node.innerHTML='<div class="box-workshop">'+
+    '<div class="box-edge box-edge-top" style="grid-template-columns:'+tracks+
+      '">'+ruler(plan.horizontal)+'</div>'+
+    '<div class="box-edge box-edge-left" style="grid-template-rows:'+tracks+
+      '">'+ruler(plan.vertical)+'</div>'+
+    '<div class="box-grid" style="grid-template-columns:'+tracks+
+      ';grid-template-rows:'+tracks+'">'+tiles+'</div>'+
+    '<span class="box-footnote"></span></div>';
+  node.dataset.operation=action.op;
+  node.dataset.step="frame";
+  node.dataset.layout="in-room";
+  node.dataset.spriteSide=plan.spriteSide;
+  node.dataset.weightSide=plan.weightSide;
+  node.dataset.cells=plan.cells.length;
+  node.setAttribute("aria-label",areaMathLabel(area)+
+    "; built inside the "+(side==="left"?"west":"east")+" room");
+  node.hidden=false;
+  $(side+"-chamber").classList.add("area-active");
+  if(action.op==="sqrt"){
+    node.querySelector(".box-edge-top").classList.add("built");
+    node.querySelector(".box-edge-left").classList.add("built");
+    for(const cell of node.querySelectorAll(".box-cell"))cell.classList.add("placed");
+  }
+  node.querySelector(".box-footnote").textContent=BOX_NOTES[action.op].frame;
 }
-function finishAreaPreview(side, action) {
-  const preview = $(side + "-area-preview");
-  if (preview.hidden) return;
-  preview.dataset.phase = "result";
-  $(side + "-chamber").classList.add(action.op === "square" ?
-    "area-after-square" : "area-after-sqrt");
+function advanceAreaPreview(side, action, step) {
+  if(step==="frame"){showAreaPreview(side,action);return;}
+  const node=$(side+"-area-box");
+  if(node.hidden)return;
+  node.dataset.step=step;
+  const root=action.op==="sqrt";
+  const selector=step==="quadratic"||step==="mixed"||step==="units"
+    ? ".box-cell.stage-"+step : null;
+  if(selector)for(const cell of node.querySelectorAll(selector)){
+    cell.classList.add(root?"removed":"placed");
+  }
+  if(step==="edge")node.querySelector(".box-edge-top").classList.add(root?"kept":"built");
+  if(step==="column")node.querySelector(".box-edge-left").classList.add(root?"retired":"built");
+  node.querySelector(".box-footnote").textContent=BOX_NOTES[action.op][step]||"";
+}
+function finishAreaPreview(side,action) {
+  const node=$(side+"-area-box");
+  if(node.hidden)return;
+  node.dataset.step="result";
+  $(side+"-chamber").classList.add(action.op==="square"?
+    "area-after-square":"area-after-sqrt");
 }
 function clearAreaPreview(side) {
-  const preview = $(side + "-area-preview");
-  preview.hidden = true;
-  preview.innerHTML = "";
-  preview.removeAttribute("data-phase");
-  const chamber = $(side + "-chamber");
-  chamber.classList.remove("area-active", "area-after-square", "area-after-sqrt");
+  const node=$(side+"-area-box");
+  node.hidden=true;node.innerHTML="";
+  delete node.dataset.step;delete node.dataset.layout;
+  const chamber=$(side+"-chamber");
+  chamber.classList.remove("area-active","area-after-square","area-after-sqrt");
 }
+
 function animateClassFrame() {
   return new Promise(resolve => {
     // Requesting a frame ensures the hand starts ABOVE the room before
@@ -379,9 +435,13 @@ async function handAct(side, action, applyAtContact) {
   const target = $(side + "-chamber");
   const scene = $("scene").getBoundingClientRect();
   const items = $(side + "-items").getBoundingClientRect();
-  const motion = handMotionPlan(action, reducedMotion);
   const areaEffect = action.op === "square" || action.op === "sqrt"
     ? areaArrangement(visible()[side], action.op) : null;
+  const motion = handMotionPlan(action, reducedMotion, areaEffect);
+  // The in-room square is a real piece of scenery. Use a more precise,
+  // smaller hand while arranging it so students can SEE the four regions.
+  // Setting this before geometry measurements keeps the fingertip on target.
+  if (areaEffect?.side > 0) hand.dataset.boxOperation = action.op;
 
   // Find the actual geometry of this room at any viewport width. The updated
   // art's fingertips reach ~95% of its box (not 78% as in the original outline).
@@ -449,13 +509,20 @@ async function handAct(side, action, applyAtContact) {
           hand.dataset.phase = motion.placing ? "carry" : "aim";
           if (reaction === "dodge") hand.classList.add("tracking-sprite");
           break;
-        case "arrange":
-          showAreaPreview(side, action);
+        case "frame":
+        case "edge":
+        case "column":
+        case "quadratic":
+        case "mixed":
+        case "units":
+          advanceAreaPreview(side, action, beat.name);
           hand.classList.add("arranging");
+          hand.dataset.boxStep = beat.name;
           hand.dataset.phase = action.op === "square" ? "aim" : "reach";
           break;
         case "grip":
           hand.classList.remove("tracking-sprite", "arranging");
+          delete hand.dataset.boxStep;
           hand.classList.add("grasping");
           hand.dataset.phase = "grip";
           if (reaction) actor.dataset.reactPhase = "caught";
@@ -499,6 +566,8 @@ async function handAct(side, action, applyAtContact) {
       actor.style.removeProperty("--dodge-shift");
     }
     hand.style.removeProperty("--hand-chase");
+    delete hand.dataset.boxStep;
+    delete hand.dataset.boxOperation;
     clearAreaPreview(side);
     cargo.classList.remove("sprite-captured");
     cargo.hidden = true;
