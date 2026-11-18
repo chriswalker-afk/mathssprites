@@ -1,6 +1,11 @@
 /* PR17 - The player journey: a readable first experiment, differentiated
    chapter art, earned successes and touch-friendly mobile controls. */
 :root{--chapter-accent:#d2ac73}
+.chapter-status{display:inline-block;margin-top:8px;color:var(--chapter-accent);
+  font-size:.7rem;letter-spacing:.15em;font-weight:800}
+.chapter-briefing{margin-top:12px;padding:10px 14px;border-left:4px solid var(--chapter-accent);
+  background:#1426228a;color:#e0e4d6!important;border-radius:4px 9px 9px 4px;
+  font-size:.83rem!important;line-height:1.4}
 .apprentice-guide{
   display:grid;grid-template-columns:52px minmax(0,1fr) auto;
   align-items:center;gap:16px;position:sticky;top:8px;z-index:18;
