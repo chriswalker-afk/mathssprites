@@ -16,11 +16,11 @@ function apply(state,action) {
   return r.state;
 }
 test("the three additional experiments are valid and explicitly assume a nonnegative root", () => {
-  assert.equal(LEVELS.length,10);
+  assert.equal(LEVELS.length,13);
   assert.deepEqual(LEVELS.slice(5,8).map(l=>l.id),
     ["make-square","take-root","root-then-share"]);
   for (const level of LEVELS) assert.equal(validInitialLevel(level),true,level.id);
-  for (const level of LEVELS.slice(5)) assert.match(level.prompt,/x ≥ 0|x is nonnegative/);
+  for (const level of LEVELS.slice(5,10)) assert.match(level.prompt,/x ≥ 0|x is nonnegative/);
   assert.ok(TOKEN_KINDS.includes("posX2"));
 });
 test("squaring turns one round x sprite into a square x² and 3 weights into a 3-by-3 array", () => {
