@@ -748,7 +748,7 @@ function restoreExperiment({rollbackPending = false} = {}) {
 async function animateRejectedAction(action, failure, preferredSide, rollbackPending = false) {
   if (busy) return;
   const current = preferredSide || failure.side || "left";
-  const preview = previewRoomAction(state[current], action, state.quantityMode);
+  const preview = previewRoomAction(state[current], action, state.quantityMode,current);
   const side = preview.ok ? (failure.side || current) : current;
   const issue = preview.ok ? failure : preview;
   busy = true;
@@ -777,7 +777,7 @@ async function animateRejectedAction(action, failure, preferredSide, rollbackPen
 }
 async function animateMismatchedManualAction(side, firstAction, action) {
   if (busy || !state.pending) return;
-  const attempted = previewRoomAction(state[side], action, state.quantityMode);
+  const attempted = previewRoomAction(state[side], action, state.quantityMode,side);
   if (!attempted.ok) {
     // A second move that cannot physically happen still gets a demonstration,
     // and BOTH provisional sides return to the last committed equation.
@@ -849,8 +849,8 @@ async function guidedMove() {
   }
   const previous=state,next=outcome.state;
   const previews={
-    left:previewRoomAction(previous.left,action,state.quantityMode),
-    right:previewRoomAction(previous.right,action,state.quantityMode)
+    left:previewRoomAction(previous.left,action,state.quantityMode,"left"),
+    right:previewRoomAction(previous.right,action,state.quantityMode,"right")
   };
   busy=true;clearSpeech();
   $("feedback").textContent=operationDescription(action)+"...";
@@ -903,7 +903,7 @@ async function manualMove(side) {
     return animateRejectedAction(action,outcome,side,wasPending);
   }
   const before=visible();
-  const preview=previewRoomAction(before[side],action,state.quantityMode);
+  const preview=previewRoomAction(before[side],action,state.quantityMode,side);
   busy=true;clearSpeech();
   try{
     if(action.op==="divide"){
