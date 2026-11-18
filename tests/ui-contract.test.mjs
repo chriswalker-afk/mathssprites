@@ -15,8 +15,8 @@ test("every static DOM id referenced by the game exists in index.html", () => {
     assert.ok(ids.has(ref), "Missing element #" + ref);
   }
 });
-test("the game supports two hand modes and four operation choices", () => {
-  for (const op of ["remove", "add", "divide", "multiply"])
+test("the game supports two hand modes and six operation choices", () => {
+  for (const op of ["remove", "add", "divide", "multiply", "square", "sqrt"])
     assert.match(html, new RegExp('data-operation="' + op + '"'));
   assert.match(html, /value="auto"/);
   assert.match(html, /value="manual"/);
@@ -43,11 +43,13 @@ test("the room visuals have grouping, hand and responsive style rules", () => {
   assert.match(css, /max-width:600px/);
 });
 test("fifth level really exercises a divide-by-five followed by subtraction", () => {
-  assert.equal(LEVELS.length, 5);
+  assert.equal(LEVELS.length, 8);
   assert.equal(LEVELS[4].left.posX, 5);
   assert.equal(LEVELS[4].left.posOne, 10);
   assert.equal(LEVELS[4].right.posOne, 20);
   assert.match(app, /levelIndex === 4 \? 5/);
+  for (const id of ["left-area-preview", "right-area-preview", "amount-control"]) assert.match(html, new RegExp('id="' + id + '"'));
+  assert.match(html, /data-kind="posX2"/);
 });
 test("browser imports are local and the prototype has no external runtime dependencies", () => {
   assert.match(html, /src="\.\/src\/app\.mjs"/);
