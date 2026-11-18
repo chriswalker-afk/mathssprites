@@ -112,11 +112,11 @@ test("a different impossible move after one manual move also restores both sides
   await expect(page.locator("#undo")).toBeDisabled();
 });
 
-test("a failed square shows why mixed objects cannot make the square, without falsifying the algebra",async ({page})=>{
-  await page.locator('[data-operation="square"]').click();
+test("a failed root shows why x+2 cannot form the square area, then undoes the attempt",async ({page})=>{
+  await page.locator('[data-operation="sqrt"]').click();
   await page.locator("#do-both").click();
   await expect(page.locator("#left-attempt-stage")).toHaveAttribute("data-issue","unsupported-area",{timeout:14000});
-  await expect(page.locator("#speech")).toContainText("mixed rooms",{timeout:15000});
+  await expect(page.locator("#speech")).toContainText("complete square",{timeout:15000});
   await expect(page.locator("#speech")).toContainText("undo");
   await expect(page.locator("#left-attempt-stage")).toBeHidden({timeout:12000});
   await expect(page.locator("#left-items .sprite-black")).toHaveCount(1);
