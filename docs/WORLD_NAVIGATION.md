@@ -4,7 +4,7 @@
 
 1. Home: a contextual introduction, Play/Continue, World Select, How to Play and Settings.
 2. World Select: four thematic laboratories. Only World 1 is enabled. Future worlds are intentionally visible but inaccessible.
-3. World 1 Stage Select (PR18–21): Guided Balance (20 playable), Independent Balance (16 playable after Stage 1 mastery), Algebra Apprentice (12 notebook-first levels after Stage 2 mastery), and Equation Workshop (still planned). Teacher access opens all implemented levels.
+3. World 1 Stage Select (PR18–21): Guided Balance (20 playable), Independent Balance (16 playable after Stage 1 mastery), Algebra Apprentice (12 notebook-first levels after Stage 2 mastery), and Equation Workshop (playable free play). Teacher access opens all implemented levels.
 4. Stage-specific level selection: five four-level chapters in Guided Balance (20 levels), four four-level chapters in Independent Balance (16 levels). Progress and level unlocking are independent.
 5. Play: the original two-room scene with Guided Mirror **fixed** for Stage 1 and Your Turn **fixed** for Stage 2. The independent hand genuinely tips the scale after the first move; only the matched second move commits the equation step.
 6. Success: committed hand transactions replay as comic panels with handwritten algebra. The final level of either stage returns to Stage Select.
@@ -58,8 +58,10 @@ See [PR17_EXPERIENCE.md](PR17_EXPERIENCE.md) for the intended walkthrough and br
 
 ## PR18–19 — Three-stage World 1
 
-PR18 introduced the stage map and fixed automatic mirroring in Stage 1. PR19 adds all **16 Independent Balance** puzzles, the separate-room hand tutorial, real provisional scale tipping, stage-specific progress and Stage 2 unlocking (Stage 1 mastered or teacher access). Stage 3 now provides a complete notebook-first campaign; only the custom Equation Workshop remains unavailable. See [WORLD1_STAGES.md](WORLD1_STAGES.md) and [STAGE2_CAMPAIGN.md](STAGE2_CAMPAIGN.md).
+PR18 introduced the stage map and fixed automatic mirroring in Stage 1. PR19 adds all **16 Independent Balance** puzzles, the separate-room hand tutorial, real provisional scale tipping, stage-specific progress and Stage 2 unlocking (Stage 1 mastered or teacher access). Stage 3 now provides a complete notebook-first campaign; the custom Equation Workshop is now available as separate positive-whole-number free play. See [WORLD1_STAGES.md](WORLD1_STAGES.md) and [STAGE2_CAMPAIGN.md](STAGE2_CAMPAIGN.md).
 
 **PR20:** The Stage 3 notebook-first checker and actual hand replay are now available in a clearly identified teacher sandbox via Settings or a test URL such as `?notebook=two-step-09`. PR21 adds Stage 3 level cards, backwards-faded help, stage-specific progress and replay-based mastery. See [the notebook design and QA checklist](STAGE3_NOTEBOOK_FOUNDATION.md).
 
-**Next: PR22.** Develop the separate Equation Workshop's custom equation parser and scene generator, without changing saved Stage 1–3 progress. Worlds 2–4 remain distinct later mathematical work.
+**PR22:** The separate [Equation Workshop](EQUATION_WORKSHOP.md) now supports student-entered positive-whole-number linear equations, checks for genuine physical solvability, and launches the established two-room scene in either hand mode. Free play never changes saved Stage 1–3 progress.
+
+**Next:** World 2 · Opposite Chambers, using negative sprites and balloons as a separate mathematical curriculum. Worlds 3 and 4 remain future work.
