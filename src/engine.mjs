@@ -53,6 +53,21 @@ export const LEVELS = [
     prompt: "Four square sprites face 36 weights. Make squares, keep one side, then share equally. Assume x ≥ 0.",
     left: { posX2: 4 }, right: { posOne: 36 }, solution: 3, startingOperation: "sqrt",
     suggested: "√(4x²) = 2x and √36 = 6. Then divide both rooms by two."
+  },
+  {
+    id: "mixed-area", title: "The four regions", chapter: "09 · Build every part",
+    prompt: "Arrange two round sprites and three weights along each edge of a square. Fill all four regions inside the room. Assume x ≥ 0.",
+    left: {posX:2,posOne:3}, right: {posOne:5}, solution:1,
+    goal:"area", target:{left:{posX2:4,posX:12,posOne:9},right:{posOne:25}},
+    startingOperation:"square",
+    suggested: "Build a 5-by-5 box: 4 square sprites, 12 round sprites in two mixed regions, and 9 weights."
+  },
+  {
+    id: "mixed-root", title: "Unbuild the square", chapter: "10 · Recover its side",
+    prompt: "These four regions form a perfect square. Arrange them inside the room, keep one side, then solve for x. Assume x ≥ 0.",
+    left:{posX2:4,posX:12,posOne:9}, right:{posOne:25}, solution:1,
+    startingOperation:"sqrt",
+    suggested: "Unbuild the 5-by-5 area to see 2x + 3 = 5; then remove three weights and share in two equal baskets."
   }
 ];
 
@@ -69,6 +84,7 @@ export function evaluate(value, x) {
 }
 export function initialState(level = LEVELS[0]) {
   return { levelId: level.id, goal: level.goal || "isolate", solution: level.solution,
+    areaTarget: level.target ? {left:room(level.target.left),right:room(level.target.right)} : null,
     left: room(level.left), right: room(level.right), history: [], pending: null };
 }
 export function visibleRooms(state) {
@@ -88,6 +104,10 @@ export function isSolved(state) {
     r.posOne === 0 && r.negOne === 0;
   const isWeights = (r, n) => r.posX2 === 0 && r.posX === 0 && r.negX === 0 &&
     r.negOne === 0 && r.posOne === n;
+  if (state.goal === "area") {
+    return !!state.areaTarget && ["left","right"].every(side =>
+      TOKEN_KINDS.every(kind => state[side][kind] === state.areaTarget[side][kind]));
+  }
   if (state.goal === "square") {
     const n = state.solution ** 2;
     return (isOneSquare(state.left) && isWeights(state.right, n)) ||
@@ -132,25 +152,47 @@ function pureNonnegativeKind(r) {
   return used.length === 1 ? used[0] : used.length === 0 ? "zero" : null;
 }
 /**
- * Squaring is (nx)² = n²x² or n², NEVER independently squaring the terms of
- * a sum. Mixed expressions are rejected: (x+2)² = x²+4x+4.
- * Principal roots in this chapter explicitly assume x >= 0.
+ * A whole room is a side length (a*x + b), with a,b nonnegative integers.
+ * Squaring the SIDE fills four physically distinct regions:
+ * a² x², ab x (top-right), ab x (bottom-left), and b² unit weights.
+ *
+ * Taking the principal root is the inverse only when all these regions
+ * can be reconstructed exactly from nonnegative perfect-square corner counts.
+ * Thus x²+3x+4, x²+4 or 4x²+10x+9 cannot be falsely "unbuilt".
+ * For every supported level x≥0, so sqrt((ax+b)²)=ax+b.
+ *
+ * The original simple-area descriptors are preserved for compatibility.
  */
 export function areaArrangement(r, op) {
   if (op !== "square" && op !== "sqrt") return null;
   const source = room(r);
+  if (source.negX || source.negOne) return null;
   const kind = pureNonnegativeKind(source);
-  if (op === "square" && (kind === "posX" || kind === "posOne")) {
-    const n = source[kind];
-    if (n * n > 48) return null;
-    return { op, kind, side: n, cells: n * n, symbolic: kind === "posX" };
+  if (kind === "zero") return {op,kind:"zero",side:0,cells:0,symbolic:false};
+  if (op === "square") {
+    if (source.posX2) return null; // squaring a quadratic would require x⁴
+    const a = source.posX, b = source.posOne, n = a + b;
+    if (!n || n*n > 48) return null;
+    if (a && b) {
+      return {op,kind:"mixed",side:n,cells:n*n,symbolic:true,
+        spriteSide:a,weightSide:b,x2:a*a,x:2*a*b,constant:b*b};
+    }
+    const k = a ? "posX" : "posOne";
+    return {op,kind:k,side:n,cells:n*n,symbolic:!!a};
   }
-  if (op === "sqrt" && (kind === "posX2" || kind === "posOne")) {
-    const side = perfectSquareRoot(source[kind]);
-    if (side === null || side > 7) return null;
-    return { op, kind, side, cells: source[kind], symbolic: kind === "posX2" };
+  // Root of a pure number, of a*x², or of the complete area (ax+b)².
+  if (source.posX && !source.posX2) return null; // not a square area
+  const a = perfectSquareRoot(source.posX2);
+  const b = perfectSquareRoot(source.posOne);
+  if (a === null || b === null || source.posX !== 2*a*b) return null;
+  const n = a+b;
+  if (n*n > 48) return null;
+  if (a && b) {
+    return {op,kind:"mixed",side:n,cells:n*n,symbolic:true,
+      spriteSide:a,weightSide:b,x2:a*a,x:2*a*b,constant:b*b};
   }
-  return kind === "zero" ? { op, kind: "zero", side: 0, cells: 0, symbolic: false } : null;
+  const k = a ? "posX2" : "posOne";
+  return {op,kind:k,side:n,cells:n*n,symbolic:!!a};
 }
 function transform(source, action) {
   const next = room(source);
@@ -164,17 +206,32 @@ function transform(source, action) {
     next[action.kind] -= action.count;
   }
   if (action.op === "square" || action.op === "sqrt") {
+    const attemptedSide = action.op === "square" &&
+      next.posX2 === 0 && next.negX === 0 && next.negOne === 0
+      ? next.posX + next.posOne : 0;
+    if (attemptedSide*attemptedSide > 48) {
+      return {ok:false,code:"overflow",total:attemptedSide*attemptedSide,
+        capacity:48,excess:attemptedSide*attemptedSide-48,
+        kind:next.posX ? "posX2" : "posOne",
+        reason:"That square would overflow the chamber. Try a smaller side length."};
+    }
     const area = areaArrangement(next, action.op);
-    if (!area) return { ok: false, code: "unsupported-area", reason: action.op === "square"
-      ? "First make one row of only round sprites or only weights. Squaring (x + 2) also needs 4x, so mixed rooms cannot use this tool."
-      : "The principal square root needs one perfect-square group (square sprites or weights), with no mixed terms." };
+    if (!area) return {ok:false,code:"unsupported-area",reason:action.op === "square"
+      ? "That side cannot form a square of round sprites and positive weights. Square-shaped sprites would require higher powers."
+      : "I can't arrange these objects into a complete square: the two mixed regions must match, and each corner must be square."};
     if (area.kind !== "zero") {
-      const { kind, side } = area;
-      next[kind] = 0;
+      const a = area.kind === "mixed" ? area.spriteSide :
+        area.symbolic ? area.side : 0;
+      const b = area.kind === "mixed" ? area.weightSide :
+        area.symbolic ? 0 : area.side;
       if (action.op === "square") {
-        next[kind === "posX" ? "posX2" : "posOne"] = side * side;
+        next.posX = 2*a*b;
+        next.posX2 = a*a;
+        next.posOne = b*b;
       } else {
-        next[kind === "posX2" ? "posX" : "posOne"] = side;
+        next.posX2 = 0;
+        next.posX = a;
+        next.posOne = b;
       }
     }
   }
