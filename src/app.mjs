@@ -1614,36 +1614,44 @@ $("right-action").addEventListener("click", () => manualMove("right"));
 $("mode-select").addEventListener("change", event => {
   // The campaign sets the hand-control method. Only authoring previews may
   // choose manual actions independently in PR18.
-  if (campaignLevelNumber !== null) { mode = "auto"; return render(); }
+  if(campaignStage!==null) {
+    mode=campaignStage==="independent"?"manual":"auto";
+    return render();
+  }
   if (busy || state.pending) return render();
   mode = event.target.value === "manual" ? "manual" : "auto";
   render();
 });
 $("guide-next").addEventListener("click", () => {
-  if (!activeFirstGuide() || guideStep >= 3) return;
+  if(!activeCampaignGuide() || guideStep>=3)return;
   guideStep++;
   renderFirstGuide();
-  const target = guideTarget(introductionCue(guideStep, {mode,pending:!!state.pending,busy}).target);
+  const target=guideTarget(currentGuideCue().target);
   target?.scrollIntoView?.({block:"nearest",behavior:reducedMotion?"instant":"smooth"});
 });
-$("guide-skip").addEventListener("click", () => {
-  guideSeen = writeGuideSeen(true);
-  guideDismissed = true;
-  guideWasActive = false;
+$("guide-skip").addEventListener("click",()=>{
+  if(campaignStage==="independent")
+    independentGuideSeen=writeIndependentGuideSeen(true);
+  else guideSeen=writeGuideSeen(true);
+  guideDismissed=true;
+  guideWasActive=false;
   renderFirstGuide();
 });
-window.addEventListener("mathssprites:guide-setting", event => {
-  guideEnabled = !!event.detail.enabled;
-  if (event.detail.reset) {
-    guideSeen = writeGuideSeen(false);
-    guideStep = 0;
-    guideDismissed = false;
+window.addEventListener("mathssprites:guide-setting",event=>{
+  guideEnabled=!!event.detail.enabled;
+  if(event.detail.reset){
+    if(event.detail.stage==="independent")
+      independentGuideSeen=writeIndependentGuideSeen(false);
+    else guideSeen=writeGuideSeen(false);
+    guideStep=0;
+    guideDismissed=false;
   }
   render();
 });
-$("game-guide-restart").addEventListener("click", () => {
-  if (busy || campaignLevelNumber !== 1) return;
-  window.dispatchEvent(new CustomEvent("mathssprites:restart-guide"));
+$("game-guide-restart").addEventListener("click",()=>{
+  if(busy || campaignLevelNumber!==1 || campaignStage===null)return;
+  window.dispatchEvent(new CustomEvent("mathssprites:restart-guide",
+    {detail:{stage:campaignStage}}));
 });
 $("quantity-mode").addEventListener("change", event => {
   if(busy||state.pending)return render();
@@ -1669,7 +1677,8 @@ $("undo").addEventListener("click", () => {
   render();
 });
 $("reset").addEventListener("click", () =>
-  startLevel(levelIndex,state.quantityMode,campaignLevelNumber===null?null:currentLevel(),campaignLevelNumber));
+  startLevel(levelIndex,state.quantityMode,campaignLevelNumber===null?null:currentLevel(),
+    campaignLevelNumber,campaignStage));
 $("hint").addEventListener("click", () => setSpeech(currentLevel().suggested, 6200));
 $("feedback").addEventListener("click", event => {
   if (event.target?.id === "watch-again") showReplay();
@@ -1709,9 +1718,9 @@ $("next-level").addEventListener("click", () => {
     window.dispatchEvent(new CustomEvent("mathssprites:advance"));
   } else startLevel(levelIndex + 1);
 });
-window.addEventListener("mathssprites:launch", event => {
-  const {number,legacyIndex,level} = event.detail;
-  startLevel(legacyIndex, "positive", level, number);
+window.addEventListener("mathssprites:launch",event=>{
+  const {number,legacyIndex,level,stage}=event.detail;
+  startLevel(legacyIndex,"positive",level,number,stage);
 });
 window.addEventListener("mathssprites:preview", event => startLevel(event.detail.index));
 function leaveGame(screen) {
