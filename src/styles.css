@@ -134,6 +134,7 @@ background-image:repeating-linear-gradient(90deg,transparent 0 66px,rgba(0,0,0,.
   background:radial-gradient(circle at 30% 20%,#444c4b,#111516 70%);
   border-radius:46%;box-shadow:0 0 0 2px #4a4d47}
 .held-sprite-pale{background:radial-gradient(circle at 30% 20%,#f8f3e9,#b9c4c0 73%);box-shadow:0 0 0 2px #a5b6b4}
+.held-sprite-square{border-radius:7px;background:radial-gradient(circle at 30% 20%,#58736b,#233a35 80%);box-shadow:0 0 0 3px #c9a878}
 .held-sprite-pale i{background:#2c3532}
 .hand-cargo.sprite-captured .held-sprite{animation:held-sprite-squirm .35s ease-in-out infinite alternate}
 @keyframes held-sprite-squirm{
