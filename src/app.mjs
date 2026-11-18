@@ -2,7 +2,7 @@ import {
   LEVELS, TOKEN_KINDS, initialState, visibleRooms, evaluate, levelQuantityMode, normalize, room,
   perform, previewRoomAction, undo, isSolved, equation, operationDescription, algebraOperation, areaArrangement
 } from "./engine.mjs";
-import { buildWritingTimeline, symbolsOf } from "./replay-timeline.mjs";
+import { buildWritingTimeline, symbolsOf, WRITING_PACE } from "./replay-timeline.mjs";
 import { handMotionPlan } from "./hand-timeline.mjs";
 import { spriteMotionProfile, spriteMotionStyle } from "./sprite-motion.mjs";
 import { pickSpriteHandReaction, dodgeOffsetPx } from "./sprite-reactions.mjs";
@@ -1208,9 +1208,9 @@ function drawReplay(index, { animate = !reducedMotion, complete = false } = {}) 
     activeStage.innerHTML = miniRooms(mini.before) +
       '<svg class="mini-hand-cue" viewBox="0 0 38 55" aria-hidden="true" focusable="false">' +
       '<path fill="#cfa384" stroke="#6e5140" stroke-width="1.8" d="M13 3 Q16 0 18 5 L21 27 L20 7 Q22 3 25 8 L28 28 L28 13 Q29 10 32 13 L34 30 Q38 37 30 48 L23 53 L11 47 L5 35 Q1 28 5 26 Q9 24 13 32 Z"/></svg>';
-    for(const event of recordedZeroEvents(mini)){
+    for(const [cueIndex,event] of recordedZeroEvents(mini).entries()){
       activeStage.innerHTML+='<div class="mini-neutral-pair" data-pair-type="'+event.type+
-        '" data-side="'+event.side+'">'+
+        '" style="--neutral-delay:'+(cueIndex*950)+'ms" data-side="'+event.side+'">'+
         '<span class="mini-token '+event.positive+'"></span>'+
         '<span class="mini-token '+event.negative+'"></span>'+
         '<span>→ 0 in '+(event.side==="left"?"west":"east")+'</span></div>';
@@ -1219,8 +1219,14 @@ function drawReplay(index, { animate = !reducedMotion, complete = false } = {}) 
   }
 
   const lines = notebookLines(mini, replayIndex).map(line => line.text);
+  // The action needs time to replay EVERY physical neutralisation first.
+  // Otherwise the pencil starts writing while pairs are still disappearing.
+  const zeroCount=recordedZeroEvents(mini).length;
+  const pace=zeroCount ? {...WRITING_PACE,
+    actionCompleteMs:WRITING_PACE.actionCompleteMs+zeroCount*950,
+    operationDelayMs:WRITING_PACE.operationDelayMs+zeroCount*950} : WRITING_PACE;
   replayTimeline = animate && !complete && !reducedMotion
-    ? buildWritingTimeline(lines, { opening: replayIndex === 0 })
+    ? buildWritingTimeline(lines, { opening: replayIndex === 0,pace })
     : { events: [], durationMs: complete ? 0 : 3900 };
   $("pencil").hidden = true;
   $("writing-status").textContent = complete ? "This panel's algebra is fully written."
