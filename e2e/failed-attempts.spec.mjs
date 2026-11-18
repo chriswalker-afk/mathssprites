@@ -31,7 +31,7 @@ test("a rejected division actually CHOPS the floor sprite in half, pauses, then 
   await expect(page.locator("#speech")).toBeHidden();
   await page.screenshot({path:"artifacts/pr13-actual-floor-sprite-chopped-into-halves.png"});
   await expect(page.locator("#speech")).toContainText("These pieces are too small",{timeout:14000});
-  await expect(page.locator("#speech")).toContainText("put the bits back together");
+  await expect(page.locator("#speech")).toContainText("put them back together");
   await expect(page.locator("#speech")).toContainText("undo");
   await page.screenshot({path:"artifacts/pr13-sprite-halves-and-explanation.png"});
   await expect(stage).toHaveAttribute("data-cut-phase","rejoining",{timeout:13000});
