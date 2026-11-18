@@ -841,65 +841,98 @@ async function finishTurn() {
 }
 async function guidedMove() {
   if (busy || isSolved(state)) return;
-  const action = currentAction();
-  const outcome = perform(state, action, "auto");
-  if (!outcome.ok) return animateRejectedAction(action, outcome);
-  const previous = state;
-  const next = outcome.state;
-  busy = true;
-  clearSpeech();
-  $("feedback").textContent = operationDescription(action) + "...";
-  if (action.op === "divide") {
-    groups = { left: action.factor, right: action.factor };
-    render();
-    await sleep(reducedMotion ? 550 : 1350);
+  const action=currentAction();
+  const outcome=perform(state,action,"auto");
+  if(!outcome.ok) {
+    if(outcome.code==="locked-negative")return notify(outcome.reason);
+    return animateRejectedAction(action,outcome);
   }
-  render();
-  await handAct("left", action, () => {
-    override = { left: next.left, right: previous.right };
-    groups.left = 0;
-    render();
-  });
-  await handAct("right", action, () => {
-    // Commit *at contact*, before hand exits and before the success replay.
-    state = next;
-    override = null;
-    groups.right = 0;
-    render();
-  });
-  busy = false;
-  render();
+  const previous=state,next=outcome.state;
+  const previews={
+    left:previewRoomAction(previous.left,action,state.quantityMode),
+    right:previewRoomAction(previous.right,action,state.quantityMode)
+  };
+  busy=true;clearSpeech();
+  $("feedback").textContent=operationDescription(action)+"...";
+  try {
+    if(action.op==="divide"){
+      await neutraliseBeforeDivision(action,previews);
+      groups={left:action.factor,right:action.factor};
+      render();
+      await sleep(reducedMotion?550:1350);
+    }else render();
+    const beforeRight=action.op==="divide"
+      ? room(previews.right.beforeGroups) : previous.right;
+    await handAct("left",action,async()=>{
+      const trial=previews.left;
+      if(action.op!=="divide"&&trial.cancellationEvents.length){
+        override={left:room(trial.raw),right:beforeRight};render();
+        await animateNeutralEvents("left",trial.cancellationEvents,r=>{
+          override={left:room(r),right:beforeRight};render();
+        });
+      }
+      override={left:next.left,right:beforeRight};
+      groups.left=0;render();
+    });
+    await handAct("right",action,async()=>{
+      // Commit exactly once, while the hand touches the second room.
+      state=next;
+      const trial=previews.right;
+      if(action.op!=="divide"&&trial.cancellationEvents.length){
+        override={left:next.left,right:room(trial.raw)};render();
+        await animateNeutralEvents("right",trial.cancellationEvents,r=>{
+          override={left:next.left,right:room(r)};render();
+        });
+      }
+      override=null;groups.right=0;render();
+    });
+  }finally{
+    override=null;groups={left:0,right:0};busy=false;render();
+    clearNeutralEffect("left");clearNeutralEffect("right");
+  }
   await finishTurn();
 }
 async function manualMove(side) {
-  if (busy || isSolved(state)) return;
-  const wasPending = !!state.pending;
-  const action = currentAction();
-  const outcome = perform(state, action, "manual", side);
-  if (!outcome.ok) {
-    if (wasPending && outcome.code === "mismatch")
-      return animateMismatchedManualAction(side, state.pending.action, action);
-    return animateRejectedAction(action, outcome, side, wasPending);
+  if(busy||isSolved(state))return;
+  const wasPending=!!state.pending,action=currentAction();
+  const outcome=perform(state,action,"manual",side);
+  if(!outcome.ok){
+    if(outcome.code==="locked-negative")return notify(outcome.reason);
+    if(wasPending&&outcome.code==="mismatch")
+      return animateMismatchedManualAction(side,state.pending.action,action);
+    return animateRejectedAction(action,outcome,side,wasPending);
   }
-  busy = true;
-  clearSpeech();
-  if (action.op === "divide") {
-    groups[side] = action.factor;
-    render();
-    await sleep(reducedMotion ? 500 : 1100);
+  const before=visible();
+  const preview=previewRoomAction(before[side],action,state.quantityMode);
+  busy=true;clearSpeech();
+  try{
+    if(action.op==="divide"){
+      if(preview.cancellationEvents.length){
+        override={left:before.left,right:before.right};
+        await animateNeutralEvents(side,preview.cancellationEvents,r=>{
+          override={...override,[side]:room(r)};render();
+        });
+      }
+      override={...before,[side]:room(preview.beforeGroups)};
+      groups[side]=action.factor;render();
+      await sleep(reducedMotion?500:1100);
+    }
+    await handAct(side,action,async()=>{
+      state=outcome.state;
+      if(action.op!=="divide"&&preview.cancellationEvents.length){
+        override={...visibleRooms(state),[side]:room(preview.raw)};render();
+        await animateNeutralEvents(side,preview.cancellationEvents,r=>{
+          override={...override,[side]:room(r)};render();
+        });
+      }
+      override=null;groups[side]=0;render();
+    });
+  }finally{
+    override=null;groups[side]=0;busy=false;render();clearNeutralEffect(side);
   }
-  await handAct(side, action, () => {
-    state = outcome.state;
-    groups[side] = 0;
-    render();
-  });
-  busy = false;
-  render();
-  if (state.pending) {
-    $("feedback").textContent = "One room done. Now perform the matching move in the other room.";
-  } else {
-    await finishTurn();
-  }
+  if(state.pending)
+    $("feedback").textContent="One room done. Now perform the matching move in the other room.";
+  else await finishTurn();
 }
 function startLevel(index) {
   stopReplay();
