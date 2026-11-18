@@ -672,7 +672,7 @@ async function guidedMove() {
   if (busy || isSolved(state)) return;
   const action = currentAction();
   const outcome = perform(state, action, "auto");
-  if (!outcome.ok) return notify(outcome.reason);
+  if (!outcome.ok) return animateRejectedAction(action, outcome);
   const previous = state;
   const next = outcome.state;
   busy = true;
@@ -703,9 +703,13 @@ async function guidedMove() {
 async function manualMove(side) {
   if (busy || isSolved(state)) return;
   const wasPending = !!state.pending;
-  const action = wasPending ? state.pending.action : currentAction();
+  const action = currentAction();
   const outcome = perform(state, action, "manual", side);
-  if (!outcome.ok) return notify(outcome.reason);
+  if (!outcome.ok) {
+    if (wasPending && outcome.code === "mismatch")
+      return animateMismatchedManualAction(side, state.pending.action, action);
+    return animateRejectedAction(action, outcome, wasPending ? side : undefined, wasPending);
+  }
   busy = true;
   clearSpeech();
   if (action.op === "divide") {
@@ -737,6 +741,9 @@ function startLevel(index) {
   amount = levelIndex === 0 ? 2 : levelIndex === 2 ? 4 : levelIndex === 4 ? 2 : 1;
   factor = levelIndex === 1 ? 3 : levelIndex === 4 ? 5 : 2;
   override = null; groups = { left: 0, right: 0 };
+  failureTilt = 0;
+  $("scene").classList.remove("scene-failed-balance", "scene-rewinding");
+  delete $("scene").dataset.balanceOutcome;
   busy = false;
   // Clear any half-finished visual state when changing levels.
   $("hand").classList.remove("approaching", "reaching", "grasping", "lifting", "acting", "tracking-sprite", "arranging");
@@ -746,6 +753,7 @@ function startLevel(index) {
   for (const side of ["left", "right"]) {
     $(side + "-chamber").classList.remove("hand-target", "hand-contact");
     clearAreaPreview(side);
+    clearFailureStage(side);
   }
   $("hand-cargo").hidden = true;
   $("action-caption").hidden = true;
