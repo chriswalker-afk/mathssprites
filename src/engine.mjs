@@ -335,6 +335,10 @@ export function previewRoomAction(source, action, quantityMode = "signed", side 
 export function levelActionPermission(state, action) {
   if (state.lockPositive && state.quantityMode !== "positive")
     return {ok:false,code:"locked-world",reason:"This workshop uses positive objects only."};
+  if (state.lockPositive && (action?.op === "add" || action?.op === "remove") &&
+      action.kind === "posX2")
+    return {ok:false,code:"locked-kind",
+      reason:"Square-shaped sprites belong to the Square Laboratory, not this workshop."};
   if (state.allowedOperations && !state.allowedOperations.includes(action?.op))
     return {ok:false,code:"locked-operation",
       reason:"That tool belongs to a later laboratory. Use the whole-number tools here."};
