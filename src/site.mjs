@@ -3,6 +3,7 @@ import {
   WORLDS, WORLD1_CHAPTERS, WORLD1_LEVELS, findWorld1Level,
   isWorld1Unlocked, nextWorld1Level
 } from "./worlds.mjs";
+import {WORLD1_STAGES, EQUATION_WORKSHOP, stageOneComplete} from "./stages.mjs";
 import {
   loadProgress, saveProgress, markWorld1Complete,
   loadTeacherSetting, saveTeacherSetting
@@ -17,7 +18,7 @@ let teacher = loadTeacherSetting();
 let guideEnabled = readGuideEnabled();
 let currentScreen = "home";
 let playingNumber = null;
-const screenNames = ["home","worlds","levels","help","settings"];
+const screenNames = ["home","worlds","stages","levels","help","settings"];
 
 function clean(text) {
   return String(text).replace(/[&<>"']/g, ch =>
@@ -30,18 +31,18 @@ function homeAction() {
   const number = unlocked(progress.lastPlayed) ? progress.lastPlayed : 1;
   const played = progress.completed.length > 0;
   $("home-play").textContent = played
-    ? (progress.completed.includes(number) ? "Replay level " : "Continue at level ") + number + " →"
-    : "Begin your first experiment →";
+    ? (progress.completed.includes(number) ? "Replay Stage 1 · Level " : "Continue Stage 1 · Level ") + number + " →"
+    : "Begin Stage 1 · Guided Balance →";
   $("home-progress").textContent = played
-    ? progress.completed.length + " of 20 experiments complete · progress saved on this device"
-    : "20 playable experiments · 5 chapters · no sign-in required";
+    ? progress.completed.length + " of 20 Guided Balance experiments complete · saved on this device"
+    : "Stage 1: 20 playable experiments · Stages 2 and 3 coming soon";
 }
 function renderWorlds() {
   $("world-cards").innerHTML = WORLDS.map(world => {
     const progressLine = world.available
-      ? (progress.completed.length === 20
-        ? "20 / 20 complete · WORKSHOP MASTERED"
-        : progress.completed.length + " / 20 complete · all 20 playable")
+      ? (stageOneComplete(progress.completed)
+        ? "STAGE 1 MASTERED · 20/20 · TWO STAGES PLANNED"
+        : "STAGE 1 · " + progress.completed.length + "/20 complete · 20 playable")
       : "COMING SOON";
     return '<article class="world-card world-' + world.theme +
       (world.available ? ' world-ready' : ' world-planned') + '">' +
@@ -55,10 +56,43 @@ function renderWorlds() {
         clean(world.subtitle) + '</p><p>' + clean(world.description) + '</p>' +
       '<div class="world-card-footer"><span>' + progressLine + '</span>' +
         (world.available
-          ? '<button type="button" class="primary-btn" data-screen="levels">Explore levels →</button>'
+          ? '<button type="button" class="primary-btn" data-screen="stages">Explore stages →</button>'
           : '<span class="soon-lock" aria-label="This world is not available yet">◇ Locked</span>') +
       '</div></div></article>';
   }).join("");
+}
+/** The three distinct representations appear before the existing chapter list.
+ * Locked stages have no playable link, even when the teacher flag is on. */
+function renderStages() {
+  const complete=stageOneComplete(progress.completed);
+  $("world1-stage-cards").innerHTML = WORLD1_STAGES.map(stage=>{
+    const playable=stage.available;
+    const countText=stage.number===1
+      ? progress.completed.length + " of " + stage.count + " experiments complete"
+      : stage.count + " new experiments planned";
+    return '<article class="stage-card ' + (playable?"stage-ready":"stage-planned") +
+      '" data-stage="' + stage.id + '" aria-label="Stage ' + stage.number +
+      ': ' + clean(stage.title) + (playable?", available":", coming soon") + '">' +
+      '<div class="stage-top"><span class="stage-no">STAGE ' + String(stage.number).padStart(2,"0") +
+      '</span><span class="stage-tag">' +
+      (playable ? (complete ? "Stage mastered" : "Ready to play") : "Coming soon") +
+      '</span></div><div class="stage-ornament" aria-hidden="true">' + stage.icon + '</div>' +
+      '<h2>' + clean(stage.title) + '</h2>' +
+      '<p class="stage-tagline">' + clean(stage.tagline) + '</p>' +
+      '<p>' + clean(stage.description) + '</p>' +
+      '<div class="stage-card-bottom"><span class="stage-count">' + countText + '</span>' +
+      (playable
+        ? '<button type="button" class="primary-btn" data-screen="levels">Choose Stage 1 levels →</button>'
+        : '<span class="stage-coming" aria-label="This stage is not yet available">◇ New levels in development</span>') +
+      '</div></article>';
+  }).join("");
+  $("world1-workshop").innerHTML =
+    '<div class="workshop-glyph" aria-hidden="true">' + EQUATION_WORKSHOP.icon + '</div>' +
+    '<div class="workshop-content"><div class="portal-kicker">FREE PLAY · PLANNED</div>' +
+    '<h2>' + clean(EQUATION_WORKSHOP.title) + '</h2><p>' +
+    clean(EQUATION_WORKSHOP.description) + '</p></div>' +
+    '<span class="workshop-planned" aria-label="Equation Workshop is coming soon">◇ Coming soon</span>';
+  $("stage-teacher-note").hidden = !teacher;
 }
 function renderLevels() {
   const completed = progress.completed.length;
@@ -123,6 +157,7 @@ function showScreen(name) {
   for (const screen of screenNames) $("site-" + screen).hidden = screen !== name;
   if (name === "home") homeAction();
   if (name === "worlds") renderWorlds();
+  if (name === "stages") renderStages();
   if (name === "levels") renderLevels();
   if (name === "settings") renderSettings();
   const heading = $("site-" + name).querySelector("h1, h2");
@@ -180,11 +215,13 @@ $("site-motion").addEventListener("click", () => {
   $("motion-toggle").click();
   renderSettings();
 });
-$("site-back").addEventListener("click", () => showScreen("worlds"));
+$("site-back").addEventListener("click", () => showScreen("stages"));
+$("stages-back").addEventListener("click", () => showScreen("worlds"));
 window.addEventListener("mathssprites:solved", event => {
   if (playingNumber === null || event.detail.number !== playingNumber) return;
   progress = saveProgress(markWorld1Complete(progress, playingNumber));
   renderWorlds();
+  renderStages();
   renderLevels();
   homeAction();
 });
@@ -195,7 +232,7 @@ window.addEventListener("mathssprites:advance", () => {
   if (playingNumber === null) return showScreen("levels");
   const next = nextWorld1Level(playingNumber, progress.completed, teacher);
   if (next) launch(next.number);
-  else showScreen("levels");
+  else showScreen("stages");
 });
 
 const params = new URLSearchParams(window.location.search);
