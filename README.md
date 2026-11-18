@@ -2,7 +2,7 @@
 
 *A wordless algebra puzzle that becomes an equation only after you solve it.*
 
-**Status:** World 1 now has **two fully playable stages**: Stage 1 · Guided Balance (20 original positive-whole-number puzzles, automatic matching hands) and Stage 2 · Independent Balance (16 new positive-whole-number puzzles, with a separate hand visit required in each room). Stage 3 · Algebra Apprentice (12 planned notebook-first puzzles) and the custom Equation Workshop are still visibly under construction. The 13 original advanced experiments remain separate for QA.
+**Status:** World 1 has **two fully playable stages**: Stage 1 · Guided Balance (20 existing positive-whole-number puzzles with automatic mirroring) and Stage 2 · Independent Balance (16 new puzzles with separate hand visits). **PR20 adds a tested notebook-first engine and teacher sandbox**: write validated algebra first, then watch the same operations replay physically. Stage 3's 12 campaign puzzles are still **locked until PR21**; the Equation Workshop remains planned for PR22. The 13 advanced experiments stay available separately for QA.
 
 ## The idea
 
@@ -40,6 +40,7 @@ At success, **comic-book panels appear automatically, one for each actual mathem
 - [Home, worlds and level selection (PR14)](docs/WORLD_NAVIGATION.md)
 - [World 1 three-stage progression (PR18–19)](docs/WORLD1_STAGES.md)
 - [Stage 2 Independent Balance: 16 puzzles and teacher routes](docs/STAGE2_CAMPAIGN.md)
+- [Stage 3 notebook-first engine and paper-to-sprites preview (PR20)](docs/STAGE3_NOTEBOOK_FOUNDATION.md)
 - [Two play modes, hand interactions and containers](docs/CONTROL_AND_CONTAINERS.md)
 - [Automatic comic-book equation replay](docs/COMIC_REPLAY.md)
 - [Negative sprites, balloons and zero pairs](docs/SIGNED_TOKENS.md)
@@ -48,7 +49,7 @@ At success, **comic-book panels appear automatically, one for each actual mathem
 
 The default URL opens **Home → World Select → World 1 Stage Select**. Stage 1 · Guided Balance contains the existing **20 positive whole-number puzzles** across five chapters. Levels unlock sequentially; their original saved completion records remain unchanged. Teachers can open any Stage 1 level through Settings. The hand now always mirrors the chosen operation automatically in both rooms for Stage 1, and the optional four-step introduction still starts at Level 1. Completing Level 20 earns the **Stage 1** mastery screen rather than claiming that all of World 1 has been completed.
 
-The Stage Select page now offers **Stage 2 · Independent Balance (16 playable)** after the 20 Stage 1 puzzles are complete, or immediately through teacher access. Stage 2 has four chapters, its own first-level tutorial, independent progress, and matching-hand gameplay. **Stage 3 · Algebra Apprentice (12 planned)** and the **Equation Workshop (planned)** remain unavailable. Mathematical Worlds 2–4—negatives, fractions and squares/square roots—are separate. See [Stage 2 teacher routes](docs/STAGE2_CAMPAIGN.md).
+The Stage Select page now offers **Stage 2 · Independent Balance (16 playable)** after the 20 Stage 1 puzzles are complete, or immediately through teacher access. Stage 2 has four chapters, its own first-level tutorial, independent progress, and matching-hand gameplay. **Stage 3 · Algebra Apprentice (12 planned)** and the **Equation Workshop (planned)** remain unavailable. PR20 provides the *mechanics*, not the Stage 3 campaign: Teacher access exposes a safe notebook-first sample in Settings, with no saved completion credit. You can also test an existing positive-whole-number equation directly via `?notebook=two-step-09`. Mathematical Worlds 2–4—negatives, fractions and squares/square roots—are separate. See [Stage 2 teacher routes](docs/STAGE2_CAMPAIGN.md).
 
 The original **thirteen curated experiments** have not been deleted. To inspect and regression-test their advanced mechanics before the later worlds go live, use the explicit authoring preview link `?preview=resident`, choose any prototype experiment there, or use a known ID such as `?preview=make-square`. The prototype preview is separate from the student campaign.
 
