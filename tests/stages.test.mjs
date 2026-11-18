@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import {readFileSync} from "node:fs";
 import {
  WORLD1_STAGES,EQUATION_WORKSHOP,findWorld1Stage,
- canOpenWorld1Stage,stageOneComplete,stageTwoComplete
+ canOpenWorld1Stage,stageOneComplete,stageTwoComplete,stageThreeComplete
 } from "../src/stages.mjs";
 import { WORLD1_LEVELS } from "../src/worlds.mjs";
 import {loadProgress,saveProgress,PROGRESS_KEY,markWorld1Complete} from "../src/progress.mjs";
@@ -13,24 +13,24 @@ test("World 1 has three teaching stages and a separate, honestly planned free-pl
   assert.deepEqual(WORLD1_STAGES.map(x=>x.id),["guided","independent","notebook"]);
   assert.deepEqual(WORLD1_STAGES.map(x=>x.method),["auto","manual","notebook"]);
   assert.deepEqual(WORLD1_STAGES.map(x=>x.count),[20,16,12]);
-  assert.deepEqual(WORLD1_STAGES.map(x=>x.available),[true,true,false]);
+  assert.deepEqual(WORLD1_STAGES.map(x=>x.available),[true,true,true]);
   assert.equal(WORLD1_STAGES[0].count,WORLD1_LEVELS.length);
   assert.equal(EQUATION_WORKSHOP.available,false);
   assert.equal(findWorld1Stage("guided"),WORLD1_STAGES[0]);
   assert.equal(findWorld1Stage("inexistent"),null);
 });
 
-test("Stage 2 unlocks on 20/20 or teacher; Stage 3 and Workshop stay unbuilt",()=>{
+test("Stage 2 unlocks on Stage 1 mastery; Stage 3 unlocks on Stage 2 mastery",()=>{
   assert.equal(canOpenWorld1Stage("guided"),true);
   assert.equal(canOpenWorld1Stage("independent"),false);
   assert.equal(canOpenWorld1Stage("independent",{stage1Completed:true}),true);
   assert.equal(canOpenWorld1Stage("independent",{teacher:true}),true);
   assert.equal(canOpenWorld1Stage("independent",{stage2Completed:true}),false);
-  for(const teacher of [true,false])
-    for(const complete of [true,false]){
-      assert.equal(canOpenWorld1Stage("notebook",
-        {teacher,stage1Completed:complete,stage2Completed:true}),false);
-    }
+  assert.equal(canOpenWorld1Stage("notebook"),false);
+  assert.equal(canOpenWorld1Stage("notebook",{stage1Completed:true}),false);
+  assert.equal(canOpenWorld1Stage("notebook",{stage2Completed:true}),true);
+  assert.equal(canOpenWorld1Stage("notebook",{teacher:true}),true);
+  assert.equal(stageThreeComplete(Array.from({length:12},(_,i)=>i+1)),true);
   assert.equal(canOpenWorld1Stage("equation-workshop",{teacher:true,stage1Completed:true}),false);
   assert.equal(canOpenWorld1Stage("bogus"),false);
   assert.equal(stageTwoComplete([]),false);
