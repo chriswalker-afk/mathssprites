@@ -110,16 +110,47 @@ function countTokens(value) {
   return TOKEN_KINDS.reduce((sum, kind) => sum + value[kind], 0);
 }
 function check(action) {
-  if (!["add", "remove", "multiply", "divide"].includes(action?.op))
+  if (!["add", "remove", "multiply", "divide", "square", "sqrt"].includes(action?.op))
     return "Choose an operation first.";
   if (action.op === "add" || action.op === "remove") {
     if (!TOKEN_KINDS.includes(action.kind)) return "Choose a kind of object.";
     if (!Number.isInteger(action.count) || action.count < 1 || action.count > 12)
       return "Choose between one and twelve objects.";
-  } else if (!Number.isInteger(action.factor) || action.factor < 2 || action.factor > 5) {
+  } else if ((action.op === "multiply" || action.op === "divide") &&
+    (!Number.isInteger(action.factor) || action.factor < 2 || action.factor > 5)) {
     return "Choose between two and five groups.";
   }
   return null;
+}
+function perfectSquareRoot(n) {
+  if (!Number.isInteger(n) || n < 0) return null;
+  const root = Math.sqrt(n);
+  return Number.isInteger(root) ? root : null;
+}
+function pureNonnegativeKind(r) {
+  const used = TOKEN_KINDS.filter(kind => r[kind] > 0);
+  return used.length === 1 ? used[0] : used.length === 0 ? "zero" : null;
+}
+/**
+ * Squaring is (nx)² = n²x² or n², NEVER independently squaring the terms of
+ * a sum. Mixed expressions are rejected: (x+2)² = x²+4x+4.
+ * Principal roots in this chapter explicitly assume x >= 0.
+ */
+export function areaArrangement(r, op) {
+  if (op !== "square" && op !== "sqrt") return null;
+  const source = room(r);
+  const kind = pureNonnegativeKind(source);
+  if (op === "square" && (kind === "posX" || kind === "posOne")) {
+    const n = source[kind];
+    if (n * n > 48) return null;
+    return { op, kind, side: n, cells: n * n, symbolic: kind === "posX" };
+  }
+  if (op === "sqrt" && (kind === "posX2" || kind === "posOne")) {
+    const side = perfectSquareRoot(source[kind]);
+    if (side === null || side > 7) return null;
+    return { op, kind, side, cells: source[kind], symbolic: kind === "posX2" };
+  }
+  return kind === "zero" ? { op, kind: "zero", side: 0, cells: 0, symbolic: false } : null;
 }
 function transform(source, action) {
   const next = room(source);
@@ -129,6 +160,21 @@ function transform(source, action) {
     if (next[action.kind] < action.count)
       return { ok: false, reason: "I can't take away something that isn't in that room." };
     next[action.kind] -= action.count;
+  }
+  if (action.op === "square" || action.op === "sqrt") {
+    const area = areaArrangement(next, action.op);
+    if (!area) return { ok: false, reason: action.op === "square"
+      ? "First make one row of only round sprites or only weights. Squaring (x + 2) also needs 4x, so mixed rooms cannot use this tool."
+      : "The principal square root needs one perfect-square group (square sprites or weights), with no mixed terms." };
+    if (area.kind !== "zero") {
+      const { kind, side } = area;
+      next[kind] = 0;
+      if (action.op === "square") {
+        next[kind === "posX" ? "posX2" : "posOne"] = side * side;
+      } else {
+        next[kind === "posX2" ? "posX" : "posOne"] = side;
+      }
+    }
   }
   if (action.op === "multiply") {
     TOKEN_KINDS.forEach(kind => { next[kind] *= action.factor; });
@@ -205,21 +251,32 @@ export function undo(state) {
 }
 export function expression(value) {
   const { x, constant } = canonical(value);
+  const { x2 } = canonical(value);
+  const sqTerm = x2 === 0 ? "" : (x2 === 1 ? "" : String(x2)) + "x²";
   const xTerm = x === 0 ? "" : x === 1 ? "x" : x === -1 ? "−x" : String(x).replace("-", "−") + "x";
-  if (constant === 0) return xTerm || "0";
-  const n = String(Math.abs(constant));
-  if (!xTerm) return (constant < 0 ? "−" : "") + n;
-  return xTerm + (constant < 0 ? " − " : " + ") + n;
+  let out = sqTerm;
+  if (xTerm) out += out && x < 0 ? " − " + xTerm.slice(1) :
+    out ? " + " + xTerm : xTerm;
+  if (constant !== 0) {
+    const n = String(Math.abs(constant));
+    out += out ? (constant < 0 ? " − " : " + ") + n :
+      (constant < 0 ? "−" : "") + n;
+  }
+  return out || "0";
 }
 export function equation(pair) { return expression(pair.left) + " = " + expression(pair.right); }
 const TOKEN_NAME = { posX: "dark sprite", negX: "pale sprite", posOne: "weight", negOne: "balloon" };
 export function operationDescription(action) {
+  if (action.op === "square") return "Square both entire sides (x ≥ 0)";
+  if (action.op === "sqrt") return "Take the principal square root of both sides (x ≥ 0)";
   if (action.op === "multiply") return "Make " + action.factor + " complete copies in each room";
   if (action.op === "divide") return "Make " + action.factor + " equal groups in each room; keep one";
   const unit = action.count === 1 ? TOKEN_NAME[action.kind] : TOKEN_NAME[action.kind] + "s";
   return (action.op === "add" ? "Add " : "Remove ") + action.count + " " + unit + " in each room";
 }
 export function algebraOperation(action) {
+  if (action.op === "square") return "Square both sides (x ≥ 0)";
+  if (action.op === "sqrt") return "Take √ of both sides (principal root, x ≥ 0)";
   if (action.op === "divide") return "÷ " + action.factor + " on both sides";
   if (action.op === "multiply") return "× " + action.factor + " on both sides";
   const signOfToken = action.kind === "negX" || action.kind === "negOne" ? -1 : 1;
@@ -233,5 +290,15 @@ export function algebraOperation(action) {
 }
 export function validInitialLevel(level) {
   const a = canonical(room(level.left)), b = canonical(room(level.right));
-  return a.x !== b.x && (a.x - b.x) * level.solution === b.constant - a.constant;
+  if (level.solution < 0 || !Number.isInteger(level.solution)) return false;
+  if (evaluate(room(level.left), level.solution) !== evaluate(room(level.right), level.solution))
+    return false;
+  const A = a.x2 - b.x2, B = a.x - b.x, C = a.constant - b.constant;
+  if (A === 0) return B !== 0 && B * level.solution === -C;
+  const disc = B * B - 4 * A * C;
+  if (disc < 0) return false;
+  const roots = [(-B + Math.sqrt(disc)) / (2 * A),
+    (-B - Math.sqrt(disc)) / (2 * A)].filter(Number.isFinite)
+    .filter(x => x >= 0);
+  return roots.length === 1 && Math.abs(roots[0] - level.solution) < 1e-8;
 }
