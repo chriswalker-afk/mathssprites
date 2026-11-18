@@ -263,6 +263,16 @@ background-image:repeating-linear-gradient(90deg,transparent 0 66px,rgba(0,0,0,.
 @keyframes area-label-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 /* The illustrated hand visibly presses the round x into a square x² and
    pinches/squishes the reverse transformation. */
+.giant-hand.arranging .hand-art,.giant-hand.arranging .hand-cargo{
+  animation:hand-trace-area 1.13s cubic-bezier(.25,.7,.3,1) both}
+@keyframes hand-trace-area{
+  0%{transform:translate(-18px,4px) rotate(-9deg)}
+  24%{transform:translate(19px,4px) rotate(5deg)}
+  43%{transform:translate(19px,-21px) rotate(-3deg)}
+  62%{transform:translate(-18px,-21px) rotate(5deg)}
+  81%{transform:translate(10px,-8px) rotate(-4deg)}
+  100%{transform:translate(0,0) rotate(0deg)}
+}
 .giant-hand[data-phase="pound"] .hand-art{animation:hand-area-pound .46s cubic-bezier(.25,.6,.34,1) both}
 .giant-hand[data-phase="squish"] .hand-art{animation:hand-area-squish .48s ease-in-out both}
 @keyframes hand-area-pound{
@@ -386,6 +396,8 @@ background-image:repeating-linear-gradient(90deg,transparent 0 66px,rgba(0,0,0,.
   font:bold .68rem Georgia,serif;color:#edd3a3;text-shadow:0 2px 2px #000;white-space:nowrap;z-index:5}
 .area-after-square .sprite-square .sprite-body{animation:square-form .45s cubic-bezier(.2,.9,.2,1) both!important}
 .area-after-sqrt .sprite-black .sprite-body{animation:round-form .45s cubic-bezier(.2,.9,.2,1) both!important}
+.area-after-square .sprite-square .sprite-body,
+.area-after-sqrt .sprite-black .sprite-body{animation-play-state:running!important}
 @keyframes square-form{0%{border-radius:50%;transform:scale(1.1,.7)}50%{border-radius:21%;transform:scale(.87,1.17)}100%{border-radius:10px;transform:scale(1)}}
 @keyframes round-form{0%{border-radius:10px;transform:scale(1.2,.76)}55%{border-radius:38%;transform:scale(.88,1.12)}100%{border-radius:50%;transform:scale(1)}}
 @keyframes sprite-hop{
