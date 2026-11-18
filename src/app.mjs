@@ -452,6 +452,9 @@ function clearNeutralEffect(side) {
 async function animateNeutralEvents(side,events,paint) {
   if(!events?.length)return;
   const effect=$(side+"-neutral-effect");
+  const hand=$("hand"),activeHand=hand.classList.contains("acting");
+  if(activeHand)hand.classList.add("observing-neutral");
+  try {
   for(const event of events) {
     paint(event.before);
     await sleep(reducedMotion?200:450);
@@ -488,11 +491,15 @@ async function animateNeutralEvents(side,events,paint) {
       : "Watch the balloon lift its matching weight! They make zero.";
     $("action-caption").textContent=line;
     $("action-caption").hidden=false;
-    setSpeech(line,reducedMotion?1800:3000);
+    showTrialSpeech(line,reducedMotion?1800:3000);
     await sleep(reducedMotion?720:1280);
     paint(event.after);
     clearNeutralEffect(side);
     await sleep(reducedMotion?80:180);
+  }
+  } finally {
+    if(activeHand)hand.classList.remove("observing-neutral");
+    clearNeutralEffect(side);
   }
   $("feedback").textContent="Opposites made zero. The two rooms still obey the same equation.";
 }
