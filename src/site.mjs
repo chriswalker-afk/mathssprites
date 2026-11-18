@@ -176,7 +176,7 @@ function renderLevels() {
       chapters:APPRENTICE_CHAPTERS,progress:stage3Progress,open:apprenticeUnlocked,
       emblems:["✎","≡","✦"],
       intro:"Read the equation on paper, write one balanced transformation per line, then watch the sprites reenact YOUR method.",
-      finale:"You've solved all twelve equations on paper before seeing the sprites. The Equation Workshop will be a separate free-play challenge."}
+      finale:"You've solved all twelve equations on paper before seeing the sprites. Bring your own equation to the free-play Equation Workshop whenever you like."}
   };
   const cfg=configs[selectedStage];
   if(!cfg)return;
