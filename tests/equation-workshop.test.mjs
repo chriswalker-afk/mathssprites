@@ -64,7 +64,7 @@ test("clear, specific feedback for unsupported algebra and physical limits",()=>
     ["x-2=5","negative"],["x/2=4","fraction"],
     ["x²=9","fraction"],["x+1.5=4","fraction"],
     ["x=2=3","equation"],["x+999=1000","capacity"],
-    ["<script>alert(1)</script>","fraction"],
+    ["<script>alert(1)</script>","equation"],
     ["2x+5=foo","syntax"],["","equation"]
   ];
   for(const [input,code] of cases){
