@@ -1177,7 +1177,7 @@ async function finishTurn() {
 }
 async function guidedMove() {
   // Stage 2 is manual-only, even if the hidden Guided Mirror control is called.
-  if (campaignStage==="independent" || busy || isSolved(state)) return;
+  if (notebookSession || campaignStage==="independent" || busy || isSolved(state)) return;
   const action=currentAction();
   const outcome=perform(state,action,"auto");
   if(!outcome.ok) {
@@ -1328,7 +1328,7 @@ async function replayNotebookWithSprites() {
 async function manualMove(side) {
   // A student-facing Stage 1 cannot perform one-sided actions, even if an
   // invisible prototype button is activated programmatically.
-  if(campaignStage==="guided" || busy || isSolved(state))return;
+  if(notebookSession || campaignStage==="guided" || busy || isSolved(state))return;
   const wasPending=!!state.pending,action=currentAction();
   const outcome=perform(state,action,"manual",side);
   if(!outcome.ok){
@@ -1825,20 +1825,22 @@ $("quantity-mode").addEventListener("change", event => {
     : "Only positive sprites and weights are available in this lesson.",5300);
 });
 $("level-select").addEventListener("change", event => {
-  if (campaignLevelNumber !== null) return render();
+  if (notebookSession || campaignLevelNumber !== null) return render();
   startLevel(Number(event.target.value));
 });
 $("motion-toggle").addEventListener("click", () => chooseMotion(!reducedMotion));
 $("motion-enable").addEventListener("click", () => chooseMotion(false));
 $("undo").addEventListener("click", () => {
-  if (busy) return;
+  if (notebookSession || busy) return;
   state = undo(state); clearSpeech();
   $("feedback").textContent = "The hand has put everything back.";
   render();
 });
-$("reset").addEventListener("click", () =>
+$("reset").addEventListener("click", () => {
+  if(notebookSession)return;
   startLevel(levelIndex,state.quantityMode,campaignLevelNumber===null?null:currentLevel(),
-    campaignLevelNumber,campaignStage));
+    campaignLevelNumber,campaignStage);
+});
 $("hint").addEventListener("click", () => setSpeech(currentLevel().suggested, 6200));
 $("feedback").addEventListener("click", event => {
   if (event.target?.id === "watch-again") showReplay();
@@ -1892,7 +1894,7 @@ $("game-home").addEventListener("click", () => leaveGame("home"));
 $("game-levels").addEventListener("click", () => leaveGame("levels"));
 document.addEventListener("keydown", event => {
   if (event.key === "Escape" && !$("replay-backdrop").hidden) { hideReplay(); return; }
-  if (event.altKey && event.key.toLowerCase() === "z" && !busy && $("replay-backdrop").hidden) {
+  if (event.altKey && event.key.toLowerCase() === "z" && !notebookSession && !busy && $("replay-backdrop").hidden) {
     state = undo(state); render();
   }
 });
