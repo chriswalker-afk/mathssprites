@@ -56,6 +56,8 @@ test("squaring constructs a matching column and square before pounding round x t
   await expect(page.locator("#left-area-preview")).toHaveAttribute("data-phase","arranging");
   await expect(page.locator("#left-area-preview .area-cell")).toHaveCount(1);
   await expect(page.locator("#left-items .sprite-square")).toHaveCount(1);
+  await expect(page.locator("#left-chamber")).toHaveClass(/area-after-square/);
+  await expect(page.locator("#left-items")).toHaveCSS("opacity", "1");
   await expect(page.locator("#left-items .sprite-black")).toHaveCount(0);
   await expect(page.locator("#right-items .weight")).toHaveCount(3);
   await page.screenshot({path:"artifacts/hand-presses-sprite-into-square.png"});
@@ -79,6 +81,8 @@ test("principal root keeps a side of the array and squishes a square sprite roun
   await expect(page.locator("#left-area-preview")).toBeVisible();
   await expect(page.locator("#left-area-preview .area-cell")).toHaveCount(1);
   await expect(page.locator("#left-items .sprite-black")).toHaveCount(1);
+  await expect(page.locator("#left-chamber")).toHaveClass(/area-after-sqrt/);
+  await expect(page.locator("#left-items")).toHaveCSS("opacity", "1");
   await expect(page.locator("#left-items .sprite-square")).toHaveCount(0);
   await page.screenshot({path:"artifacts/square-squishes-back-into-round-sprite.png"});
   await expect(page.locator("#right-area-preview .area-cell")).toHaveCount(9);
