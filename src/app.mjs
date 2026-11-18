@@ -801,29 +801,8 @@ function failureStage(side, issue, action) {
   const chamber = $(side + "-chamber");
   stage.dataset.issue = issue.code || "invalid";
   let html = "";
-  if (issue.code === "fraction") {
-    const parts = fractionDisplay(issue);
-    const visibleWhole = Math.min(parts.whole, 3);
-    const wholeKind = parts.kind === "posOne" || parts.kind === "negOne" ?
-      "weight-chip" : parts.kind === "posX2" ? "square-chip" : "";
-    const chip = '<span class="whole-chip ' + wholeKind + '"></span>';
-    const fractionKind = parts.kind === "posOne" ? "weight-part" :
-      parts.kind === "posX2" ? "square-part" :
-      parts.kind === "negOne" ? "balloon-part" : "";
-    const baskets = parts.parts.map(i => '<div class="attempt-basket" data-basket="' + i + '">' +
-      '<span class="basket-label">BASKET ' + (i + 1) + '</span>' +
-      '<span class="whole-chips">' + chip.repeat(visibleWhole) +
-      (parts.whole > 3 ? '<small>+' + (parts.whole - 3) + '</small>' : "") + '</span>' +
-      '<span class="slice-object ' + fractionKind + '" style="--slice-percent:' + parts.portion + '%">' +
-      '<span class="slice-ghost"></span><span class="slice-actual"></span><span class="slice-cut"></span></span>' +
-      '<span class="slice-fraction">' + (parts.whole ? parts.whole + ' + ' : "") +
-      parts.numerator + '/' + parts.denominator + '</span></div>').join("");
-    html = '<div class="attempt-caption">' + issue.count + ' ' +
-      itemWord(issue.kind,issue.count) + ' in ' + parts.baskets +
-      ' baskets — some would be cut into pieces!</div>' +
-      '<div class="attempt-baskets">' + baskets + '</div>' +
-      '<span class="attempt-hint">Those are fractional pieces, not whole objects.</span>';
-  } else if (issue.code === "overflow") {
+  if (issue.code === "fraction") return showFractionCut(side,issue);
+  if (issue.code === "overflow") {
     const type = issue.kind === "posX" || issue.kind === "negX" ? "sprite-spill" :
       issue.kind === "posX2" ? "square-spill sprite-spill" :
       issue.kind === "negOne" ? "balloon-spill" : "weight-spill";
@@ -853,8 +832,13 @@ function clearFailureStage(side) {
   const stage = $(side + "-attempt-stage");
   stage.hidden = true;
   stage.innerHTML = "";
-  stage.classList.remove("rewinding");
+  stage.classList.remove("rewinding","fraction-floor-stage");
   delete stage.dataset.issue;
+  delete stage.dataset.cutPhase;
+  delete stage.dataset.cutFactor;
+  delete stage.dataset.cutSources;
+  for(const token of $(side+"-items").querySelectorAll(".fraction-original-hidden"))
+    token.classList.remove("fraction-original-hidden");
   $(side + "-chamber").classList.remove("attempt-fraction", "attempt-overflow",
     "attempt-missing", "attempt-unsupported-area", "attempt-invalid");
 }
@@ -883,7 +867,9 @@ async function animateRejectedAction(action, failure, preferredSide, rollbackPen
   $("feedback").textContent = "The hand is trying that experiment...";
   render();
   try {
-    await handAct(side, action, () => failureStage(side, issue, action));
+    const sceneAction=issue.code==="fraction"
+      ? {...action,fractionAttempt:issue} : action;
+    await handAct(side, sceneAction, () => failureStage(side, issue, action));
     // A visual pause comes BEFORE the speech bubble; learners can notice the
     // cut pieces or spilling tokens for themselves.
     await sleep(reducedMotion ? 220 : 850);
@@ -891,9 +877,15 @@ async function animateRejectedAction(action, failure, preferredSide, rollbackPen
     $("feedback").textContent = message;
     showTrialSpeech(message, reducedMotion ? 4500 : 7600);
     await sleep(reducedMotion ? 650 : 2450);
+    // FIRST stitch each physical fragment back into the ORIGINAL object;
+    // only then rewind the experiment. Students can watch the undo.
+    if(issue.code==="fraction"){
+      $(side+"-attempt-stage").dataset.cutPhase="rejoining";
+      await sleep(reducedMotion?230:790);
+    }
     $(side + "-attempt-stage").classList.add("rewinding");
     $("scene").classList.add("scene-rewinding");
-    await sleep(reducedMotion ? 120 : 750);
+    await sleep(reducedMotion ? 120 : 500);
   } finally {
     restoreExperiment({rollbackPending});
     busy = false;
