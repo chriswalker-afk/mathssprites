@@ -7,8 +7,9 @@ import { handMotionPlan } from "./hand-timeline.mjs";
 import { spriteMotionProfile, spriteMotionStyle } from "./sprite-motion.mjs";
 import { pickSpriteHandReaction, dodgeOffsetPx } from "./sprite-reactions.mjs";
 import { floorScaleToFit, inRoomBoxPlan, areaMathLabel } from "./area-layout.mjs";
-import { fractionDisplay, itemWord, attemptMessage, mismatchedMoveMessage } from "./attempt-feedback.mjs";
-import {neutralPairSummary} from "./neutral-pairs.mjs";
+import { itemWord, attemptMessage, mismatchedMoveMessage } from "./attempt-feedback.mjs";
+import { fractionCutPlan } from "./fraction-theatre.mjs";
+import {neutralPairSequence, neutralPairSummary} from "./neutral-pairs.mjs";
 
 const $ = id => document.getElementById(id);
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
@@ -286,7 +287,9 @@ function handProp(action, side) {
   }
   if (action.op === "sqrt") return "";
   if (action.op === "divide") {
-    return '<span class="held-basket" title="A complete basket of objects"></span>';
+    return action.fractionAttempt
+      ? '<span class="held-fraction-cutter" title="The hand tries to divide an object into pieces"><i></i></span>'
+      : '<span class="held-basket" title="A complete basket of objects"></span>';
   }
   if (action.op === "multiply") {
     return '<span class="held-basket held-basket-double" title="A complete group of objects"></span>';
@@ -320,8 +323,9 @@ function roomOperationText(action, side) {
       " room, lifts away the interior, and keeps one side: "+
       (a?a+" sprites"+(b?" and ":""):"")+(b?b+" weights":"")+".";
   }
-  if(action.op==="divide") return "The hand sorts the "+roomName+
-    " room into "+action.factor+" equal baskets...";
+  if(action.op==="divide") return action.fractionAttempt
+    ? "The hand tries to share the "+roomName+" room into "+action.factor+" equal groups..."
+    : "The hand sorts the "+roomName+" room into "+action.factor+" equal baskets...";
   if(action.op==="multiply") return "The hand makes "+action.factor+
     " complete copies in the "+roomName+" room...";
   const nouns=action.kind==="posX2"?
@@ -545,9 +549,17 @@ async function handAct(side, action, applyAtContact) {
   // art's fingertips reach ~95% of its box (not 78% as in the original outline).
   // Keep the area diagram beside the hand, not hidden beneath its palm.
   // The hand still reaches the floor and traces the nearby square in view.
-  const centreX = items.left + items.width *
-    (action.op === "square" || action.op === "sqrt" ? .68 : .5) - scene.left;
+  const fractionTarget=action.fractionAttempt
+    ? [...$(side+"-items").querySelectorAll(
+        ".floor-track > "+fractionTokenSelector(action.fractionAttempt.kind))].at(-1)
+    : null;
+  const fractionBox=fractionTarget?.getBoundingClientRect();
+  const centreX = (fractionBox
+    ? fractionBox.left+fractionBox.width/2
+    : items.left + items.width *
+      (action.op === "square" || action.op === "sqrt" ? .68 : .5)) - scene.left;
   hand.style.left = centreX + "px";
+  if (action.fractionAttempt) hand.dataset.fractionAttempt="true";
   const restingTip = hand.offsetTop + hand.offsetHeight * 0.95;
   const targetTip = items.bottom - scene.top - Math.min(32, items.height * 0.20);
   const reach = Math.max(160, targetTip - restingTip);
@@ -577,7 +589,7 @@ async function handAct(side, action, applyAtContact) {
   caption.hidden = false;
   cargo.innerHTML = handProp(action, side);
   cargo.classList.remove("sprite-captured");
-  cargo.hidden = !motion.cargoOnApproach;
+  cargo.hidden = !motion.cargoOnApproach && !action.fractionAttempt;
   hand.classList.remove("approaching", "reaching", "grasping", "lifting");
   hand.classList.add("acting");
   hand.dataset.phase = motion.placing ? "carry" : "open";
@@ -634,7 +646,7 @@ async function handAct(side, action, applyAtContact) {
           applied = true;
           if (action.op === "square" || action.op === "sqrt") finishAreaPreview(side, action);
           target.classList.add("hand-contact");
-          cargo.hidden = motion.placing || action.op === "sqrt";
+          cargo.hidden = !!action.fractionAttempt || motion.placing || action.op === "sqrt";
           if (reaction) cargo.classList.add("sprite-captured");
           hand.dataset.phase = action.op === "square" ? (areaEffect?.symbolic ? "pound" : "release") :
             action.op === "sqrt" ? (areaEffect?.symbolic ? "squish" : "carry") :
@@ -656,7 +668,7 @@ async function handAct(side, action, applyAtContact) {
     }
   } finally {
     // No animation state should leak into the next room or next level.
-    hand.classList.remove("approaching", "lifting", "grasping", "reaching", "acting", "tracking-sprite", "arranging");
+    hand.classList.remove("approaching", "lifting", "grasping", "reaching", "acting", "tracking-sprite", "arranging", "fraction-observing");
     hand.dataset.phase = "rest";
     target.classList.remove("hand-target", "hand-contact");
     if (actor) {
@@ -668,6 +680,7 @@ async function handAct(side, action, applyAtContact) {
     hand.style.removeProperty("--hand-chase");
     delete hand.dataset.boxStep;
     delete hand.dataset.boxOperation;
+    delete hand.dataset.fractionAttempt;
     clearAreaPreview(side);
     clearNeutralEffect(side);
     cargo.classList.remove("sprite-captured");
@@ -677,6 +690,114 @@ async function handAct(side, action, applyAtContact) {
   // The client must never treat an aborted first-room animation as solved.
   if (!applied) throw new Error("The hand did not complete its contact move.");
 }
+// The hand cuts the ACTUAL leftover floor objects. The intact ones stay
+// put; there is no separate basket diagram or pile of invented tokens.
+function fractionTokenSelector(kind){
+  return {posX:".sprite-black",negX:".sprite-white",
+    posX2:".sprite-square",posOne:".weight",negOne:".balloon"}[kind]||"";
+}
+async function showFractionCut(side,issue){
+  const plan=fractionCutPlan(issue);
+  const stage=$(side+"-attempt-stage");
+  const roomItems=$(side+"-items");
+  const selector=".floor-track > "+fractionTokenSelector(plan.kind);
+  const targets=[...roomItems.querySelectorAll(selector)].slice(-plan.remainder);
+  if(targets.length!==plan.remainder)
+    throw new Error("The hand cannot cut a missing physical object");
+  stage.hidden=false;
+  stage.innerHTML="";
+  stage.classList.remove("rewinding");
+  stage.classList.add("fraction-floor-stage");
+  stage.dataset.issue="fraction";
+  stage.dataset.cutPhase="intact";
+  stage.dataset.cutFactor=String(plan.factor);
+  stage.dataset.cutSources=String(plan.sources.length);
+  stage.setAttribute("aria-label",plan.remainder+" "+itemWord(plan.kind,plan.remainder)+
+    " will each be cut into "+plan.factor+
+    " equal, visibly separated pieces before the hand restores them");
+  $(side+"-chamber").classList.add("attempt-fraction");
+  const frame=stage.getBoundingClientRect();
+
+  targets.forEach((original,index)=>{
+    const bounds=original.getBoundingClientRect();
+    // The floor is compressed when crowded. The selected object can be
+    // picked up and enlarged slightly, but still appears in the same room
+    // immediately over its original floor position.
+    const width=Math.max(bounds.width,Math.min(48,stage.clientWidth*.12));
+    const height=width*Math.max(.5,bounds.height/Math.max(1,bounds.width));
+    const nativeWidth=Math.max(1,original.offsetWidth);
+    const nativeHeight=Math.max(1,original.offsetHeight);
+    const x=Math.min(stage.clientWidth-width-3,
+      Math.max(3,bounds.left-frame.left+(bounds.width-width)/2));
+    const y=Math.min(stage.clientHeight-height-15,
+      Math.max(25,bounds.top-frame.top+(bounds.height-height)/2));
+    const actor=document.createElement("div");
+    actor.className="fraction-cut-source";
+    actor.dataset.kind=plan.kind;
+    actor.dataset.sourceIndex=String(index);
+    actor.style.left=x+"px";
+    actor.style.top=y+"px";
+    actor.style.width=width+"px";
+    actor.style.height=height+"px";
+    const mat=document.createElement("span");
+    mat.className="fraction-cut-mat";
+    actor.appendChild(mat);
+    for(const slice of plan.sources[index].pieces){
+      const j=slice.sliceIndex;
+      const piece=document.createElement("span");
+      piece.className="fraction-cut-piece";
+      piece.dataset.part=String(j);
+      piece.dataset.basket=String(slice.basket);
+      piece.style.left=(100*slice.start)+"%";
+      piece.style.width=(100/plan.factor)+"%";
+      piece.style.setProperty("--split-x",
+        Math.round((j-(plan.factor-1)/2)*Math.min(19,10+width*.17))+"px");
+      piece.style.setProperty("--split-y",(j%2 ? 8 : -7)+"px");
+      piece.style.setProperty("--split-rotation",
+        Math.round((j-(plan.factor-1)/2)*9)+"deg");
+      const jitter=document.createElement("span");
+      jitter.className="fraction-fragment-wiggle";
+      const art=original.cloneNode(true);
+      art.removeAttribute("title");
+      art.setAttribute("aria-hidden","true");
+      art.classList.add("fraction-cut-art");
+      art.style.width=nativeWidth+"px";
+      art.style.height=nativeHeight+"px";
+      art.style.left=-(j/plan.factor)*nativeWidth+"px";
+      art.style.top="0";
+      art.style.transformOrigin="top left";
+      art.style.transform="scale("+(width/nativeWidth)+","+(height/nativeHeight)+")";
+      jitter.appendChild(art);
+      piece.appendChild(jitter);
+      actor.appendChild(piece);
+    }
+    // One cut mark per boundary, not one invented whole object per basket.
+    for(let j=1;j<plan.factor;j++){
+      const seam=document.createElement("span");
+      seam.className="fraction-cut-seam";
+      seam.style.left=(j/plan.factor*100)+"%";
+      seam.style.setProperty("--seam-delay",((j-1)*170)+"ms");
+      actor.appendChild(seam);
+    }
+    const blade=document.createElement("span");
+    blade.className="fraction-cut-swoosh";
+    actor.appendChild(blade);
+    stage.appendChild(actor);
+    original.classList.add("fraction-original-hidden");
+  });
+  await animateClassFrame();
+  stage.dataset.cutPhase="cutting";
+  $("hand").dataset.phase="chop";
+  await sleep(reducedMotion?210:820);
+  stage.dataset.cutPhase="chopped";
+  // The cutting tool has finished: LIFT it off the fragments so students
+  // can actually see the two half-sprites, even on a small phone screen.
+  $("hand-cargo").hidden=true;
+  $("hand").classList.add("fraction-observing");
+  // Leave the tiny pieces twitching where the object used to stand.
+  await sleep(reducedMotion?180:610);
+}
+
 // A failed attempt is allowed to become a dramatic *visual experiment*, but
 // never a transaction. Only valid, matching moves can enter state.history.
 function failureStage(side, issue, action) {
@@ -684,29 +805,8 @@ function failureStage(side, issue, action) {
   const chamber = $(side + "-chamber");
   stage.dataset.issue = issue.code || "invalid";
   let html = "";
-  if (issue.code === "fraction") {
-    const parts = fractionDisplay(issue);
-    const visibleWhole = Math.min(parts.whole, 3);
-    const wholeKind = parts.kind === "posOne" || parts.kind === "negOne" ?
-      "weight-chip" : parts.kind === "posX2" ? "square-chip" : "";
-    const chip = '<span class="whole-chip ' + wholeKind + '"></span>';
-    const fractionKind = parts.kind === "posOne" ? "weight-part" :
-      parts.kind === "posX2" ? "square-part" :
-      parts.kind === "negOne" ? "balloon-part" : "";
-    const baskets = parts.parts.map(i => '<div class="attempt-basket" data-basket="' + i + '">' +
-      '<span class="basket-label">BASKET ' + (i + 1) + '</span>' +
-      '<span class="whole-chips">' + chip.repeat(visibleWhole) +
-      (parts.whole > 3 ? '<small>+' + (parts.whole - 3) + '</small>' : "") + '</span>' +
-      '<span class="slice-object ' + fractionKind + '" style="--slice-percent:' + parts.portion + '%">' +
-      '<span class="slice-ghost"></span><span class="slice-actual"></span><span class="slice-cut"></span></span>' +
-      '<span class="slice-fraction">' + (parts.whole ? parts.whole + ' + ' : "") +
-      parts.numerator + '/' + parts.denominator + '</span></div>').join("");
-    html = '<div class="attempt-caption">' + issue.count + ' ' +
-      itemWord(issue.kind,issue.count) + ' in ' + parts.baskets +
-      ' baskets — some would be cut into pieces!</div>' +
-      '<div class="attempt-baskets">' + baskets + '</div>' +
-      '<span class="attempt-hint">Those are fractional pieces, not whole objects.</span>';
-  } else if (issue.code === "overflow") {
+  if (issue.code === "fraction") return showFractionCut(side,issue);
+  if (issue.code === "overflow") {
     const type = issue.kind === "posX" || issue.kind === "negX" ? "sprite-spill" :
       issue.kind === "posX2" ? "square-spill sprite-spill" :
       issue.kind === "negOne" ? "balloon-spill" : "weight-spill";
@@ -736,8 +836,13 @@ function clearFailureStage(side) {
   const stage = $(side + "-attempt-stage");
   stage.hidden = true;
   stage.innerHTML = "";
-  stage.classList.remove("rewinding");
+  stage.classList.remove("rewinding","fraction-floor-stage");
   delete stage.dataset.issue;
+  delete stage.dataset.cutPhase;
+  delete stage.dataset.cutFactor;
+  delete stage.dataset.cutSources;
+  for(const token of $(side+"-items").querySelectorAll(".fraction-original-hidden"))
+    token.classList.remove("fraction-original-hidden");
   $(side + "-chamber").classList.remove("attempt-fraction", "attempt-overflow",
     "attempt-missing", "attempt-unsupported-area", "attempt-invalid");
 }
@@ -766,7 +871,21 @@ async function animateRejectedAction(action, failure, preferredSide, rollbackPen
   $("feedback").textContent = "The hand is trying that experiment...";
   render();
   try {
-    await handAct(side, action, () => failureStage(side, issue, action));
+    if(issue.code==="fraction"){
+      // Cancel existing signed zero pairs before cutting the true remainder.
+      const existing=visible();
+      const events=neutralPairSequence(existing[side],side);
+      if(events.length){
+        override={left:room(existing.left),right:room(existing.right)};
+        await animateNeutralEvents(side,events,r=>{
+          override={...override,[side]:room(r)};render();
+        });
+        clearSpeech();
+      }
+    }
+    const sceneAction=issue.code==="fraction"
+      ? {...action,fractionAttempt:issue} : action;
+    await handAct(side, sceneAction, () => failureStage(side, issue, action));
     // A visual pause comes BEFORE the speech bubble; learners can notice the
     // cut pieces or spilling tokens for themselves.
     await sleep(reducedMotion ? 220 : 850);
@@ -774,9 +893,15 @@ async function animateRejectedAction(action, failure, preferredSide, rollbackPen
     $("feedback").textContent = message;
     showTrialSpeech(message, reducedMotion ? 4500 : 7600);
     await sleep(reducedMotion ? 650 : 2450);
+    // FIRST stitch each physical fragment back into the ORIGINAL object;
+    // only then rewind the experiment. Students can watch the undo.
+    if(issue.code==="fraction"){
+      $(side+"-attempt-stage").dataset.cutPhase="rejoining";
+      await sleep(reducedMotion?230:790);
+    }
     $(side + "-attempt-stage").classList.add("rewinding");
     $("scene").classList.add("scene-rewinding");
-    await sleep(reducedMotion ? 120 : 750);
+    await sleep(reducedMotion ? 120 : 500);
   } finally {
     restoreExperiment({rollbackPending});
     busy = false;

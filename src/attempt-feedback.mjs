@@ -42,12 +42,15 @@ export function attemptMessage(failure, action, side = "left") {
   const rewind = " I'll undo the attempt and put everything back.";
   switch (failure?.code) {
     case "fraction": {
-      const p = fractionDisplay(failure);
-      return "Oh! " + failure.count + " " + itemWord(failure.kind, failure.count) +
-        " won't split into " + p.baskets + " whole baskets. Each needs " +
-        (p.whole ? p.whole + " and " : "") + p.numerator + "/" + p.denominator +
-        " of a " + itemWord(failure.kind) +
-        ". These pieces are too small. I don't want to deal with them!" + rewind;
+      const p=fractionDisplay(failure);
+      const remaining=failure.remainder;
+      return "Oh! I chopped " + remaining + " leftover " +
+        itemWord(failure.kind,remaining) + " into " + p.baskets +
+        " little pieces each. Every basket would need " +
+        (p.whole ? p.whole + " whole " + itemWord(failure.kind,p.whole) + " and " : "") +
+        p.numerator + "/" + p.denominator + " of a " + itemWord(failure.kind) +
+        ". These pieces are too small. I don't want fractions here! " +
+        "I'll put them back together and undo the attempt.";
     }
     case "overflow":
       return "Whoops! That's " + failure.total + " objects in the " + room +

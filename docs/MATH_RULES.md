@@ -152,3 +152,10 @@ Before division, first normalize any existing pairs (with the matching animation
 The pencil notebook writes the mathematical operation and then explicit neutralisation notes such as (+x) + (−x) = 0 or (+1) + (−1) = 0 in the correct room, before writing the resulting equation. Removing a balloon must remain subtraction of negative one, never subtraction of positive one. The miniature comic includes the physical cancellation cue, while the actual game illustrates separate soot-puff and rising-weight animations.
 
 The supported signed experiments have positive x=4: x−2=2, 2x+3=x+7, and 2x−2=x+2. Signed squares and roots are not unlocked: the current area construction requires a pure nonnegative length and exact perfect square, so a signed object is rejected rather than squared incorrectly.
+
+
+## PR13: Exact geometric fragments for rejected division
+
+When factor groups are attempted, count = factor × whole + remainder. A whole-only result is possible only when every normalized kind has remainder zero. If a kind has remainder r > 0, the hand does NOT create a new fractional token type. It previews exactly r of the existing leftover whole tokens, each visually clipped into factor disjoint fragments representing 1/factor of that ORIGINAL object. The count of visual fragments is r × factor, and every hypothetical basket would require whole + r/factor of that kind. The pieces remain clipped views of their parents, never independent full-valued sprites. Rejoining the pieces visibly restores the original objects.
+
+The pending attempt is rejected by the existing engine. The mathematical state, solution, current balance, Undo history and notebook replay remain unchanged. If a signed room includes pre-existing +/− zero pairs, their value-neutral cancellation is shown in the temporary preview before the attempted fractional cut, and all objects are restored on rollback. An actual future fraction-enabled mode would require a separate exact token representation rather than relying on this educational cutscene.

@@ -397,8 +397,122 @@ background-image:repeating-linear-gradient(90deg,transparent 0 66px,rgba(0,0,0,.
   .giant-hand[data-box-step="units"] .hand-art{transform:translate(11px,6px)}
 }
 
+/* PR13 — rejected division is performed ON THE ORIGINAL FLOOR ACTORS,
+   not in a floating duplicate basket diagram. Each selected whole sprite
+   is geometrically CLIPPED into exactly factor disjoint pieces. The pieces
+   separate, wiggle, then rejoin the original when the hand rewinds. */
+.fraction-original-hidden{opacity:0!important}
+.attempt-fraction .attempt-stage.fraction-floor-stage{
+  position:absolute;inset:0;left:0;right:0;top:0;bottom:0;
+  width:100%;height:100%;max-height:none;display:block;
+  background:transparent;filter:none;pointer-events:none;
+  transform:none;animation:none}
+.fraction-cut-source{
+  position:absolute;z-index:14;display:block;isolation:isolate;
+  pointer-events:none;overflow:visible;filter:drop-shadow(0 3px 3px #0007)}
+.fraction-cut-mat{position:absolute;left:-9px;right:-9px;bottom:-9px;height:13px;
+  background:linear-gradient(0deg,#463421,#906d43 48%,#b4915e);
+  border:1px solid #c7a36e;border-radius:3px 4px 6px 4px;
+  box-shadow:0 4px 6px #070c09ad;transform:perspective(120px) rotateX(38deg)}
+.fraction-cut-piece{position:absolute;top:0;height:100%;display:block;
+  overflow:hidden;pointer-events:none;z-index:2;
+  transform:translate(0,0) rotate(0deg);transform-origin:center 88%;
+  transition:transform .77s cubic-bezier(.2,1.28,.28,1),
+    filter .38s ease}
+.fraction-fragment-wiggle{position:absolute;inset:0;display:block}
+.fraction-cut-art.token{position:absolute!important;display:block!important;z-index:2;
+  top:0;left:0;margin:0!important;transform-origin:top left!important;
+  animation:none!important;pointer-events:none!important}
+/* The illustration is a real clipped copy of ONE original token: half a
+   sprite shows half the body, its tuft, and part of its eyes, not an invented
+   new mini-sprite with a full pair of eyes for each slice. */
+.fraction-cut-art .sprite-motion,.fraction-cut-art .sprite-body,
+.fraction-cut-art .sprite-ground-shadow,.fraction-cut-art .sprite-eyes,
+.fraction-cut-art .sprite-eyes i,.fraction-cut-art .sprite-feet,
+.fraction-cut-art .sprite-reaction-shell,
+.fraction-cut-art .balloon-body,.fraction-cut-art .balloon-string{
+  animation:none!important}
+.fraction-cut-seam{position:absolute;z-index:5;top:-7px;bottom:-7px;
+  border-left:2px dashed #f3d29d;opacity:0;transform-origin:top center;
+  filter:drop-shadow(0 0 3px #d2ad74);pointer-events:none}
+.fraction-cut-swoosh{position:absolute;z-index:6;left:48%;top:-55px;
+  width:7px;height:68px;opacity:0;pointer-events:none;
+  border-radius:3px;background:linear-gradient(90deg,#6a6156,#f6ecd3 47%,#967e58);
+  border:1px solid #e2c798;box-shadow:0 2px 8px #c9b68e99}
+.fraction-cut-swoosh:after{content:"";position:absolute;left:-8px;bottom:-3px;
+  width:24px;height:8px;border-radius:50%;
+  background:radial-gradient(ellipse,#ebd4a6a3,transparent 70%)}
+.attempt-stage[data-cut-phase="cutting"] .fraction-cut-seam{
+  animation:fraction-mark-line .48s ease-in var(--seam-delay,0ms) both}
+.attempt-stage[data-cut-phase="cutting"] .fraction-cut-swoosh{
+  animation:fraction-blade-chop .43s cubic-bezier(.28,.72,.3,1) 2 both}
+.attempt-stage[data-cut-phase="chopped"] .fraction-cut-piece{
+  transform:translate(var(--split-x,0px),var(--split-y,0px))
+    rotate(var(--split-rotation,0deg));
+  filter:drop-shadow(1px 3px 2px #080d0cac)}
+.attempt-stage[data-cut-phase="chopped"] .fraction-cut-seam{opacity:.48}
+.attempt-stage[data-cut-phase="chopped"] .fraction-fragment-wiggle{
+  animation:fraction-fragment-wiggle .63s ease-in-out infinite alternate}
+.attempt-stage[data-cut-phase="rejoining"] .fraction-cut-piece{
+  transform:translate(0,0) rotate(0deg)}
+.attempt-stage[data-cut-phase="rejoining"] .fraction-cut-seam,
+.attempt-stage[data-cut-phase="chopped"] .fraction-cut-swoosh,
+.attempt-stage[data-cut-phase="rejoining"] .fraction-cut-swoosh{opacity:0}
+@keyframes fraction-mark-line{
+  0%{opacity:0;transform:scaleY(0)}
+  32%{opacity:1;transform:scaleY(.45)}
+  100%{opacity:.84;transform:scaleY(1)}
+}
+@keyframes fraction-blade-chop{
+  0%{opacity:0;transform:translateY(-32px) rotate(-12deg)}
+  25%{opacity:1;transform:translateY(-11px) rotate(-2deg)}
+  48%{opacity:1;transform:translateY(37px) rotate(9deg)}
+  68%{opacity:1;transform:translateY(31px) rotate(4deg)}
+  100%{opacity:0;transform:translateY(-25px) rotate(-9deg)}
+}
+@keyframes fraction-fragment-wiggle{
+  from{translate:0 1px;filter:brightness(.9)}
+  to{translate:0 -3px;filter:brightness(1.19)}
+}
+/* The visible tool is a small blunt laboratory cutter: no injury or gore.
+   The hand does TWO deliberate downward chops before inspecting the scraps. */
+.held-fraction-cutter{position:absolute;left:17px;top:5px;width:30px;height:55px;
+  transform:rotate(-14deg);transform-origin:50% 15%;filter:drop-shadow(2px 4px 3px #0009)}
+.held-fraction-cutter:before{content:"";position:absolute;left:11px;top:0;
+  height:37px;width:9px;border-radius:4px 4px 2px 2px;
+  background:linear-gradient(90deg,#71543b,#d8b481,#694c37);
+  border:1px solid #5c412c;box-shadow:inset 1px 0 #f6deb4}
+.held-fraction-cutter:after{content:"";position:absolute;left:-6px;top:32px;
+  width:43px;height:22px;border-radius:3px 4px 10px 10px;
+  background:linear-gradient(105deg,#5c594b,#f7ecd1 55%,#82755e);
+  border:2px solid #6d5c42;clip-path:polygon(7% 0,93% 0,100% 86%,0 86%)}
+.held-fraction-cutter i{position:absolute;left:1px;top:41px;width:29px;height:4px;
+  background:#ffe4b3;box-shadow:0 0 5px #e9d3a4;z-index:2}
+.giant-hand[data-fraction-attempt="true"]{width:135px;height:195px}
+.giant-hand[data-phase="chop"] .hand-art{
+  animation:fraction-hand-chop .46s cubic-bezier(.28,.75,.32,1) 2 both}
+.giant-hand.fraction-observing .hand-art{
+  transform:translate(76px,-45px) rotate(9deg)!important;
+  transition:transform .25s ease-out}
+@keyframes fraction-hand-chop{
+  0%{transform:translateY(-17px) rotate(-8deg)}
+  48%{transform:translateY(19px) rotate(4deg) scaleY(.96)}
+  78%{transform:translateY(-4px) rotate(-3deg)}
+  100%{transform:translateY(-13px) rotate(-6deg)}
+}
+.reduce-motion .fraction-floor-stage *,
+.reduce-motion .giant-hand[data-phase="chop"] .hand-art{
+  animation:none!important;transition:none!important}
+@media(max-width:600px){
+  .giant-hand[data-fraction-attempt="true"]{width:82px;height:124px}
+  .giant-hand.fraction-observing .hand-art{
+    transform:translate(43px,-25px) rotate(5deg)!important}
+  .fraction-cut-mat{left:-5px;right:-5px;height:8px;bottom:-5px}
+  .fraction-cut-swoosh{height:46px;top:-32px}
+}
+
 /* PR10: unsuccessful actions are VISUAL EXPERIMENTS, never algebra commits.
-   Fractions are shown as sliced objects in baskets; crowded rooms spill props;
+   Fractional cuts now happen directly to floor actors; crowded rooms spill props;
    different one-sided actions tip the actual beam before the hand undoes them. */
 .attempt-stage[hidden]{display:none!important}
 .attempt-stage{position:absolute;z-index:10;left:1%;right:1%;bottom:34px;height:150px;
@@ -413,53 +527,6 @@ background-image:repeating-linear-gradient(90deg,transparent 0 66px,rgba(0,0,0,.
 .attempt-stage.rewinding{animation:attempt-reverse .7s ease-in both}
 @keyframes attempt-reveal{from{opacity:0;transform:translateY(-12px) scale(.93)}to{opacity:1;transform:translateY(0) scale(1)}}
 @keyframes attempt-reverse{from{opacity:1;transform:scale(1)}to{opacity:0;transform:translateY(-12px) scale(.82)}}
-.attempt-baskets{display:flex;justify-content:center;align-items:flex-end;gap:5px;
-  width:100%;height:91px}
-.attempt-basket{border:2px solid #c4a36d;border-top:5px solid #e1bf85;
-  border-radius:6px 6px 15px 15px;background:#e1c6901c;width:min(19%,79px);
-  height:84px;min-width:0;display:flex;align-items:center;justify-content:flex-end;
-  flex-direction:column;position:relative;gap:3px;padding:4px 2px 6px;
-  animation:basket-in .45s both}
-.attempt-basket .basket-label{font:bold .59rem Georgia,serif;color:#eed4a6}
-.attempt-basket .whole-chips{display:flex;flex-wrap:nowrap;gap:2px;
-  height:22px;justify-content:center;align-items:center;max-width:100%}
-.attempt-basket .whole-chip{display:inline-flex;width:14px;height:15px;
-  background:radial-gradient(circle at 25% 25%,#67786f,#121a1a 85%);
-  border:1px solid #ddc18a;border-radius:50%;box-shadow:0 2px 2px #0009}
-.attempt-basket .whole-chip.weight-chip{border-radius:3px 3px 6px 6px;
-  background:linear-gradient(90deg,#765335,#e3c58e,#805c3e)}
-.attempt-basket .whole-chip.square-chip{border-radius:3px}
-.slice-object{width:31px;height:31px;position:relative;display:block;
-  transform-origin:center;animation:split-surprise .8s ease-out both}
-.slice-object .slice-ghost{position:absolute;inset:0;border:2px dashed #d3c0a5;
-  background:#28393661;border-radius:50%}
-.slice-object .slice-actual{position:absolute;inset:0;
-  clip-path:polygon(0 0,var(--slice-percent,50%) 0,var(--slice-percent,50%) 100%,0 100%);
-  border-radius:50%;background:radial-gradient(circle at 30% 28%,#70837b,#152222 78%);
-  box-shadow:inset 1px -2px 5px #0009}
-.slice-object .slice-actual:before{content:"";position:absolute;left:9px;top:8px;
-  width:4px;height:6px;border-radius:50%;background:#f7f1d9;
-  box-shadow:10px 0 #f7f1d9}
-.slice-object.weight-part .slice-ghost,.slice-object.weight-part .slice-actual{
-  border-radius:5px;background:linear-gradient(95deg,#795633,#efcd94,#8a633d)}
-.slice-object.weight-part .slice-actual:before{display:none}
-.slice-object.square-part .slice-ghost,.slice-object.square-part .slice-actual{border-radius:5px}
-.slice-object.balloon-part .slice-ghost,.slice-object.balloon-part .slice-actual{background:#d39897}
-.slice-object .slice-cut{position:absolute;left:var(--slice-percent,50%);top:-4px;height:38px;
-  border-left:3px dashed #f9d09b;transform:rotate(5deg);
-  animation:blade-cut .8s ease-out both}
-.slice-fraction{font:bold .66rem Georgia,serif;color:#ffdda4;
-  background:#293633dc;border-radius:4px;padding:1px 4px}
-@keyframes split-surprise{
-  0%{transform:scale(1.12) rotate(-3deg)}35%{transform:scale(.7,1.2)}
-  70%{transform:translateX(6px) rotate(8deg) scale(.92)}
-  100%{transform:translateX(4px) rotate(3deg) scale(1)}
-}
-@keyframes blade-cut{
-  0%{opacity:0;transform:translateY(-24px) rotate(-15deg)}
-  40%{opacity:1;transform:translateY(0) rotate(8deg)}
-  100%{opacity:.8;transform:translateY(0) rotate(5deg)}
-}
 .attempt-overflow .room-interior{overflow:visible}
 .attempt-overflow .attempt-stage{left:-16%;right:-17%;height:156px}
 .overflow-trail{width:100%;height:98px;position:relative}
@@ -520,13 +587,6 @@ background-image:repeating-linear-gradient(90deg,transparent 0 66px,rgba(0,0,0,.
   .attempt-stage{bottom:20px;height:98px;gap:2px}
   .attempt-stage .attempt-caption{font-size:.49rem;padding:2px 3px}
   .attempt-stage .attempt-hint{font-size:.48rem}
-  .attempt-baskets{height:64px;gap:2px}
-  .attempt-basket{height:57px;border-width:1px;border-top-width:3px;padding:2px}
-  .attempt-basket .basket-label{font-size:.44rem}
-  .attempt-basket .whole-chips{height:11px}
-  .attempt-basket .whole-chip{width:9px;height:10px}
-  .slice-object{transform:scale(.62);margin:-5px}
-  .slice-fraction{font-size:.45rem}
   .attempt-overflow .attempt-stage{height:102px}
   .overflow-trail{height:58px}
   .overflow-piece{width:21px;height:21px}

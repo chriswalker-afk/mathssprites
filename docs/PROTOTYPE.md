@@ -145,7 +145,7 @@ The engine's posX2 token is a distinct quadratic area term. In-room geometry and
 
 Instead of rejecting an inadvisable move immediately, the game now teaches through a **temporary failed physical experiment** without changing its algebraic truth.
 
-- **Fractional division:** the hand attempts to share a row into baskets. When this requires fractional creatures or weights, the little objects are shown sliced (for example, 3 sprites into two groups of 1 + 1/2). Fractions are *visual teaching previews only*; the whole-object engine rejects them.
+- **Fractional division (PR13):** when sharing requires fractional objects, the hand targets and physically chops the actual leftover floor sprite, square sprite, weight, balloon, or white sprite inside the same room. The original body, eyes and tufts become little clipped fragments. The hand pauses, explains why those pieces are not allowed in the current whole-object mode, reassembles them and undoes the trial. All other objects stay on the floor; no floating basket diagram or extra whole objects are created.
 - **Overflow:** an add or duplication which would exceed the 48-object cap visibly spills bouncing sprites or tumbling weights beyond the chamber. The exact attempted count and the capacity are given.
 - **Missing or unsuitable pieces:** the hand shows a ghost object, or explains why a root doesn't form a complete square (or an x² sprite would require a higher power), instead of displaying incorrect algebra.
 - **Order:** hand attempts the action; the learner watches the problem; a short pause; the hand explains the problem and explicitly says it will undo the change; a reversal animates; the previous whole-object rooms are restored. The attempt never enters Undo or comic history.
@@ -179,3 +179,10 @@ At contact with the large hand, all newly introduced pieces become visible BEFOR
 Before division, existing pairs neutralise first, then the hand forms valid whole-object baskets from the reduced counts. The notebook replay preserves each signed operation and writes separate neutralisation notes before the resulting equation. The miniature scene includes the corresponding cancelling sprites or weight/balloon. Undo restores all pre-operation objects in both rooms, including white sprites and balloons. Reduced motion displays an equivalent static pair before it disappears.
 
 Suggested visual inspection: black/white collision in chapter 12; two distinct balloon lifts in chapter 11; both effects across two transactions in chapter 13; signed mode disabled by default in the original introductory level; separate Guided Mirror / Your Turn controls; signed algebra and neutralisation in the final pencil notebook.
+
+
+## PR13 — In-room rejected-division experiments
+
+This scene correction replaces the detached five-basket display in the failure state. The failed division targets the actual remaining whole objects standing on the chamber floor. The hand carries a brass cutter to that location. Each leftover source object is duplicated only as an invisible-state-preserving presentation, geometrically clipped into the requested number of separate fragments, and animated apart. A half-sprite has only half the original body and eye positions; it is not a miniature whole sprite. Square sprites, signed creatures, weights and balloons use the same conservation rule. Existing signed zero pairs are cancelled first in the temporary preview.
+
+After students see the little pieces, the hand pauses, gives its explanatory speech, rejoins the fragments and restores the original floor layout. It never commits the invalid division, changes the equation, tilts a genuinely balanced result or adds a replay panel. Reduced-motion mode displays the separated and restored positions without shaking. Mobile uses the original chamber geometry. The pure material-conservation plan and new Chrome screenshots are covered by tests/fraction-theatre.test.mjs and e2e/failed-attempts.spec.mjs.

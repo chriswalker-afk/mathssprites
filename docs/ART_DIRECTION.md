@@ -109,3 +109,10 @@ The same room-scale frame is reconstructed in reverse for a principal root: remo
 **Feedback and notebook:** a scene-level caption and first-person bubble briefly name the pair's zero value. In the victory replay the miniature comic shows the specific opposing objects, and the pencil writes the zero relation in the same room; no independent unequal hand operation is implied.
 
 **Movement safety:** reduced-motion mode displays the two objects and static pair label without their bounce, collision, fall or floating effects, then removes them. The underlying quantity-mode permissions remain mathematically enforced, and signed objects are locked away in positive-only mode.
+
+
+### PR13: Chop the actual sprite, not a basket illustration
+
+Failed whole-number division becomes a funny, reversible experiment in the ORIGINAL room. The hand has a small brass precision cutter, aims at the surviving whole sprite or weight on its existing floor, then makes real vertical cuts. Each separated fragment is a clipped piece of that EXACT original character: a half-sprite retains half the fluffy outline, part of its eyes, feet and shaded body. Never show multiple tiny fully intact sprites when the arithmetic only grants pieces of one. The same treatment works for squares, pale sprites, balloons and brass weights; two to five slices may be needed per source object.
+
+Fragments spring apart slightly, give a little wriggle, and remain observable while the hand considers the result. Then the hand explains the problem in its existing speech bubble. The pieces slide back together and the old floor returns intact. No gore, injury or permanent harm; the entire point is that the attempted fractional division is a temporary mathematical experiment. The other objects and the scenery remain visible throughout. On small screens the real chamber geometry governs placement; in reduced-motion mode the same split/rejoin stages appear without movement. Legitimate whole-number baskets, in-room squares, signed zero pairs and over-capacity spills remain separate effects.
