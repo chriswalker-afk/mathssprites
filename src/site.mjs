@@ -204,6 +204,7 @@ function renderSettings() {
   $("teacher-unlock").checked = teacher;
   $("site-guided-help").checked = guideEnabled;
   $("site-replay-independent").hidden=!stageCanOpen("independent");
+  $("site-notebook-option").hidden=!teacher;
   const motion = $("motion-toggle").textContent;
   $("site-motion").textContent = motion === "Motion: reduced"
     ? "Turn animations on" : "Use reduced motion";
@@ -299,6 +300,21 @@ function restartIndependentIntroduction() {
   launch(1,"independent");
 }
 $("site-replay-independent").addEventListener("click",restartIndependentIntroduction);
+/** Teacher-facing preview only: PR21 will add real Stage 3 levels and progress. */
+function launchNotebookPreview(level=WORLD1_LEVELS[8].level){
+  playingStage=null;
+  playingNumber=null;
+  currentScreen="notebook-preview";
+  $("site-shell").hidden=true;
+  $("game-shell").hidden=false;
+  document.body.classList.remove("preview-mode");
+  window.dispatchEvent(new CustomEvent("mathssprites:notebook-preview",{detail:{level}}));
+  $("notebook-equation").focus({preventScroll:true});
+  window.scrollTo?.(0,0);
+}
+$("site-notebook-preview").addEventListener("click",()=>{
+  if(teacher)launchNotebookPreview();
+});
 window.addEventListener("mathssprites:restart-guide", event=>{
   if(event.detail?.stage==="independent")restartIndependentIntroduction();
   else restartFirstExperimentGuide();
@@ -322,6 +338,9 @@ window.addEventListener("mathssprites:solved",event=>{
   homeAction();
 });
 window.addEventListener("mathssprites:leave",event=>{
+  // A non-campaign notebook preview returns to Settings, not a fake Stage 3 map.
+  if(currentScreen==="notebook-preview")
+    return showScreen(event.detail?.screen==="home"?"home":"settings");
   showScreen(event.detail?.screen==="home"?"home":"levels");
 });
 window.addEventListener("mathssprites:advance",()=>{
@@ -335,7 +354,13 @@ window.addEventListener("mathssprites:advance",()=>{
 
 const params = new URLSearchParams(window.location.search);
 const preview = params.get("preview");
-if (preview !== null) {
+const notebookPreview=params.get("notebook");
+if(notebookPreview!==null){
+  // Deliberately ONLY existing positive integer sample puzzles until PR21.
+  // Direct QA URLs never count towards any campaign's saved progress.
+  const sample=WORLD1_LEVELS.find(slot=>slot.id===notebookPreview) || WORLD1_LEVELS[8];
+  launchNotebookPreview(sample.level);
+} else if (preview !== null) {
   // Direct preview route keeps the 13 prototype experiments testable while
   // the public student route shows only the available World 1 campaign.
   document.body.classList.add("preview-mode");
