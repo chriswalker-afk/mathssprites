@@ -131,8 +131,8 @@ function renderRoom(side, r, groupCount) {
       ' identical groups">' + baskets + '</div>';
     return;
   }
-  node.innerHTML = '<div class="items-grid floor-track" data-layout="floor">' +
-    allTokens(r, false, side) + '</div>' +
+  node.innerHTML = '<div class="floor-shell"><div class="items-grid floor-track" data-layout="floor">' +
+    allTokens(r, false, side) + '</div></div>' +
     (total > 14 ? '<span class="floor-count" aria-hidden="true">' + total + ' objects in a row</span>' : "");
   resizeFloor(side);
 }
