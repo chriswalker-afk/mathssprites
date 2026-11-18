@@ -124,7 +124,7 @@
       <div class="header-actions">
         <button class="top-icon game-nav-button" id="game-home" type="button">⌂ Home</button>
         <button class="top-icon game-nav-button" id="game-levels" type="button">▦ Levels</button>
-        <button class="top-icon game-nav-button" id="game-guide-restart" type="button">? Guide</button>
+        <button class="top-icon game-nav-button" id="game-guide-restart" type="button" aria-label="Restart Level 1 guided introduction">? Guide</button>
         <label class="labelled-select legacy-controls" for="level-select"><span>Experiment</span><select id="level-select" aria-label="Choose an experiment"></select></label>
         <label class="labelled-select" for="mode-select"><span>Hand control</span><select id="mode-select" aria-label="Choose hand control mode"><option value="auto">Guided mirror</option><option value="manual">Your turn</option></select></label>
         <label class="labelled-select legacy-controls" for="quantity-mode"><span>Maths mode</span><select id="quantity-mode" aria-label="Choose positive-only or signed objects"><option value="positive">Positive objects</option><option value="signed">Signed objects</option></select></label>
@@ -134,7 +134,8 @@
 
     <main>
       <div class="chapter-strip">
-        <div><div id="chapter" class="eyebrow">01 · Clearing the room</div><h2 id="level-title">One little resident</h2></div>
+        <div><div id="chapter" class="eyebrow">01 · Clearing the room</div><h2 id="level-title">One little resident</h2>
+          <span id="chapter-status" class="chapter-status" hidden>World 1 · Level 1 of 20</span></div>
         <div class="step-dots" id="step-dots" aria-label="Experiments"></div>
       </div>
 
@@ -318,6 +319,7 @@
         <div class="mission">
           <span class="eyebrow">YOUR EXPERIMENT</span>
           <p id="level-prompt">Leave one dark sprite alone, facing only weights.</p>
+          <p id="chapter-briefing" class="chapter-briefing" hidden></p>
           <div id="feedback" class="feedback" role="status" aria-live="polite">Choose a hand action, then try it on the rooms.</div>
         </div>
         <div class="control-content">
