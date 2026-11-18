@@ -156,3 +156,17 @@ test("divide records zero-pair normalisation before making groups", () => {
   assert.equal(next.history[0].cancellations.left.constants,2);
   assert.equal(balanceDifference(next),0);
 });
+
+test("five-basket chapter needs 5 groups and then removing 2 weights", () => {
+  const start = initialState(LEVELS[4]);
+  assert.equal(validInitialLevel(LEVELS[4]), true);
+  assert.equal(prepare(start,factor("divide",5)).ok,true);
+  const grouped = committed(start,factor("divide",5));
+  assert.equal(equation(grouped),"x + 2 = 4");
+  assert.equal(grouped.left.posX,1);
+  assert.equal(grouped.left.posOne,2);
+  assert.equal(grouped.right.posOne,4);
+  const finish = committed(grouped,act("remove","posOne",2));
+  assert.equal(equation(finish),"x = 2");
+  assert.equal(isSolved(finish),true);
+});
