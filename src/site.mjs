@@ -203,6 +203,7 @@ function renderLevels() {
 function renderSettings() {
   $("teacher-unlock").checked = teacher;
   $("site-guided-help").checked = guideEnabled;
+  $("site-replay-independent").hidden=!stageCanOpen("independent");
   const motion = $("motion-toggle").textContent;
   $("site-motion").textContent = motion === "Motion: reduced"
     ? "Turn animations on" : "Use reduced motion";
@@ -211,6 +212,7 @@ function showScreen(name) {
   if (!screenNames.includes(name)) return;
   currentScreen = name;
   playingNumber = null;
+  playingStage = null;
   $("site-shell").hidden = false;
   $("game-shell").hidden = true;
   document.body.classList.remove("preview-mode");
@@ -225,19 +227,25 @@ function showScreen(name) {
   if (heading) heading.focus({preventScroll:true});
   window.scrollTo?.(0,0);
 }
-function launch(number) {
-  const slot = findWorld1Level(number);
-  if (!slot?.level || !unlocked(slot.number)) return false;
-  playingNumber = slot.number;
-  currentScreen = "game";
-  progress = saveProgress({ ...progress, lastPlayed:slot.number });
-  $("site-shell").hidden = true;
-  $("game-shell").hidden = false;
+function launch(number,stage=selectedStage) {
+  if(!stageCanOpen(stage) || !["guided","independent"].includes(stage))return false;
+  const independent=stage==="independent";
+  const slot=independent?findIndependentLevel(number):findWorld1Level(number);
+  const allowed=independent?independentUnlocked(number):unlocked(number);
+  if(!slot?.level||!allowed)return false;
+  selectedStage=stage;
+  playingStage=stage;
+  playingNumber=slot.number;
+  currentScreen="game";
+  if(independent) stage2Progress=saveStage2Progress({...stage2Progress,lastPlayed:slot.number});
+  else progress=saveProgress({...progress,lastPlayed:slot.number});
+  $("site-shell").hidden=true;
+  $("game-shell").hidden=false;
   document.body.classList.remove("preview-mode");
-  window.dispatchEvent(new CustomEvent("mathssprites:launch", {
-    detail: { number:slot.number, legacyIndex:slot.legacyIndex, level:slot.level }
+  window.dispatchEvent(new CustomEvent("mathssprites:launch",{
+    detail:{stage,number:slot.number,legacyIndex:slot.legacyIndex,level:slot.level}
   }));
-  $("level-title").setAttribute("tabindex", "-1");
+  $("level-title").setAttribute("tabindex","-1");
   $("level-title").focus({preventScroll:true});
   window.scrollTo?.(0,0);
   return true;
@@ -246,16 +254,27 @@ function launch(number) {
 $("site-shell").addEventListener("click", event => {
   const target = event.target.closest("button");
   if (!target) return;
+  if (target.dataset.stageOpen) {
+    if(!stageCanOpen(target.dataset.stageOpen))return;
+    selectedStage=target.dataset.stageOpen;
+    return showScreen("levels");
+  }
   if (target.dataset.screen) return showScreen(target.dataset.screen);
   if (target.dataset.level) return launch(Number(target.dataset.level));
 });
 $("home-play").addEventListener("click", () => {
-  launch(unlocked(progress.lastPlayed) ? progress.lastPlayed : 1);
+  if(stageOneComplete(progress.completed) && stageTwoComplete(stage2Progress.completed))
+    return showScreen("stages");
+  if(stageOneComplete(progress.completed) && stageCanOpen("independent"))
+    return launch(independentUnlocked(stage2Progress.lastPlayed)?stage2Progress.lastPlayed:1,"independent");
+  return launch(unlocked(progress.lastPlayed)?progress.lastPlayed:1,"guided");
 });
 $("teacher-unlock").addEventListener("change", event => {
   teacher = saveTeacherSetting(event.target.checked);
   renderSettings();
+  renderStages();
   renderLevels();
+  homeAction();
 });
 $("site-guided-help").addEventListener("change", event => {
   guideEnabled = writeGuideEnabled(event.target.checked);
@@ -268,31 +287,49 @@ function restartFirstExperimentGuide() {
   writeGuideSeen(false);
   window.dispatchEvent(new CustomEvent("mathssprites:guide-setting",
     {detail:{enabled:true, reset:true}}));
-  launch(1);
+  launch(1,"guided");
 }
 $("site-replay-intro").addEventListener("click", restartFirstExperimentGuide);
-window.addEventListener("mathssprites:restart-guide", restartFirstExperimentGuide);
+function restartIndependentIntroduction() {
+  if(!stageCanOpen("independent"))return;
+  guideEnabled=writeGuideEnabled(true);
+  writeIndependentGuideSeen(false);
+  window.dispatchEvent(new CustomEvent("mathssprites:guide-setting",
+    {detail:{enabled:true,stage:"independent",reset:true}}));
+  launch(1,"independent");
+}
+$("site-replay-independent").addEventListener("click",restartIndependentIntroduction);
+window.addEventListener("mathssprites:restart-guide", event=>{
+  if(event.detail?.stage==="independent")restartIndependentIntroduction();
+  else restartFirstExperimentGuide();
+});
 $("site-motion").addEventListener("click", () => {
   $("motion-toggle").click();
   renderSettings();
 });
 $("site-back").addEventListener("click", () => showScreen("stages"));
 $("stages-back").addEventListener("click", () => showScreen("worlds"));
-window.addEventListener("mathssprites:solved", event => {
-  if (playingNumber === null || event.detail.number !== playingNumber) return;
-  progress = saveProgress(markWorld1Complete(progress, playingNumber));
+window.addEventListener("mathssprites:solved",event=>{
+  if(playingNumber===null || event.detail?.number!==playingNumber ||
+     event.detail?.stage!==playingStage)return;
+  if(playingStage==="independent")
+    stage2Progress=saveStage2Progress(markStage2Complete(stage2Progress,playingNumber));
+  else
+    progress=saveProgress(markWorld1Complete(progress,playingNumber));
   renderWorlds();
   renderStages();
   renderLevels();
   homeAction();
 });
-window.addEventListener("mathssprites:leave", event => {
-  showScreen(event.detail?.screen === "home" ? "home" : "levels");
+window.addEventListener("mathssprites:leave",event=>{
+  showScreen(event.detail?.screen==="home"?"home":"levels");
 });
-window.addEventListener("mathssprites:advance", () => {
-  if (playingNumber === null) return showScreen("levels");
-  const next = nextWorld1Level(playingNumber, progress.completed, teacher);
-  if (next) launch(next.number);
+window.addEventListener("mathssprites:advance",()=>{
+  if(playingNumber===null)return showScreen("levels");
+  const next=playingStage==="independent"
+    ? nextIndependentLevel(playingNumber,stage2Progress.completed,teacher)
+    : nextWorld1Level(playingNumber,progress.completed,teacher);
+  if(next)launch(next.number,playingStage);
   else showScreen("stages");
 });
 
