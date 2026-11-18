@@ -12,13 +12,13 @@ export function normalizeProgress(value) {
   return { completed, lastPlayed };
 }
 
-export function loadProgress(storage = globalThis.localStorage) {
-  try { return normalizeProgress(JSON.parse(storage?.getItem(PROGRESS_KEY) || "null")); }
+export function loadProgress(storage) {
+  try { return normalizeProgress(JSON.parse((storage ?? globalThis.localStorage)?.getItem(PROGRESS_KEY) || "null")); }
   catch { return normalizeProgress(null); }
 }
-export function saveProgress(progress, storage = globalThis.localStorage) {
+export function saveProgress(progress, storage) {
   const clean = normalizeProgress(progress);
-  try { storage?.setItem(PROGRESS_KEY, JSON.stringify(clean)); } catch {}
+  try { (storage ?? globalThis.localStorage)?.setItem(PROGRESS_KEY, JSON.stringify(clean)); } catch {}
   return clean;
 }
 export function markWorld1Complete(progress, number) {
@@ -30,10 +30,10 @@ export function markWorld1Complete(progress, number) {
     isWorld1Unlocked(slot.number, completed))?.number;
   return normalizeProgress({ completed, lastPlayed: next || Number(number) });
 }
-export function loadTeacherSetting(storage = globalThis.localStorage) {
-  try { return storage?.getItem(TEACHER_KEY) === "on"; } catch { return false; }
+export function loadTeacherSetting(storage) {
+  try { return (storage ?? globalThis.localStorage)?.getItem(TEACHER_KEY) === "on"; } catch { return false; }
 }
-export function saveTeacherSetting(enabled, storage = globalThis.localStorage) {
-  try { storage?.setItem(TEACHER_KEY, enabled ? "on" : "off"); } catch {}
+export function saveTeacherSetting(enabled, storage) {
+  try { (storage ?? globalThis.localStorage)?.setItem(TEACHER_KEY, enabled ? "on" : "off"); } catch {}
   return !!enabled;
 }
