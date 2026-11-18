@@ -59,10 +59,10 @@ test("missing objects and unsupported squares also produce reversible teaching e
   assert.equal(missing.available,1);
   assert.equal(missing.needed,2);
   assert.match(attemptMessage(missing,{op:"remove",kind:"posX",count:2}),/can't pick up 2/);
-  const mixed=previewRoomAction({posX:1,posOne:2},{op:"square"});
-  assert.equal(mixed.code,"unsupported-area");
-  assert.match(attemptMessage(mixed,{op:"square"}),/mixed rooms/);
-  assert.match(attemptMessage(mixed,{op:"square"}),/undo/);
+  const impossible=previewRoomAction({posX2:1,posOne:2},{op:"square"});
+  assert.equal(impossible.code,"unsupported-area");
+  assert.match(attemptMessage(impossible,{op:"square"}),/higher powers|shape/i);
+  assert.match(attemptMessage(impossible,{op:"square"}),/undo/);
 });
 
 test("guided-mode validation identifies the specific failing chamber", () => {
