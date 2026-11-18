@@ -621,7 +621,9 @@ async function handAct(side, action, applyAtContact) {
         case "contact":
           // The only place physical objects change. The hand is still *down*,
           // covering the objects, and the other room has not been touched yet.
-          applyAtContact();
+          const contactPromise=applyAtContact();
+          if(contactPromise&&typeof contactPromise.then==="function")
+            await contactPromise;
           applied = true;
           if (action.op === "square" || action.op === "sqrt") finishAreaPreview(side, action);
           target.classList.add("hand-contact");
@@ -660,6 +662,7 @@ async function handAct(side, action, applyAtContact) {
     delete hand.dataset.boxStep;
     delete hand.dataset.boxOperation;
     clearAreaPreview(side);
+    clearNeutralEffect(side);
     cargo.classList.remove("sprite-captured");
     cargo.hidden = true;
     caption.hidden = true;
