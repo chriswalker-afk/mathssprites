@@ -1,11 +1,12 @@
 import {
   LEVELS, TOKEN_KINDS, initialState, visibleRooms, evaluate,
-  perform, undo, isSolved, equation, operationDescription, algebraOperation
+  perform, undo, isSolved, equation, operationDescription, algebraOperation, areaArrangement
 } from "./engine.mjs";
 import { buildWritingTimeline, symbolsOf } from "./replay-timeline.mjs";
 import { handMotionPlan } from "./hand-timeline.mjs";
 import { spriteMotionProfile, spriteMotionStyle } from "./sprite-motion.mjs";
 import { pickSpriteHandReaction, dodgeOffsetPx } from "./sprite-reactions.mjs";
+import { floorScaleToFit, previewCells, areaMathLabel } from "./area-layout.mjs";
 
 const $ = id => document.getElementById(id);
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
@@ -55,6 +56,7 @@ let replaySpeed = 1;
 let replayPanelFinished = false;
 
 function currentAction() {
+  if (operation === "square" || operation === "sqrt") return { op: operation };
   if (operation === "multiply" || operation === "divide") return { op: operation, factor };
   return { op: operation, kind, count: amount };
 }
@@ -65,6 +67,7 @@ function roomSummary(r) {
   const parts = [
     r.posX && possessiveCount(r.posX, "dark sprite", "dark sprites"),
     r.negX && possessiveCount(r.negX, "pale sprite", "pale sprites"),
+    r.posX2 && possessiveCount(r.posX2, "square sprite", "square sprites"),
     r.posOne && possessiveCount(r.posOne, "weight", "weights"),
     r.negOne && possessiveCount(r.negOne, "balloon", "balloons")
   ].filter(Boolean);
@@ -74,15 +77,18 @@ function token(kind, i, mini = false, side = "left") {
   if (mini) {
     return '<span class="mini-token ' + kind + '" aria-hidden="true"></span>';
   }
-  if (kind === "posX" || kind === "negX") {
+  if (kind === "posX" || kind === "negX" || kind === "posX2") {
     const profile = spriteMotionProfile(LEVELS[levelIndex].id, side, kind, i);
-    return '<span class="token sprite ' + (kind === "posX" ? "sprite-black" : "sprite-white") +
+    const square = kind === "posX2";
+    const appearance = square ? "sprite-square" : kind === "posX" ? "sprite-black" : "sprite-white";
+    return '<span class="token sprite ' + appearance +
       '" style="' + spriteMotionStyle(profile) + '" title="' +
-      (kind === "posX" ? "A little dark sprite" : "A little pale sprite") + '">' +
+      (square ? "A square x² sprite" : kind === "posX" ? "A little dark sprite" : "A little pale sprite") + '">' +
       '<span class="sprite-ground-shadow"></span>' +
       '<span class="sprite-reaction-shell"><span class="sprite-motion">' +
       '<span class="sprite-feet"></span><span class="sprite-body">' +
-      '<span class="sprite-eyes"><i></i><i></i></span></span>' +
+      '<span class="sprite-eyes"><i></i><i></i></span>' +
+      (square ? '<span class="square-symbol">x²</span>' : "") + '</span>' +
       '</span></span></span>';
   }
   if (kind === "posOne")
@@ -102,7 +108,7 @@ function renderRoom(side, r, groupCount) {
   // sprites are repeatedly destroyed and their bouncing animations restart.
   const signature = LEVELS[levelIndex].id + "|" + side + "|" +
     TOKEN_KINDS.map(key => r[key]).join(":") + "|groups:" + groupCount;
-  if (node.dataset.signature === signature) return;
+  if (node.dataset.signature === signature) { resizeFloor(side); return; }
   node.dataset.signature = signature;
   node.setAttribute("aria-label", (side === "left" ? "West chamber: " : "East chamber: ") + roomSummary(r));
   const total = TOKEN_KINDS.reduce((a, field) => a + r[field], 0);
@@ -125,8 +131,23 @@ function renderRoom(side, r, groupCount) {
       ' identical groups">' + baskets + '</div>';
     return;
   }
-  node.innerHTML = '<div class="items-grid">' + allTokens(r, false, side) + '</div>';
+  node.innerHTML = '<div class="items-grid floor-track" data-layout="floor">' +
+    allTokens(r, false, side) + '</div>' +
+    (total > 14 ? '<span class="floor-count" aria-hidden="true">' + total + ' objects in a row</span>' : "");
+  resizeFloor(side);
 }
+// Scale the entire horizontal row, never wrap it into multiple rows.
+function resizeFloor(side) {
+  const room = $(side + "-items");
+  const track = room.querySelector(".floor-track");
+  if (!track) return;
+  const width = track.scrollWidth || track.getBoundingClientRect().width;
+  const fit = floorScaleToFit(room.clientWidth, width);
+  track.style.setProperty("--floor-scale", fit.toFixed(4));
+}
+window.addEventListener("resize", () => {
+  for (const side of ["left", "right"]) resizeFloor(side);
+});
 function visible() { return override || visibleRooms(state); }
 function currentDifference(shown) {
   return evaluate(shown.left, state.solution) - evaluate(shown.right, state.solution);
