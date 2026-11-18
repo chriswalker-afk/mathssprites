@@ -1,0 +1,33 @@
+name: Diagnose published Maths Sprites
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  public-pages-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Inspect actual public HTML CSS JS and deployment settings
+        run: node scripts/check-public-site.mjs
+      - name: Install Chrome browser probe
+        run: npm install --no-save @playwright/test@1.65.1
+      - name: Check public site behaviour inside Chrome
+        run: node scripts/check-live-browser.mjs
+      - name: Retain precise deployment check results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: public-pages-diagnostic
+          path: artifacts/
+          if-no-files-found: warn
+          retention-days: 5

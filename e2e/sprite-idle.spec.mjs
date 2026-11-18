@@ -91,6 +91,9 @@ test("hand pauses the target room but not the untouched room", async ({ page }) 
 test("reduced motion has no fast flickering and Motion: on restores active wiggles", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.reload();
+  // Reduced motion is now an explicit in-game choice rather than an OS default.
+  await expect(page.locator("#motion-toggle")).toHaveText("Motion: on");
+  await page.locator("#motion-toggle").click();
   const selectors = [".sprite-motion", ".sprite-body", ".sprite-eyes", ".sprite-eyes i"];
   for (const selector of selectors) {
     await expect(page.locator("#left-items " + selector).first()).toHaveCSS("animation-name", "none");

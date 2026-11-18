@@ -113,3 +113,12 @@ Not every pickup is routine! When the hand removes a **dark or pale sprite**, a 
 - Reactions change only the visual presentation, **never the physical token counts, balance calculation, hand transaction history or replay algebra**.
 
 For developers: the pure chance selector and safe wall-avoiding dodge direction are in src/sprite-reactions.mjs. The SVG hand's existing approach / reach / grip / contact / lift contract remains authoritative. Visual reactions end as the hand closes, **before the one and only mathematical change** at contact. Unit and Chrome tests cover ducking, dodging, normal pickup, manual matching and reduced motion.
+
+
+## When the public site looks completely static
+
+A real public-site Chrome probe confirmed (18 November 2026) that the GitHub Pages URL serves the same index.html, CSS, JavaScript and sprite-reaction modules as main. Browser checks at that URL found the sprite hop and body wiggle **running normally** when no reduced-motion preference is set. In contrast, when the browser/device requests reduced motion, the app intentionally removes these animations, including hand/replay flourishes.
+
+Previously this was difficult to notice: the small header toggle merely displayed "Motion: reduced". Following classroom feedback, **Motion: on is now the default for every first-time visitor**, including when their device requests reduced motion. This makes the game visibly lively on opening. Anyone can explicitly choose **Motion: reduced** via the header; when it is selected, a clear explanatory notice and **Enable animations** button appear. An explicit in-game choice persists across reloads in localStorage when storage is available. The initial on-by-default behaviour is an intentional classroom design choice; students who prefer reduced motion can readily opt out.
+
+Deployment verification sources live in scripts/check-public-site.mjs and scripts/check-live-browser.mjs. The optional GitHub Actions workflow Diagnose published Maths Sprites checks the real public URL and retains its screenshots and audit JSON. The normal Chrome test suite checks the default-on behaviour even under an OS-level reduced-motion preference, deliberate opt-out, the enable button, persistence and storage-disabled browsers.
