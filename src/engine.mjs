@@ -89,6 +89,7 @@ function check(action) {
 }
 function transform(source, action) {
   const next = room(source);
+  let priorCancellations = { sprites: 0, constants: 0 };
   if (action.op === "add") next[action.kind] += action.count;
   if (action.op === "remove") {
     if (next[action.kind] < action.count)
@@ -99,7 +100,9 @@ function transform(source, action) {
     TOKEN_KINDS.forEach(kind => { next[kind] *= action.factor; });
   }
   if (action.op === "divide") {
-    const compact = normalize(next).after;
+    const normalized = normalize(next);
+    const compact = normalized.after;
+    priorCancellations = normalized.cancellations;
     if (TOKEN_KINDS.some(kind => compact[kind] % action.factor !== 0)) {
       return { ok: false, reason: "That would leave part of a sprite or weight. I'm saving fractions for another experiment." };
     }
@@ -108,7 +111,10 @@ function transform(source, action) {
   const reduced = normalize(next);
   if (countTokens(reduced.after) > 48)
     return { ok: false, reason: "There would be too many things in the rooms. Let's try a smaller change." };
-  return { ok: true, after: reduced.after, cancellations: reduced.cancellations };
+  return { ok: true, after: reduced.after, cancellations: {
+    sprites: priorCancellations.sprites + reduced.cancellations.sprites,
+    constants: priorCancellations.constants + reduced.cancellations.constants
+  } };
 }
 export function prepare(state, action) {
   if (state.pending) return { ok: false, reason: "Finish the matching move, or undo the first one." };
@@ -136,6 +142,13 @@ export function perform(state, action, mode = "auto", side) {
   if (state.pending) {
     if (side !== (state.pending.first === "left" ? "right" : "left"))
       return { ok: false, reason: "Now make the matching move in the other room." };
+    const expected = state.pending.action;
+    if (!action || action.op !== expected.op ||
+        ((expected.op === "add" || expected.op === "remove") &&
+         (action.kind !== expected.kind || action.count !== expected.count)) ||
+        ((expected.op === "divide" || expected.op === "multiply") &&
+         action.factor !== expected.factor))
+      return { ok: false, reason: "The other room needs the same action, kind and amount." };
     return { ok: true, committed: true,
       state: commit(state, state.pending.action, state.pending.pair, "manual") };
   }
