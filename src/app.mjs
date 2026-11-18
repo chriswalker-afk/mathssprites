@@ -207,6 +207,7 @@ function renderFirstGuide() {
   for (const item of document.querySelectorAll(".coach-focus"))
     item.classList.remove("coach-focus");
   $("game-guide-restart").hidden = campaignLevelNumber !== 1;
+  $("game-guide-restart").disabled = busy;
   const visible = activeFirstGuide() && !isSolved(state);
   $("apprentice-guide").hidden = !visible;
   if (!visible) return;
