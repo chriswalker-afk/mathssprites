@@ -1,4 +1,5 @@
 import { LEVELS } from "./engine.mjs";
+import {createWorkshopEquation} from "./equation-workshop.mjs";
 import {
   WORLDS, WORLD1_CHAPTERS, WORLD1_LEVELS, findWorld1Level,
   isWorld1Unlocked, nextWorld1Level
@@ -49,7 +50,7 @@ function apprenticeUnlocked(number) {
   return stageCanOpen("notebook") &&
     isApprenticeUnlocked(number,stage3Progress.completed,teacher);
 }
-const screenNames = ["home","worlds","stages","levels","help","settings"];
+const screenNames = ["home","worlds","stages","levels","workshop","help","settings"];
 
 function clean(text) {
   return String(text).replace(/[&<>"']/g, ch =>
@@ -151,14 +152,14 @@ function renderStages() {
   }).join("");
   $("world1-workshop").innerHTML=
     '<div class="workshop-glyph" aria-hidden="true">'+EQUATION_WORKSHOP.icon+'</div>'+
-    '<div class="workshop-content"><div class="portal-kicker">FREE PLAY · PLANNED</div>'+
-    '<h2>'+clean(EQUATION_WORKSHOP.title)+'</h2><p>'+
-    clean(EQUATION_WORKSHOP.description)+'</p></div>'+
-    '<span class="workshop-planned" aria-label="Equation Workshop is coming soon">◇ Coming soon</span>';
+    '<div class="workshop-content"><div class="portal-kicker">FREE PLAY · AVAILABLE TO EVERYONE</div>'+
+    '<h2>'+clean(EQUATION_WORKSHOP.title)+'</h2>'+
+    '<p>'+clean(EQUATION_WORKSHOP.description)+'</p>'+
+    '<button type="button" class="primary-btn" data-screen="workshop">Create your own equation →</button></div>';
   $("stage-teacher-note").hidden=!teacher;
   $("stage-teacher-note").textContent=
     "Teacher access opens all implemented levels in Stages 1, 2 and 3. "+
-    "Other mathematical worlds and the custom Equation Workshop are not built yet.";
+    "Other mathematical worlds are under construction. The Equation Workshop is available to everyone.";
 }
 function renderLevels() {
   const configs={
@@ -241,6 +242,8 @@ function showScreen(name) {
   if (!screenNames.includes(name)) return;
   if(currentScreen==="notebook-preview" || playingStage==="notebook")
     window.dispatchEvent(new Event("mathssprites:notebook-close"));
+  if(currentScreen==="workshop-game")
+    window.dispatchEvent(new Event("mathssprites:workshop-close"));
   currentScreen = name;
   playingNumber = null;
   playingStage = null;
@@ -254,6 +257,7 @@ function showScreen(name) {
   if (name === "stages") renderStages();
   if (name === "levels") renderLevels();
   if (name === "settings") renderSettings();
+  if (name === "workshop") $("workshop-equation").focus({preventScroll:true});
   const heading = $("site-" + name).querySelector("h1, h2");
   if (heading) heading.focus({preventScroll:true});
   window.scrollTo?.(0,0);
@@ -288,6 +292,51 @@ function launch(number,stage=selectedStage) {
   window.scrollTo?.(0,0);
   return true;
 }
+
+/** Free-play generator: NEVER modifies any Stage 1/2/3 progress store. */
+function workshopStatus(message,status="info"){
+  $("workshop-feedback").textContent=message;
+  $("workshop-feedback").dataset.status=status;
+  $("workshop-equation").setAttribute("aria-invalid",String(status==="error"));
+}
+function launchWorkshopScene(level,handMode){
+  if(!level?.lockPositive||level.quantityMode!=="positive")return false;
+  playingNumber=null;
+  playingStage=null;
+  currentScreen="workshop-game";
+  $("site-shell").hidden=true;
+  $("game-shell").hidden=false;
+  document.body.classList.remove("preview-mode");
+  window.dispatchEvent(new CustomEvent("mathssprites:workshop-launch",{
+    detail:{level,handMode:handMode==="manual"?"manual":"auto"}
+  }));
+  $("level-title").focus({preventScroll:true});
+  window.scrollTo?.(0,0);
+  return true;
+}
+$("workshop-form").addEventListener("submit",event=>{
+  event.preventDefault();
+  const input=$("workshop-equation").value;
+  const result=createWorkshopEquation(input);
+  if(!result.ok){
+    workshopStatus(result.message,"error");
+    $("workshop-equation").focus();
+    return;
+  }
+  workshopStatus("Valid balance! Your equation is ready to explore. No campaign progress has been changed.","success");
+  launchWorkshopScene(result.level,$("workshop-hand-mode").value);
+});
+$("workshop-form").addEventListener("click",event=>{
+  const example=event.target.closest("[data-workshop-example]");
+  if(!example)return;
+  $("workshop-equation").value=example.dataset.workshopExample;
+  workshopStatus("Example loaded. Choose your hand mode and build the balance.");
+  $("workshop-equation").focus();
+});
+$("workshop-equation").addEventListener("input",()=>{
+  $("workshop-equation").setAttribute("aria-invalid","false");
+});
+window.addEventListener("mathssprites:workshop-another",()=>showScreen("workshop"));
 
 $("site-shell").addEventListener("click", event => {
   const target = event.target.closest("button");
@@ -383,6 +432,8 @@ window.addEventListener("mathssprites:leave",event=>{
   // A non-campaign notebook preview returns to Settings, not a fake Stage 3 map.
   if(currentScreen==="notebook-preview")
     return showScreen(event.detail?.screen==="home"?"home":"settings");
+  if(currentScreen==="workshop-game")
+    return showScreen(event.detail?.screen==="home"?"home":"workshop");
   showScreen(event.detail?.screen==="home"?"home":"levels");
 });
 window.addEventListener("mathssprites:advance",()=>{
@@ -399,7 +450,11 @@ window.addEventListener("mathssprites:advance",()=>{
 const params = new URLSearchParams(window.location.search);
 const preview = params.get("preview");
 const notebookPreview=params.get("notebook");
-if(notebookPreview!==null){
+const workshopDraft=params.get("workshop");
+if(workshopDraft!==null){
+  $("workshop-equation").value=workshopDraft.slice(0,80);
+  showScreen("workshop");
+} else if(notebookPreview!==null){
   // Deliberately ONLY existing positive integer sample puzzles until PR21.
   // Direct QA URLs never count towards any campaign's saved progress.
   const sample=WORLD1_LEVELS.find(slot=>slot.id===notebookPreview) || WORLD1_LEVELS[8];
