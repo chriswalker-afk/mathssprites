@@ -17,7 +17,7 @@ const raw=[
   prompt:"This time the equation comes first. Use the notebook to isolate the mystery sprite.",
   left:{posX:1,posOne:3},right:{posOne:8},solution:5,
   scaffold:{kind:"model",heading:"Watch a different example",
-    text:"In another room, x + 2 = 6 becomes x = 4 after removing two weights from BOTH sides. The hand could act that out. Now solve your own equation."},
+    text:"Here is a different example: x + 2 = 6 becomes x = 4 after removing two weights from BOTH sides. The hand could act that out. Now solve your own equation."},
   suggested:"What can you remove equally from both sides so the sprite stands alone?"},
  {id:"apprentice-02",title:"One equal group",
   prompt:"The written equation contains identical sprites. What could happen to both sides?",
