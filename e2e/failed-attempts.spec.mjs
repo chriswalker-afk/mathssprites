@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 
 test.beforeEach(async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "no-preference" });
-  await page.goto("/");
+  await page.goto("/?preview=resident");
 });
 
 test("a rejected division actually CHOPS the floor sprite in half, pauses, then puts it together",async({page})=>{
