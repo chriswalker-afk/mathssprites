@@ -532,6 +532,110 @@ background-image:repeating-linear-gradient(90deg,transparent 0 66px,rgba(0,0,0,.
   .overflow-piece{width:21px;height:21px}
 }
 
+/* PR12: living mathematical opposites. Cancellation is never a generic
+   fade; it is a physical, counted event recorded by the engine. */
+.signed-kind[hidden]{display:none!important}
+.tiny-white-sprite{background:#e8ede7!important;color:#293638!important;
+  border:2px solid #a2b4b0!important;box-shadow:0 0 0 1px #f7f3e9}
+.tiny-balloon{display:inline-grid;place-items:center;width:19px;height:24px;
+  background:radial-gradient(circle at 28% 18%,#f5e5d9,#cf9f94 70%,#a9756e);
+  color:#663f42;border:1px solid #eac8bc;border-radius:50% 50% 47% 47%;
+  font:700 .77rem Georgia,serif}
+.item-button.signed-kind{border-color:#a6b8b2}
+.quantity-locked{filter:saturate(.64)}
+.quantity-mode-positive .sprite-white,.quantity-mode-positive .balloon{
+  /* Never hide initial objects by CSS; model permission prevents their creation. */
+}
+.neutral-effect[hidden]{display:none!important}
+.neutral-effect{position:absolute;z-index:12;pointer-events:none;
+  width:82px;height:84px;margin:-42px 0 0 -41px;opacity:1}
+.neutral-effect .neutral-caption{position:absolute;top:62px;left:50%;transform:translateX(-50%);
+  width:max-content;max-width:180px;text-align:center;padding:4px 8px;
+  border-radius:8px;border:1px solid #ceb78b;background:#27322cf2;color:#fff0cd;
+  font:700 .69rem Georgia,serif;white-space:nowrap}
+.neutral-effect .puff-core{position:absolute;left:18px;top:17px;width:46px;height:39px;
+  border-radius:50%;background:radial-gradient(circle,#e6dcc8a8,#514f4694 45%,transparent 71%);
+  animation:neutral-puff 1.16s ease-out both}
+.neutral-effect .soot{position:absolute;left:50%;top:40%;
+  width:9px;height:9px;border-radius:50%;
+  background:var(--soot-colour,#cbc9bf);box-shadow:0 0 5px #cfc7b1b0;
+  animation:soot-scatter 1.16s cubic-bezier(.14,.65,.35,1) both;
+  --soot-x:0px;--soot-y:-28px}
+.neutral-effect .soot:nth-child(2){--soot-x:-30px;--soot-y:-44px;animation-delay:60ms}
+.neutral-effect .soot:nth-child(3){--soot-x:31px;--soot-y:-41px;animation-delay:110ms}
+.neutral-effect .soot:nth-child(4){--soot-x:-21px;--soot-y:-9px;animation-delay:90ms}
+.neutral-effect .soot:nth-child(5){--soot-x:25px;--soot-y:-12px;animation-delay:130ms}
+.neutral-effect .soot:nth-child(6){--soot-x:2px;--soot-y:-50px;animation-delay:180ms}
+.neutral-effect .balloon-trail{position:absolute;left:39px;bottom:11px;
+  width:4px;height:72px;border-left:3px dashed #e9c5ac;
+  animation:balloon-trail-rise 1.18s ease-out both}
+.neutral-effect .balloon-trail:before{content:"✦";position:absolute;left:-19px;top:4px;
+  font-size:34px;color:#ffdfaa;text-shadow:0 0 9px #e1b08c}
+.token.zero-pair-actor{z-index:18!important;transform-origin:50% 95%;will-change:transform,opacity}
+.token.zero-pair-actor.zero-sprite-positive,
+.token.zero-pair-actor.zero-sprite-negative{
+  animation:zero-sprite-collision 1.18s cubic-bezier(.22,.68,.21,1) both!important}
+.token.zero-pair-actor.zero-weight-positive,
+.token.zero-pair-actor.zero-balloon-negative{
+  animation:zero-balloon-carry 1.18s cubic-bezier(.22,.7,.3,1) both!important}
+.token.zero-pair-actor .sprite-motion,
+.token.zero-pair-actor .sprite-body,
+.token.zero-pair-actor .sprite-ground-shadow,
+.token.zero-pair-actor .sprite-eyes,
+.token.zero-pair-actor .sprite-eyes i{animation-play-state:paused!important}
+@keyframes zero-sprite-collision{
+  0%{opacity:1;transform:translateX(0) translateY(0) scale(1)}
+  24%{opacity:1;transform:translateX(calc(var(--pair-dx,0px)*.40)) translateY(-27px) scale(1.12,.9)}
+  48%{opacity:1;transform:translateX(var(--pair-dx,0px)) translateY(-14px) scale(1.16,.68)}
+  65%{opacity:1;transform:translateX(var(--pair-dx,0px)) translateY(-16px) scale(.68,1.18)}
+  100%{opacity:0;transform:translateX(var(--pair-dx,0px)) translateY(-18px) scale(.05)}
+}
+@keyframes zero-balloon-carry{
+  0%{opacity:1;transform:translateX(0) translateY(0) rotate(0)}
+  25%{opacity:1;transform:translateX(calc(var(--pair-dx,0px)*.35)) translateY(-12px) rotate(-4deg)}
+  48%{opacity:1;transform:translateX(var(--pair-dx,0px)) translateY(-28px) rotate(5deg)}
+  74%{opacity:1;transform:translateX(var(--pair-dx,0px)) translateY(-75px) rotate(-5deg) scale(.92)}
+  100%{opacity:0;transform:translateX(var(--pair-dx,0px)) translateY(-122px) scale(.76)}
+}
+@keyframes neutral-puff{0%,33%{opacity:0;transform:scale(.2)}
+  48%{opacity:1;transform:scale(.72)}
+  72%{opacity:.8;transform:scale(1.4)}
+  100%{opacity:0;transform:scale(2.2)}}
+@keyframes soot-scatter{0%,38%{opacity:0;transform:translate(0,0) scale(.3)}
+  52%{opacity:1;transform:translate(0,0) scale(1.6)}
+  100%{opacity:0;transform:translate(var(--soot-x),var(--soot-y)) scale(.2)}}
+@keyframes balloon-trail-rise{0%{opacity:0;transform:translateY(14px) scaleY(.35)}
+  35%{opacity:.8;transform:translateY(0) scaleY(.9)}
+  100%{opacity:0;transform:translateY(-62px) scaleY(1.15)}}
+.held-balloon{position:absolute;left:16px;top:3px;width:34px;height:53px}
+.held-balloon:before{content:"";position:absolute;left:3px;top:0;width:28px;height:35px;
+  border-radius:50% 50% 45% 45%;background:radial-gradient(circle at 25% 22%,#f6e5df,#d49c93 74%,#ab7772);
+  border:2px solid #e8caba;box-shadow:0 2px 8px #0008}
+.held-balloon:after{content:"";position:absolute;left:16px;top:35px;height:19px;
+  border-left:1px solid #efcfb0;transform:rotate(-8deg)}
+.sprite-white .sprite-body:before{clip-path:polygon(49% 0%,61% 17%,76% 3%,82% 24%,98% 22%,90% 43%,100% 62%,86% 74%,85% 96%,64% 90%,51% 100%,35% 89%,16% 98%,17% 76%,0 66%,9% 45%,1% 22%,22% 23%,28% 3%,41% 18%);
+  filter:drop-shadow(0 0 2px #e6eeed)}
+.signed-notebook-note{font:italic .65rem/1.4 Georgia,serif;color:#e9d3ab;padding:6px;
+  border-radius:6px;background:#293734;border:1px solid #7c806e}
+.mini-neutral-pair{display:flex;align-items:center;justify-content:center;gap:3px;margin:3px auto;
+  font:italic .63rem Georgia,serif;color:#ead7b8}
+.mini-neutral-pair .mini-token{transform:scale(1.18);animation:mini-opposites 1s ease-in-out both}
+.mini-neutral-pair .mini-token:nth-child(2){animation-delay:.1s}
+@keyframes mini-opposites{0%{opacity:1;transform:translateX(0) scale(1)}
+  55%{opacity:1;transform:translateX(6px) scale(1.18)}
+  100%{opacity:0;transform:translateX(0) scale(.3)}}
+.reduce-motion .neutral-effect .puff-core,
+.reduce-motion .neutral-effect .soot,
+.reduce-motion .neutral-effect .balloon-trail,
+.reduce-motion .token.zero-pair-actor,
+.reduce-motion .mini-neutral-pair .mini-token{animation:none!important;transition:none!important}
+.reduce-motion .neutral-effect .neutral-caption{font-size:.76rem}
+@media(max-width:700px){
+ .header-actions{gap:8px}
+ .labelled-select select{min-width:145px;max-width:43vw;font-size:.74rem}
+ .neutral-effect .neutral-caption{font-size:.55rem}
+}
+
 /* Actors and props */
 .token{position:relative;flex:none;display:inline-block;vertical-align:bottom}
 /* A sprite has separate LAYERS. The outer token keeps the layout position and
