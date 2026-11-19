@@ -122,7 +122,7 @@ export function findIndependentLevel(number){
 export function isIndependentUnlocked(number,completed=[],teacher=false){
   const slot=findIndependentLevel(number);
   if (!slot?.available) return false;
-  return teacher || slot.number===1 || completed.includes(slot.number-1);
+  return true; // All implemented Stage 2 levels open by default.
 }
 export function nextIndependentLevel(number,completed=[],teacher=false){
   const next=findIndependentLevel(Number(number)+1);
