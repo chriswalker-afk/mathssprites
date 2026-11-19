@@ -122,8 +122,8 @@ export class HomeHeroAnimator{
     // On a school device with a saved preference, the hero was permanently
     // static with no visible explanation or way to start it.
     this.button.hidden=false;
-    this.button.textContent=reduced?"Play animation":
-      this.userPaused?"Resume animation":"Pause animation";
+    this.button.textContent=(reduced||this.userPaused)
+      ?"Play animation":"Pause animation";
     this.button.setAttribute("aria-pressed",String(this.userPaused));
     this.motionNote.hidden=!reduced;
     if(reduced){
