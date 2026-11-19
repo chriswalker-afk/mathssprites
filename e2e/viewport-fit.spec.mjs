@@ -156,3 +156,80 @@ test("narrow mobile screens still scroll normally without horizontal clipping",a
   const gameWidth=await page.evaluate(()=>document.documentElement.scrollWidth);
   expect(gameWidth).toBeLessThanOrEqual(378);
 });
+
+
+const scaledLaptopViews=[
+  {width:1092,height:540}, // 1366x768 with ~125% scaling + browser chrome
+  {width:1024,height:600},
+  {width:900,height:560},
+  {width:1280,height:525}
+];
+for(const size of scaledLaptopViews){
+  test("scaled-laptop single-screen layouts at "+size.width+"x"+size.height+" @smoke",async({page})=>{
+    test.setTimeout(60000);
+    await page.setViewportSize(size);
+    await page.goto("/");
+    expect(await page.evaluate(()=>
+      matchMedia("(min-width:900px) and (min-height:500px)").matches
+    )).toBe(true);
+    await noDocumentScroll(page);
+    await inView(page,"#home-play");
+    await inView(page,"#home-hero-art");
+    await inView(page,"#site-home .portal-features");
+    await page.screenshot({path:"artifacts/pr28-home-"+size.width+"x"+size.height+".png"});
+
+    await openWorld(page);
+    await inView(page,"#world-cards .world-card:last-child");
+    await noDocumentScroll(page);
+    await page.screenshot({path:"artifacts/pr28-worlds-"+size.width+"x"+size.height+".png"});
+
+    await page.getByRole("button",{name:"Explore stages"}).click();
+    await inView(page,"#world1-workshop");
+    await expect(page.locator(".stage-card")).toHaveCount(3);
+    await noDocumentScroll(page);
+    await page.screenshot({path:"artifacts/pr28-stages-"+size.width+"x"+size.height+".png"});
+
+    await page.getByRole("button",{name:"Choose Stage 1 levels"}).click();
+    await expect(page.locator(".level-tile")).toHaveCount(20);
+    await expect(page.locator(".level-tile:disabled")).toHaveCount(0);
+    await inView(page,"#level-sections .chapter-group:last-child .level-tile:last-child");
+    await inView(page,"#level-sections .chapter-group:first-child .level-tile:first-child");
+    await noDocumentScroll(page);
+    const columnCount=await page.locator("#level-sections").evaluate(el=>
+      getComputedStyle(el).gridTemplateColumns.trim().split(/\\s+/).length);
+    expect(columnCount).toBe(5);
+    await page.screenshot({path:"artifacts/pr28-levels-"+size.width+"x"+size.height+".png"});
+
+    await page.locator('[data-level="1"]').click();
+    await inView(page,"#scene");
+    await inView(page,".scale-base");
+    await inView(page,"#do-both");
+    await inView(page,"#amount-up");
+    await noDocumentScroll(page);
+    // A button can have a viewport-bound rectangle while still being clipped
+    // by a scroll container; it must actually be hit-testable on screen.
+    const actionVisible=await page.locator("#do-both").evaluate(btn=>{
+      const rect=btn.getBoundingClientRect();
+      const hit=document.elementFromPoint(rect.left+rect.width/2,rect.top+rect.height/2);
+      return !!hit&&(hit===btn||btn.contains(hit));
+    });
+    expect(actionVisible,"The main hand action must not be clipped").toBe(true);
+    const scene=await page.locator("#scene").boundingBox();
+    const tools=await page.locator(".experiment-controls").boundingBox();
+    expect(scene.x+scene.width).toBeLessThanOrEqual(tools.x+2);
+    await page.screenshot({path:"artifacts/pr28-game-"+size.width+"x"+size.height+".png"});
+  });
+}
+
+test("very short or mobile viewports preserve scrolling, not clipped controls",async({page})=>{
+  await page.setViewportSize({width:1092,height:460});
+  await page.goto("/");
+  const site=await page.locator("#site-shell").evaluate(el=>getComputedStyle(el));
+  // Layout must NOT force a hidden fixed-height shell at inaccessible heights.
+  expect(await page.locator("#site-shell").evaluate(el=>getComputedStyle(el).overflowY))
+    .not.toBe("hidden");
+  await page.locator("#home-play").click();
+  await expect(page.locator("#do-both")).toBeVisible();
+  await page.locator("#do-both").scrollIntoViewIfNeeded();
+  await inView(page,"#do-both");
+});
