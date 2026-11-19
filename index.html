@@ -11,6 +11,7 @@
   <link rel="stylesheet" href="./src/polish.css" />
   <link rel="stylesheet" href="./src/stages.css" />
   <link rel="stylesheet" href="./src/notebook.css" />
+  <link rel="stylesheet" href="./src/notebook-editor.css?v=31" />
   <link rel="stylesheet" href="./src/workshop.css" />
   <link rel="stylesheet" href="./src/home-hero.css" />
   <link rel="stylesheet" href="./src/viewport-fit.css?v=28" />
@@ -282,7 +283,7 @@
         <div class="notebook-intro">
           <span class="eyebrow" id="notebook-stage-kicker">STAGE 3 · ALGEBRA APPRENTICE · TEACHER PROTOTYPE</span>
           <h3>First the paper. Then the sprites.</h3>
-          <p id="notebook-level-prompt">You already have the equation. Write one balanced operation per line, just as you would on paper. When you have isolated a single sprite, the hand will replay <em>your</em> method in both chambers.</p>
+          <p id="notebook-level-prompt">Choose a mathematical operation to apply to both sides. The editor calculates each new equation; once you have isolated the mystery sprite, the hand will replay your method.</p>
           <span id="notebook-stage-note" class="notebook-preview-warning">Practice preview · No levels or progress earned</span>
           <aside id="notebook-scaffold" class="notebook-scaffold" hidden aria-label="Writing support">
             <strong id="notebook-scaffold-heading">Your first example</strong>
@@ -293,22 +294,61 @@
         </div>
         <div class="notebook-paper">
           <div class="notebook-paper-head"><span>THE WORKSHOP JOURNAL</span><span aria-hidden="true">✎</span></div>
-          <h4>Show your working</h4>
+          <h4>My algebra notebook</h4>
           <ol id="notebook-lines" class="notebook-lines" aria-label="Your checked algebra lines"></ol>
           <form id="notebook-form" class="notebook-form">
-            <label for="notebook-equation">Next equation (for example, 2x = 8)</label>
-            <div class="notebook-input-row">
-              <input id="notebook-equation" type="text" inputmode="text" maxlength="80" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Write your next line..." aria-describedby="notebook-feedback" />
-              <button id="notebook-check" type="submit" class="primary-btn">Check this line</button>
+            <div class="notebook-math-editor" role="group" aria-label="Mathematical operation editor">
+              <label for="notebook-operation">Choose or write the operation to apply to <strong>both sides</strong></label>
+              <div class="notebook-operator-palette" role="group" aria-label="Choose an operation">
+                <button type="button" data-notebook-symbol="+" aria-label="Add to both sides">+</button>
+                <button type="button" data-notebook-symbol="−" aria-label="Subtract from both sides">−</button>
+                <button type="button" data-notebook-symbol="×" aria-label="Multiply both sides">×</button>
+                <button type="button" data-notebook-symbol="÷" aria-label="Divide both sides">÷</button>
+              </div>
+              <div class="notebook-input-row">
+                <div class="notebook-math-field">
+                  <input id="notebook-operation" type="text" inputmode="text" maxlength="24" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="e.g. −3, +x or ÷2" aria-describedby="notebook-feedback notebook-operation-tip" />
+                  <output id="notebook-operation-typeset" class="notebook-operation-typeset" aria-hidden="true"></output>
+                </div>
+                <button id="notebook-apply" type="submit" class="primary-btn" disabled>Apply to both sides →</button>
+              </div>
+              <div class="notebook-maths-keypad" role="group" aria-label="Mathematical keypad">
+                <button type="button" data-notebook-key="1">1</button>
+                <button type="button" data-notebook-key="2">2</button>
+                <button type="button" data-notebook-key="3">3</button>
+                <button type="button" data-notebook-key="4">4</button>
+                <button type="button" data-notebook-key="5">5</button>
+                <button type="button" data-notebook-key="6">6</button>
+                <button type="button" data-notebook-key="7">7</button>
+                <button type="button" data-notebook-key="8">8</button>
+                <button type="button" data-notebook-key="9">9</button>
+                <button type="button" data-notebook-key="0">0</button>
+                <button type="button" data-notebook-key="x" aria-label="Mystery sprite x">x</button>
+                <button type="button" data-notebook-key="backspace" aria-label="Delete last symbol">⌫</button>
+              </div>
+              <p id="notebook-operation-tip" class="notebook-operation-tip">For example, choose − then 3 to subtract three weights, or type −3. Choose −x to remove a sprite from each side.</p>
+              <div class="notebook-operation-preview" aria-label="Automatic equation preview">
+                <div class="notebook-preview-current">
+                  <small>Current equation</small>
+                  <output id="notebook-current-math" class="notebook-math-output"></output>
+                </div>
+                <div class="notebook-preview-arrow">
+                  <span aria-hidden="true">↓</span><span id="notebook-apply-label">Choose an operation</span>
+                </div>
+                <div class="notebook-preview-next">
+                  <small>Calculated next equation</small>
+                  <output id="notebook-result-math" class="notebook-math-output" aria-label="The calculated next equation">Choose an operation above</output>
+                </div>
+              </div>
             </div>
           </form>
-          <p id="notebook-feedback" class="notebook-feedback" role="status" aria-live="polite">Choose the same operation for both sides of the equation. The sprites will stay hidden until your solution is checked.</p>
+          <p id="notebook-feedback" class="notebook-feedback" role="status" aria-live="polite">Use the editor to choose what happens to both sides. The next equation appears automatically. The sprites wait until your route is checked.</p>
           <div class="notebook-actions">
             <button id="notebook-undo" class="secondary-btn" type="button">↶ Undo a line</button>
             <button id="notebook-reset" class="secondary-btn" type="button">↺ Start again</button>
             <button id="notebook-replay" class="primary-btn" type="button" disabled>Replay with sprites →</button>
           </div>
-          <p class="notebook-help">Allowed: positive whole numbers, x, addition and subtraction of complete objects, multiplying or dividing both sides by a whole number. Write each new equation, not just a final answer.</p>
+          <p class="notebook-help">Choose a balancing operation, not the answer. Addition or subtraction can use 1–12 weights or sprites; multiplication and division use factors 2–5. Every move must work with whole objects on both sides.</p>
         </div>
       </section>
       <section id="notebook-playback" class="notebook-playback" role="status" aria-live="polite" hidden>
