@@ -4,7 +4,7 @@
  * These helpers use stable campaign IDs and rendered geometry. Nothing here
  * writes progress or changes mathematical puzzles.
  */
-export function boardContinueLevel(stage,record){
+export function boardContinueLevel(stage,record,{resumed=false}={}){
   const playable=(stage?.levels||[]).filter(level=>level.available!==false);
   if(!playable.length)return null;
   const completed=new Set(Array.isArray(record?.completed)?record.completed:[]);
@@ -16,7 +16,9 @@ export function boardContinueLevel(stage,record){
   return {
     id:target.id,number:target.number,
     action:completed.has(target.id)?"Replay":
-      last?.id===target.id?"Continue":"Play"
+      last?.id===target.id&&
+        (resumed||completed.size>0||target.id!==playable[0].id)
+        ?"Continue":"Play"
   };
 }
 const DIRECTIONS={
