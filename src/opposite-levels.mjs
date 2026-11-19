@@ -90,6 +90,7 @@ function stageLevels(id,rows){
       left:Object.freeze(physical(west)),right:Object.freeze(physical(east)),
       chapter:String(chapterIndex+1).padStart(2,"0")+" · "+chapters[chapterIndex].title,
       prompt:INTRO[id][chapterIndex],
+      signedIntroduction:number===1&&id!=="notebook",
       suggested,quantityMode:"signed",lockPositive:false,
       allowedKinds:OPPOSITE_KINDS,allowedOperations:OPPOSITE_OPERATIONS,
       startingOperation:first.op,
