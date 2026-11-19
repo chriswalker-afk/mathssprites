@@ -31,13 +31,23 @@ test("physical multiplication groups the original objects and hand-delivers full
   // Basket delivery is deliberately moving: photograph the actual cargo,
   // then assert the complete count at the explicit stable "ready" pause.
   await page.screenshot({path:"artifacts/pr29-02-hand-delivers-full-basket.png"});
-  await expect(west).toHaveAttribute("data-phase","ready",{timeout:14000});
-  await expect(row.locator(".group-basket")).toHaveCount(3);
-  await expect(west.locator(".division-source .token")).toHaveCount(0);
-  expect(await row.locator(".group-basket").evaluateAll(nodes=>nodes.map(b=>({
-    sprites:b.querySelectorAll(".sprite-black").length,
-    weights:b.querySelectorAll(".weight").length
-  })))).toEqual([{sprites:1,weights:2},{sprites:1,weights:2},{sprites:1,weights:2}]);
+  // Observe all three complete groups atomically at the ready milestone.
+  // Separate Playwright locator calls can straddle the start of pouring.
+  await expect.poll(()=>page.evaluate(()=>{
+    const stage=document.querySelector("#left-items .multiplication-stage");
+    if(!stage)return null;
+    return {
+      phase:stage.dataset.phase,
+      floor:stage.querySelectorAll(".division-source .token").length,
+      groups:[...stage.querySelectorAll(".basket-row > .group-basket")].map(b=>({
+        sprites:b.querySelectorAll(".sprite-black").length,
+        weights:b.querySelectorAll(".weight").length
+      }))
+    };
+  }),{timeout:16000}).toEqual({
+    phase:"ready",floor:0,
+    groups:[{sprites:1,weights:2},{sprites:1,weights:2},{sprites:1,weights:2}]
+  });
   await page.screenshot({path:"artifacts/pr29-03-three-identical-wicker-baskets.png"});
   await expect(west).toHaveAttribute("data-phase","pouring",{timeout:12000});
   await expect(row.locator(".group-basket")).toHaveCount(2,{timeout:12000});
