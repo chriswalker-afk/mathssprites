@@ -28,6 +28,7 @@ import {
   introductionCue,independentIntroductionCue,readGuideEnabled,readGuideSeen,
   writeGuideEnabled,writeGuideSeen,readIndependentGuideSeen,writeIndependentGuideSeen
 } from "./onboarding.mjs";
+import {readOppositesGuideSeen,writeOppositesGuideSeen,oppositeIntroductionCue} from "./opposite-onboarding.mjs";
 
 const $ = id => document.getElementById(id);
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
@@ -70,6 +71,7 @@ let campaignStageLevelCount = 20;
 let campaignChapterIndex = null;
 let campaignChapterTitle = null;
 let campaignChapterSlots = [];
+let currentCampaignContext = null;
 let notebookSession=null; // only teacher prototype in PR20; never campaign progress
 let notebookPhase="idle"; // idle | writing | replaying | complete
 let notebookReplaySuccessful=false;
@@ -77,6 +79,8 @@ let workshopActive=false; // free play only, never an indexed campaign level
 let guideEnabled = readGuideEnabled();
 let guideSeen = readGuideSeen();
 let independentGuideSeen=readIndependentGuideSeen();
+const signedGuideSeen={guided:readOppositesGuideSeen("guided"),
+  independent:readOppositesGuideSeen("independent")};
 let guideStep = 0;
 let guideDismissed = false;
 let guideWasActive = false;
@@ -239,10 +243,17 @@ function activeIndependentGuide() {
   return campaignWorldId==="workshop" && campaignStage==="independent" &&
     campaignLevelNumber===1 && guideEnabled && !independentGuideSeen && !guideDismissed;
 }
+function activeSignedGuide(){
+  return campaignWorldId==="opposites" && campaignLevelNumber===1 &&
+    ["guided","independent"].includes(campaignStage) &&
+    guideEnabled && !signedGuideSeen[campaignStage] && !guideDismissed;
+}
 function activeCampaignGuide() {
-  return activeFirstGuide() || activeIndependentGuide();
+  return activeFirstGuide() || activeIndependentGuide() || activeSignedGuide();
 }
 function currentGuideCue() {
+  if(activeSignedGuide())
+    return oppositeIntroductionCue(guideStep,{manual:campaignStage==="independent"});
   return activeIndependentGuide()
     ? independentIntroductionCue(guideStep,{pending:state.pending?.first||null,busy})
     : introductionCue(guideStep,{mode,pending:state.pending?.first||null,busy});
@@ -259,18 +270,20 @@ function guideTarget(name) {
 function renderFirstGuide() {
   for (const item of document.querySelectorAll(".coach-focus"))
     item.classList.remove("coach-focus");
-  $("game-guide-restart").hidden = campaignWorldId!=="workshop" ||
-    campaignLevelNumber !== 1 || campaignStage===null;
+  $("game-guide-restart").hidden = !["workshop","opposites"].includes(campaignWorldId) ||
+    campaignLevelNumber !== 1 || !["guided","independent"].includes(campaignStage);
   $("game-guide-restart").disabled = busy;
   $("game-guide-restart").setAttribute("aria-label",
-    campaignStage==="independent"?"Replay Independent Balance introduction":
-    "Replay Guided Balance introduction");
+    campaignWorldId==="opposites"?"Replay Opposite Chambers introduction":
+      campaignStage==="independent"?"Replay Independent Balance introduction":
+        "Replay Guided Balance introduction");
   const visible = activeCampaignGuide() && !isSolved(state);
   $("apprentice-guide").hidden = !visible;
   if (!visible) return;
   $("apprentice-guide").setAttribute("aria-label",
-    campaignStage==="independent"?"Independent hand-control introduction":
-    "Guided Mirror introduction");
+    campaignWorldId==="opposites"?"Opposite Chambers introduction":
+      campaignStage==="independent"?"Independent hand-control introduction":
+        "Guided Mirror introduction");
   const cue = currentGuideCue();
   $("guide-progress").textContent = cue.progress;
   $("guide-title").textContent = cue.title;
@@ -327,8 +340,8 @@ function renderNotebookVisibility() {
   $("notebook-watch-again").hidden=notebookPhase!=="complete";
   $("notebook-next").hidden=!campaign||notebookPhase!=="complete"||
     !notebookReplaySuccessful;
-  $("notebook-next").textContent=campaignLevelNumber===12
-    ?"Back to stages →":"Next notebook level →";
+  $("notebook-next").textContent=campaignLevelNumber>=campaignStageLevelCount
+    ?"Back to levels →":"Next notebook level →";
 }
 /** Shared game renderer, but with zero campaign-credit navigation. */
 function renderWorkshopVisibility(){
@@ -438,6 +451,8 @@ function render() {
     (campaignChapterTitle?(String((campaignChapterIndex??0)+1).padStart(2,"0")+
       " · "+campaignChapterTitle):"AN EQUATION TO EXPLORE");
   $("level-title").textContent = lvl.title;
+  if(campaignWorldId)document.body.dataset.campaignWorld=campaignWorldId;
+  else delete document.body.dataset.campaignWorld;
   $("level-prompt").textContent = lvl.prompt;
   $("chapter-status").hidden = campaignLevelNumber === null;
   // Existing World 1 teacher cues remain, but future mathematical worlds
@@ -490,6 +505,7 @@ function render() {
     button.classList.toggle("selected", button.dataset.kind === kind);
     const signedObject=button.dataset.kind==="negX"||button.dataset.kind==="negOne";
     const unavailable = (signedObject && state.quantityMode!=="signed") ||
+      (lvl.allowedKinds && !lvl.allowedKinds.includes(button.dataset.kind)) ||
       (lvl.lockPositive && button.dataset.kind === "posX2");
     button.hidden=unavailable;
     button.disabled = busy || isSolved(state) || unavailable;
@@ -1567,6 +1583,11 @@ function startLevel(index, quantityMode, levelOverride=null, campaignNumber=null
   campaignChapterTitle=campaignInfo.chapterTitle||null;
   campaignChapterSlots=Array.isArray(campaignInfo.chapterLevels)?
     campaignInfo.chapterLevels:[];
+  currentCampaignContext=campaignNumber===null?null:{...campaignInfo,
+    worldId:campaignWorldId,stage:campaignStageId,number:campaignNumber,
+    method,worldNumber:campaignWorldNumber,stageNumber:campaignStageNumber,
+    stageLength:campaignStageLevelCount,chapterIndex:campaignChapterIndex,
+    chapterTitle:campaignChapterTitle,chapterLevels:campaignChapterSlots};
   if(campaignStage==="guided")mode="auto";
   if(campaignStage==="independent")mode="manual";
   guideStep=0;
@@ -2033,7 +2054,7 @@ $("reset").addEventListener("click", () => {
     return;
   }
   startLevel(levelIndex,state.quantityMode,campaignLevelNumber===null?null:currentLevel(),
-    campaignLevelNumber,campaignStage);
+    campaignLevelNumber,campaignStageId||campaignStage,currentCampaignContext||{});
 });
 $("hint").addEventListener("click", () => setSpeech(currentLevel().suggested, 6200));
 $("feedback").addEventListener("click", event => {
