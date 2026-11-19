@@ -1136,3 +1136,108 @@ legend{margin-bottom:12px;padding:0}
 .reduce-motion .room-square-box .box-edge.built{opacity:.83;transform:none}
 .reduce-motion .room-square-box .box-edge.retired{opacity:0;transform:none}
 .reduce-motion .room-square-box .box-edge.kept{opacity:1;transform:none}
+
+
+/* PR25 — physical wicker baskets: props inside each moving scale chamber. */
+.division-stage{position:absolute;inset:0;--basket-rim:#e5b975}
+.division-stage .division-source{z-index:4}
+.division-stage .basket-row{position:absolute;inset:0;z-index:3;display:flex;
+  justify-content:space-around;align-items:flex-end;gap:4px;pointer-events:none}
+.division-stage[data-phase="waiting"] .basket-row{visibility:hidden}
+.division-stage .group-basket,
+.hand-cargo .group-basket.basket-in-hand{
+  flex:0 1 calc((100% - 4px * (var(--division-factor,3) - 1))/var(--division-factor,3));
+  max-width:100px;min-width:0;height:143px;position:relative;
+  border:4px solid #875e34;border-top:10px solid #e3b579;
+  border-radius:11px 11px 24px 24px;
+  background:
+    repeating-linear-gradient(90deg,transparent 0 5px,rgba(52,32,15,.29) 5px 7px,rgba(240,196,124,.13) 7px 9px),
+    repeating-linear-gradient(0deg,rgba(240,192,110,.41) 0 5px,rgba(110,65,31,.44) 5px 8px,rgba(213,148,80,.29) 8px 12px),
+    linear-gradient(105deg,rgba(105,59,28,.86),rgba(198,139,72,.73) 34%,rgba(226,167,98,.58) 67%,rgba(97,57,28,.89));
+  box-shadow:inset 3px 1px 5px #f1c78f65,inset -5px -9px 9px #42230f77,
+    0 7px 0 -3px #3b281c,0 11px 12px #10100e80;
+  animation:none;transform-origin:50% 100%;overflow:visible;isolation:isolate;
+}
+.division-stage .group-basket:before,
+.hand-cargo .group-basket.basket-in-hand:before{
+  content:"";position:absolute;inset:7px 1px 3px;border-radius:4px 4px 18px 18px;
+  background:repeating-linear-gradient(157deg,transparent 0 7px,#f0bc7545 7px 10px,transparent 10px 17px);
+  opacity:.7;pointer-events:none;z-index:1
+}
+.division-stage .basket-lip,
+.hand-cargo .basket-in-hand .basket-lip{
+  top:-13px;left:-6px;right:-6px;height:13px;border-radius:45% 45% 7px 7px;
+  border:2px solid #6b4628;
+  background:repeating-linear-gradient(90deg,#bb864d 0 6px,#ebc084 6px 10px,#a8753c 10px 15px);
+  box-shadow:inset 0 3px 2px #efcb8e,0 3px 5px #281d18b8;z-index:5
+}
+.division-stage .basket-contents,
+.hand-cargo .basket-in-hand .basket-contents{
+  position:absolute;inset:7px 1px 7px;display:flex;flex-wrap:wrap;
+  align-content:flex-end;align-items:flex-end;justify-content:center;gap:0;
+  z-index:3;overflow:visible
+}
+.division-stage .group-basket .token,
+.hand-cargo .basket-in-hand .token{
+  width:26px;height:27px;margin:-4px;flex:none;
+  transform:scale(.55);transform-origin:50% 100%
+}
+.division-stage .group-basket .balloon,
+.hand-cargo .basket-in-hand .balloon{height:40px}
+.division-stage .group-basket .sprite-motion,
+.hand-cargo .basket-in-hand .sprite-motion{animation-name:sprite-basket-bob}
+.division-stage .group-basket[data-state="dropping"]{
+  animation:division-wicker-drop .53s cubic-bezier(.2,.72,.25,1.07) both
+}
+@keyframes division-wicker-drop{
+  0%{opacity:0;transform:translateY(-185px) rotate(-9deg) scale(.88,1.04)}
+  62%{opacity:1;transform:translateY(7px) rotate(3deg) scale(1.04,.88)}
+  80%{transform:translateY(-9px) rotate(-2deg) scale(.98,1.04)}
+  100%{opacity:1;transform:translateY(0) rotate(0) scale(1)}
+}
+.division-stage .basket-sharing-token{
+  animation:division-share .47s cubic-bezier(.24,.72,.28,1.1) both!important
+}
+@keyframes division-share{
+  from{opacity:.86;transform:translate(var(--basket-share-x,0px),var(--basket-share-y,0px)) scale(.76)}
+  75%{opacity:1;transform:translate(0,-5px) scale(.60)}
+  to{opacity:1;transform:translate(0,0) scale(.55)}
+}
+.hand-cargo:has(>.basket-in-hand){overflow:visible;opacity:1!important}
+.hand-cargo .group-basket.basket-in-hand{
+  position:absolute;left:-7px;top:-8px;width:71px;height:83px;
+  max-width:none;min-width:0;flex:none;z-index:6
+}
+.hand-cargo .basket-in-hand .token{transform:scale(.43);margin:-6px}
+.hand-cargo .basket-in-hand.basket-grabbed{
+  animation:division-basket-grab .14s ease-out both!important
+}
+@keyframes division-basket-grab{
+  from{transform:translate(var(--basket-grab-x,0px),var(--basket-grab-y,0px)) scale(var(--basket-grab-scale,1))}
+  to{transform:translate(0,0) scale(1)}
+}
+.hand-cargo .basket-in-hand[data-state="thrown"]{
+  animation:division-basket-throw var(--basket-throw-ms,280ms) cubic-bezier(.3,.04,.65,.66) both!important
+}
+@keyframes division-basket-throw{
+  0%{opacity:1;transform:translate(0,0) rotate(0) scale(1)}
+  38%{opacity:1;transform:translate(calc(var(--basket-throw-x,180px) * .35),-65px) rotate(20deg) scale(.93)}
+  100%{opacity:0;transform:translate(var(--basket-throw-x,180px),-220px) rotate(115deg) scale(.52)}
+}
+.giant-hand.basket-throwing .hand-art{transform:translateY(-5px) rotate(-9deg)}
+/* The retained basket gets a readable pause; never fade or duplicate its tokens. */
+.division-stage[data-phase="remaining"] .group-basket{
+  box-shadow:inset 3px 1px 5px #f1c78f65,inset -5px -9px 9px #42230f77,
+    0 7px 0 -3px #3b281c,0 11px 12px #10100e80,0 0 0 2px #e5c18a60
+}
+.reduce-motion .division-stage .group-basket,
+.reduce-motion .division-stage .basket-sharing-token,
+.reduce-motion .hand-cargo .basket-in-hand{animation:none!important;transition:none!important}
+@media(max-width:700px){
+  .division-stage .group-basket{height:98px;border-width:3px;border-top-width:7px}
+  .division-stage .basket-row{gap:2px}
+  .division-stage .group-basket .token{transform:scale(.38);margin:-6px}
+  .hand-cargo .group-basket.basket-in-hand{width:59px;height:67px}
+  .hand-cargo .basket-in-hand .token{transform:scale(.34);margin:-7px}
+  .division-stage .basket-lip,.hand-cargo .basket-in-hand .basket-lip{top:-9px;height:9px}
+}
