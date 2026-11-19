@@ -30,9 +30,9 @@ async function openStage3(page,{teacher=false,level=1}={}){
   await expect(page.locator("#notebook-workspace")).toBeVisible();
   await expect(page.locator("#scene")).toBeHidden();
 }
-async function write(page,line){
-  await page.locator("#notebook-equation").fill(line);
-  await page.locator("#notebook-equation").press("Enter");
+async function applyOperation(page,expression){
+  await page.locator("#notebook-operation").fill(expression);
+  await page.locator("#notebook-operation").press("Enter");
 }
 
 test("Stage 3 and all twelve notebook levels are open without prior mastery",async({page})=>{
@@ -85,7 +85,7 @@ test("solved paper alone earns NO progress; successful hands earn credit and adv
     first:localStorage.getItem("mathssprites.progress.v1"),
     second:localStorage.getItem("mathssprites.independent-progress.v1")
   }));
-  await write(page,"x = 5");
+  await applyOperation(page,"−3");
   await expect(page.locator("#notebook-replay")).toBeEnabled();
   await expect(page.locator("#scene")).toBeHidden();
   const pending=await page.evaluate(()=>JSON.parse(localStorage.getItem("mathssprites.apprentice-progress.v1")));
@@ -113,13 +113,13 @@ test("solved paper alone earns NO progress; successful hands earn credit and adv
 
 test("wrong or skipped steps leave campaign progress untouched, and one-step hints do not solve it",async({page})=>{
   await openStage3(page,{teacher:true,level:3});
-  await write(page,"x = 4");
-  await expect(page.locator("#notebook-feedback")).toContainText("one possible whole-object operation");
+  await applyOperation(page,"÷3");
+  await expect(page.locator("#notebook-feedback")).toContainText("part of a sprite");
   await expect(page.locator("#notebook-lines li")).toHaveCount(1);
   await expect(page.locator("#notebook-replay")).toBeDisabled();
-  await write(page,"2x = 8");
+  await applyOperation(page,"−4");
   await expect(page.locator("#notebook-lines li")).toHaveCount(2);
-  await write(page,"x = 4");
+  await applyOperation(page,"÷2");
   await expect(page.locator("#notebook-replay")).toBeEnabled();
   const progress=await page.evaluate(()=>JSON.parse(localStorage.getItem("mathssprites.apprentice-progress.v1")));
   expect(progress.completed).toEqual([]);
@@ -148,12 +148,12 @@ test("a fully mastered Stage 3 shows its own 12/12 banner and completion route",
 test("Stage 3 remains usable on a phone, with keyboard entry and no squared controls",async({page})=>{
   await page.setViewportSize({width:375,height:725});
   await openStage3(page,{teacher:true,level:2});
-  await expect(page.locator("#notebook-equation")).toBeVisible();
-  const box=await page.locator("#notebook-equation").boundingBox();
+  await expect(page.locator("#notebook-operation")).toBeVisible();
+  const box=await page.locator("#notebook-operation").boundingBox();
   expect(box).not.toBeNull();
   expect(box.x).toBeGreaterThanOrEqual(-1);
   expect(box.x+box.width).toBeLessThanOrEqual(377);
-  await write(page,"x=6");
+  await applyOperation(page,"÷2");
   await expect(page.locator("#notebook-replay")).toBeEnabled();
   await expect(page.locator("#scene")).toBeHidden();
   await expect(page.locator('[data-operation="square"]')).toBeHidden();
