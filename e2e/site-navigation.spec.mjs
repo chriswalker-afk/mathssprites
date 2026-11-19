@@ -158,8 +158,8 @@ test("World 1 offers 3 stage cards and a playable, independent Equation Workshop
   await page.locator('[data-screen="worlds"]').first().click();
   await page.getByRole("button",{name:"Explore stages"}).click();
   await expect(page.locator(".stage-card")).toHaveCount(3);
-  await expect(page.locator('.stage-card.stage-ready')).toHaveCount(1);
-  await expect(page.locator('.stage-card.stage-planned')).toHaveCount(2);
+  await expect(page.locator('.stage-card.stage-ready')).toHaveCount(3);
+  await expect(page.locator('.stage-card.stage-planned')).toHaveCount(0);
   await expect(page.locator('[data-stage="guided"]')).toContainText("20");
   await expect(page.locator('[data-stage="independent"]')).toContainText("16");
   await expect(page.locator('[data-stage="notebook"]')).toContainText("12");
