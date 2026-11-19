@@ -25,7 +25,7 @@ export function cloneCrate(raw){
 }
 export const crateCount=value=>value?.crates?.count||0;
 export function crateContentsTotal(value,kind){
-  return crateCount(value)*(value.crates.contents[kind]||0);
+  return crateCount(value)*(value?.crates?.contents?.[kind]||0);
 }
 export function crateAlgebra(value){
   const c=crateCount(value);
