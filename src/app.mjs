@@ -1199,7 +1199,8 @@ async function finishTurn() {
     }
     if(campaignLevelNumber!==null)
       window.dispatchEvent(new CustomEvent("mathssprites:solved",
-        {detail:{stage:campaignStage,number:campaignLevelNumber,levelId:currentLevel().id}}));
+        {detail:{stage:campaignStage,number:campaignLevelNumber,
+          levelId:currentLevel().id,moves:state.history.length}}));
     busy = true; render();
     // The student must be able to SEE the final physical balance before
     // the comic-book retrospective covers the laboratory.
@@ -1365,7 +1366,8 @@ async function replayNotebookWithSprites() {
     // The teacher sandbox keeps its own zero-credit behaviour.
     if(campaignStage==="notebook"&&campaignLevelNumber!==null)
       window.dispatchEvent(new CustomEvent("mathssprites:solved",
-        {detail:{stage:"notebook",number:campaignLevelNumber,levelId:currentLevel().id}}));
+        {detail:{stage:"notebook",number:campaignLevelNumber,
+          levelId:currentLevel().id,moves:state.history.length}}));
   } catch {
     state=initialState(notebookSession.level);
     notebookMessage("The sprite replay was interrupted. Your checked paper working is safe; try the replay again.","error");
@@ -1480,6 +1482,10 @@ function startLevel(index, quantityMode, levelOverride=null, campaignNumber=null
   $("action-caption").hidden = true;
   $("scene").classList.remove("solved-scene");
   $("level-clear").hidden = true;
+  $("level-clear-rating").hidden=true;
+  $("level-clear-rating").textContent="";
+  $("replay-star-summary").hidden=true;
+  $("replay-star-summary").textContent="";
   clearSpeech();
   $("replay-backdrop").hidden = true;
   $("feedback").textContent = campaignStage==="independent"
