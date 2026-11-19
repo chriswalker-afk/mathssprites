@@ -1,0 +1,77 @@
+/* PR35 — navigation audit. Do not change scene/hand coordinates or level grids. */
+.visually-hidden{
+  position:absolute!important;width:1px!important;height:1px!important;
+  padding:0!important;margin:-1px!important;overflow:hidden!important;
+  clip:rect(0,0,0,0)!important;white-space:nowrap!important;
+  clip-path:inset(50%)!important;border:0!important;
+}
+#site-levels .level-board-actions{
+  display:flex;align-items:center;justify-content:flex-end;
+  flex:0 0 auto;gap:10px;min-width:0;
+}
+#site-levels .level-board-actions .landing-progress{
+  margin:0;max-width:none;white-space:nowrap;
+  font-size:.72rem;line-height:1.25;text-align:right;
+}
+#site-levels #board-continue{
+  display:inline-flex;justify-content:center;align-items:center;
+  min-height:38px;padding:7px 12px;white-space:nowrap;
+  font-size:.79rem;line-height:1.12;touch-action:manipulation;
+  box-shadow:inset 0 1px #fff3c06e;
+}
+#site-levels #board-continue[hidden]{display:none}
+#site-help .journey-return,#site-settings .journey-return{
+  display:inline-block;padding:5px 3px;margin:0 0 4px;
+  color:#e4d4b3;text-align:left;min-height:36px;
+}
+#site-help .journey-return:hover,#site-settings .journey-return:hover{
+  color:#ffe5b5;
+}
+#site-levels .map-stage-button:focus-visible,
+#site-levels .map-world-button:focus-visible,
+#site-levels .level-tile:focus-visible{
+  outline:3px solid #ffe3ad;outline-offset:2px;
+}
+/* Keep the new action inside the existing board heading on short laptops. */
+@media(min-width:900px) and (min-height:500px){
+  #site-levels .level-board-actions{gap:7px}
+  #site-levels .level-board-actions .landing-progress{
+    font-size:.66rem;max-width:none;
+  }
+  #site-levels #board-continue{
+    min-height:33px;padding:5px 9px;font-size:.73rem;
+  }
+  #site-help .journey-return,#site-settings .journey-return{
+    min-height:27px;padding:2px 3px;font-size:.74rem;
+  }
+}
+@media(min-width:900px) and (min-height:500px) and (max-height:649px){
+  #site-levels .level-board-actions{gap:5px}
+  #site-levels .level-board-actions .landing-progress{font-size:.59rem}
+  #site-levels #board-continue{
+    min-height:27px;padding:3px 7px;font-size:.65rem;
+  }
+  #site-help .journey-return,#site-settings .journey-return{
+    min-height:24px;font-size:.69rem;margin-bottom:2px;
+  }
+}
+@media(max-width:899px){
+  #site-levels .level-board-actions{align-self:stretch;justify-content:space-between}
+  #site-levels .level-board-actions .landing-progress{
+    max-width:none;text-align:left;white-space:normal;
+  }
+}
+@media(max-width:600px){
+  #site-levels .level-board-actions{width:100%;gap:9px}
+  #site-levels #board-continue{
+    min-height:44px;padding:10px 12px;font-size:.81rem;
+  }
+  #site-levels .level-board-actions .landing-progress{font-size:.72rem}
+  #site-help .journey-return,#site-settings .journey-return{
+    min-height:44px;padding:9px 4px;margin-bottom:2px;
+  }
+}
+@media(max-width:350px){
+  #site-levels .level-board-actions{flex-wrap:wrap}
+  #site-levels #board-continue{margin-left:auto}
+}

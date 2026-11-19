@@ -19,6 +19,7 @@
   <link rel="stylesheet" href="./src/experiment-board.css?v=32" />
   <link rel="stylesheet" href="./src/portal-art.css?v=33" />
   <link rel="stylesheet" href="./src/menu-polish.css?v=34" />
+  <link rel="stylesheet" href="./src/navigation-journey.css?v=35" />
   <script type="module" src="./src/app.mjs"></script>
   <script type="module" src="./src/site.mjs"></script>
 </head>
@@ -167,18 +168,20 @@
         <span class="board-brass-seal" aria-hidden="true">✥</span>
         <div class="map-selector">
           <span class="map-selector-label">WORLD</span>
-          <div id="map-world-tabs" class="map-world-tabs" role="group" aria-label="Choose a mathematical world"></div>
+          <div id="map-world-tabs" class="map-world-tabs" role="group" aria-label="Choose a mathematical world" aria-describedby="board-keyboard-note"></div>
         </div>
         <div class="map-selector">
           <span class="map-selector-label">HOW TO LEARN</span>
-          <div id="map-stage-tabs" class="map-stage-tabs" role="group" aria-label="Choose how to learn"></div>
+          <div id="map-stage-tabs" class="map-stage-tabs" role="group" aria-label="Choose how to learn" aria-describedby="board-keyboard-note"></div>
         </div>
       </div>
+      <p id="board-keyboard-note" class="visually-hidden">Use the arrow keys to change a world or stage, then Tab to reach the levels. On a level, use the arrow keys to move between tiles and Enter to play.</p>
+      <span id="board-selection-status" class="visually-hidden" role="status" aria-live="polite" aria-atomic="true"></span>
       <div class="portal-heading">
         <div><div id="levels-stage-kicker" class="portal-kicker">WORLD 01 · STAGE 1 · POSITIVE WHOLE NUMBERS</div>
           <h1 id="levels-stage-title" tabindex="-1">Guided Balance</h1>
           <p id="levels-stage-intro">Choose the operation. The hand automatically makes the same change to both rooms.</p></div>
-        <span id="level-progress" class="landing-progress" aria-live="polite"></span>
+        <div class="level-board-actions"><span id="level-progress" class="landing-progress" aria-live="polite"></span><button type="button" class="primary-btn" id="board-continue">Play Level 1 →</button></div>
       </div>
       <div class="world1-progress-panel" aria-label="Selected stage completion">
         <div class="world1-progress-labels"><span id="world1-progress-description">Stage 1 · Guided Balance</span><span id="world1-progress-number">0 of 20 complete</span></div>
@@ -197,6 +200,7 @@
     </main>
     <main class="site-page" id="site-help" hidden>
       <div class="site-content-panel menu-info-panel">
+        <button type="button" class="site-back-link journey-return" id="help-return" data-support-return aria-keyshortcuts="Escape">← Back to home</button>
         <div class="portal-kicker">AN APPRENTICE'S GUIDE</div>
         <h2 tabindex="-1">How to play</h2>
         <p class="guide-lead">A dark sprite is an unknown value. Each brass weight counts as one. Leave <strong>one sprite</strong> opposite only weights.</p>
@@ -225,6 +229,7 @@
     </main>
     <main class="site-page" id="site-settings" hidden>
       <div class="site-content-panel menu-info-panel">
+        <button type="button" class="site-back-link journey-return" id="settings-return" data-support-return aria-keyshortcuts="Escape">← Back to home</button>
         <div class="portal-kicker">THE WORKSHOP CONTROLS</div>
         <h2 tabindex="-1">Settings</h2>
         <div class="settings-list" role="group" aria-label="Learning preferences">
@@ -246,7 +251,6 @@
           <span>Also affects the hand, sprites and pencil.</span>
         </div>
         <p class="settings-storage-note">Your progress and best stars are saved on this browser. No account needed.</p>
-        <button type="button" class="primary-btn menu-primary-action" data-screen="home">Back to the workshop →</button>
       </div>
     </main>
     <footer class="site-footer">Every equation starts with a mystery. Made for curious mathematicians.</footer>

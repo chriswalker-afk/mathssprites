@@ -11,6 +11,7 @@ import {
 import {createWorkshopEquation} from "./equation-workshop.mjs";
 import {createHomeHero} from "./home-hero.mjs";
 import {compactWorldProgress,compactStageProgress,briefStageIntro} from "./menu-copy.mjs";
+import {boardContinueLevel,spatialTileIndex} from "./navigation-journey.mjs";
 import {loadResume,saveResume,resumeDestination,resumeLabel,RESUME_STAGE_NUMBERS} from "./resume.mjs";
 import {
   WORLDS, WORLD1_CHAPTERS, WORLD1_LEVELS, findWorld1Level,
@@ -62,6 +63,7 @@ let playingWorld = null;
 let selectedWorld = campaignResume?.worldId||"workshop";
 let selectedStage = campaignResume?.stageId||"guided";
 let boardReturnScreen = "home";
+let supportReturnScreen = "home";
 function stageCanOpen(id) {
   return canOpenWorld1Stage(id,{
     teacher,
@@ -264,7 +266,10 @@ function renderLevels() {
   const levels=stage.levels,chapters=stage.chapters;
   const current=campaignStageRecord(campaign,world.id,stage.id);
   const total=levels.filter(x=>x.available).length,completed=current.completed.length;
-  const next=levels.find(slot=>slot.available&&!current.completed.includes(slot.id));
+  const resumed=campaignResume?.worldId===world.id &&
+    campaignResume?.stageId===stage.id &&
+    campaignResume?.levelId===current.lastPlayed;
+  const suggested=boardContinueLevel(stage,current,{resumed});
   const stageStars=campaignStarTotals(campaign,{worldId:world.id,stageId:stage.id});
   $("site-levels").dataset.activeWorld=world.id;
   $("site-levels").dataset.activeStage=stage.id;
@@ -278,6 +283,14 @@ function renderLevels() {
   $("world1-progress-bar").max=total||1;
   $("world1-progress-bar").value=completed;
   $("world1-progress-number").textContent=completed+" of "+total+" complete";
+  const continueButton=$("board-continue");
+  continueButton.hidden=!suggested;
+  if(suggested){
+    continueButton.dataset.levelId=suggested.id;
+    continueButton.textContent=suggested.action+" Level "+suggested.number+" →";
+    continueButton.setAttribute("aria-label",suggested.action+" "+stage.title+
+      ", Level "+suggested.number);
+  }else delete continueButton.dataset.levelId;
   $("world1-finale").hidden=completed!==total||total===0;
   $("world1-finale").setAttribute("aria-label",stage.title+" completed");
   $("stage-finale-kicker").textContent="STAGE "+stage.number+" COMPLETE";
@@ -291,7 +304,7 @@ function renderLevels() {
     const cards=slots.map(slot=>{
       const done=current.completed.includes(slot.id);
       const open=isCampaignPlayable(world.id,stage.id,slot.id);
-      const highlighted=slot.id===next?.id;
+      const highlighted=slot.id===suggested?.id;
       const tag=done?"Completed":open?"Ready to play":"Locked";
       const status=done?"complete":open?"ready":"locked";
       const rating=campaignStars(campaign,world.id,stage.id,slot.id);
@@ -342,6 +355,10 @@ function renderSettings() {
 }
 function showScreen(name,{focusHeading=true}={}) {
   if (!screenNames.includes(name)) return;
+  if((name==="help"||name==="settings") &&
+      !["help","settings"].includes(currentScreen) &&
+      screenNames.includes(currentScreen))
+    supportReturnScreen=currentScreen;
   if(currentScreen==="notebook-preview" || playingStage==="notebook")
     window.dispatchEvent(new Event("mathssprites:notebook-close"));
   if(currentScreen==="workshop-game")
@@ -360,10 +377,15 @@ function showScreen(name,{focusHeading=true}={}) {
   if (name === "stages") renderStages();
   if (name === "levels"){
     renderLevels();
-    $("site-back").textContent=boardReturnScreen==="stages"
-      ?"← Back to stages":"← Home";
+    $("site-back").textContent="← Back to "+
+      ({stages:"stages",worlds:"worlds",home:"home"}[boardReturnScreen]||"home");
   }
   if (name === "settings") renderSettings();
+  if(name==="help"||name==="settings"){
+    const label=({home:"home",worlds:"worlds",stages:"stages",
+      levels:"levels",workshop:"workshop"})[supportReturnScreen]||"home";
+    $(name+"-return").textContent="← Back to "+label;
+  }
   const activeTopLevel=(name==="levels"||name==="stages"||name==="workshop")
     ?"worlds":name;
   document.querySelectorAll(".site-nav-links button[data-screen]").forEach(button=>{
@@ -473,9 +495,28 @@ $("workshop-equation").addEventListener("input",()=>{
 });
 window.addEventListener("mathssprites:workshop-another",()=>showScreen("workshop"));
 
+function announceBoardSelection(){
+  const world=findCampaignWorld(selectedWorld);
+  const stage=findCampaignStage(selectedWorld,selectedStage);
+  if(!world||!stage)return;
+  const totals=campaignStarTotals(campaign,{worldId:world.id,stageId:stage.id});
+  $("board-selection-status").textContent=world.title+", "+stage.title+
+    ". "+totals.completed+" of "+totals.count+" levels complete.";
+}
+function focusBoardSelection(groupId){
+  $(groupId).querySelector('button[aria-pressed="true"]')?.focus({preventScroll:true});
+  announceBoardSelection();
+}
 $("site-shell").addEventListener("click", event => {
   const target = event.target.closest("button");
   if (!target || target.disabled) return;
+  if(target.hasAttribute("data-support-return"))
+    return showScreen(supportReturnScreen);
+  if(target.id==="board-continue"){
+    const levelId=target.dataset.levelId;
+    if(levelId)return launch(levelId,selectedStage,selectedWorld);
+    return;
+  }
   if(target.id==="home-choose-level"){
     boardReturnScreen="home";
     return showScreen("levels");
@@ -492,13 +533,21 @@ $("site-shell").addEventListener("click", event => {
     selectedWorld=world.id;
     if(!findCampaignStage(world.id,selectedStage)?.available)
       selectedStage=world.stages.find(stage=>stage.available)?.id||"guided";
-    boardReturnScreen="home";
+    if(currentScreen==="levels"){
+      renderLevels();
+      focusBoardSelection("map-world-tabs");
+      return;
+    }
+    boardReturnScreen=currentScreen==="worlds"?"worlds":"home";
     return showScreen("levels");
   }
   if(target.dataset.mapStage){
     if(!findCampaignStage(selectedWorld,target.dataset.mapStage)?.available)return;
+    if(selectedStage===target.dataset.mapStage)return;
     selectedStage=target.dataset.mapStage;
-    return renderLevels();
+    renderLevels();
+    focusBoardSelection("map-stage-tabs");
+    return;
   }
   if (target.dataset.stageOpen) {
     if(!stageCanOpen(target.dataset.stageOpen))return;
@@ -514,6 +563,61 @@ $("site-shell").addEventListener("click", event => {
   }
   if (target.dataset.level) return launch(target.dataset.levelId||
     Number(target.dataset.level),selectedStage,selectedWorld);
+});
+// Keep the native Tab order, with spatial arrow keys as a shortcut.
+$("site-levels").addEventListener("keydown",event=>{
+  if(event.altKey||event.ctrlKey||event.metaKey||event.shiftKey)return;
+  const button=event.target,key=event.key;
+  if(!(button instanceof HTMLButtonElement)||button.disabled)return;
+  if(!["ArrowLeft","ArrowRight","ArrowUp","ArrowDown","Home","End"].includes(key))return;
+  const group=button.closest("#map-world-tabs,#map-stage-tabs");
+  if(group){
+    const enabled=[...group.querySelectorAll("button:not(:disabled)")];
+    const index=enabled.indexOf(button);
+    if(index<0)return;
+    const next=key==="Home"?0:key==="End"?enabled.length-1:
+      Math.max(0,Math.min(enabled.length-1,index+
+        (key==="ArrowRight"||key==="ArrowDown"?1:-1)));
+    event.preventDefault();
+    if(next!==index)enabled[next].click();
+    return;
+  }
+  if(!button.matches(".level-tile"))return;
+  const tiles=[...$("level-sections").querySelectorAll(".level-tile:not(:disabled)")];
+  const index=tiles.indexOf(button);
+  if(index<0)return;
+  const next=spatialTileIndex(tiles.map(tile=>tile.getBoundingClientRect()),index,key);
+  event.preventDefault();
+  tiles[next]?.focus();
+});
+// Escape goes back one portal space, but never abandons a live experiment
+// or intercepts the student's equation editor.
+document.addEventListener("keydown",event=>{
+  if(event.key!=="Escape"||event.defaultPrevented||event.altKey||
+     event.ctrlKey||event.metaKey)return;
+  const active=event.target;
+  const editing=active instanceof HTMLElement &&
+    (active.matches("textarea,select,[contenteditable]") ||
+      (active instanceof HTMLInputElement &&
+        !["checkbox","radio","button"].includes(active.type)));
+  if(editing)return;
+  const previous={
+    worlds:"home",stages:"worlds",workshop:"stages",
+    levels:boardReturnScreen,help:supportReturnScreen,settings:supportReturnScreen
+  }[currentScreen];
+  if(!previous)return;
+  const page=$("site-"+currentScreen);
+  const opened=[...page.querySelectorAll("details[open]")];
+  if(opened.length){
+    event.preventDefault();
+    const focused=active instanceof HTMLElement?active.closest("details[open]"):null;
+    const detail=focused||opened[opened.length-1];
+    detail.open=false;
+    detail.querySelector("summary")?.focus({preventScroll:true});
+    return;
+  }
+  event.preventDefault();
+  showScreen(previous);
 });
 $("home-play").addEventListener("click", () => {
   const destination=homeDestination();
