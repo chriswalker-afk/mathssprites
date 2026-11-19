@@ -5,6 +5,9 @@ import {
 import { buildWritingTimeline, symbolsOf, WRITING_PACE } from "./replay-timeline.mjs";
 import { handMotionPlan } from "./hand-timeline.mjs";
 import { divisionBasketMarkup, playDivisionBaskets } from "./division-baskets.mjs";
+import {
+  multiplicationBasketMarkup,multiplicationHandProp,playMultiplicationBaskets
+} from "./multiplication-baskets.mjs";
 import { spriteMotionProfile, spriteMotionStyle } from "./sprite-motion.mjs";
 import { pickSpriteHandReaction, dodgeOffsetPx } from "./sprite-reactions.mjs";
 import { floorScaleToFit, inRoomBoxPlan, areaMathLabel } from "./area-layout.mjs";
@@ -139,20 +142,28 @@ function renderRoom(side, r, groupCount) {
   // sprites are repeatedly destroyed and their bouncing animations restart.
   const signature = currentLevel().id + "|" + side + "|" +
     TOKEN_KINDS.map(key => r[key]).join(":") + "|groups:" + groupCount;
+  // Positive groups are division baskets; negative groups are multiplication.
+  // The mathematical room values never change merely because a stage exists.
+  const multiplying=groupCount<0;
+  const basketCount=Math.abs(groupCount);
   if (node.dataset.signature === signature) { resizeFloor(side); return; }
   node.dataset.signature = signature;
   node.setAttribute("aria-label", (side === "left" ? "West chamber: " : "East chamber: ") + roomSummary(r));
   const total = TOKEN_KINDS.reduce((a, field) => a + r[field], 0);
   node.classList.toggle("crowded", total > 16);
-  if (groupCount) {
-    // Keep the original token nodes on the floor until they physically move
-    // into real baskets. The engine has already validated whole-item sharing.
-    node.innerHTML = '<div class="division-stage" data-phase="waiting" style="--division-factor:' +
-      groupCount + '">' +
+  if (basketCount) {
+    // Both inverse operations use the SAME solid wicker stage. Multiplication
+    // keeps originals on the floor until the first basket lands and receives
+    // them, then the hand physically delivers the extra complete groups.
+    node.innerHTML = '<div class="division-stage'+
+      (multiplying?' multiplication-stage':'')+'" data-operation="'+
+      (multiplying?'multiply':'divide')+'" data-phase="waiting" '+
+      'style="--division-factor:'+basketCount+'">' +
       '<div class="division-source floor-shell"><div class="items-grid floor-track" data-layout="floor">' +
-      allTokens(r, false, side) + '</div></div>' +
-      '<div class="basket-row" aria-label="' + groupCount + ' equal groups">' +
-      divisionBasketMarkup(groupCount) + '</div></div>';
+      allTokens(r,false,side)+'</div></div>'+
+      '<div class="basket-row" aria-label="'+basketCount+' equal groups">'+
+      (multiplying?multiplicationBasketMarkup(basketCount):divisionBasketMarkup(basketCount))+
+      '</div></div>';
     resizeFloor(side);
     return;
   }
@@ -503,7 +514,9 @@ function handProp(action, side) {
       : '<span class="held-basket" title="A complete basket of objects"></span>';
   }
   if (action.op === "multiply") {
-    return '<span class="held-basket held-basket-double" title="A complete group of objects"></span>';
+    // Only used in rejected-attempt theatre. Valid multiplication hands carry
+    // the actual matching wicker basket DOM props in the scale scene.
+    return multiplicationHandProp();
   }
   const picture = action.kind === "posX" || action.kind === "negX" || action.kind === "posX2"
     ? '<span class="held-sprite' + (action.kind === "negX" ? " held-sprite-pale" :
@@ -748,6 +761,9 @@ async function handAct(side, action, applyAtContact) {
   if (action.op === "divide" && !action.fractionAttempt)
     return playDivisionBaskets({side,factor:action.factor,reduced:reducedMotion,
       applyAtContact,sleep});
+  if(action.op==="multiply"&&$(side+"-items").querySelector(".multiplication-stage"))
+    return playMultiplicationBaskets({side,factor:action.factor,reduced:reducedMotion,
+      applyAtContact,sleep,resizeFloor:()=>resizeFloor(side)});
   const hand = $("hand");
   const cargo = $("hand-cargo");
   const target = $(side + "-chamber");
@@ -1150,7 +1166,8 @@ async function animateMismatchedManualAction(side, firstAction, action) {
       }
       override={...before,[side]:room(attempted.beforeGroups)};
       groups[side]=action.factor;render();
-
+    }else if(action.op==="multiply"){
+      groups[side]=-action.factor;render();
     }
     await handAct(side, action, async() => {
       if(action.op!=="divide"&&attempted.cancellationEvents.length){
@@ -1245,7 +1262,9 @@ async function guidedMove() {
       await neutraliseBeforeDivision(action,previews);
       groups={left:action.factor,right:action.factor};
       render();
-
+    }else if(action.op==="multiply"){
+      groups={left:-action.factor,right:-action.factor};
+      render();
     }else render();
     const beforeRight=action.op==="divide"
       ? room(previews.right.beforeGroups) : previous.right;
@@ -1320,8 +1339,10 @@ async function replayNotebookWithSprites() {
         await neutraliseBeforeDivision(action,previews);
         groups={left:action.factor,right:action.factor};
         render();
-  
-      } else render();
+      }else if(action.op==="multiply"){
+        groups={left:-action.factor,right:-action.factor};
+        render();
+      }else render();
       const beforeRight=action.op==="divide"
         ? room(previews.right.beforeGroups) : previous.right;
       await handAct("left",action,async()=>{
@@ -1408,7 +1429,8 @@ async function manualMove(side) {
       }
       override={...before,[side]:room(preview.beforeGroups)};
       groups[side]=action.factor;render();
-
+    }else if(action.op==="multiply"){
+      groups[side]=-action.factor;render();
     }
     await handAct(side,action,async()=>{
       state=outcome.state;
