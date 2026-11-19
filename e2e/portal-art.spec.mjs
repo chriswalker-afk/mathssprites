@@ -124,10 +124,12 @@ test("phone keeps all decorative art non-interactive and form reachable @smoke",
   expect(width).toBeLessThanOrEqual(378);
   await page.screenshot({path:"artifacts/pr33-mobile-inventor.png"});
 });
-test("reduced motion hides animation but never hides the decorative chapter artwork @smoke",async({page})=>{
+test("reduced motion keeps a static scale and an optional Play control beside the artwork @smoke",async({page})=>{
   await page.emulateMedia({reducedMotion:"reduce"});
   await page.reload();
-  await expect(page.locator("#hero-playback")).toBeHidden();
+  await expect(page.locator("#home-hero-art")).toHaveAttribute("data-playback","reduced");
+  await expect(page.locator("#hero-playback")).toBeVisible();
+  await expect(page.locator("#hero-playback")).toHaveText("Play animation");
   await imagesLoaded(page,"#home-stage-shortcuts .portal-stage-medallion",3);
   await page.locator('[data-screen="worlds"]').first().click();
   await imagesLoaded(page,".hall-door-art",4);
