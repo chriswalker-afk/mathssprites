@@ -65,3 +65,22 @@ test("invalid registry IDs, missing chapters and duplicate levels are refused",(
     ]}]
   }]),/duplicate\/invalid level/);
 });
+
+test("renaming a chapter and reordering levels do not change their durable IDs or star benchmarks",()=>{
+  const world=CAMPAIGN_REGISTRY[0],guided=world.stages[0];
+  const original=guided.levels[8];
+  assert.equal(guided.chapters[0].id,"guided-chapter-01");
+  assert.equal(guided.optimalMoves[original.id],2);
+  const chapters=guided.chapters.map((c,i)=>i===0?{...c,title:"An improved chapter name"}:c);
+  const levels=[original,...guided.levels.filter(s=>s.id!==original.id)];
+  const rebuilt=createCampaignRegistry([{
+    ...world,stages:[{...guided,chapters,levels},...world.stages.slice(1)]
+  }]);
+  const renamed=rebuilt[0].stages[0];
+  assert.equal(renamed.chapters[0].id,"guided-chapter-01");
+  assert.equal(renamed.chapters[0].title,"An improved chapter name");
+  assert.equal(renamed.levels[0].id,original.id);
+  assert.equal(renamed.optimalMoves[original.id],2);
+  assert.equal(renamed.optimalMoves.resident,1);
+  assert.equal(renamed.levels[0].chapterId,guided.chapters[2].id);
+});
