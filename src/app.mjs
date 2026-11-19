@@ -1420,6 +1420,45 @@ async function guidedMove() {
   }
   await finishTurn();
 }
+/**
+ * An opened bracket is an EQUIVALENT REPRESENTATION in one chamber, not
+ * a unilateral move of weight. The pure engine checks the value both before
+ * and after opening, then stores one undoable "rewrite" transaction.
+ *
+ * The hand physically unlatches the crates before the actors become loose.
+ * This action is only available in the specifically authored Guided level.
+ */
+async function unpackCrates(){
+  if(busy||notebookSession||!currentLevel().groupedPrototype||
+     campaignStage!=="guided"||isSolved(state)||state.pending)return;
+  const side=crateCount(state.left)?"left":crateCount(state.right)?"right":null;
+  if(!side)return;
+  const action={op:"unpack",side};
+  const result=perform(state,action,"auto");
+  if(!result.ok)return notify(result.reason);
+  busy=true;clearSpeech();
+  setFeedback("The latch is opening. The contents are still worth exactly the same.","working");
+  render();
+  try{
+    await handAct(side,action,async()=>{
+      const crates=[...$(side+"-items").querySelectorAll(".sealed-crate")];
+      for(const crate of crates)crate.classList.add("crate-opening");
+      // Hold the visual identity long enough for students to observe the
+      // distribution, even in reduced-motion mode.
+      await sleep(reducedMotion?350:1050);
+      state=result.state;
+      override=null;
+      render();
+    });
+  }finally{
+    busy=false;
+    override=null;
+    render();
+  }
+  await finishTurn();
+  if(!isSolved(state))
+    setSpeech("The same value, but now the brackets are open. You can move the individual sprites and weights.",5800);
+}
 /** Replay a CHECKED algebra notebook as consecutive real hand movements.
  * The pure engine's committed history, never user text, provides the actions.
  * This deliberately does NOT call finishTurn/showReplay: paper already came
@@ -2010,6 +2049,7 @@ $("amount-up").addEventListener("click", () => {
   else amount = Math.min(12, amount + 1);
   render();
 });
+$("unpack-crates").addEventListener("click",unpackCrates);
 $("do-both").addEventListener("click", guidedMove);
 $("left-action").addEventListener("click", () => manualMove("left"));
 $("right-action").addEventListener("click", () => manualMove("right"));
