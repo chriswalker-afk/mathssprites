@@ -109,7 +109,7 @@ for(const size of laptopViews){
     await page.screenshot({path:"artifacts/pr33-desk-"+size.width+"x"+size.height+".png"});
   });
 }
-test("phone keeps all decorative art non-interactive and form reachable",async({page})=>{
+test("phone keeps all decorative art non-interactive and form reachable @smoke",async({page})=>{
   await page.setViewportSize({width:375,height:812});
   await expect(page.locator("#home-play")).toBeVisible();
   await imagesLoaded(page,"#home-stage-shortcuts .portal-stage-medallion",3);
@@ -124,7 +124,7 @@ test("phone keeps all decorative art non-interactive and form reachable",async({
   expect(width).toBeLessThanOrEqual(378);
   await page.screenshot({path:"artifacts/pr33-mobile-inventor.png"});
 });
-test("reduced motion hides animation but never hides the decorative chapter artwork",async({page})=>{
+test("reduced motion hides animation but never hides the decorative chapter artwork @smoke",async({page})=>{
   await page.emulateMedia({reducedMotion:"reduce"});
   await page.reload();
   await expect(page.locator("#hero-playback")).toBeHidden();
