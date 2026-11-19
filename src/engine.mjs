@@ -335,6 +335,11 @@ function transform(source, action, side = "room") {
       count:crateCount(compact)/action.factor};
     else delete next.crates;
   }
+  // A crate is indivisible and the renderer supports at most twelve.
+  // Do not let repeated multiplication create an invalid room() object.
+  if(crateCount(next)>12)return {ok:false,code:"overflow",
+    total:crateCount(next),capacity:12,excess:crateCount(next)-12,
+    kind:"crate",reason:"There would be too many sealed crates in this chamber."};
   const raw = room(next);
   const reduced = normalize(next);
   const cancellationEvents = action.op === "divide" ?
