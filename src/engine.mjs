@@ -379,12 +379,12 @@ export function levelActionPermission(state, action) {
       action.kind === "posX2")
     return {ok:false,code:"locked-kind",
       reason:"Square-shaped sprites belong to the Square Laboratory, not this workshop."};
-  if(action?.op==="unpack"&&!crateCount(state?.[action.side]))
-    return {ok:false,code:"no-crates",
-      reason:"There are no sealed crates left to open."};
   if (state.allowedOperations && !state.allowedOperations.includes(action?.op))
     return {ok:false,code:"locked-operation",
       reason:"That tool belongs to a later laboratory. Use the whole-number tools here."};
+  if(action?.op==="unpack"&&!crateCount(state?.[action.side]))
+    return {ok:false,code:"no-crates",
+      reason:"There are no sealed crates left to open."};
   return {ok:true};
 }
 export function prepare(state, action) {
