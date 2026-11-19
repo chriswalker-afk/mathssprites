@@ -32,7 +32,8 @@ async function frameMetrics(page){
 
 for(const size of [
   {width:1024,height:720},
-  {width:1092,height:540}
+  {width:1092,height:540},
+  {width:900,height:560}
 ]){
   test("compact title bar and uncluttered scale at "+size.width+"x"+size.height+" @smoke",async({page})=>{
     await page.setViewportSize(size);
@@ -79,7 +80,7 @@ for(const size of [
   });
 }
 
-test("mascot Home button is keyboard-accessible and respects reduced motion",async({page})=>{
+test("mascot Home button is keyboard-accessible and respects reduced motion @smoke",async({page})=>{
   await page.goto("/?preview=resident");
   await page.locator("#motion-toggle").click();
   await expect(page.locator("#motion-toggle")).toHaveText("Motion: reduced");
@@ -92,7 +93,7 @@ test("mascot Home button is keyboard-accessible and respects reduced motion",asy
   await expect(page.locator("#site-home")).toBeVisible();
 });
 
-test("mobile retains full-size touch navigation and readable scene without a roof",async({page})=>{
+test("mobile retains full-size touch navigation and readable scene without a roof @smoke",async({page})=>{
   await page.setViewportSize({width:390,height:844});
   await page.goto("/?preview=resident");
   await expect(page.locator("#game-brand-home")).toBeVisible();
