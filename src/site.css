@@ -107,3 +107,21 @@
  .world-card-footer .primary-btn{width:100%}
  .site-content-panel{padding:22px}
 }
+
+
+/* PR26: stars are earned per solved route; hollow stars mean not rated yet. */
+.level-star-legend{margin:0 0 12px;color:#e2c798;font-size:.78rem;line-height:1.5}
+.level-tile .tile-stars{font:normal 1.25rem/1 Georgia,serif;letter-spacing:.14em;
+  color:#f5cb75;text-shadow:0 2px 4px #0509077a;white-space:nowrap}
+.level-tile .tile-stars[data-stars="0"]{color:#88948a;text-shadow:none}
+.level-tile .tile-status{line-height:1.35}
+.level-tile.status-complete .tile-stars:not([data-stars="0"]){color:#f6d78f}
+.level-clear #level-clear-rating{font-weight:750;color:#ffe4a1;line-height:1.5;
+  font-size:clamp(.78rem,1.6vw,.98rem);max-width:100%;overflow-wrap:anywhere}
+.replay-header p.replay-star-summary{display:block;color:#f4d18c;font-size:.82rem;
+  font-weight:700;line-height:1.45;margin-top:7px;max-width:550px}
+@media(max-width:600px){
+  .level-tile .tile-stars{font-size:1.12rem;letter-spacing:.08em}
+  .level-star-legend{font-size:.72rem}
+  .replay-header p.replay-star-summary{display:block;font-size:.72rem}
+}
