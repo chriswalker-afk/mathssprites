@@ -17,6 +17,11 @@ test("first-time learner can start the selected stage in one board click",()=>{
   assert.deepEqual(boardContinueLevel(independent,{}),
     {id:independent.levels[0].id,number:1,action:"Play"});
 });
+test("untouched stage template is Play, genuine Level 1 revisit is Continue",()=>{
+  const record={completed:[],lastPlayed:guided.levels[0].id};
+  assert.equal(boardContinueLevel(guided,record).action,"Play");
+  assert.equal(boardContinueLevel(guided,record,{resumed:true}).action,"Continue");
+});
 test("returning learner resumes unfinished stage-specific last level",()=>{
   const slot=independent.levels[6];
   assert.deepEqual(boardContinueLevel(independent,
