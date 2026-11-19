@@ -108,7 +108,7 @@ test("notebook writing stays in the viewport with its line entry available @smok
   await page.locator('[data-level="1"]').click();
   await expect(page.locator("#notebook-workspace")).toBeVisible();
   await expect(page.locator("#scene")).toBeHidden();
-  await inView(page,"#notebook-paper");
+  await inView(page,".notebook-paper");
   await inView(page,"#notebook-equation");
   await inView(page,"#notebook-check");
   await inView(page,"#notebook-replay");
@@ -127,7 +127,7 @@ test("home CTA resumes the actual last opened stage, not whichever stage is comp
   await expect(page.locator("#home-play")).toContainText("Continue Stage 2 · Level 7");
   await page.locator("#home-play").click();
   await expect(page.locator("#chapter-status")).toContainText("STAGE 2");
-  await expect(page.locator("#level-title")).toHaveText("Four equal baskets");
+  await expect(page.locator("#level-title")).toHaveText("Four-room rhythm");
   await page.locator("#game-home").click();
 
   await openLevels(page,3);
