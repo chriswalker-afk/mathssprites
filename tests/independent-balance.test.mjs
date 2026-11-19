@@ -107,14 +107,12 @@ test("either room can be first; unequal second hand actions are rejected without
   }
 });
 
-test("Stage 2 unlocking is sequential and teacher override does not mark completed",()=>{
-  assert.equal(isIndependentUnlocked(1,[]),true);
-  assert.equal(isIndependentUnlocked(2,[]),false);
-  assert.equal(isIndependentUnlocked(2,[1]),true);
-  assert.equal(isIndependentUnlocked(15,[1,2]),false);
-  assert.equal(isIndependentUnlocked(16,[],true),true);
-  assert.equal(nextIndependentLevel(1,[1]),findIndependentLevel(2));
-  assert.equal(nextIndependentLevel(16,[],true),null);
+test("every Stage 2 level is directly selectable without completion or teacher access",()=>{
+  for(const slot of INDEPENDENT_LEVELS)
+    assert.equal(isIndependentUnlocked(slot.number,[],false),true);
+  assert.equal(isIndependentUnlocked(17,[],true),false);
+  assert.equal(nextIndependentLevel(1,[]),findIndependentLevel(2));
+  assert.equal(nextIndependentLevel(16,[],false),null);
   assert.equal(findIndependentLevel(17),null);
 });
 
