@@ -1,5 +1,6 @@
 import { LEVELS } from "./engine.mjs";
 import {createWorkshopEquation} from "./equation-workshop.mjs";
+import {createHomeHero} from "./home-hero.mjs";
 import {
   WORLDS, WORLD1_CHAPTERS, WORLD1_LEVELS, findWorld1Level,
   isWorld1Unlocked, nextWorld1Level
@@ -26,6 +27,10 @@ import {
 } from "./onboarding.mjs";
 
 const $ = id => document.getElementById(id);
+const homeHero=createHomeHero();
+window.addEventListener("mathssprites:motion-change",event=>{
+  homeHero.setMotionOverride(event.detail?.reduced===true);
+});
 let progress = loadProgress();
 let stage2Progress = loadStage2Progress();
 let stage3Progress = loadStage3Progress();
@@ -258,6 +263,7 @@ function showScreen(name) {
   if (name === "levels") renderLevels();
   if (name === "settings") renderSettings();
   if (name === "workshop") $("workshop-equation").focus({preventScroll:true});
+  homeHero.setActive(name==="home");
   const heading = $("site-" + name).querySelector("h1, h2");
   if (heading) heading.focus({preventScroll:true});
   window.scrollTo?.(0,0);
@@ -269,6 +275,7 @@ function launch(number,stage=selectedStage) {
   const allowed=stage==="independent"?independentUnlocked(number):
     stage==="notebook"?apprenticeUnlocked(number):unlocked(number);
   if(!slot?.level||!allowed)return false;
+  homeHero.setActive(false);
   selectedStage=stage;
   playingStage=stage;
   playingNumber=slot.number;
@@ -301,6 +308,7 @@ function workshopStatus(message,status="info"){
 }
 function launchWorkshopScene(level,handMode){
   if(!level?.lockPositive||level.quantityMode!=="positive")return false;
+  homeHero.setActive(false);
   playingNumber=null;
   playingStage=null;
   currentScreen="workshop-game";
@@ -391,6 +399,7 @@ function restartIndependentIntroduction() {
 $("site-replay-independent").addEventListener("click",restartIndependentIntroduction);
 /** Teacher-facing preview only: PR21 will add real Stage 3 levels and progress. */
 function launchNotebookPreview(level=WORLD1_LEVELS[8].level){
+  homeHero.setActive(false);
   playingStage=null;
   playingNumber=null;
   currentScreen="notebook-preview";
@@ -462,6 +471,7 @@ if(workshopDraft!==null){
 } else if (preview !== null) {
   // Direct preview route keeps the 13 prototype experiments testable while
   // the public student route shows only the available World 1 campaign.
+  homeHero.setActive(false);
   document.body.classList.add("preview-mode");
   $("site-shell").hidden = true;
   $("game-shell").hidden = false;

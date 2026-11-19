@@ -12,6 +12,7 @@
   <link rel="stylesheet" href="./src/stages.css" />
   <link rel="stylesheet" href="./src/notebook.css" />
   <link rel="stylesheet" href="./src/workshop.css" />
+  <link rel="stylesheet" href="./src/home-hero.css" />
   <script type="module" src="./src/app.mjs"></script>
   <script type="module" src="./src/site.mjs"></script>
 </head>
@@ -32,21 +33,50 @@
     <main class="site-page" id="site-home">
       <section class="landing-hero" aria-labelledby="home-title">
         <div class="landing-copy">
-          <div class="portal-kicker">THE EXPERIMENTAL WORKSHOP · OPEN FOR EXPLORATION</div>
-          <h1 id="home-title" tabindex="-1">A little mystery.<br />A perfectly balanced world.</h1>
-          <p>Meet the restless sprites living inside a pair of miniature laboratory rooms. Use the hand to rearrange their world, keep the balance, and discover the algebra hiding inside.</p>
+          <div class="portal-kicker">WELCOME TO MATHS SPRITES</div>
+          <h1 id="home-title" tabindex="-1">How much does the sprite weigh?</h1>
+          <p>Balance the scale, experiment with sprites and weights, and discover the algebra hiding inside.</p>
           <div class="landing-actions">
             <button type="button" id="home-play" class="primary-btn">Begin your first experiment →</button>
             <button type="button" class="secondary-btn" data-screen="worlds">Choose a world</button>
           </div>
           <span id="home-progress" class="landing-progress" aria-live="polite"></span>
         </div>
-        <div class="hero-art" aria-hidden="true">
-          <div class="art-window"></div><div class="hero-shelf"></div>
-          <div class="hero-balance">
-            <div class="hero-beam"></div><div class="hero-post"></div>
-            <div class="hero-pan left"><span class="hero-creature">••</span><span class="hero-weight"></span></div>
-            <div class="hero-pan right"><span class="hero-creature second">••</span><span class="hero-weight right"></span></div>
+        <div class="hero-art" id="home-hero-art" data-scene="still" data-phase="still" data-balance="level">
+          <div class="hero-illustration" role="img" aria-label="A brass balance scale with mysterious dark sprites and individual brass weights. They are added to either side until the scale balances.">
+            <div class="art-window" aria-hidden="true"></div>
+            <div class="hero-shelf" aria-hidden="true"></div>
+            <div class="hero-glow" aria-hidden="true"></div>
+            <div class="hero-scale" aria-hidden="true">
+              <div class="hero-post"></div>
+              <div class="hero-foot"></div>
+              <div class="hero-beam-assembly">
+                <div class="hero-beam"></div>
+                <div class="hero-hanger hero-hanger-left">
+                  <div class="hero-chains"></div>
+                  <div class="hero-pan">
+                    <div id="hero-left-items" class="hero-items">
+                      <span class="hero-item hero-creature"><span class="hero-eyes"><i></i><i></i></span></span>
+                    </div>
+                  </div>
+                </div>
+                <div class="hero-hanger hero-hanger-right">
+                  <div class="hero-chains"></div>
+                  <div class="hero-pan">
+                    <div id="hero-right-items" class="hero-items">
+                      <span class="hero-item hero-weight"><i class="hero-weight-handle"></i></span>
+                      <span class="hero-item hero-weight"><i class="hero-weight-handle"></i></span>
+                      <span class="hero-item hero-weight"><i class="hero-weight-handle"></i></span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="hero-pivot"></div>
+            </div>
+          </div>
+          <div class="hero-underbar">
+            <span id="hero-scene-caption" class="hero-scene-caption" aria-hidden="true">One mysterious sprite. Three brass weights. A perfect balance.</span>
+            <button type="button" class="hero-playback" id="hero-playback" aria-pressed="false" hidden>Pause animation</button>
           </div>
         </div>
       </section>

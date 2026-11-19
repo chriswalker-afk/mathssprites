@@ -40,6 +40,8 @@ function chooseMotion(reduced) {
     window.localStorage.setItem(MOTION_SETTING, reduced ? "reduced" : "on");
   } catch {}
   render();
+  window.dispatchEvent(new CustomEvent("mathssprites:motion-change",
+    {detail:{reduced}}));
 }
 
 let levelIndex = 0;

@@ -13,7 +13,7 @@ async function startFirstLevel(page) {
 test("home is the real entry point; four distinct world cards, three locked", async ({page}) => {
   await expect(page.locator("#site-home")).toBeVisible();
   await expect(page.locator("#game-shell")).toBeHidden();
-  await expect(page.getByRole("heading",{name:/A little mystery/})).toBeVisible();
+  await expect(page.getByRole("heading",{name:"How much does the sprite weigh?"})).toBeVisible();
   await page.locator('[data-screen="worlds"]').first().click();
   await expect(page.locator(".world-card")).toHaveCount(4);
   await expect(page.locator(".world-ready")).toHaveCount(1);
