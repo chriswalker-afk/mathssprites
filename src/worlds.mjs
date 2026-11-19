@@ -114,11 +114,13 @@ const newLevels = [
     left:{posX:2,posOne:7},right:{posX:3,posOne:2},solution:5,
     startingOperation:"remove",startingKind:"posX",startingAmount:1,
     suggested:"It is fine for the final sprite to be in the east chamber. Look for shared sprites to remove." },
-  { id:"master-19",title:"The quicker route",
-    prompt:"The hand can carry twelve weights at a time, but the rooms are heavier than that. Is there a shortcut?",
-    left:{posX:4,posOne:14},right:{posX:2,posOne:24},solution:5,
-    startingOperation:"remove",startingKind:"posOne",startingAmount:1,
-    suggested:"Instead of carrying many weights, can you split every count in both rooms into two?" },
+  { id:"master-19",title:"The sealed brackets",
+    prompt:"Two transparent crates each hold a sprite and three weights. Can you solve without unpacking both at once? Try unpacking first OR dividing the whole rooms first.",
+    left:{crates:{count:2,contents:{posX:1,posOne:3}}},
+    right:{posOne:14},solution:4,
+    groupedPrototype:true,startingOperation:"divide",startingFactor:2,
+    allowedOperations:[...WORLD1_OPERATIONS,"unpack"],
+    suggested:"Unpack the crates to see 2x + 6 = 14, OR divide the two complete crates and fourteen weights into two baskets first." },
   { id:"master-20",title:"The master experiment",
     prompt:"The heaviest puzzle yet. You can remove at most twelve weights in a move. Sometimes adding something helps!",
     left:{posX:5,posOne:17},right:{posX:2,posOne:29},solution:4,
@@ -136,7 +138,7 @@ export const WORLD1_LEVELS = Object.freeze(campaign.map((raw, i) => {
     ...raw, number, chapter: String(chapterIndex + 1).padStart(2,"0") +
       " · " + WORLD1_CHAPTERS[chapterIndex].title,
     quantityMode:"positive", lockPositive:true,
-    allowedOperations:WORLD1_OPERATIONS
+    allowedOperations:raw.allowedOperations||WORLD1_OPERATIONS
   });
   return Object.freeze({
     number,id:level.id,title:level.title,chapterIndex,available:true,
