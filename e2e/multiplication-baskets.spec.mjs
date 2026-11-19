@@ -62,7 +62,14 @@ test("physical multiplication groups the original objects and hand-delivers full
   await expect.poll(()=>page.evaluate(()=>
     window.__multiplicationMilestones.some(s=>s.phase==="ready"&&s.floor===0&&
       s.baskets.length===3&&s.baskets.every(b=>b.sprites===1&&b.weights===2))
-  ),{timeout:17000}).toBe(true);
+  ),{timeout:17000}).toBe(true).catch(async(error)=>{
+    const diagnostics=await page.evaluate(()=>
+      window.__multiplicationMilestones.filter(s=>
+        ["grouping","copying","ready","pouring"].includes(s.phase)
+      ).slice(0,60));
+    console.log("PR29 READY PHASE DIAGNOSTICS:",JSON.stringify(diagnostics));
+    throw error;
+  });
   await page.screenshot({path:"artifacts/pr29-03-three-identical-wicker-baskets.png"});
   await expect.poll(()=>page.evaluate(()=>
     window.__multiplicationMilestones.some(s=>s.phase==="pouring"&&
