@@ -322,6 +322,10 @@ function renderNotebookVisibility() {
   $("notebook-stage-note").textContent=campaign
     ?"Campaign experiment · Progress saved after a successful sprite replay"
     :"Practice preview · No levels or progress earned";
+  $("notebook-signed-operations").hidden=currentLevel().quantityMode!=="signed";
+  $("notebook-operation-tip").textContent=currentLevel().quantityMode==="signed"
+    ?"Use +(−x) for a pale sprite or −(−1) to remove a balloon. Whole objects only."
+    :"Choose an operation for both sides, not an answer. Use −x to remove a dark sprite.";
   $("notebook-level-prompt").textContent=campaign
     ? currentLevel().prompt
     : "You already have the equation. Choose an operation for both sides. The maths editor calculates the new equation automatically; the sprites will replay your route.";
@@ -1310,6 +1314,10 @@ async function finishTurn() {
       independentGuideSeen=writeIndependentGuideSeen(true);
       guideDismissed=true;
     }
+    if(activeSignedGuide()){
+      signedGuideSeen[campaignStage]=writeOppositesGuideSeen(campaignStage,true);
+      guideDismissed=true;
+    }
     if(campaignLevelNumber!==null)
       window.dispatchEvent(new CustomEvent("mathssprites:solved",
         {detail:{worldId:campaignWorldId,stage:campaignStageId,number:campaignLevelNumber,
@@ -1548,6 +1556,11 @@ async function manualMove(side) {
   } else {
     if(activeIndependentGuide()) {
       independentGuideSeen=writeIndependentGuideSeen(true);
+      guideDismissed=true;
+      renderFirstGuide();
+    }
+    if(activeSignedGuide()){
+      signedGuideSeen[campaignStage]=writeOppositesGuideSeen(campaignStage,true);
       guideDismissed=true;
       renderFirstGuide();
     }
@@ -1997,7 +2010,9 @@ $("guide-next").addEventListener("click", () => {
   target?.scrollIntoView?.({block:"nearest",behavior:reducedMotion?"instant":"smooth"});
 });
 $("guide-skip").addEventListener("click",()=>{
-  if(campaignStage==="independent")
+  if(activeSignedGuide())
+    signedGuideSeen[campaignStage]=writeOppositesGuideSeen(campaignStage,true);
+  else if(campaignStage==="independent")
     independentGuideSeen=writeIndependentGuideSeen(true);
   else guideSeen=writeGuideSeen(true);
   guideDismissed=true;
@@ -2007,7 +2022,10 @@ $("guide-skip").addEventListener("click",()=>{
 window.addEventListener("mathssprites:guide-setting",event=>{
   guideEnabled=!!event.detail.enabled;
   if(event.detail.reset){
-    if(event.detail.stage==="independent")
+    if(event.detail.worldId==="opposites"&&
+       ["guided","independent"].includes(event.detail.stage))
+      signedGuideSeen[event.detail.stage]=writeOppositesGuideSeen(event.detail.stage,false);
+    else if(event.detail.stage==="independent")
       independentGuideSeen=writeIndependentGuideSeen(false);
     else guideSeen=writeGuideSeen(false);
     guideStep=0;
@@ -2018,7 +2036,7 @@ window.addEventListener("mathssprites:guide-setting",event=>{
 $("game-guide-restart").addEventListener("click",()=>{
   if(busy || campaignLevelNumber!==1 || campaignStage===null)return;
   window.dispatchEvent(new CustomEvent("mathssprites:restart-guide",
-    {detail:{stage:campaignStage}}));
+    {detail:{stage:campaignStage,worldId:campaignWorldId}}));
 });
 $("quantity-mode").addEventListener("change", event => {
   if(busy||state.pending)return render();
@@ -2113,7 +2131,9 @@ function openNotebookLevel(level,number=null,context={}){
   $("notebook-hint-message").hidden=true;
   $("notebook-hint-message").textContent="";
   $("notebook-operation").value="";
-  notebookMessage("Choose an operation for BOTH sides, such as −3, −x or ÷2. The editor calculates the next equation.");
+  notebookMessage(level.quantityMode==="signed"
+    ?"Choose a signed operation for both sides: +2, +(−x), −(−1), or ÷2. The editor calculates the result."
+    :"Choose an operation for BOTH sides, such as −3, −x or ÷2. The editor calculates the next equation.");
   renderNotebookPaper();
   render();
   $("notebook-operation").focus({preventScroll:true});
@@ -2142,6 +2162,16 @@ $("notebook-hint").addEventListener("click",()=>{
 });
 /** Operation editor: clicking a maths sign or keypad key edits only the
  * proposed operation; the original equation and engine history stay intact. */
+document.querySelectorAll("[data-notebook-insert]").forEach(button=>{
+  button.addEventListener("click",()=>{
+    if(!notebookSession||notebookSession.level.quantityMode!=="signed"||
+       notebookPhase!=="writing"||busy)return;
+    const input=$("notebook-operation");
+    input.value=button.dataset.notebookInsert;
+    input.focus({preventScroll:true});
+    input.dispatchEvent(new Event("input",{bubbles:true}));
+  });
+});
 $("notebook-operation").addEventListener("input",()=>{
   if(notebookSession&&notebookPhase==="writing"){
     const preview=previewNotebookOperation(notebookSession,$("notebook-operation").value);
