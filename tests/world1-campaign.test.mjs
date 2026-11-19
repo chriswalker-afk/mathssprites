@@ -10,6 +10,7 @@ const removeWeights = n => ({op:"remove",kind:"posOne",count:n});
 const removeSprites = n => ({op:"remove",kind:"posX",count:n});
 const addWeights = n => ({op:"add",kind:"posOne",count:n});
 const split = factor => ({op:"divide",factor});
+const unpack = side => ({op:"unpack",side});
 
 // Explicit human-authored solution paths are independent of the mathematics
 // engine. Each step is exercised in both Guided Mirror and Your Turn modes.
@@ -33,7 +34,7 @@ const solutions = [
   [removeSprites(2),removeWeights(4),split(3)],
   [split(2),removeSprites(1),removeWeights(3)],
   [removeSprites(2),removeWeights(2)],
-  [split(2),removeSprites(1),removeWeights(7)],
+  [unpack("left"),removeWeights(6),split(2)],
   [removeSprites(2),addWeights(1),split(3),removeWeights(6)]
 ];
 
@@ -41,7 +42,7 @@ const alternateRoutes = new Map([
   [10,[removeWeights(6),split(3)]],
   [11,[removeWeights(8),split(4)]],
   [17,[removeSprites(2),removeWeights(6),split(2)]],
-  [19,[removeSprites(2),removeWeights(12),removeWeights(2),split(2)]],
+  [19,[split(2),unpack("left"),removeWeights(3)]],
   [20,[removeSprites(2),removeWeights(12),removeWeights(5),split(3)]]
 ]);
 
@@ -54,6 +55,16 @@ function checkRoom(r, label) {
       assert.equal(n,0,label + " must not expose signed/square objects");
     count += n;
   }
+  if(r.crates){
+    assert.equal(Number.isInteger(r.crates.count),true,label+" crate count is not whole");
+    assert.ok(r.crates.count>=1,label+" must have complete crates");
+    for(const kind of TOKEN_KINDS){
+      assert.ok(Number.isInteger(r.crates.contents[kind])&&r.crates.contents[kind]>=0);
+      if(kind!=="posX"&&kind!=="posOne")
+        assert.equal(r.crates.contents[kind],0,"This is a positive-only prototype");
+    }
+    count+=r.crates.count;
+  }
   assert.ok(count <= 48,label + " exceeds room capacity: " + count);
 }
 function verifySolution(level, steps, mode = "auto") {
@@ -62,12 +73,13 @@ function verifySolution(level, steps, mode = "auto") {
   assert.equal(isSolved(state),false,"Level starts already solved");
   assert.ok(steps.length > 0);
   for (const [i,action] of steps.entries()) {
-    assert.ok(WORLD1_OPERATIONS.includes(action.op),"Unexpected operation");
+    assert.ok(level.allowedOperations.includes(action.op),"Unexpected operation");
     if (mode === "auto") {
       const response = perform(state,action,"auto");
       assert.equal(response.ok,true,level.id + " failed step " + (i+1) + " " + JSON.stringify(action) + ": " + response.reason);
       state = response.state;
     } else {
+      assert.notEqual(action.op,"unpack","Identity rewrites are a Guided-only skill in this prototype");
       const first = perform(state,action,"manual","left");
       assert.equal(first.ok,true,level.id + " manual first room, step " + (i+1));
       assert.equal(isSolved(first.state),false,"A single room must not finish the puzzle");
@@ -107,7 +119,8 @@ test("World 1 contains 20 unique, viable and entirely positive balances",() => {
     assert.equal(level.number,slot.number);
     assert.equal(level.lockPositive,true);
     assert.equal(level.quantityMode,"positive");
-    assert.deepEqual(level.allowedOperations,WORLD1_OPERATIONS);
+    assert.deepEqual(level.allowedOperations,
+      slot.number===19?[...WORLD1_OPERATIONS,"unpack"]:WORLD1_OPERATIONS);
     assert.ok(validInitialLevel(level),"Invalid algebra " + level.id);
     assert.ok(Number.isInteger(level.solution) && level.solution > 0);
     assert.ok(level.title && level.prompt && level.suggested);
@@ -125,8 +138,10 @@ test("All 20 model solutions reach one sprite, with only whole-number intermedia
 });
 
 test("All 20 solutions work in two-hand Your Turn mode, one complete history step per move",() => {
-  for (const [i,slot] of WORLD1_LEVELS.entries())
+  for (const [i,slot] of WORLD1_LEVELS.entries()){
+    if(slot.number===19)continue; // Unpacking is a one-room identity rewrite, not a paired hand move.
     verifySolution(slot.level,solutions[i],"manual");
+  }
 });
 
 test("Alternative valid strategies exist, including clearing first and grouping first",() => {
@@ -161,7 +176,10 @@ test("Chapter 2 requires equal whole groups; Chapter 3 requires at least two act
 
 test("Chapters 4/5 include two-sided sprites, reverse orientation and a strategic addition",() => {
   for (const slot of WORLD1_LEVELS.slice(12))
-    assert.ok(slot.level.left.posX > 0 && slot.level.right.posX > 0);
+    if(slot.number!==19)
+      assert.ok(slot.level.left.posX > 0 && slot.level.right.posX > 0);
+  assert.equal(WORLD1_LEVELS[18].level.left.crates.count,2,
+    "Guided Level 19 contains two identical complete crates");
   assert.ok(WORLD1_LEVELS[13].level.right.posX > WORLD1_LEVELS[13].level.left.posX);
   assert.ok(WORLD1_LEVELS[17].level.right.posX > WORLD1_LEVELS[17].level.left.posX);
   assert.ok(solutions[19].some(x=>x.op==="add"),"Final puzzle must allow a positive addition shortcut");
