@@ -118,7 +118,10 @@ test("game reduced-motion setting starts safely but keeps explicit Play availabl
 });
 
 test("OS reduced motion cannot silently disable explicit homepage playback",async({page})=>{
+  // Emulate the preference BEFORE the application's motion controller loads.
+  // This reproduces a school device that boots with reduced motion active.
   await page.emulateMedia({reducedMotion:"reduce"});
+  await page.reload();
   await expect(hero(page)).toHaveAttribute("data-playback","reduced");
   await expect(page.locator("#hero-motion-note")).toContainText("Your device prefers reduced motion");
   await expect(page.locator("#hero-playback")).toBeVisible();
