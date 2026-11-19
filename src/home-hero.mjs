@@ -25,6 +25,14 @@ export class HomeHeroAnimator{
        !this.items.left||!this.items.right)
       throw new Error("Home hero illustration markup is incomplete.");
     this.media=window.matchMedia("(prefers-reduced-motion: reduce)");
+    // A deliberate in-game 'Motion: on' is an explicit opt-in. It must
+    // override an OS reduced-motion default on school-managed devices.
+    // With no explicit choice, honour the OS setting and offer Play.
+    try{
+      this.gameMotionChoice=window.localStorage.getItem("mathssprites.motion-preference.v1");
+    }catch{
+      this.gameMotionChoice=null;
+    }
     this.motionOverride=document.body.classList.contains("reduce-motion");
     this.active=false;
     this.userPaused=false;
@@ -63,12 +71,15 @@ export class HomeHeroAnimator{
     this.syncPlayback();
   }
   isReduced(){
-    return this.motionOverride||this.media.matches;
+    return this.motionOverride||
+      (this.media.matches&&this.gameMotionChoice!=="on");
   }
   /** Called for the app's persistent Motion setting, not local hero storage. */
   setMotionOverride(reduced){
-    if(this.motionOverride===!!reduced)return;
+    const choice=reduced?"reduced":"on";
+    if(this.motionOverride===!!reduced&&this.gameMotionChoice===choice)return;
     this.motionOverride=!!reduced;
+    this.gameMotionChoice=choice;
     this.manualPlay=false;
     this.userPaused=false;
     this.updateMotion();
