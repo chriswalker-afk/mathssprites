@@ -587,6 +587,32 @@ $("site-levels").addEventListener("keydown",event=>{
   event.preventDefault();
   tiles[next]?.focus();
 });
+// Escape goes back one portal space, but never abandons a live experiment
+// or intercepts the student's equation editor.
+document.addEventListener("keydown",event=>{
+  if(event.key!=="Escape"||event.defaultPrevented||event.altKey||
+     event.ctrlKey||event.metaKey)return;
+  const active=event.target;
+  if(active instanceof HTMLElement &&
+    active.closest("input,textarea,select,[contenteditable]"))return;
+  const previous={
+    worlds:"home",stages:"worlds",workshop:"stages",
+    levels:boardReturnScreen,help:supportReturnScreen,settings:supportReturnScreen
+  }[currentScreen];
+  if(!previous)return;
+  const page=$("site-"+currentScreen);
+  const opened=[...page.querySelectorAll("details[open]")];
+  if(opened.length){
+    event.preventDefault();
+    const focused=active instanceof HTMLElement?active.closest("details[open]"):null;
+    const detail=focused||opened[opened.length-1];
+    detail.open=false;
+    detail.querySelector("summary")?.focus({preventScroll:true});
+    return;
+  }
+  event.preventDefault();
+  showScreen(previous);
+});
 $("home-play").addEventListener("click", () => {
   const destination=homeDestination();
   launch(destination.levelId,destination.stageId,destination.worldId);
