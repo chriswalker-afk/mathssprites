@@ -20,6 +20,7 @@
   <link rel="stylesheet" href="./src/portal-art.css?v=33" />
   <link rel="stylesheet" href="./src/menu-polish.css?v=34" />
   <link rel="stylesheet" href="./src/navigation-journey.css?v=35" />
+  <link rel="stylesheet" href="./src/opposites-world.css?v=36" />
   <script type="module" src="./src/app.mjs"></script>
   <script type="module" src="./src/site.mjs"></script>
 </head>
@@ -107,7 +108,7 @@
     <main class="site-page" id="site-stages" hidden>
       <button type="button" id="stages-back" class="site-back-link">← Back to worlds</button>
       <div class="portal-heading">
-        <div><div class="portal-kicker">THE LABORATORY FOYER · WORLD 01</div>
+        <div><div class="portal-kicker" id="stages-world-kicker">WORLD 01 · THE BALANCE WORKSHOP</div>
           <h1 tabindex="-1">Choose how to learn</h1>
         </div>
       </div>
@@ -358,7 +359,14 @@
                 <button type="button" data-notebook-key="x" aria-label="Mystery sprite x">x</button>
                 <button type="button" data-notebook-key="backspace" aria-label="Delete last symbol">⌫</button>
               </div>
-              <p id="notebook-operation-tip" class="notebook-operation-tip">For example, choose − then 3 to subtract three weights, or type −3. Choose −x to remove a sprite from each side.</p>
+              <div id="notebook-signed-operations" class="notebook-signed-operations" role="group" aria-label="Signed operations" hidden>
+                <span>Signed objects:</span>
+                <button type="button" data-notebook-insert="+(-1)" aria-label="Add one balloon, negative one">+ (−1)</button>
+                <button type="button" data-notebook-insert="-(-1)" aria-label="Remove one balloon, subtract negative one">− (−1)</button>
+                <button type="button" data-notebook-insert="+(-x)" aria-label="Add one white sprite, negative x">+ (−x)</button>
+                <button type="button" data-notebook-insert="-(-x)" aria-label="Remove one white sprite, subtract negative x">− (−x)</button>
+              </div>
+              <p id="notebook-operation-tip" class="notebook-operation-tip">Choose an operation for both sides, not an answer. You can use signed objects when that world allows them.</p>
               <div class="notebook-operation-preview" aria-label="Automatic equation preview">
                 <div class="notebook-preview-current">
                   <small>Current equation</small>
