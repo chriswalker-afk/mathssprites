@@ -28,8 +28,8 @@ export function markStage3Complete(value,number){
   const clean=normalizeStage3Progress(value);
   if(!isApprenticeUnlocked(number,clean.completed,true))return clean;
   const completed=[...new Set([...clean.completed,Number(number)])].sort((a,b)=>a-b);
-  const next=APPRENTICE_LEVELS.find(slot=>
-    !completed.includes(slot.number)&&isApprenticeUnlocked(slot.number,completed))?.number;
+  // Students may finish levels out of order; continue to the adjacent one.
+  const next=APPRENTICE_LEVELS.find(slot=>slot.number===Number(number)+1)?.number;
   return normalizeStage3Progress({completed,lastPlayed:next||Number(number)});
 }
 
@@ -54,8 +54,7 @@ export function markStage2Complete(value,number) {
   const clean=normalizeStage2Progress(value);
   if (!isIndependentUnlocked(number,clean.completed,true)) return clean;
   const completed = [...new Set([...clean.completed,Number(number)])].sort((a,b)=>a-b);
-  const next = INDEPENDENT_LEVELS.find(slot=>
-    !completed.includes(slot.number) && isIndependentUnlocked(slot.number,completed))?.number;
+  const next = INDEPENDENT_LEVELS.find(slot=>slot.number===Number(number)+1)?.number;
   return normalizeStage2Progress({completed,lastPlayed:next||Number(number)});
 }
 
@@ -80,9 +79,8 @@ export function markWorld1Complete(progress, number) {
   const clean = normalizeProgress(progress);
   if (!isWorld1Unlocked(number, clean.completed, true)) return clean;
   const completed = [...new Set([...clean.completed, Number(number)])].sort((a,b) => a-b);
-  const next = WORLD1_LEVELS.find(slot =>
-    slot.available && !completed.includes(slot.number) &&
-    isWorld1Unlocked(slot.number, completed))?.number;
+  const next = WORLD1_LEVELS.find(slot=>
+    slot.available&&slot.number===Number(number)+1)?.number;
   return normalizeProgress({ completed, lastPlayed: next || Number(number) });
 }
 export function loadTeacherSetting(storage) {
