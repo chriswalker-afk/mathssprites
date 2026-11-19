@@ -507,6 +507,13 @@ function focusBoardSelection(groupId){
 $("site-shell").addEventListener("click", event => {
   const target = event.target.closest("button");
   if (!target || target.disabled) return;
+  if(target.hasAttribute("data-support-return"))
+    return showScreen(supportReturnScreen);
+  if(target.id==="board-continue"){
+    const levelId=target.dataset.levelId;
+    if(levelId)return launch(levelId,selectedStage,selectedWorld);
+    return;
+  }
   if(target.id==="home-choose-level"){
     boardReturnScreen="home";
     return showScreen("levels");
@@ -523,13 +530,21 @@ $("site-shell").addEventListener("click", event => {
     selectedWorld=world.id;
     if(!findCampaignStage(world.id,selectedStage)?.available)
       selectedStage=world.stages.find(stage=>stage.available)?.id||"guided";
-    boardReturnScreen="home";
+    if(currentScreen==="levels"){
+      renderLevels();
+      focusBoardSelection("map-world-tabs");
+      return;
+    }
+    boardReturnScreen=currentScreen==="worlds"?"worlds":"home";
     return showScreen("levels");
   }
   if(target.dataset.mapStage){
     if(!findCampaignStage(selectedWorld,target.dataset.mapStage)?.available)return;
+    if(selectedStage===target.dataset.mapStage)return;
     selectedStage=target.dataset.mapStage;
-    return renderLevels();
+    renderLevels();
+    focusBoardSelection("map-stage-tabs");
+    return;
   }
   if (target.dataset.stageOpen) {
     if(!stageCanOpen(target.dataset.stageOpen))return;
