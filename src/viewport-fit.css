@@ -7,7 +7,7 @@
  * At narrow widths / unusually short heights we preserve normal document
  * scrolling rather than clipping controls, keyboard focus or lesson text.
  */
-@media (min-width:940px) and (min-height:650px) {
+@media (min-width:940px) and (min-height:500px) {
   .site-shell {
     height:100dvh;min-height:0;padding:0 16px 7px;
     display:flex;flex-direction:column;overflow:hidden
@@ -349,14 +349,14 @@
 
 /* Physical props sit at fixed native coordinates, so slightly shorter game
    viewports shift THE WHOLE SCALE up together rather than crop the pedestal. */
-@media (min-width:940px) and (min-height:650px) and (max-height:790px) {
+@media (min-width:940px) and (min-height:500px) and (max-height:790px) {
   .app-shell .rooms-row{top:79px}
   .app-shell .scale-beam{top:426px}
   .app-shell .scale-base{top:459px}
   .app-shell .scene-heading{top:16px}
   .app-shell .hero-art{min-height:0}
 }
-@media (min-width:940px) and (min-height:650px) and (max-height:710px) {
+@media (min-width:940px) and (min-height:500px) and (max-height:710px) {
   .app-shell .rooms-row{top:64px}
   .app-shell .scale-beam{top:410px}
   .app-shell .scale-base{top:443px}
@@ -371,6 +371,159 @@
 
 /* On phones, portrait tablets, tiny windows and substantial browser zoom,
    preserve scroll and the original, well-tested one-column scene. */
-@media (max-width:939px), (max-height:649px) {
+@media (max-width:939px), (max-height:499px) {
   .game-board{display:block}
 }
+
+
+/* PR28 — TRUE small-laptop mode. A physical 1366x768 screen at 125% Windows
+   scaling (plus browser chrome) can have only ~520–580 CSS pixels of height.
+   Treat that viewport as a laptop, not a phone. Native room coordinates remain
+   intact: adjust the chambers, pan and pedestal TOGETHER, never scale #scene. */
+@media (min-width:940px) and (min-height:500px) and (max-height:649px) {
+  .site-shell{padding-bottom:4px}
+  .site-nav{padding:4px 0}
+  .site-nav-links button{padding:5px 7px;min-height:32px;font-size:.74rem}
+  .site-page{padding:4px 0}
+  .site-page .portal-heading{margin:0 0 5px}
+  .site-page .portal-heading h1{font-size:clamp(1.35rem,2.5vw,2rem);line-height:1.05}
+  .site-page .portal-heading p{font-size:.72rem;margin:3px 0 0;line-height:1.24}
+  .site-page .site-back-link{padding:3px 0;font-size:.7rem}
+
+  /* The decorative animation is resized as a whole, unlike the game scene. */
+  #site-home{gap:5px}
+  #site-home .landing-hero{padding:clamp(12px,1.8vw,20px)}
+  #site-home .landing-copy h1{font-size:clamp(1.9rem,3.5vw,2.9rem);margin:6px 0 9px}
+  #site-home .landing-copy p{font-size:.8rem;line-height:1.3}
+  #site-home .landing-actions{margin:10px 0 7px;gap:7px}
+  #site-home .landing-actions button{min-height:35px;padding:6px 9px;font-size:.73rem}
+  #site-home .landing-progress{font-size:.66rem}
+  #site-home .hero-illustration{height:220px}
+  #site-home .hero-scale{transform:scale(.66);transform-origin:center top}
+  #site-home .hero-illustration .art-window{height:195px}
+  #site-home .hero-illustration .hero-shelf{bottom:7px}
+  #site-home .hero-underbar{min-height:32px;padding-top:0}
+  #site-home .hero-scene-caption{font-size:.69rem}
+  #site-home .portal-features{gap:5px}
+  #site-home .portal-feature{min-height:36px;padding:6px 10px;gap:6px}
+  #site-home .portal-feature h3{font-size:.76rem}
+
+  #site-worlds .world-grid{gap:6px}
+  #site-worlds .world-card-body{padding:8px;gap:2px}
+  #site-worlds .world-card-body h3{font-size:1.05rem;margin:0}
+  #site-worlds .world-card-body p{font-size:.67rem;line-height:1.2}
+  #site-worlds .world-card-footer{margin-top:5px;padding-top:4px}
+  #site-worlds .world-card-footer .primary-btn{min-height:32px;padding:5px 8px}
+  #site-worlds .world-symbol{font-size:2.5rem}
+
+  #site-stages{gap:4px}
+  #site-stages .world1-stage-grid{gap:6px}
+  #site-stages .stage-card{padding:8px 9px;gap:4px}
+  #site-stages .stage-top .stage-tag{font-size:.55rem;padding:2px 5px}
+  #site-stages .stage-ornament{height:26px;font-size:1.7rem}
+  #site-stages .stage-card h2{font-size:1.07rem}
+  #site-stages .stage-card p{
+    font-size:.67rem;line-height:1.16;
+    display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden
+  }
+  #site-stages .stage-card .stage-tagline{font-size:.68rem}
+  #site-stages .stage-card-bottom{padding-top:4px;gap:3px}
+  #site-stages .stage-card-bottom .primary-btn{min-height:32px;padding:5px}
+  #site-stages .stage-card-bottom .stage-count{font-size:.6rem}
+  #site-stages .workshop-card{min-height:51px;padding:6px 8px}
+  #site-stages .workshop-glyph{width:29px;height:29px;font-size:1.2rem}
+  #site-stages .workshop-content h2{font-size:1rem;margin:0}
+  #site-stages .workshop-content p{font-size:.64rem;line-height:1.1}
+  #site-stages .workshop-card .primary-btn{min-height:32px;padding:5px 8px}
+
+  #site-levels{gap:3px}
+  #site-levels .portal-heading{margin:0}
+  #site-levels .portal-heading h1{font-size:1.5rem}
+  #site-levels .portal-heading p{font-size:.68rem}
+  #site-levels .landing-progress{font-size:.62rem}
+  #site-levels .world1-progress-panel{padding:4px 8px}
+  #site-levels .world1-progress-labels{font-size:.66rem;margin-bottom:3px}
+  #site-levels .world1-progress-panel progress{height:5px}
+  #site-levels .level-star-legend{font-size:.62rem}
+  #site-levels #level-sections{gap:5px}
+  #level-sections .chapter-group{gap:3px;padding:4px 5px}
+  #level-sections .chapter-group-heading{flex-basis:37px}
+  #level-sections .chapter-badge{width:20px;height:20px;font-size:.65rem}
+  #level-sections .chapter-group-heading h3{font-size:.75rem}
+  #level-sections .chapter-group-heading .chapter-stat{margin-top:2px;font-size:.55rem!important}
+  #level-sections .level-grid{gap:3px}
+  #level-sections .level-tile{padding:2px 4px;gap:0}
+  #level-sections .level-tile .tile-number{font-size:.92rem}
+  #level-sections .level-tile .tile-name{font-size:.65rem}
+  #level-sections .level-tile .tile-stars{font-size:.92rem}
+  #level-sections .level-tile .tile-status{font-size:.55rem}
+  #site-levels .world1-finale{padding:4px 8px}
+  #site-levels .world1-finale .finale-emblem{width:23px;height:23px}
+
+  #site-workshop{gap:4px}
+  #site-workshop .workshop-builder{gap:7px}
+  #site-workshop .workshop-lesson,
+  #site-workshop .workshop-form-card{padding:10px}
+  #site-workshop .workshop-lesson p{font-size:.72rem}
+  #site-workshop .workshop-lesson h2{font-size:1.14rem}
+  #site-workshop .workshop-lesson-example{margin:4px 0;padding:4px}
+
+  .app-shell{padding-bottom:3px}
+  .app-shell .topbar{padding:3px 2px}
+  .app-shell .identity h1{font-size:1.35rem}
+  .app-shell .chapter-strip{padding:2px 3px;gap:4px}
+  .app-shell .chapter-strip h2{font-size:1.2rem}
+  .app-shell > main{gap:4px}
+  .app-shell .game-board{gap:7px;grid-template-columns:minmax(0,1fr) minmax(272px,292px);max-height:none}
+
+  /* A shallower physical scale: every part moves into alignment and the
+     hand still measures positions in native untransformed coordinates. */
+  .app-shell .rooms-row{top:35px}
+  .app-shell .room-roof{height:28px;margin-bottom:-9px}
+  .app-shell .room-interior{height:196px}
+  .app-shell .room-items{bottom:19px;height:123px}
+  .app-shell .room-window{top:40px;height:62px;width:52px}
+  .app-shell .tiny-shelf{display:none}
+  .app-shell .scale-pan{height:21px}
+  .app-shell .scale-beam{top:271px}
+  .app-shell .scale-base{top:303px;height:55px}
+  .app-shell .workbench{height:34px}
+  .app-shell .scene-heading{top:8px}
+  .app-shell .scene-caption{bottom:9px;font-size:.69rem}
+  .app-shell .chapter-status{margin-top:1px}
+
+  /* Prevent controls being clipped: compact rows and keep the action in view.
+     Long explanations may scroll within the tools rail, not the whole page. */
+  .app-shell .mission{padding:5px 8px;gap:3px}
+  .app-shell .mission p{font-size:.73rem;line-height:1.2}
+  .app-shell .feedback{font-size:.66rem;padding-top:3px;line-height:1.2}
+  .app-shell .control-content{padding:5px 8px;gap:4px}
+  .app-shell .control-top{gap:3px}
+  .app-shell .control-top legend{margin-bottom:2px;font-size:.58rem}
+  .app-shell .tool-button{
+    min-height:29px;padding:3px 6px;margin:0 3px 3px 0;font-size:.67rem
+  }
+  .app-shell .tool-button span{font-size:1rem;padding-right:2px}
+  .app-shell .item-button{
+    min-height:29px;padding:3px 5px;margin:0 3px 3px 0;font-size:.67rem
+  }
+  .app-shell .amount-control .control-label{font-size:.58rem}
+  .app-shell .stepper{height:31px;margin-top:2px}
+  .app-shell .control-bottom{gap:4px;padding-top:4px}
+  .app-shell .small-actions .secondary-btn{min-height:30px;padding:4px 2px;font-size:.67rem}
+  .app-shell #do-both{min-height:35px;padding:5px 8px;font-size:.74rem}
+  .app-shell .manual-explanation{font-size:.62rem}
+  .app-shell .apprentice-guide,
+  .app-shell .motion-notice{top:44px}
+  .app-shell .notebook-intro,.app-shell .notebook-paper{padding:8px 11px}
+  .app-shell .notebook-intro h3{font-size:1.25rem;margin:5px 0}
+  .app-shell .notebook-intro p{font-size:.72rem}
+  .app-shell .notebook-paper h4{font-size:1.12rem}
+  .app-shell .notebook-input-row input{min-height:34px}
+  .app-shell .notebook-actions button{min-height:32px;padding:4px 7px}
+  .app-shell .notebook-help{font-size:.6rem}
+}
+
+/* A viewport below 500 CSS pixels cannot reliably show full maths controls,
+   20 selectable levels, feedback and a readable physical scale at once.
+   Keep normal page scrolling rather than cropping important interactions. */
