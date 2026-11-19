@@ -1196,7 +1196,7 @@ legend{margin-bottom:12px;padding:0}
   100%{opacity:1;transform:translateY(0) rotate(0) scale(1)}
 }
 .division-stage .basket-sharing-token{
-  animation:division-share .47s cubic-bezier(.24,.72,.28,1.1) both!important
+  animation:division-share .47s cubic-bezier(.24,.72,.28,1.1) var(--basket-share-delay,0ms) both!important
 }
 @keyframes division-share{
   from{opacity:.86;transform:translate(var(--basket-share-x,0px),var(--basket-share-y,0px)) scale(.76)}
