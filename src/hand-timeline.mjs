@@ -18,7 +18,7 @@ export const HAND_BEATS_REDUCED=Object.freeze({
 });
 
 export function handMotionPlan(action,reducedMotion=false,area=null){
-  if (!["add","remove","multiply","divide","square","sqrt"].includes(action?.op))
+  if (!["add","remove","multiply","divide","square","sqrt","unpack"].includes(action?.op))
     throw new TypeError("Unknown laboratory hand action");
   const placing=["add","multiply","square"].includes(action.op);
   const timing=reducedMotion?HAND_BEATS_REDUCED:HAND_BEATS;
