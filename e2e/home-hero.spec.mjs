@@ -138,15 +138,17 @@ test("OS reduced motion cannot silently disable explicit homepage playback",asyn
   await expect(hero(page)).toHaveAttribute("data-playback","playing");
 });
 
-test("OS reduced motion with game Motion: on still offers explicit Play",async({page})=>{
+test("explicit in-game Motion: on auto-plays even when the OS prefers reduced motion",async({page})=>{
   await page.evaluate(()=>localStorage.setItem("mathssprites.motion-preference.v1","on"));
   await page.emulateMedia({reducedMotion:"reduce"});
   await page.reload();
-  await expect(hero(page)).toHaveAttribute("data-playback","reduced");
-  await expect(page.locator("#hero-playback")).toBeVisible();
-  await page.locator("#hero-playback").click();
   await expect(hero(page)).toHaveAttribute("data-playback","playing");
+  await expect(hero(page)).toHaveAttribute("data-motion-opt-in","true");
+  await expect(page.locator("#hero-playback")).toHaveText("Pause animation");
   await expect(hero(page)).toHaveAttribute("data-balance","right-heavy",{timeout:4000});
+  const cssAnimation=await page.locator("#hero-right-items .hero-arriving").first()
+    .evaluate(el=>getComputedStyle(el).animationName);
+  expect(cssAnimation).toContain("hero-item-land");
 });
 
 test("initial home load and reload do not select or focus the headline",async({page})=>{
