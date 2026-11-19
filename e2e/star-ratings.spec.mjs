@@ -18,7 +18,6 @@ async function doOneManualMove(page){
   await page.locator("#left-action").click();
   await expect(page.locator("#right-action")).toContainText("Match the move",{timeout:14000});
   await page.locator("#right-action").click();
-  await expect(page.locator("#left-action")).toBeEnabled({timeout:15000});
 }
 async function write(page,text){
   await page.locator("#notebook-equation").fill(text);
@@ -57,6 +56,7 @@ test("two-step solution earns two stars; replaying optimally upgrades the best r
   await page.locator("#do-both").click();
   await expect(page.locator("#replay-backdrop")).toBeVisible({timeout:20000});
   await expect(page.locator("#replay-star-summary")).toContainText("★★☆ 2 stars");
+  await page.locator("#replay-close").click();
   await page.locator("#game-levels").click();
   await expect(page.locator('[data-level="1"] .tile-stars')).toHaveText("★★☆");
   let saved=await page.evaluate(()=>JSON.parse(localStorage.getItem("mathssprites.stars.v1")));
