@@ -3,22 +3,59 @@ name: Browser animation QA
 on:
   pull_request:
     branches: [main]
+    types: [opened, synchronize, reopened, labeled]
+  push:
+    branches: [main]
   workflow_dispatch:
+  # Full regression still runs weekly, without delaying ordinary PR reviews.
+  schedule:
+    - cron: "17 2 * * 1"
 
 permissions:
   contents: read
 
-# New commits supersede earlier browser runs for the same PR. This avoids
-# stacking several 3-minute animation suites while a PR is being developed.
+# The newest push replaces any unfinished QA for the same PR.
 concurrency:
   group: browser-qa-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
-# All browser specs run, but distributed across independent runners. Each
-# shard has its own server and browser to keep animation timing reliable.
 jobs:
-  browser-animation:
-    name: Browser animation QA (${{ matrix.shard }}/3)
+  smoke:
+    name: Browser smoke QA
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Cache pinned Playwright npm package
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-mathssprites-pw-npm-1.65.1-v1
+      - name: Install Playwright test
+        run: npm install --no-save --ignore-scripts --no-audit --no-fund --prefer-offline @playwright/test@1.65.1
+      - name: Fast browser checks — navigation, stars, notebook and scene animation
+        run: npx playwright test --grep @smoke --workers=2
+      - name: Keep screenshots and traces on smoke failures
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: maths-sprites-browser-smoke
+          path: |
+            artifacts/
+            test-results/
+          if-no-files-found: ignore
+          retention-days: 7
+
+  # The full multi-minute suite does not block every small PR edit. It runs
+  # after merging to main, on a weekly schedule, by manual dispatch, or when
+  # a PR is explicitly labelled "full-browser-qa".
+  full-browser:
+    name: Full browser regression (${{ matrix.shard }}/3)
+    if: github.event_name != 'pull_request' || contains(github.event.pull_request.labels.*.name, 'full-browser-qa')
     runs-on: ubuntu-latest
     timeout-minutes: 10
     strategy:
@@ -30,9 +67,14 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Install Playwright test (QA-only, not a game dependency)
-        run: npm install --no-save @playwright/test@1.65.1
-      - name: Check animation, levels and hand choreography (shard ${{ matrix.shard }})
+      - name: Cache pinned Playwright npm package
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-mathssprites-pw-npm-1.65.1-v1
+      - name: Install Playwright test
+        run: npm install --no-save --ignore-scripts --no-audit --no-fund --prefer-offline @playwright/test@1.65.1
+      - name: Complete animation, hand and maths regression (shard ${{ matrix.shard }})
         run: npx playwright test --shard=${{ matrix.shard }}/3 --workers=1
       - name: Keep screenshots and traces for design review
         if: always()
