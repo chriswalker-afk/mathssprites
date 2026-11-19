@@ -163,8 +163,8 @@ test("World 1 offers 3 stage cards and a playable, independent Equation Workshop
   await expect(page.locator('[data-stage="guided"]')).toContainText("20");
   await expect(page.locator('[data-stage="independent"]')).toContainText("16");
   await expect(page.locator('[data-stage="notebook"]')).toContainText("12");
-  await expect(page.locator('[data-stage="independent"] button')).toHaveCount(0);
-  await expect(page.locator('[data-stage="notebook"] button')).toHaveCount(0);
+  await expect(page.locator('[data-stage="independent"] button')).toHaveCount(1);
+  await expect(page.locator('[data-stage="notebook"] button')).toHaveCount(1);
   await expect(page.locator("#world1-workshop")).toContainText("Equation Workshop");
   await expect(page.locator("#world1-workshop button")).toHaveCount(1);
   await page.locator("#stages-back").click();
