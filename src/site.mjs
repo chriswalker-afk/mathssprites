@@ -150,7 +150,8 @@ function homeAction() {
     :(record?.completed.includes(destination.levelId)?"Replay ":
       campaignResume?.worldId===destination.worldId?"Continue ":"Start ")+
       stage.title+" · Level "+destination.number+" →";
-  const totals=campaignStarTotals(campaign);
+  // The heading names one world; its completion and stars must use that world.
+  const totals=campaignStarTotals(campaign,{worldId:destination.worldId});
   $("home-progress").textContent=
     (world?.title||"Balance Workshop")+" · "+
     totals.completed+"/"+totals.count+" levels · "+totals.earned+"/"+totals.available+
