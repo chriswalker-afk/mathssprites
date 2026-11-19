@@ -1,4 +1,13 @@
 import { LEVELS } from "./engine.mjs";
+import {
+  CAMPAIGN_REGISTRY,findCampaignWorld,findCampaignStage,findCampaignLevel,
+  nextCampaignLevel,isCampaignPlayable,firstCampaignLevel
+} from "./campaign-registry.mjs";
+import {
+  loadCampaignRecords,saveCampaignRecords,loadCampaignResume,saveCampaignResume,
+  withCampaignLastPlayed,withCampaignCompleted,campaignStageRecord,
+  campaignStars,campaignStarTotals,campaignOptimalMoves,stageResumeLevel
+} from "./campaign-records.mjs";
 import {createWorkshopEquation} from "./equation-workshop.mjs";
 import {createHomeHero} from "./home-hero.mjs";
 import {loadResume,saveResume,resumeDestination,resumeLabel,RESUME_STAGE_NUMBERS} from "./resume.mjs";
@@ -41,12 +50,17 @@ let stage2Progress = loadStage2Progress();
 let stage3Progress = loadStage3Progress();
 let ratings = loadRatings();
 let recent = loadResume();
+let campaign = loadCampaignRecords();
+let campaignResume = loadCampaignResume();
 let teacher = loadTeacherSetting();
 let guideEnabled = readGuideEnabled();
 let currentScreen = "home";
 let playingNumber = null;
 let playingStage = null;
+let playingWorld = null;
+let selectedWorld = "workshop";
 let selectedStage = "guided";
+let boardReturnScreen = "home";
 function stageCanOpen(id) {
   return canOpenWorld1Stage(id,{
     teacher,
@@ -72,25 +86,54 @@ function unlocked(number) {
   return isWorld1Unlocked(number, progress.completed, teacher);
 }
 function homeDestination() {
-  return resumeDestination(recent,progress,stage2Progress,stage3Progress);
+  const fallback=resumeDestination(recent,progress,stage2Progress,stage3Progress);
+  const old=findCampaignLevel("workshop",fallback.stage,fallback.number);
+  const target=campaignResume||{worldId:"workshop",stageId:fallback.stage,levelId:old?.id};
+  const slot=findCampaignLevel(target.worldId,target.stageId,target.levelId)||
+    firstCampaignLevel("workshop","guided");
+  return {worldId:slot.worldId,stageId:slot.stageId,levelId:slot.id,
+    stage:slot.stageId,number:slot.number};
+}
+function renderHomeQuickStages(){
+  const world=findCampaignWorld(selectedWorld) || findCampaignWorld("workshop");
+  const stages=world.stages.filter(stage=>stage.available&&world.available);
+  $("home-stage-shortcuts").innerHTML=stages.map(stage=>{
+    const slot=stageResumeLevel(campaign,world.id,stage.id);
+    const meta=campaignStarTotals(campaign,{worldId:world.id,stageId:stage.id});
+    return '<article class="portal-feature home-quick-feature">'+
+      '<button type="button" class="home-stage-quick" data-home-stage="'+
+        clean(stage.id)+'" data-home-world="'+clean(world.id)+'"'+
+        (!slot?' disabled':'')+
+        ' aria-label="Play '+clean(stage.title)+' from level '+(slot?.number||1)+'">'+
+        '<span class="feature-icon" aria-hidden="true">'+clean(stage.icon||"⚖")+'</span>'+
+        '<span class="home-stage-details"><strong>'+clean(stage.title)+'</strong>'+
+        '<small>Level '+(slot?.number||1)+' · '+meta.completed+'/'+meta.count+' complete</small>'+
+        '</span><span class="quick-arrow" aria-hidden="true">›</span></button></article>';
+  }).join("");
+  $("home-stage-shortcuts").hidden=stages.length===0;
 }
 function homeAction() {
   const destination=homeDestination();
-  const current=destination.stage==="independent"?stage2Progress:
-    destination.stage==="notebook"?stage3Progress:progress;
-  const played=!!recent || progress.completed.length>0 ||
-    stage2Progress.completed.length>0 || stage3Progress.completed.length>0 ||
-    progress.lastPlayed>1 || stage2Progress.lastPlayed>1 || stage3Progress.lastPlayed>1;
-  $("home-play").textContent=resumeLabel(destination,{
-    played,completed:current.completed
-  });
-  const totalCompleted=progress.completed.length+stage2Progress.completed.length+
-    stage3Progress.completed.length;
-  $("home-progress").textContent="Continue from Stage "+
-    RESUME_STAGE_NUMBERS[destination.stage]+" · Level "+destination.number+
-    " · "+totalCompleted+" / 48 levels complete · "+
-    totalEarnedStars(ratings)+" / "+TOTAL_AVAILABLE_STARS+
-    " stars · saved on this browser";
+  const world=findCampaignWorld(destination.worldId);
+  const stage=findCampaignStage(destination.worldId,destination.stageId);
+  const current=destination.worldId==="workshop"
+    ?destination.stage==="independent"?stage2Progress:
+      destination.stage==="notebook"?stage3Progress:progress
+    :null;
+  const record=campaignStageRecord(campaign,destination.worldId,destination.stageId);
+  const played=!!recent || !!campaignResume ||
+    campaignStarTotals(campaign).completed>0 ||
+    progress.lastPlayed>1||stage2Progress.lastPlayed>1||stage3Progress.lastPlayed>1;
+  $("home-play").textContent=destination.worldId==="workshop"
+    ?resumeLabel(destination,{played,completed:current.completed})
+    :(record?.completed.includes(destination.levelId)?"Replay ":"Continue ")+
+      stage.title+" · Level "+destination.number+" →";
+  const totals=campaignStarTotals(campaign);
+  $("home-progress").textContent=
+    (world?.title||"Balance Workshop")+" · "+
+    totals.completed+"/"+totals.count+" levels · "+totals.earned+"/"+totals.available+
+    " stars · saved here";
+  renderHomeQuickStages();
 }
 
 function renderWorlds() {
