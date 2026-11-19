@@ -211,61 +211,91 @@ function renderStages() {
     "All 48 implemented levels are open to students. Teacher tools retain extra previews. "+
     "Other mathematical worlds are under construction.";
 }
+/** One Experiment Board, regardless of world or the number of stages.
+ * World and stage switches update the SAME map rather than opening menus. */
+function renderExperimentBoardControls(){
+  $("map-world-tabs").innerHTML=CAMPAIGN_REGISTRY.map(world=>{
+    const active=world.id===selectedWorld;
+    return '<button type="button" class="map-world-button'+(active?' is-active':'')+
+      '" data-map-world="'+clean(world.id)+'" aria-pressed="'+active+'"'+
+      (world.available?'':' disabled title="In development"')+
+      ' aria-label="'+clean(world.title)+(world.available?'':', in development')+'">'+
+      '<span aria-hidden="true">'+clean(world.icon||"✦")+'</span>'+
+      '<span class="map-world-label">'+clean(world.id==="workshop"?"Balance":
+        world.id==="opposites"?"Opposites":world.id==="fractions"?"Fractions":
+        world.id==="squares"?"Squares":world.title)+'</span></button>';
+  }).join("");
+  const world=findCampaignWorld(selectedWorld);
+  $("map-stage-tabs").innerHTML=world.stages.map(stage=>{
+    const active=stage.id===selectedStage;
+    const count=campaignStageRecord(campaign,world.id,stage.id)?.completed.length||0;
+    const short=stage.id==="guided"?"Guided":stage.id==="independent"?"Independent":
+      stage.id==="notebook"?"Apprentice":stage.title;
+    return '<button type="button" class="map-stage-button'+(active?' is-active':'')+
+      '" data-map-stage="'+clean(stage.id)+'" aria-pressed="'+active+'"'+
+      (stage.available?'':' disabled')+' aria-label="'+clean(stage.title)+
+      ' · '+count+' of '+stage.levels.length+' complete">'+
+      '<span class="map-stage-icon" aria-hidden="true">'+clean(stage.icon||"✦")+
+      '</span><span>'+clean(short)+'</span></button>';
+  }).join("");
+  $("map-world-tabs").setAttribute("aria-label","Choose a mathematical world");
+  $("map-stage-tabs").setAttribute("aria-label","Choose how to learn");
+}
 function renderLevels() {
-  const configs={
-    guided:{title:"Guided Balance",number:1,levels:WORLD1_LEVELS,chapters:WORLD1_CHAPTERS,
-      progress,open:unlocked,emblems:["−","÷","→","⇄","✦"],
-      intro:"Choose the operation. The hand automatically makes the same change to both rooms.",
-      finale:"You've finished 20 guided puzzles. Independent Balance now lets you control each chamber yourself."},
-    independent:{title:"Independent Balance",number:2,levels:INDEPENDENT_LEVELS,
-      chapters:INDEPENDENT_CHAPTERS,progress:stage2Progress,open:independentUnlocked,
-      emblems:["↔","÷","→","✦"],
-      intro:"Make each mathematical move separately in the west and east rooms. The scale tells you when one move is still waiting to be matched.",
-      finale:"You've balanced both chambers yourself in all 16 puzzles. Your next challenge is writing the algebra first."},
-    notebook:{title:"Algebra Apprentice",number:3,levels:APPRENTICE_LEVELS,
-      chapters:APPRENTICE_CHAPTERS,progress:stage3Progress,open:apprenticeUnlocked,
-      emblems:["✎","≡","✦"],
-      intro:"Choose one operation at a time using the maths editor. Each new equation is calculated automatically, then the sprites reenact YOUR method.",
-      finale:"You've solved all twelve equations on paper before seeing the sprites. Bring your own equation to the free-play Equation Workshop whenever you like."}
-  };
-  const cfg=configs[selectedStage];
-  if(!cfg)return;
-  const {levels,chapters,progress:current}=cfg;
-  const total=levels.length,completed=current.completed.length;
-  const nextNumber=levels.find(slot=>slot.available &&
-    !current.completed.includes(slot.number) && cfg.open(slot.number))?.number;
-  $("levels-stage-kicker").textContent="WORLD 01 · STAGE "+cfg.number+" · POSITIVE WHOLE NUMBERS";
-  $("levels-stage-title").textContent=cfg.title;
-  $("levels-stage-intro").textContent=cfg.intro;
-  $("level-progress").textContent=completed+" / "+total+" experiments complete · "+
-    totalEarnedStars(ratings,selectedStage)+" / "+(total*3)+" stars earned";
-  $("world1-progress-description").textContent="Stage "+cfg.number+" · "+cfg.title;
-  $("world1-progress-bar").max=total;
+  let world=findCampaignWorld(selectedWorld);
+  if(!world?.available)world=CAMPAIGN_REGISTRY.find(w=>w.available);
+  if(!world)return;
+  selectedWorld=world.id;
+  let stage=findCampaignStage(world.id,selectedStage);
+  if(!stage?.available)stage=world.stages.find(s=>s.available);
+  if(!stage)return;
+  selectedStage=stage.id;
+  renderExperimentBoardControls();
+  const levels=stage.levels,chapters=stage.chapters;
+  const current=campaignStageRecord(campaign,world.id,stage.id);
+  const total=levels.filter(x=>x.available).length,completed=current.completed.length;
+  const next=levels.find(slot=>slot.available&&!current.completed.includes(slot.id));
+  const stageStars=campaignStarTotals(campaign,{worldId:world.id,stageId:stage.id});
+  $("site-levels").dataset.mapWorld=world.id;
+  $("site-levels").dataset.mapStage=stage.id;
+  $("levels-stage-kicker").textContent="WORLD "+String(world.number).padStart(2,"0")+
+    " · "+world.subtitle;
+  $("levels-stage-title").textContent=stage.title;
+  $("levels-stage-intro").textContent=stage.intro||stage.tagline||
+    "Choose an experiment to play.";
+  $("level-progress").textContent=completed+" / "+total+" experiments · "+
+    stageStars.earned+" / "+stageStars.available+" stars earned";
+  $("world1-progress-description").textContent=world.title+" · "+stage.title;
+  $("world1-progress-bar").max=total||1;
   $("world1-progress-bar").value=completed;
   $("world1-progress-number").textContent=completed+" of "+total+" complete";
-  $("world1-finale").hidden=completed!==total;
-  $("world1-finale").setAttribute("aria-label","Stage "+cfg.number+" completed");
-  $("stage-finale-kicker").textContent="STAGE "+cfg.number+" COMPLETE";
-  $("stage-finale-title").textContent=cfg.title+" mastered!";
-  $("stage-finale-message").textContent=cfg.finale;
-  $("level-sections").innerHTML=chapters.map((chapter,index)=>{
-    const slots=levels.slice(index*4,index*4+4);
-    const finished=slots.filter(slot=>current.completed.includes(slot.number)).length;
+  $("world1-finale").hidden=completed!==total||total===0;
+  $("world1-finale").setAttribute("aria-label",stage.title+" completed");
+  $("stage-finale-kicker").textContent="STAGE "+stage.number+" COMPLETE";
+  $("stage-finale-title").textContent=stage.title+" mastered!";
+  $("stage-finale-message").textContent=stage.finale||"You completed all experiments in this stage.";
+  const sections=$("level-sections");
+  sections.style.setProperty("--map-cols",String(Math.min(chapters.length,5)));
+  sections.innerHTML=chapters.map((chapter,index)=>{
+    const slots=levels.filter(slot=>slot.chapterIndex===index);
+    const finished=slots.filter(slot=>current.completed.includes(slot.id)).length;
     const cards=slots.map(slot=>{
-      const done=current.completed.includes(slot.number);
-      const open=cfg.open(slot.number);
-      const next=slot.number===nextNumber;
+      const done=current.completed.includes(slot.id);
+      const open=isCampaignPlayable(world.id,stage.id,slot.id);
+      const highlighted=slot.id===next?.id;
       const tag=done?"Completed":open?"Ready to play":"Locked";
       const status=done?"complete":open?"ready":"locked";
-      const rating=ratingForLevel(ratings,selectedStage,slot.number);
-      const best=bestMoves(ratings,selectedStage,slot.number);
-      const ratingLabel=rating
-        ?rating+" of 3 stars, best "+best+" "+(best===1?"move":"moves")
-        :done?"Previously completed, replay to earn stars":"Not rated yet";
+      const rating=campaignStars(campaign,world.id,stage.id,slot.id);
+      const best=current.bestMoves[slot.id];
+      const ratingLabel=rating?rating+" of 3 stars, best "+best+" "+
+        (best===1?"move":"moves"):done?"Previously completed, replay to earn stars":
+        "Not rated yet";
       return '<button type="button" class="level-tile status-'+status+
-        (next?' level-next':'')+'" data-level="'+slot.number+'"'+(open?"":" disabled")+
-        (next?' aria-current="step"':'')+
-        ' aria-label="Stage '+cfg.number+' Level '+slot.number+': '+clean(slot.title)+'. '+tag+'. '+ratingLabel+'">'+
+        (highlighted?' level-next':'')+'" data-level="'+slot.number+
+        '" data-level-id="'+clean(slot.id)+'"'+(open?"":" disabled")+
+        (highlighted?' aria-current="step"':'')+
+        ' aria-label="'+clean(world.title)+', '+clean(stage.title)+
+        ', Level '+slot.number+': '+clean(slot.title)+'. '+tag+'. '+ratingLabel+'">'+
         '<span class="tile-number">'+String(slot.number).padStart(2,"0")+'</span>'+
         '<span class="tile-name">'+clean(slot.title)+'</span>'+
         '<span class="tile-stars" data-stars="'+rating+'" aria-hidden="true">'+starGlyphs(rating)+'</span>'+
@@ -273,19 +303,23 @@ function renderLevels() {
           (done&&!rating?"Completed · replay for stars":tag)+'</span></button>';
     }).join("");
     return '<section class="chapter-group chapter-theme-'+(index+1)+
-      (finished===4?' chapter-complete':'')+
-      '" aria-label="Stage '+cfg.number+' Chapter '+(index+1)+': '+clean(chapter.title)+'">'+
+      (slots.length>0&&finished===slots.length?' chapter-complete':'')+
+      '" style="--map-rows:'+Math.max(1,slots.length)+'"'+
+      ' aria-label="'+clean(world.title)+', '+clean(stage.title)+
+      ', chapter '+(index+1)+': '+clean(chapter.title)+'">'+
       '<div class="chapter-group-heading">'+
       '<div class="chapter-intro"><span class="chapter-badge">'+
       String(index+1).padStart(2,"0")+'</span><div><h3>'+clean(chapter.title)+
-      '</h3><p>'+clean(chapter.description)+'</p>'+
-      '<p class="chapter-stat">'+(finished===4?"CHAPTER MASTERED":finished+" of 4 experiments complete")+
+      '</h3><p>'+clean(chapter.description||"")+'</p>'+
+      '<p class="chapter-stat">'+(slots.length>0&&finished===slots.length?
+        "CHAPTER MASTERED":finished+" of "+slots.length+" experiments complete")+
       '</p></div></div><div class="chapter-illustration" aria-hidden="true">'+
-      cfg.emblems[index]+'</div></div><div class="level-grid">'+cards+'</div></section>';
+      clean(stage.emblems?.[index]||"✦")+'</div></div><div class="level-grid">'+cards+
+      '</div></section>';
   }).join("");
   $("teacher-note").hidden=!teacher;
-  $("teacher-note").textContent="All "+total+" puzzles in Stage "+cfg.number+
-    " are available to students. Teacher tools provide additional previews.";
+  $("teacher-note").textContent="All "+total+" puzzles in "+stage.title+
+    " are available. Teacher previews are separate from student progress.";
 }
 function renderSettings() {
   $("teacher-unlock").checked = teacher;
