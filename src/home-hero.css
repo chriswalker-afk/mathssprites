@@ -166,13 +166,23 @@
 .hero-playback:hover{background:#30453f;border-color:#d7bc8b}
 .hero-playback:focus-visible{outline:3px solid var(--focus);outline-offset:3px}
 .hero-arriving{
-  animation:hero-item-land .31s cubic-bezier(.17,.81,.25,1.05) both;
+  animation:hero-item-land var(--hero-flight,.57s) cubic-bezier(.14,.72,.32,1.16) both;
 }
 @keyframes hero-item-land{
-  0%{opacity:0;transform:translateY(-44px) scale(.82)}
-  68%{opacity:1;transform:translateY(3px) scale(1.05,.91)}
-  100%{opacity:1;transform:translateY(0) scale(1)}
+  0%{opacity:0;transform:translate(var(--hero-drop-x,0px),-125px) rotate(-13deg) scale(.69)}
+  58%{opacity:1;transform:translate(0,9px) rotate(6deg) scale(1.13,.80)}
+  76%{transform:translate(0,-7px) rotate(-3deg) scale(.94,1.05)}
+  90%{transform:translate(0,3px) rotate(1deg) scale(1.03,.96)}
+  100%{opacity:1;transform:translate(0,0) rotate(0) scale(1)}
 }
+@keyframes hero-pan-bounce{
+  0%,100%{margin-top:0}
+  24%{margin-top:5px}
+  54%{margin-top:-4px}
+  76%{margin-top:2px}
+}
+.hero-pan-impact{animation:hero-pan-bounce .45s cubic-bezier(.2,.7,.3,1)}
+.hero-is-paused .hero-pan-impact{animation-play-state:paused}
 .hero-changing .hero-items{opacity:0;transform:translateY(9px)}
 .hero-is-paused .hero-arriving{animation-play-state:paused}
 .hero-is-paused.hero-changing .hero-items{transition:none}
@@ -204,9 +214,28 @@
  .hero-scene-caption{flex-basis:100%;text-align:center}
  .hero-playback{width:100%}
 }
+/* Reduce motion automatically, but allow a user who explicitly presses
+   Play to override just this decoration. This is particularly important on
+   shared computers that have reduced motion configured at OS level. */
 @media(prefers-reduced-motion:reduce){
- .hero-arriving{animation:none!important}
+ .hero-arriving,.hero-pan-impact{animation:none!important}
  .hero-items{transition:none!important}
 }
-.reduce-motion .hero-arriving{animation:none!important}
+.reduce-motion .hero-arriving,.reduce-motion .hero-pan-impact{animation:none!important}
 .reduce-motion .hero-items{transition:none!important}
+.hero-art[data-motion-opt-in="true"] .hero-arriving{
+ animation:hero-item-land var(--hero-flight,.57s) cubic-bezier(.14,.72,.32,1.16) both!important;
+}
+.hero-art[data-motion-opt-in="true"] .hero-pan-impact{
+ animation:hero-pan-bounce .45s cubic-bezier(.2,.7,.3,1)!important;
+}
+.hero-art[data-motion-opt-in="true"] .hero-is-paused .hero-arriving,
+.hero-art[data-motion-opt-in="true"] .hero-is-paused .hero-pan-impact{
+ animation-play-state:paused!important;
+}
+.hero-motion-note{
+ flex:1 1 100%;font-size:.74rem;line-height:1.45;color:#edd8af;
+ text-align:center;background:#263a36a8;border:1px solid #bfa0715c;
+ padding:9px 12px;border-radius:8px;
+}
+.hero-underbar:has(.hero-motion-note:not([hidden])){min-height:78px}

@@ -16,16 +16,29 @@ export class HomeHeroAnimator{
     this.figure=root.querySelector(".hero-illustration");
     this.caption=root.querySelector("#hero-scene-caption");
     this.button=root.querySelector("#hero-playback");
+    this.motionNote=root.querySelector("#hero-motion-note");
     this.items={
       left:root.querySelector("#hero-left-items"),
       right:root.querySelector("#hero-right-items")
     };
-    if(!this.figure||!this.caption||!this.button||!this.items.left||!this.items.right)
+    if(!this.figure||!this.caption||!this.button||!this.motionNote||
+       !this.items.left||!this.items.right)
       throw new Error("Home hero illustration markup is incomplete.");
     this.media=window.matchMedia("(prefers-reduced-motion: reduce)");
+    // A deliberate in-game 'Motion: on' is an explicit opt-in. It must
+    // override an OS reduced-motion default on school-managed devices.
+    // With no explicit choice, honour the OS setting and offer Play.
+    try{
+      this.gameMotionChoice=window.localStorage.getItem("mathssprites.motion-preference.v1");
+    }catch{
+      this.gameMotionChoice=null;
+    }
     this.motionOverride=document.body.classList.contains("reduce-motion");
     this.active=false;
     this.userPaused=false;
+    // Explicit Play remains available even when the device or game setting
+    // prefers less motion. Never auto-play against that preference.
+    this.manualPlay=false;
     this.started=false;
     this.frameId=0;
     this.lastTime=null;
@@ -42,8 +55,13 @@ export class HomeHeroAnimator{
     this.onPageVisibility=()=>this.syncPlayback();
     this.onMedia=()=>this.updateMotion();
     this.onButton=()=>{
-      if(this.isReduced())return;
-      this.userPaused=!this.userPaused;
+      if(this.isReduced()&&!this.manualPlay){
+        this.manualPlay=true;
+        this.userPaused=false;
+        this.beginSequence();
+      }else{
+        this.userPaused=!this.userPaused;
+      }
       this.syncPlayback();
     };
     document.addEventListener("visibilitychange",this.onPageVisibility);
@@ -53,15 +71,24 @@ export class HomeHeroAnimator{
     this.syncPlayback();
   }
   isReduced(){
-    return this.motionOverride||this.media.matches;
+    return this.motionOverride||
+      (this.media.matches&&this.gameMotionChoice!=="on");
   }
   /** Called for the app's persistent Motion setting, not local hero storage. */
   setMotionOverride(reduced){
-    const was=this.isReduced();
+    const choice=reduced?"reduced":"on";
+    if(this.motionOverride===!!reduced&&this.gameMotionChoice===choice)return;
     this.motionOverride=!!reduced;
-    if(was!==this.isReduced())this.updateMotion();
+    this.gameMotionChoice=choice;
+    this.manualPlay=false;
+    this.userPaused=false;
+    this.updateMotion();
   }
   updateMotion(){
+    // A changed accessibility setting restores the safe default, while the
+    // Play control still lets the user explicitly opt in on this page.
+    this.manualPlay=false;
+    this.userPaused=false;
     if(this.isReduced()){
       this.cancelFrame();
       this.showStatic();
@@ -81,14 +108,29 @@ export class HomeHeroAnimator{
     this.frameId=0;
     this.lastTime=null;
   }
+  isStaticPreference(){
+    return this.isReduced()&&!this.manualPlay;
+  }
   canAnimate(){
-    return this.active&&!this.userPaused&&!this.isReduced()&&!document.hidden;
+    return this.active&&!this.userPaused&&!this.isStaticPreference()&&!document.hidden;
   }
   syncPlayback(){
-    const reduced=this.isReduced();
-    this.button.hidden=reduced;
-    this.button.textContent=this.userPaused?"Play animation":"Pause animation";
+    const reduced=this.isStaticPreference();
+    this.root.dataset.manualPlay=String(this.manualPlay);
+    this.root.dataset.motionOptIn=String(this.manualPlay||this.gameMotionChoice==="on");
+    // The former implementation HID Play whenever animations were reduced.
+    // On a school device with a saved preference, the hero was permanently
+    // static with no visible explanation or way to start it.
+    this.button.hidden=false;
+    this.button.textContent=(reduced||this.userPaused)
+      ?"Play animation":"Pause animation";
     this.button.setAttribute("aria-pressed",String(this.userPaused));
+    this.motionNote.hidden=!reduced;
+    if(reduced){
+      this.motionNote.textContent=this.motionOverride
+        ?"Motion is reduced in Settings. Choose Play animation to watch the scale."
+        :"Your device prefers reduced motion. Choose Play animation to watch the scale.";
+    }
     this.root.dataset.playback=reduced?"reduced":this.userPaused?"paused":
       this.canAnimate()?"playing":"inactive";
     this.figure.classList.toggle("hero-is-paused",!this.canAnimate());
@@ -111,12 +153,16 @@ export class HomeHeroAnimator{
     this.root.dataset.rightMass=String(right);
     this.root.dataset.balance=left===right?"level":left>right?"left-heavy":"right-heavy";
   }
-  createItem(kind,animated=false){
+  createItem(kind,animated=false,drift=0){
     const item=document.createElement("span");
     item.className="hero-item "+(kind==="sprite"?"hero-creature":"hero-weight")+
       (animated?" hero-arriving":"");
     item.dataset.kind=kind;
     item.setAttribute("aria-hidden","true");
+    if(animated){
+      item.style.setProperty("--hero-drop-x",drift+"px");
+      item.style.setProperty("--hero-flight",HERO_LANDING_MS+"ms");
+    }
     if(kind==="sprite"){
       const eyes=document.createElement("span");
       eyes.className="hero-eyes";
@@ -129,8 +175,8 @@ export class HomeHeroAnimator{
     }
     return item;
   }
-  putItem(side,kind,animated=false){
-    this.items[side].appendChild(this.createItem(kind,animated));
+  putItem(side,kind,animated=false,drift=0){
+    this.items[side].appendChild(this.createItem(kind,animated,drift));
   }
   clearItems(){
     this.items.left.replaceChildren();
@@ -152,7 +198,7 @@ export class HomeHeroAnimator{
     this.velocity=0;
     this.root.dataset.scene="still";
     this.root.dataset.phase="still";
-    this.caption.textContent="One mysterious sprite. Three brass weights. A perfect balance.";
+    this.caption.textContent="What could make the two sides balance?";
   }
   beginSequence(){
     this.cancelFrame();
@@ -175,7 +221,7 @@ export class HomeHeroAnimator{
     this.caption.textContent=scene.caption;
   }
   emit(step){
-    this.putItem(step.side,step.kind,true);
+    this.putItem(step.side,step.kind,true,step.drift);
     // Do not change the mass until the new object has actually landed.
     this.pending.push({side:step.side,kind:step.kind,remaining:HERO_LANDING_MS});
   }
@@ -186,14 +232,30 @@ export class HomeHeroAnimator{
     if(!ready.length)return;
     for(const landing of ready)this.counts[landing.side][landing.kind]++;
     this.setMassAndBalance();
+    // Small pan bounce is synced with the actual landing, not the scheduled
+    // appearance of a sprite still falling through the air.
+    for(const side of new Set(ready.map(landing=>landing.side))){
+      const pan=this.root.querySelector(".hero-hanger-"+side+" .hero-pan");
+      pan.classList.remove("hero-pan-impact");
+      void pan.offsetWidth;
+      pan.classList.add("hero-pan-impact");
+    }
   }
   nextBeat(){
     const scene=HERO_SCENES[this.sceneIndex];
     if(this.phase==="steps"){
       if(this.stepIndex<scene.steps.length){
-        this.emit(scene.steps[this.stepIndex++]);
-        this.wait=HERO_STEP_MS;
+        const step=scene.steps[this.stepIndex++];
+        this.emit(step);
+        this.wait=step.gapMs??HERO_STEP_MS;
       }else{
+        // "Hold" means the FINAL object has landed and the real beam has
+        // settled, not merely that the last throw has been scheduled.
+        if(this.pending.length || Math.abs(this.angle-this.target)>.18 ||
+           Math.abs(this.velocity)>.16){
+          this.wait=95;
+          return;
+        }
         this.phase="hold";
         this.root.dataset.phase="hold";
         this.wait=HERO_HOLD_MS;

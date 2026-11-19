@@ -243,7 +243,7 @@ function renderSettings() {
   $("site-motion").textContent = motion === "Motion: reduced"
     ? "Turn animations on" : "Use reduced motion";
 }
-function showScreen(name) {
+function showScreen(name,{focusHeading=true}={}) {
   if (!screenNames.includes(name)) return;
   if(currentScreen==="notebook-preview" || playingStage==="notebook")
     window.dispatchEvent(new Event("mathssprites:notebook-close"));
@@ -265,7 +265,9 @@ function showScreen(name) {
   if (name === "workshop") $("workshop-equation").focus({preventScroll:true});
   homeHero.setActive(name==="home");
   const heading = $("site-" + name).querySelector("h1, h2");
-  if (heading) heading.focus({preventScroll:true});
+  // The initial home page must not show a focus ring around its headline.
+  // Focus headings for actual navigation transitions where they orient users.
+  if (heading && focusHeading) heading.focus({preventScroll:true});
   window.scrollTo?.(0,0);
 }
 function launch(number,stage=selectedStage) {
@@ -478,5 +480,5 @@ if(workshopDraft!==null){
   const index = Math.max(0, LEVELS.findIndex(level => level.id === preview));
   window.dispatchEvent(new CustomEvent("mathssprites:preview", { detail:{ index } }));
 } else {
-  showScreen("home");
+  showScreen("home",{focusHeading:false});
 }

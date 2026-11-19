@@ -88,25 +88,78 @@ test("pause freezes the current scene and resume continues without duplicating a
   expect(await counts(page)).toEqual({leftSprites:1,leftWeights:0,rightSprites:0,rightWeights:3});
 });
 
-test("settings and OS reduced-motion modes present a stationary accessible illustration",async({page})=>{
+test("game reduced-motion setting starts safely but keeps explicit Play available",async({page})=>{
   await page.locator('[data-screen="settings"]').first().click();
   await page.locator("#site-motion").click();
   await page.locator('[data-screen="home"]').first().click();
   await expect(hero(page)).toHaveAttribute("data-playback","reduced");
   await expect(hero(page)).toHaveAttribute("data-scene","still");
-  await expect(page.locator("#hero-playback")).toBeHidden();
+  await expect(page.locator("#hero-playback")).toBeVisible();
+  await expect(page.locator("#hero-playback")).toHaveText("Play animation");
+  await expect(page.locator("#hero-motion-note")).toContainText("Motion is reduced in Settings");
   expect(await counts(page)).toEqual({leftSprites:1,leftWeights:0,rightSprites:0,rightWeights:3});
+  await page.locator("#hero-playback").click();
+  await expect(hero(page)).toHaveAttribute("data-playback","playing");
+  await expect(hero(page)).toHaveAttribute("data-manual-play","true");
+  await expect(page.locator("#hero-motion-note")).toBeHidden();
+  await expect(hero(page)).toHaveAttribute("data-balance","right-heavy",{timeout:4000});
+  // Explicit Play must restore the actual CSS falling animation, not just
+  // the Javascript beam, even while body.reduce-motion is still present.
+  const animation=await page.locator("#hero-right-items .hero-arriving").first()
+    .evaluate(el=>getComputedStyle(el).animationName);
+  expect(animation).toContain("hero-item-land");
   await page.reload();
   await expect(hero(page)).toHaveAttribute("data-playback","reduced");
+  await expect(page.locator("#hero-playback")).toBeVisible();
   await page.locator('[data-screen="settings"]').first().click();
   await page.locator("#site-motion").click();
   await page.locator('[data-screen="home"]').first().click();
   await expect(hero(page)).toHaveAttribute("data-playback","playing");
+});
+
+test("OS reduced motion cannot silently disable explicit homepage playback",async({page})=>{
+  // Emulate the preference BEFORE the application's motion controller loads.
+  // This reproduces a school device that boots with reduced motion active.
   await page.emulateMedia({reducedMotion:"reduce"});
+  await page.reload();
   await expect(hero(page)).toHaveAttribute("data-playback","reduced");
-  await expect(hero(page)).toHaveAttribute("data-scene","still");
+  await expect(page.locator("#hero-motion-note")).toContainText("Your device prefers reduced motion");
+  await expect(page.locator("#hero-playback")).toBeVisible();
+  // Changing the *game's* preference alone must not be needed to unfreeze
+  // the hero: the user can choose Play while OS reduced-motion remains on.
+  await page.locator("#hero-playback").click();
+  await expect(hero(page)).toHaveAttribute("data-playback","playing");
+  await expect(hero(page)).toHaveAttribute("data-balance","right-heavy",{timeout:4000});
+  const cssAnimation=await page.locator("#hero-right-items .hero-arriving").first()
+    .evaluate(el=>getComputedStyle(el).animationName);
+  expect(cssAnimation).toContain("hero-item-land");
+  await page.locator("#hero-playback").click();
+  await expect(hero(page)).toHaveAttribute("data-playback","paused");
+  await page.locator("#hero-playback").click();
+  await expect(hero(page)).toHaveAttribute("data-playback","playing");
   await page.emulateMedia({reducedMotion:"no-preference"});
   await expect(hero(page)).toHaveAttribute("data-playback","playing");
+});
+
+test("explicit in-game Motion: on auto-plays even when the OS prefers reduced motion",async({page})=>{
+  await page.evaluate(()=>localStorage.setItem("mathssprites.motion-preference.v1","on"));
+  await page.emulateMedia({reducedMotion:"reduce"});
+  await page.reload();
+  await expect(hero(page)).toHaveAttribute("data-playback","playing");
+  await expect(hero(page)).toHaveAttribute("data-motion-opt-in","true");
+  await expect(page.locator("#hero-playback")).toHaveText("Pause animation");
+  await expect(hero(page)).toHaveAttribute("data-balance","right-heavy",{timeout:4000});
+  const cssAnimation=await page.locator("#hero-right-items .hero-arriving").first()
+    .evaluate(el=>getComputedStyle(el).animationName);
+  expect(cssAnimation).toContain("hero-item-land");
+});
+
+test("initial home load and reload do not select or focus the headline",async({page})=>{
+  await expect(page.locator("#home-title")).not.toBeFocused();
+  await page.reload();
+  await expect(page.locator("#home-title")).not.toBeFocused();
+  await expect(page.locator("#home-title")).toBeVisible();
+  await expect(page.locator("#hero-playback")).toBeVisible();
 });
 
 test("navigation stops the loop and preserves home continuation/progress",async({page})=>{

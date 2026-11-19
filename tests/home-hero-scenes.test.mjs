@@ -56,10 +56,16 @@ test("landing, beats, holds and transitions form a brief legible looping show",(
  const totalBeats=HERO_SCENES.reduce((s,scene)=>s+scene.steps.length,0);
  assert.equal(totalBeats,24);
  assert.ok(HERO_LANDING_MS>100);
- assert.ok(HERO_LANDING_MS<HERO_STEP_MS);
+ assert.ok(HERO_LANDING_MS>HERO_STEP_MS,
+   "Allow several objects to be airborne together for playful movement");
  assert.ok(HERO_HOLD_MS>=950);
  assert.ok(HERO_CHANGE_MS>=450);
- const estimate=totalBeats*HERO_STEP_MS+
+ const gaps=HERO_SCENES.flatMap(scene=>scene.steps.map(step=>step.gapMs));
+ assert.ok(gaps.every(gap=>gap>=190&&gap<=850));
+ assert.ok(new Set(gaps).size>12,"Drops must not arrive in a metronomic pattern");
+ assert.ok(HERO_SCENES.some(scene=>scene.steps.some(step=>Math.abs(step.drift)>=10)),
+   "Some objects should enter off-axis");
+ const estimate=gaps.reduce((sum,gap)=>sum+gap,0)+
    HERO_HOLD_MS*HERO_SCENES.length+HERO_CHANGE_MS*3+200+3*140;
  assert.ok(estimate>17000&&estimate<24000,"target a roughly 18–22s loop");
 });
