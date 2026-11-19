@@ -34,7 +34,7 @@ PR32 delivers **Home → Experiment Board → Level** (two clicks), or **Home �
 }
 ```
 
-These IDs are stable. A level is identified by **world ID + stage ID + level ID**, never by the display number alone. A world can have a different number of stages, chapters, and levels. Valid entries are checked for unique IDs and matching chapters. Available means **implemented playable content**, not a progression lock. The signed/fraction/square mechanics are NOT magically enabled by a menu; until the correct levels and mathematical engine capabilities are supplied those world entries have no stages and stay disabled. The second world in unit tests is **test-only**, never shown as public playable content.
+These IDs are stable. Chapters must have explicit permanent IDs (not generated from their display names). Optimal-move benchmarks are normalized by level ID, so renaming chapters or reordering levels cannot change which star target belongs to a puzzle. A level is identified by **world ID + stage ID + level ID**, never by the display number alone. A world can have a different number of stages, chapters, and levels. Valid entries are checked for unique IDs and matching chapters. Available means **implemented playable content**, not a progression lock. The signed/fraction/square mechanics are NOT magically enabled by a menu; until the correct levels and mathematical engine capabilities are supplied those world entries have no stages and stay disabled. The second world in unit tests is **test-only**, never shown as public playable content.
 
 `src/site.mjs` looks up levels, game modes and navigation from the registry. Adding another world is configuration plus real puzzles/engine capabilities, not another hardcoded menu branch.
 
