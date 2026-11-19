@@ -492,6 +492,18 @@ $("workshop-equation").addEventListener("input",()=>{
 });
 window.addEventListener("mathssprites:workshop-another",()=>showScreen("workshop"));
 
+function announceBoardSelection(){
+  const world=findCampaignWorld(selectedWorld);
+  const stage=findCampaignStage(selectedWorld,selectedStage);
+  if(!world||!stage)return;
+  const totals=campaignStarTotals(campaign,{worldId:world.id,stageId:stage.id});
+  $("board-selection-status").textContent=world.title+", "+stage.title+
+    ". "+totals.completed+" of "+totals.count+" levels complete.";
+}
+function focusBoardSelection(groupId){
+  $(groupId).querySelector('button[aria-pressed="true"]')?.focus({preventScroll:true});
+  announceBoardSelection();
+}
 $("site-shell").addEventListener("click", event => {
   const target = event.target.closest("button");
   if (!target || target.disabled) return;
