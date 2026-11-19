@@ -26,6 +26,8 @@ test("home leads with the exact question and a functional animation control",asy
 
 test("physical beam lowers the heavier pan and settles level",async({page})=>{
   await expect(hero(page)).toHaveAttribute("data-balance","left-heavy",{timeout:4500});
+  await page.waitForFunction(()=>parseFloat(getComputedStyle(
+    document.querySelector(".hero-illustration")).getPropertyValue("--hero-angle"))<-.5);
   const leftHeavy=await page.evaluate(()=>{
     const left=document.querySelector(".hero-hanger-left .hero-pan").getBoundingClientRect();
     const right=document.querySelector(".hero-hanger-right .hero-pan").getBoundingClientRect();
