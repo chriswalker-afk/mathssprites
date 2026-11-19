@@ -101,14 +101,20 @@ function unlocked(number) {
 function homeDestination() {
   const fallback=resumeDestination(recent,progress,stage2Progress,stage3Progress);
   const old=findCampaignLevel("workshop",fallback.stage,fallback.number);
-  const target=campaignResume||{worldId:"workshop",stageId:fallback.stage,levelId:old?.id};
+  const selected=findCampaignWorld(selectedWorld);
+  const fresh=selected?.available&&selected.id!=="workshop"
+    ?firstCampaignLevel(selected.id,selected.stages[0]?.id):null;
+  const target=campaignResume||
+    (fresh?{worldId:selected.id,stageId:fresh.stageId,levelId:fresh.id}:
+      {worldId:"workshop",stageId:fallback.stage,levelId:old?.id});
   const slot=findCampaignLevel(target.worldId,target.stageId,target.levelId)||
     firstCampaignLevel("workshop","guided");
   return {worldId:slot.worldId,stageId:slot.stageId,levelId:slot.id,
     stage:slot.stageId,number:slot.number};
 }
 function renderHomeQuickStages(){
-  const world=findCampaignWorld(selectedWorld) || findCampaignWorld("workshop");
+  const world=findCampaignWorld(selectedWorld)?.available
+    ?findCampaignWorld(selectedWorld):findCampaignWorld("workshop");
   const stages=world.stages.filter(stage=>stage.available&&world.available);
   $("home-stage-shortcuts").innerHTML=stages.map(stage=>{
     const slot=stageResumeLevel(campaign,world.id,stage.id);
@@ -140,7 +146,8 @@ function homeAction() {
     progress.lastPlayed>1||stage2Progress.lastPlayed>1||stage3Progress.lastPlayed>1;
   $("home-play").textContent=destination.worldId==="workshop"
     ?resumeLabel(destination,{played,completed:current.completed})
-    :(record?.completed.includes(destination.levelId)?"Replay ":"Continue ")+
+    :(record?.completed.includes(destination.levelId)?"Replay ":
+      campaignResume?.worldId===destination.worldId?"Continue ":"Start ")+
       stage.title+" · Level "+destination.number+" →";
   const totals=campaignStarTotals(campaign);
   $("home-progress").textContent=
@@ -516,6 +523,12 @@ $("site-shell").addEventListener("click", event => {
     boardReturnScreen="home";
     return showScreen("levels");
   }
+  if(target.dataset.worldStages){
+    const world=findCampaignWorld(target.dataset.worldStages);
+    if(!world?.available)return;
+    selectedWorld=world.id;
+    return showScreen("stages");
+  }
   if(target.dataset.homeStage){
     const worldId=target.dataset.homeWorld;
     const slot=stageResumeLevel(campaign,worldId,target.dataset.homeStage);
@@ -545,9 +558,9 @@ $("site-shell").addEventListener("click", event => {
     return;
   }
   if (target.dataset.stageOpen) {
-    if(!stageCanOpen(target.dataset.stageOpen))return;
-    selectedWorld="workshop"; // World 1 stage gallery is retained for discovery.
-    selectedStage=target.dataset.stageOpen;
+    const stage=findCampaignStage(selectedWorld,target.dataset.stageOpen);
+    if(!findCampaignWorld(selectedWorld)?.available||!stage?.available)return;
+    selectedStage=stage.id;
     boardReturnScreen="stages";
     return showScreen("levels");
   }
