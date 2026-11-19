@@ -13,7 +13,9 @@ test.beforeEach(async({page})=>{
   await page.goto("/");
 });
 const dimensions=[
+ {width:2048,height:1252,name:"large-tall-2048"},
  {width:1920,height:1080,name:"wide-1920"},
+ {width:1200,height:1252,name:"tall-window-1200"},
  {width:1440,height:900,name:"desktop-1440"},
  {width:1120,height:900,name:"tall-laptop-1120"},
  {width:1024,height:900,name:"tall-narrow-1024"},
