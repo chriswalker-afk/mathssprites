@@ -196,7 +196,7 @@ for(const size of scaledLaptopViews){
     await inView(page,"#level-sections .chapter-group:first-child .level-tile:first-child");
     await noDocumentScroll(page);
     const columnCount=await page.locator("#level-sections").evaluate(el=>
-      getComputedStyle(el).gridTemplateColumns.trim().split(/\\s+/).length);
+      getComputedStyle(el).gridTemplateColumns.trim().split(/\s+/).length);
     expect(columnCount).toBe(5);
     await page.screenshot({path:"artifacts/pr28-levels-"+size.width+"x"+size.height+".png"});
 
@@ -224,7 +224,6 @@ for(const size of scaledLaptopViews){
 test("very short or mobile viewports preserve scrolling, not clipped controls",async({page})=>{
   await page.setViewportSize({width:1092,height:460});
   await page.goto("/");
-  const site=await page.locator("#site-shell").evaluate(el=>getComputedStyle(el));
   // Layout must NOT force a hidden fixed-height shell at inaccessible heights.
   expect(await page.locator("#site-shell").evaluate(el=>getComputedStyle(el).overflowY))
     .not.toBe("hidden");
