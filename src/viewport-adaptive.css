@@ -1,0 +1,283 @@
+/*
+ * PR37 — Adaptive space use.
+ *
+ * A SINGLE SCREEN is a budget, not a command to stretch every child to 100vh.
+ * Short laptops keep the stable PR28 compact geometry; small screens/zoom keep
+ * document scrolling. On larger screens, content uses a considered maximum
+ * width, a taller scene with NATIVE coordinates, and vertical centering.
+ *
+ * No transform/zoom on .playfield, .rooms-row, .chamber, #hand or #scene.
+ * The actual coordinates used for grabbing/cancelling remain measurable.
+ */
+
+/* Prevent horizontal clipping when a host window is narrower than a desktop
+   monitor but taller than a phone, including accessibility text enlargement. */
+.site-shell,.app-shell{min-width:0}
+.site-page,.game-board,.playfield,.experiment-controls{min-width:0}
+
+/* 01 — normal-height and tall DESKTOPS: use spare space in the menu design,
+   rather than leaving giant empty foil around a fixed 346px illustration. */
+@media (min-width:900px) and (min-height:790px){
+  /* Centre the chapter title WITH the experiment, never leave the title
+     stranded at the top while the board floats halfway down the page. */
+  .app-shell > main{justify-content:center}
+  #site-home{gap:clamp(10px,1.3dvh,17px)}
+  #site-home .landing-hero{
+    align-self:center;
+    height:100%;
+    max-height:min(850px,calc(100dvh - 150px));
+    padding:clamp(26px,3.5vw,55px);
+    gap:clamp(20px,2.8vw,46px);
+    grid-template-columns:minmax(0,.93fr) minmax(0,1.07fr);
+  }
+  #site-home .landing-copy{min-width:0}
+  #site-home .landing-copy h1{
+    font-size:clamp(3.12rem,4vw,4.25rem);
+    margin:clamp(12px,1.6dvh,20px) 0 clamp(14px,2dvh,27px);
+    max-width:18ch;
+  }
+  #site-home .landing-copy p{
+    font-size:clamp(.92rem,1vw,1.12rem);
+    line-height:1.48;
+  }
+  #site-home .landing-actions{
+    margin:clamp(18px,2.8dvh,30px) 0 clamp(11px,1.5dvh,18px);
+    gap:10px;
+  }
+  #site-home .landing-actions button{
+    min-height:clamp(44px,4.3dvh,51px);
+    padding:10px 15px;font-size:clamp(.81rem,.92vw,.93rem);
+  }
+  #site-home .landing-progress{font-size:clamp(.73rem,.81vw,.85rem)}
+  #site-home .hero-art{
+    min-height:0;max-height:100%;height:auto;
+    justify-content:center;
+    gap:clamp(12px,1.65dvh,20px);
+  }
+  #site-home .hero-illustration{
+    flex:0 0 auto;
+    height:clamp(346px,34dvh,445px);
+  }
+  #site-home .hero-illustration .art-window{
+    height:clamp(270px,29dvh,355px);
+  }
+  #site-home .hero-underbar{
+    flex:0 0 auto;min-height:clamp(44px,4.6dvh,54px);
+    gap:8px;
+  }
+  #site-home .hero-scene-caption{font-size:clamp(.77rem,.84vw,.91rem)}
+  #site-home .hero-playback{min-height:41px}
+  #site-home .portal-features{
+    gap:clamp(9px,1vw,15px);
+  }
+  #site-home #home-stage-shortcuts .home-quick-feature{
+    min-height:clamp(50px,5.6dvh,67px);
+  }
+  #site-home #home-stage-shortcuts .home-stage-quick{
+    min-height:clamp(50px,5.6dvh,67px);
+    padding:9px clamp(10px,1.15vw,17px);
+    gap:10px;
+  }
+  #home-stage-shortcuts .home-stage-details strong{
+    font-size:clamp(.77rem,.84vw,.91rem);
+  }
+  #home-stage-shortcuts .home-stage-details small{
+    font-size:clamp(.62rem,.69vw,.76rem);
+  }
+
+  /* World doors, three learning stages and the Experiment Board already
+     divide available height correctly; their laptop-size typography did not. */
+  #site-worlds .world-grid{gap:clamp(11px,1.5dvh,19px)}
+  #site-worlds .world-card-body{
+    padding:clamp(17px,2vw,27px);gap:clamp(5px,.8dvh,12px);
+  }
+  #site-worlds .world-card-body h3{
+    font-size:clamp(1.3rem,1.8vw,1.9rem);
+  }
+  #site-worlds .world-card-body .world-subtitle{font-size:.93rem}
+  #site-worlds .world-card-footer .primary-btn{
+    min-height:42px;padding:9px 13px;font-size:.84rem;
+  }
+  #site-stages .world1-stage-grid{gap:clamp(12px,1.5vw,20px)}
+  #site-stages .stage-card{
+    padding:clamp(16px,2vw,25px);
+    gap:clamp(11px,1.65dvh,23px);
+    /* Space the illustrated choice, title and action down the tall card;
+       an auto margin used to produce one enormous blank middle section. */
+    justify-content:space-between;
+  }
+  #site-stages .stage-card-bottom{margin-top:0}
+  #site-stages .stage-ornament{height:clamp(80px,11dvh,130px)}
+  #site-stages .stage-ornament .portal-stage-medallion{
+    width:clamp(70px,9dvh,116px);
+    height:100%;max-height:100%;
+  }
+  #site-stages .stage-card h2{font-size:clamp(1.45rem,1.75vw,1.85rem)}
+  #site-stages .stage-card p{font-size:clamp(.80rem,.88vw,.96rem)}
+  #site-stages .stage-card .stage-tagline{font-size:.9rem}
+  #site-stages .stage-card-bottom .primary-btn{min-height:43px;font-size:.84rem}
+  #site-stages .workshop-card{min-height:76px;padding:13px 17px}
+  #site-stages .workshop-content h2{font-size:1.25rem}
+
+  #site-levels{gap:clamp(7px,.95dvh,13px)}
+  #site-levels .experiment-board-nav{padding:9px 12px;gap:12px}
+  #site-levels .map-world-button,
+  #site-levels .map-stage-button{
+    min-height:39px;font-size:clamp(.69rem,.77vw,.84rem);
+  }
+  #site-levels .world1-progress-panel{padding:9px 13px}
+  #site-levels #level-sections{gap:clamp(8px,1vw,14px)}
+  #site-levels #level-sections .chapter-group{
+    padding:clamp(9px,1.1vw,15px);
+    gap:clamp(9px,1.15dvh,17px);
+  }
+  #site-levels #level-sections .chapter-group-heading{flex-basis:clamp(57px,7.5dvh,86px)}
+  #site-levels #level-sections .chapter-group-heading h3{
+    font-size:clamp(.90rem,1.05vw,1.13rem);
+  }
+  #site-levels #level-sections .level-grid{gap:clamp(8px,1.15dvh,16px)}
+  #site-levels #level-sections .level-tile{
+    padding:clamp(8px,.85dvh,13px) clamp(7px,.75vw,11px);
+    gap:clamp(4px,.55dvh,9px) 8px;
+  }
+  #site-levels #level-sections .level-tile .tile-name{
+    font-size:clamp(.76rem,.87vw,.98rem);
+    line-height:1.20;
+  }
+  #site-levels #level-sections .level-tile .tile-number{font-size:1.18rem}
+  #site-levels #level-sections .level-tile .tile-status{font-size:.7rem}
+}
+
+/* 02 — extra-wide monitors: allow a larger stage and legible card contents,
+   but keep a readable maximum line length instead of stretching to infinity. */
+@media (min-width:1600px) and (min-height:790px){
+  .site-shell{max-width:1510px}
+  .app-shell{max-width:1710px}
+  .app-shell .game-board{
+    grid-template-columns:minmax(0,1fr) clamp(325px,22vw,382px);
+    gap:clamp(12px,1vw,18px);
+  }
+  #site-home .landing-copy h1{font-size:clamp(3.5rem,3.7vw,4.6rem)}
+  #site-home .hero-illustration{height:clamp(380px,35dvh,455px)}
+  #site-home .hero-illustration .art-window{height:clamp(295px,29dvh,360px)}
+}
+
+/* 03 — tall laptops with NARROW content widths: artwork is width-limited.
+   Do not make the chambers implausibly tall; center the normal scene vertically
+   rather than pinning it to the top and leaving all surplus below. */
+@media (min-width:900px) and (max-width:1099px) and (min-height:790px){
+  .app-shell .game-board{
+    max-height:min(610px,calc(100dvh - 102px));
+    margin-block:0;
+  }
+}
+
+/* 04 — roomy desktop gameplay. Height affects BOTH the chambers and their
+   scale hardware. A room height increase is compensated by moving the beam,
+   base and complete room row: the brass pedestal remains on the wooden table.
+   No transform scales the physical scene or alters hand hit-testing. */
+@media (min-width:1100px) and (min-height:790px){
+  /* The compact laptop header was also being kept at miniature type sizes
+     on large monitors. Spend a little of that new space on legibility. */
+  .site-nav{padding:11px 0;gap:16px}
+  .site-brand{font-size:1.28rem}
+  .site-nav-links button{min-height:39px;padding:8px 12px;font-size:.86rem}
+  .app-shell .topbar{padding:7px 4px;gap:13px}
+  .app-shell .identity h1{font-size:clamp(1.22rem,1.15vw,1.50rem)}
+  .app-shell .game-sprite-home{width:44px;height:44px}
+  .app-shell .game-sprite-home .brand-sprite-frame{width:38px;height:38px}
+  .app-shell .header-actions{gap:7px}
+  .app-shell .top-icon{min-height:39px;padding:8px 11px;font-size:.78rem}
+  .app-shell #campaign-hand-mode:not([hidden]){min-height:39px;padding:7px 11px}
+  .app-shell .chapter-strip{padding:6px 3px;gap:12px}
+  .app-shell .chapter-strip #chapter{font-size:.66rem}
+  .app-shell .chapter-strip #level-title{font-size:clamp(1.10rem,1.35vw,1.42rem)}
+  .app-shell .chapter-strip .chapter-status{font-size:.68rem}
+  .app-shell{
+    --wide-board-height:min(calc(100dvh - 104px),820px);
+    --wide-room-height:clamp(365px,37dvh,440px);
+    --wide-room-growth:calc(var(--wide-room-height) - 290px);
+    --wide-scene-shift:calc(var(--wide-board-height) - 607px - var(--wide-room-growth));
+  }
+  .app-shell .game-board{
+    max-height:var(--wide-board-height);
+    margin-block:0;
+    gap:clamp(11px,1vw,17px);
+    grid-template-columns:minmax(0,1fr) clamp(300px,22vw,365px);
+  }
+  .app-shell .game-board .playfield{height:100%;min-height:0}
+  .app-shell .rooms-row{
+    top:calc(101px + var(--wide-scene-shift));
+    /* The tilt must still pivot at the beam, even with taller chambers. */
+    transform-origin:50% calc(350px + var(--wide-room-growth));
+  }
+  .app-shell .room-interior{height:var(--wide-room-height)}
+  .app-shell .room-items{
+    height:clamp(180px,23dvh,252px);
+  }
+  .app-shell .room-window{
+    top:clamp(65px,10dvh,115px);
+    height:clamp(88px,11dvh,124px);
+  }
+  .app-shell .tiny-shelf{top:clamp(100px,14dvh,166px)}
+  .app-shell .scale-beam{
+    top:calc(449px + var(--wide-scene-shift) + var(--wide-room-growth));
+  }
+  .app-shell .scale-base{
+    top:calc(482px + var(--wide-scene-shift) + var(--wide-room-growth));
+  }
+  .app-shell .ambient-window{
+    height:clamp(355px,65dvh,660px);
+  }
+  .app-shell .shelf{top:clamp(148px,24dvh,270px)}
+  .app-shell .light-pool{inset:17% 10% 9%}
+  .app-shell .mission{padding:clamp(12px,1.65dvh,21px) 15px;gap:9px}
+  .app-shell .mission p{font-size:clamp(.88rem,.94vw,1.01rem);line-height:1.43}
+  .app-shell .feedback{font-size:.82rem;line-height:1.43}
+  .app-shell .chapter-briefing{font-size:.79rem!important;padding:10px 12px}
+  .app-shell .control-content{
+    padding:clamp(11px,1.5dvh,20px) 15px;
+    gap:clamp(10px,1.4dvh,18px);
+  }
+  .app-shell .control-top{gap:clamp(9px,1.5dvh,16px)}
+  .app-shell .control-top legend{font-size:.7rem;margin-bottom:9px}
+  .app-shell .tool-button,
+  .app-shell .item-button{
+    min-height:clamp(39px,4.2dvh,46px);
+    margin:0 5px 5px 0;
+    padding:8px 11px;font-size:.79rem;
+  }
+  .app-shell .stepper{height:43px;margin-top:9px}
+  .app-shell .control-bottom{padding-top:12px;gap:12px}
+  .app-shell .small-actions .secondary-btn{
+    min-height:40px;padding:8px 5px;font-size:.78rem;
+  }
+  .app-shell #do-both{min-height:49px;font-size:.92rem}
+  .app-shell .manual-explanation{font-size:.77rem;line-height:1.4}
+
+  /* Notebook pages fill height without requiring a taller physical scene.
+     Keep the operation editor/undo/replay actions visible at the foot. */
+  .app-shell .notebook-workspace{max-width:1370px;gap:clamp(17px,2vw,27px)}
+  .app-shell .notebook-intro,
+  .app-shell .notebook-paper{padding:clamp(17px,2dvh,27px)}
+  .app-shell .notebook-intro h3{font-size:clamp(1.6rem,2.1vw,2.1rem)}
+  .app-shell .notebook-intro p{font-size:.91rem;line-height:1.5}
+  .app-shell .notebook-paper h4{font-size:1.53rem;margin:10px 0}
+  .app-shell .notebook-lines li{min-height:39px}
+  .app-shell .notebook-form{gap:9px}
+  .app-shell .notebook-input-row input{min-height:45px}
+  .app-shell .notebook-actions button{min-height:42px}
+  .app-shell .notebook-help{font-size:.74rem}
+}
+
+/* Override the default tall-game rail only after it is declared, so
+   very wide monitors genuinely gain a wider, less cramped control surface. */
+@media (min-width:1600px) and (min-height:790px){
+  .app-shell .game-board{
+    grid-template-columns:minmax(0,1fr) clamp(325px,22vw,382px);
+  }
+}
+
+/* In wide-but-short or extremely zoomed windows, PR28 owns compact geometry.
+   Mobile/touch layouts remain document-scroll experiences (not clipped
+   pseudo-fullscreen views). No hover-only controls or scrolling traps added. */
