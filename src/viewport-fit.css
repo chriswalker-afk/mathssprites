@@ -7,7 +7,7 @@
  * At narrow widths / unusually short heights we preserve normal document
  * scrolling rather than clipping controls, keyboard focus or lesson text.
  */
-@media (min-width:940px) and (min-height:500px) {
+@media (min-width:900px) and (min-height:500px) {
   .site-shell {
     height:100dvh;min-height:0;padding:0 16px 7px;
     display:flex;flex-direction:column;overflow:hidden
@@ -349,14 +349,14 @@
 
 /* Physical props sit at fixed native coordinates, so slightly shorter game
    viewports shift THE WHOLE SCALE up together rather than crop the pedestal. */
-@media (min-width:940px) and (min-height:500px) and (max-height:790px) {
+@media (min-width:900px) and (min-height:500px) and (max-height:790px) {
   .app-shell .rooms-row{top:79px}
   .app-shell .scale-beam{top:426px}
   .app-shell .scale-base{top:459px}
   .app-shell .scene-heading{top:16px}
   .app-shell .hero-art{min-height:0}
 }
-@media (min-width:940px) and (min-height:500px) and (max-height:710px) {
+@media (min-width:900px) and (min-height:500px) and (max-height:710px) {
   .app-shell .rooms-row{top:64px}
   .app-shell .scale-beam{top:410px}
   .app-shell .scale-base{top:443px}
@@ -371,7 +371,7 @@
 
 /* On phones, portrait tablets, tiny windows and substantial browser zoom,
    preserve scroll and the original, well-tested one-column scene. */
-@media (max-width:939px), (max-height:499px) {
+@media (max-width:899px), (max-height:499px) {
   .game-board{display:block}
 }
 
@@ -380,7 +380,7 @@
    scaling (plus browser chrome) can have only ~520–580 CSS pixels of height.
    Treat that viewport as a laptop, not a phone. Native room coordinates remain
    intact: adjust the chambers, pan and pedestal TOGETHER, never scale #scene. */
-@media (min-width:940px) and (min-height:500px) and (max-height:649px) {
+@media (min-width:900px) and (min-height:500px) and (max-height:649px) {
   .site-shell{padding-bottom:4px}
   .site-nav{padding:4px 0}
   .site-nav-links button{padding:5px 7px;min-height:32px;font-size:.74rem}
