@@ -17,8 +17,12 @@ import {neutralPairSequence, neutralPairSummary} from "./neutral-pairs.mjs";
 import { WORLD1_LEVELS } from "./worlds.mjs";
 import {INDEPENDENT_LEVELS} from "./independent-levels.mjs";
 import {
-  startNotebook,tryNotebookLine,undoNotebookLine,notebookReplayScript
+  startNotebook,undoNotebookLine,notebookReplayScript
 } from "./notebook-engine.mjs";
+import {
+  parseNotebookOperation,previewNotebookOperation,tryNotebookOperation,
+  notebookEquationMathML,notebookOperationMathML
+} from "./notebook-maths-editor.mjs";
 import {
   CHAPTER_BRIEFINGS, INDEPENDENT_BRIEFINGS,
   introductionCue,independentIntroductionCue,readGuideEnabled,readGuideSeen,
@@ -326,18 +330,60 @@ function renderWorkshopVisibility(){
 function notebookMessage(message,status="info"){
   $("notebook-feedback").textContent=message;
   $("notebook-feedback").dataset.status=status;
-  $("notebook-equation").setAttribute("aria-invalid",String(status==="error"));
+  $("notebook-operation").setAttribute("aria-invalid",String(status==="error"));
+}
+/** Live typeset maths: students select WHAT to do, not the resulting answer.
+ * The preview uses the exact unchanged two-room engine, without committing. */
+function renderNotebookMathEditor(){
+  if(!notebookSession)return;
+  const input=$("notebook-operation");
+  const text=input.value;
+  const parsed=parseNotebookOperation(text);
+  const preview=previewNotebookOperation(notebookSession,text);
+  const current=$("notebook-current-math");
+  current.innerHTML=notebookEquationMathML(notebookSession.state);
+  current.setAttribute("aria-label",equation(notebookSession.state));
+  const operation=$("notebook-operation-typeset");
+  if(parsed.ok){
+    operation.innerHTML=notebookOperationMathML(parsed.action);
+  }else{
+    operation.textContent=text.trim().slice(0,24)||"□";
+  }
+  const result=$("notebook-result-math");
+  const arrow=$("notebook-apply-label");
+  if(preview.ok){
+    result.innerHTML=notebookEquationMathML(preview.state);
+    result.setAttribute("aria-label",preview.line);
+    result.dataset.state="valid";
+    arrow.textContent=preview.explanation;
+  }else{
+    result.textContent=preview.code==="incomplete"
+      ?"Enter the operation and amount":preview.message;
+    result.removeAttribute("aria-label");
+    result.dataset.state=preview.code==="incomplete"?"incomplete":"error";
+    arrow.textContent="Operation on both sides";
+  }
+  $("notebook-apply").disabled=!preview.ok||notebookPhase!=="writing"||busy;
+  const sign=parsed.ok ? parsed.display[0]:text.trim().slice(0,1);
+  for(const button of document.querySelectorAll("[data-notebook-symbol]"))
+    button.setAttribute("aria-pressed",String(button.dataset.notebookSymbol===sign));
 }
 function renderNotebookPaper() {
   if(!notebookSession)return;
   const lines=$("notebook-lines");
   lines.replaceChildren();
-  const addLine=(text,explanation,original=false)=>{
+  const addLine=(text,explanation,original=false,mathState=null)=>{
     const item=document.createElement("li");
     if(original)item.className="notebook-original";
     const value=document.createElement("span");
     value.className="notebook-line-equation";
-    value.textContent=text; // never inject a student's equation as HTML
+    value.setAttribute("aria-label",text);
+    // MathML comes only from validated engine counts, never user HTML.
+    value.innerHTML=notebookEquationMathML(mathState);
+    const accessible=document.createElement("span");
+    accessible.className="sr-only";
+    accessible.textContent=text;
+    value.appendChild(accessible);
     item.appendChild(value);
     if(explanation){
       const note=document.createElement("small");
@@ -348,14 +394,17 @@ function renderNotebookPaper() {
   };
   const initial=initialState(notebookSession.level);
   addLine(equation({left:initial.left,right:initial.right}),
-    "Starting equation · the mystery you must solve",true);
-  for(const step of notebookSession.steps)
-    addLine(step.line,step.explanation);
+    "Starting equation · the mystery you must solve",true,initial);
+  for(let i=0;i<notebookSession.steps.length;i++){
+    const step=notebookSession.steps[i];
+    addLine(step.line,step.explanation,false,notebookSession.state.history[i].after);
+  }
   const finished=isSolved(notebookSession.state);
   $("notebook-form").hidden=finished;
   $("notebook-replay").disabled=!finished||notebookPhase==="replaying";
   $("notebook-undo").disabled=!notebookSession.steps.length||notebookPhase==="replaying";
   $("notebook-reset").disabled=notebookPhase==="replaying";
+  renderNotebookMathEditor();
 }
 function render() {
   const lvl = currentLevel();
