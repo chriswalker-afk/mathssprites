@@ -296,7 +296,7 @@ function renderNotebookVisibility() {
     :"Practice preview · No levels or progress earned";
   $("notebook-level-prompt").textContent=campaign
     ? currentLevel().prompt
-    : "You already have the equation. Write one balanced operation per line. When a single sprite is isolated, watch the hand replay your method.";
+    : "You already have the equation. Choose an operation for both sides. The maths editor calculates the new equation automatically; the sprites will replay your route.";
   const support=campaign?currentLevel().scaffold:null;
   const showSupport=!!support&&support.kind!=="none"&&notebookPhase==="writing";
   $("notebook-scaffold").hidden=!showSupport;
@@ -2042,11 +2042,11 @@ function openNotebookLevel(level,number=null){
   mode="auto";
   $("notebook-hint-message").hidden=true;
   $("notebook-hint-message").textContent="";
-  notebookMessage("Write the next balanced equation. Each line must be one whole-object operation on both sides.");
+  $("notebook-operation").value="";
+  notebookMessage("Choose an operation for BOTH sides, such as −3, −x or ÷2. The editor calculates the next equation.");
   renderNotebookPaper();
   render();
-  $("notebook-equation").value="";
-  $("notebook-equation").focus({preventScroll:true});
+  $("notebook-operation").focus({preventScroll:true});
 }
 window.addEventListener("mathssprites:notebook-preview",event=>{
   openNotebookLevel(event.detail?.level);
@@ -2069,41 +2069,86 @@ $("notebook-hint").addEventListener("click",()=>{
     "Think about one equal change you can make to both sides.";
   $("notebook-hint-message").hidden=false;
 });
+/** Operation editor: clicking a maths sign or keypad key edits only the
+ * proposed operation; the original equation and engine history stay intact. */
+$("notebook-operation").addEventListener("input",()=>{
+  if(notebookSession&&notebookPhase==="writing"){
+    $("notebook-operation").setAttribute("aria-invalid","false");
+    renderNotebookMathEditor();
+  }
+});
+for(const button of document.querySelectorAll("[data-notebook-symbol]")){
+  button.addEventListener("click",()=>{
+    if(!notebookSession||notebookPhase!=="writing"||busy)return;
+    const input=$("notebook-operation");
+    const sign=button.dataset.notebookSymbol;
+    const current=input.value.trim();
+    const previous=/^[+\\-−×÷*/]/.test(current)?current.slice(1):current;
+    // × and ÷ apply only to a number. Do not silently turn -x into ×x.
+    const operand=(sign==="×"||sign==="÷")&&previous.endsWith("x")?"":previous;
+    input.value=sign+operand;
+    input.dispatchEvent(new Event("input",{bubbles:true}));
+    input.focus({preventScroll:true});
+    input.setSelectionRange(input.value.length,input.value.length);
+  });
+}
+for(const button of document.querySelectorAll("[data-notebook-key]")){
+  button.addEventListener("click",()=>{
+    if(!notebookSession||notebookPhase!=="writing"||busy)return;
+    const input=$("notebook-operation");
+    const start=input.selectionStart??input.value.length;
+    const end=input.selectionEnd??start;
+    const key=button.dataset.notebookKey;
+    if(key==="backspace"){
+      const cut=start===end?Math.max(0,start-1):start;
+      input.value=input.value.slice(0,cut)+input.value.slice(end);
+      input.focus({preventScroll:true});
+      input.setSelectionRange(cut,cut);
+    }else{
+      input.value=input.value.slice(0,start)+key+input.value.slice(end);
+      input.focus({preventScroll:true});
+      input.setSelectionRange(start+key.length,start+key.length);
+    }
+    input.dispatchEvent(new Event("input",{bubbles:true}));
+  });
+}
 $("notebook-form").addEventListener("submit",event=>{
   event.preventDefault();
-  if(!notebookSession || notebookPhase!=="writing" || busy)return;
-  const input=$("notebook-equation");
-  const result=tryNotebookLine(notebookSession,input.value);
+  if(!notebookSession||notebookPhase!=="writing"||busy)return;
+  const input=$("notebook-operation");
+  const result=tryNotebookOperation(notebookSession,input.value);
   if(!result.ok){
     notebookMessage(result.message,"error");
-    input.focus();
+    renderNotebookMathEditor();
+    input.focus({preventScroll:true});
     return;
   }
   notebookSession=result.session;
   input.value="";
   renderNotebookPaper();
   notebookMessage(result.solved
-    ? "Solution checked! Your complete route is ready. Choose Replay with sprites to watch YOUR steps."
-    : "Balanced step accepted: "+result.explanation+". Write the next equation.",
+    ? "Solution checked! Replay with sprites to see each operation you chose."
+    : "Applied "+result.explanation+". The new equation was calculated for you. Choose another operation.",
     "success");
-  if(!result.solved)input.focus();
+  if(!result.solved)input.focus({preventScroll:true});
   else $("notebook-replay").focus({preventScroll:true});
 });
 $("notebook-undo").addEventListener("click",()=>{
-  if(!notebookSession || notebookPhase!=="writing" || busy)return;
+  if(!notebookSession||notebookPhase!=="writing"||busy)return;
   notebookSession=undoNotebookLine(notebookSession);
+  $("notebook-operation").value="";
   renderNotebookPaper();
-  notebookMessage("The last algebra line has been removed. Try another valid route.");
-  $("notebook-equation").focus();
+  notebookMessage("The last operation has been undone. Choose your next balanced move.");
+  $("notebook-operation").focus({preventScroll:true});
 });
 $("notebook-reset").addEventListener("click",()=>{
-  if(!notebookSession || notebookPhase!=="writing" || busy)return;
+  if(!notebookSession||notebookPhase!=="writing"||busy)return;
   notebookSession=startNotebook(notebookSession.level);
   state=initialState(notebookSession.level);
-  $("notebook-equation").value="";
+  $("notebook-operation").value="";
   renderNotebookPaper();
-  notebookMessage("Fresh page. The original equation is still balanced.");
-  $("notebook-equation").focus();
+  notebookMessage("Fresh page. The original equation is ready for your operations.");
+  $("notebook-operation").focus({preventScroll:true});
 });
 $("notebook-replay").addEventListener("click",replayNotebookWithSprites);
 $("notebook-back-paper").addEventListener("click",()=>{
