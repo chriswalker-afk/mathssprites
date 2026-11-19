@@ -680,6 +680,15 @@ $("site-notebook-preview").addEventListener("click",()=>{
   if(teacher)launchNotebookPreview();
 });
 window.addEventListener("mathssprites:restart-guide", event=>{
+  if(event.detail?.worldId==="opposites"){
+    const stage=["guided","independent"].includes(event.detail.stage)
+      ?event.detail.stage:"guided";
+    guideEnabled=writeGuideEnabled(true);
+    window.dispatchEvent(new CustomEvent("mathssprites:guide-setting",
+      {detail:{enabled:true,reset:true,worldId:"opposites",stage}}));
+    launch(1,stage,"opposites");
+    return;
+  }
   if(event.detail?.stage==="independent")restartIndependentIntroduction();
   else restartFirstExperimentGuide();
 });
