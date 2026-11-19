@@ -26,8 +26,8 @@ export const WORLD1_STAGES = Object.freeze([
   }),
   Object.freeze({
     id:"notebook",number:3,title:"Algebra Apprentice",
-    tagline:"Write the maths before the sprites move.",
-    description:"Solve twelve equations using the notebook. Your working will be replayed as physical sprite movements afterwards.",
+    tagline:"Choose the maths before the sprites move.",
+    description:"Use the maths editor to choose each operation. The next equation is calculated, and your steps replay as sprite movements.",
     method:"notebook",count:APPRENTICE_LEVELS.length,available:true,unlockAfter:"independent",
     icon:"✎",status:"playable"
   })

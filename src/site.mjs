@@ -180,7 +180,7 @@ function renderLevels() {
     notebook:{title:"Algebra Apprentice",number:3,levels:APPRENTICE_LEVELS,
       chapters:APPRENTICE_CHAPTERS,progress:stage3Progress,open:apprenticeUnlocked,
       emblems:["✎","≡","✦"],
-      intro:"Read the equation on paper, write one balanced transformation per line, then watch the sprites reenact YOUR method.",
+      intro:"Choose one operation at a time using the maths editor. Each new equation is calculated automatically, then the sprites reenact YOUR method.",
       finale:"You've solved all twelve equations on paper before seeing the sprites. Bring your own equation to the free-play Equation Workshop whenever you like."}
   };
   const cfg=configs[selectedStage];
@@ -412,7 +412,7 @@ function launchNotebookPreview(level=WORLD1_LEVELS[8].level){
   $("game-shell").hidden=false;
   document.body.classList.remove("preview-mode");
   window.dispatchEvent(new CustomEvent("mathssprites:notebook-preview",{detail:{level}}));
-  $("notebook-equation").focus({preventScroll:true});
+  $("notebook-operation").focus({preventScroll:true});
   window.scrollTo?.(0,0);
 }
 $("site-notebook-preview").addEventListener("click",()=>{

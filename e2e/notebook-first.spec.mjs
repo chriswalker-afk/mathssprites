@@ -11,18 +11,23 @@ async function notebook(page,id="two-step-09"){
   await expect(page.locator(".experiment-controls")).toBeHidden();
   await expect(page.locator("#chapter-status")).toContainText("NO PROGRESS");
 }
-async function writeLine(page,text){
-  await page.locator("#notebook-equation").fill(text);
-  await page.locator("#notebook-check").click();
+async function draft(page,operation){
+  await page.locator("#notebook-operation").fill(operation);
 }
-test("teacher notebook sandbox earns no campaign credit even after Stage 3 unlocks",async({page})=>{
+async function apply(page,operation){
+  await draft(page,operation);
+  await expect(page.locator("#notebook-apply")).toBeEnabled();
+  await page.locator("#notebook-apply").click();
+}
+
+test("teacher notebook sandbox earns no campaign credit after stages are opened",async({page})=>{
   await page.locator('[data-screen="settings"]').first().click();
   await expect(page.locator("#site-notebook-option")).toBeHidden();
   await page.locator("#teacher-unlock").check();
   await expect(page.locator("#site-notebook-option")).toBeVisible();
   await page.locator("#site-notebook-preview").click();
   await expect(page.locator("#notebook-workspace")).toBeVisible();
-  await expect(page.locator("#notebook-preview-warning")).toHaveCount(0); // warning is readable text, not an invented level card
+  await expect(page.locator("#notebook-preview-warning")).toHaveCount(0);
   await expect(page.locator("#notebook-workspace")).toContainText("No levels or progress earned");
   await page.locator("#game-levels").click();
   await expect(page.locator("#site-settings")).toBeVisible();
@@ -32,30 +37,36 @@ test("teacher notebook sandbox earns no campaign credit even after Stage 3 unloc
   await expect(page.locator("#world1-workshop button")).toHaveCount(1);
 });
 
-test("wrong lines are rejected with specific feedback and do not mutate checked working",async({page})=>{
+test("invalid or impossible operations are previewed but never alter checked working",async({page})=>{
   await notebook(page);
   await expect(page.locator("#notebook-lines li")).toHaveCount(1);
   await expect(page.locator("#notebook-lines")).toContainText("2x + 3 = 11");
   await expect(page.locator("#notebook-replay")).toBeDisabled();
-  await writeLine(page,"x=4");
-  await expect(page.locator("#notebook-feedback")).toContainText("one possible whole-object operation");
-  await expect(page.locator("#notebook-equation")).toHaveAttribute("aria-invalid","true");
+  await draft(page,"x=4");
+  await expect(page.locator("#notebook-result-math")).toContainText("Use one operation");
+  await expect(page.locator("#notebook-operation")).toHaveAttribute("aria-invalid","true");
+  await expect(page.locator("#notebook-apply")).toBeDisabled();
+  await draft(page,"÷3");
+  await expect(page.locator("#notebook-result-math")).toContainText("part of a sprite");
+  await draft(page,"−4");
+  await expect(page.locator("#notebook-result-math")).toContainText("can't take away");
   await expect(page.locator("#notebook-lines li")).toHaveCount(1);
-  await writeLine(page,"x+1.5=4.5");
-  await expect(page.locator("#notebook-feedback")).toContainText("whole");
-  await writeLine(page,"2x+3=12");
-  await expect(page.locator("#notebook-feedback")).toContainText("not balanced");
   await expect(page.locator("#notebook-replay")).toBeDisabled();
 });
 
-test("writing first, then the real sprite hands replay exactly the checked algebra",async({page})=>{
+test("the editor calculates operations, then the real hand replays exactly those steps @smoke",async({page})=>{
   test.setTimeout(80000);
   await notebook(page);
-  await writeLine(page,"2x = 8");
+  await draft(page,"−3");
+  await expect(page.locator("#notebook-result-math")).toHaveAttribute("aria-label","2x = 8");
+  await expect(page.locator("#notebook-current-math")).toHaveAttribute("aria-label","2x + 3 = 11");
+  await page.locator("#notebook-apply").click();
   await expect(page.locator("#notebook-lines li")).toHaveCount(2);
   await expect(page.locator("#notebook-lines")).toContainText("− 3");
   await expect(page.locator("#scene")).toBeHidden();
-  await writeLine(page,"x = 4");
+  await draft(page,"÷2");
+  await expect(page.locator("#notebook-result-math")).toHaveAttribute("aria-label","x = 4");
+  await page.locator("#notebook-apply").click();
   await expect(page.locator("#notebook-lines li")).toHaveCount(3);
   await expect(page.locator("#notebook-replay")).toBeEnabled();
   await expect(page.locator("#notebook-form")).toBeHidden();
@@ -84,37 +95,40 @@ test("writing first, then the real sprite hands replay exactly the checked algeb
   expect(after).toEqual(before);
 });
 
-test("two distinct mathematically valid routes can be written and undone",async({page})=>{
+test("two distinct valid routes can be selected, previewed and undone",async({page})=>{
   await notebook(page,"two-step-10");
   await expect(page.locator("#notebook-lines")).toContainText("3x + 6 = 18");
-  await writeLine(page,"x + 2 = 6");
+  await apply(page,"÷3");
   await expect(page.locator("#notebook-lines")).toContainText("÷ 3");
   await page.locator("#notebook-undo").click();
   await expect(page.locator("#notebook-lines li")).toHaveCount(1);
-  await writeLine(page,"3x = 12");
+  await apply(page,"−6");
   await expect(page.locator("#notebook-lines")).toContainText("− 6");
-  await writeLine(page,"x=4");
+  await apply(page,"÷3");
   await expect(page.locator("#notebook-replay")).toBeEnabled();
   await page.locator("#notebook-reset").click();
   await expect(page.locator("#notebook-lines li")).toHaveCount(1);
   await expect(page.locator("#notebook-replay")).toBeDisabled();
 });
 
-test("Stage 3 notebook is usable with keyboard and on narrow phone screens",async({page})=>{
+test("maths keypad, keyboard entry and phone sizing all work",async({page})=>{
   await page.setViewportSize({width:375,height:725});
   await notebook(page,"resident");
-  await expect(page.locator("#notebook-equation")).toBeVisible();
-  const el=await page.locator("#notebook-equation").boundingBox();
-  expect(el).not.toBeNull();
+  await expect(page.locator("#notebook-operation")).toBeVisible();
+  await expect(page.locator(".notebook-maths-keypad button")).toHaveCount(12);
+  const el=await page.locator("#notebook-operation").boundingBox();
   expect(el.x).toBeGreaterThanOrEqual(0);
   expect(el.x+el.width).toBeLessThanOrEqual(377);
-  await page.locator("#notebook-equation").fill("x=3");
-  await page.locator("#notebook-equation").press("Enter");
+  await page.locator('[data-notebook-symbol="−"]').click();
+  await page.locator('[data-notebook-key="2"]').click();
+  await expect(page.locator("#notebook-operation")).toHaveValue("−2");
+  await expect(page.locator("#notebook-result-math")).toHaveAttribute("aria-label","x = 3");
+  await page.locator("#notebook-operation").press("Enter");
   await expect(page.locator("#notebook-replay")).toBeEnabled();
   await expect(page.locator("#notebook-workspace")).toContainText("Solution checked");
 });
 
-test("normal guided and independent campaigns remain unaffected by notebook prototype",async({page})=>{
+test("normal guided and independent campaigns remain unaffected by the notebook editor",async({page})=>{
   await page.locator("#home-play").click();
   await expect(page.locator("#scene")).toBeVisible();
   await expect(page.locator("#notebook-workspace")).toBeHidden();

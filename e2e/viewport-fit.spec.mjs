@@ -109,8 +109,8 @@ test("notebook writing stays in the viewport with its line entry available @smok
   await expect(page.locator("#notebook-workspace")).toBeVisible();
   await expect(page.locator("#scene")).toBeHidden();
   await inView(page,".notebook-paper");
-  await inView(page,"#notebook-equation");
-  await inView(page,"#notebook-check");
+  await inView(page,"#notebook-operation");
+  await inView(page,"#notebook-apply");
   await inView(page,"#notebook-replay");
   await noDocumentScroll(page);
   await page.screenshot({path:"artifacts/pr27-notebook-1024x720.png"});
