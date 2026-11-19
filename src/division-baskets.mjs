@@ -50,7 +50,7 @@ export function divisionBasketMarkup(factor) {
 function kindOf(token) {
   return TOKEN_KIND_CLASSES.find(([css])=>token.classList.contains(css))?.[1] || "unknown";
 }
-function announceBasketContents(baskets, factor) {
+export function announceBasketContents(baskets, factor) {
   baskets.forEach((basket,i)=>{
     const contents=[...basket.querySelectorAll(".basket-contents > .token")];
     const counts=new Map();
@@ -65,7 +65,7 @@ function announceBasketContents(baskets, factor) {
 async function aFrame() {
   await new Promise(resolve=>requestAnimationFrame(()=>resolve()));
 }
-function resetHand(hand, cargo, target, caption) {
+export function resetHand(hand, cargo, target, caption) {
   hand.classList.remove("approaching","reaching","grasping","lifting","acting","basket-throwing");
   hand.dataset.phase="rest";
   target.classList.remove("hand-target","hand-contact");
@@ -73,7 +73,7 @@ function resetHand(hand, cargo, target, caption) {
   cargo.hidden=true;
   caption.hidden=true;
 }
-async function aimHandAtBasket({hand,scene,target,basket,cargo,caption,sleep,ms,final=false}) {
+export async function aimHandAtBasket({hand,scene,target,basket,cargo,caption,sleep,ms,final=false}) {
   const sceneRect=scene.getBoundingClientRect();
   const rect=basket.getBoundingClientRect();
   const fingertipOffset=hand.offsetWidth*.10;
@@ -98,7 +98,7 @@ async function aimHandAtBasket({hand,scene,target,basket,cargo,caption,sleep,ms,
   hand.classList.add("grasping");
   hand.dataset.phase="grip";
 }
-function attachBasketToHand(basket,cargo) {
+export function attachBasketToHand(basket,cargo) {
   const from=basket.getBoundingClientRect();
   basket.classList.add("basket-in-hand");
   cargo.hidden=false;
