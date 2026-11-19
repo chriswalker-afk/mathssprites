@@ -18,7 +18,7 @@ export function divisionBasketTiming(factor, reduced=false) {
     dropMs: reduced ? 0 : 530,
     shareMs: reduced ? 0 : 470,
     shareGap: reduced ? 0 : factor <= 5 ? 23 : 12,
-    sharePause: reduced ? 190 : 350,
+    sharePause: reduced ? 500 : 850,
     reachMs: reduced ? 0 : factor <= 3 ? 240 : 170,
     gripMs: reduced ? 0 : 110,
     liftMs: reduced ? 0 : factor <= 3 ? 210 : 135,
