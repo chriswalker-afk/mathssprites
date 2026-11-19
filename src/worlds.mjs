@@ -151,7 +151,7 @@ export const WORLDS = Object.freeze([
     available:true },
   { id:"opposites",number:2,title:"The Opposite Chambers",
     subtitle:"Negative numbers",theme:"pale",
-    description:"White sprites and balloons make remarkable zero pairs.",available:false },
+    description:"White sprites and balloons make remarkable zero pairs.",available:true },
   { id:"fractions",number:3,title:"The Fraction Workshop",
     subtitle:"Fractions",theme:"glass",
     description:"A tiny piece can finally have its own mathematical value.",available:false },
