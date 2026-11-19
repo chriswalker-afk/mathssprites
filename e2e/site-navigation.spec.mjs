@@ -23,7 +23,7 @@ test("home is the real entry point; four distinct world cards, three locked", as
   await expect(page.getByText("The Square Laboratory")).toBeVisible();
 });
 
-test("all 20 levels render in five chapters with sequential student unlocking", async ({page}) => {
+test("all 20 levels are selectable from a fresh student account", async ({page}) => {
   await page.locator('[data-screen="worlds"]').first().click();
   await page.getByRole("button",{name:"Explore stages"}).click();
   await page.getByRole("button",{name:"Choose Stage 1 levels"}).click();
@@ -31,9 +31,11 @@ test("all 20 levels render in five chapters with sequential student unlocking", 
   await expect(page.locator(".level-tile")).toHaveCount(20);
   await expect(page.locator(".level-tile.status-upcoming")).toHaveCount(0);
   await expect(page.locator('[data-level="1"]')).toBeEnabled();
-  await expect(page.locator('[data-level="2"]')).toBeDisabled();
-  await expect(page.locator('[data-level="6"]')).toBeDisabled();
-  await expect(page.locator('[data-level="20"]')).toBeDisabled();
+  await expect(page.locator('[data-level="2"]')).toBeEnabled();
+  await expect(page.locator('[data-level="6"]')).toBeEnabled();
+  await expect(page.locator('[data-level="20"]')).toBeEnabled();
+  await expect(page.locator(".tile-stars")).toHaveCount(20);
+  await expect(page.locator("#level-progress")).toContainText("0 / 60 stars");
 });
 
 test("World 1 uses only positive whole numbers; square/root and signed tools are absent", async ({page}) => {
@@ -58,7 +60,7 @@ test("World 1 uses only positive whole numbers; square/root and signed tools are
   await expect(page.locator("#site-levels")).toBeVisible();
 });
 
-test("solving Level 1 persists progress, starts the real comic and unlocks Level 2", async ({page}) => {
+test("solving Level 1 persists progress and earns three stars for the optimal move", async ({page}) => {
   test.setTimeout(55000);
   await startFirstLevel(page);
   await page.locator("#do-both").click();
@@ -76,10 +78,11 @@ test("solving Level 1 persists progress, starts the real comic and unlocks Level
   await page.getByRole("button",{name:"Choose Stage 1 levels"}).click();
   await expect(page.locator('[data-level="1"]')).toContainText("Completed");
   await expect(page.locator('[data-level="2"]')).toBeEnabled();
-  await expect(page.locator('[data-level="3"]')).toBeDisabled();
+  await expect(page.locator('[data-level="3"]')).toBeEnabled();
+  await expect(page.locator('[data-level="1"] .tile-stars')).toHaveText("★★★");
 });
 
-test("teacher setting unlocks every World 1 level and persists across reloads", async ({page}) => {
+test("teacher tools persist but do not affect the already-open level access", async ({page}) => {
   await page.locator('[data-screen="settings"]').first().click();
   await page.locator("#teacher-unlock").check();
   await page.locator('[data-screen="worlds"]').first().click();
@@ -200,7 +203,7 @@ test("old saved Stage 1 progress survives the new stage selection unchanged", as
   expect(stored).toEqual(original);
 });
 
-test("Stage 1 mastery opens Stage 2 and teacher access also opens Stage 3", async ({page}) => {
+test("Stage 1 mastery still shows completion, and all stages remain selectable", async ({page}) => {
   const complete={completed:Array.from({length:20},(_,i)=>i+1),lastPlayed:20};
   await page.evaluate(data=>localStorage.setItem("mathssprites.progress.v1",JSON.stringify(data)),complete);
   await page.reload();
