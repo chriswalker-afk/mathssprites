@@ -29,7 +29,7 @@ test.beforeEach(async({page})=>{
   await page.goto("/");
 });
 
-test("all 48 implemented levels open for a new student with empty progress",async({page})=>{
+test("all 48 implemented levels open for a new student with empty progress @smoke",async({page})=>{
   await stages(page);
   for(const [stage,n] of [["guided",20],["independent",16],["notebook",12]]){
     const number={guided:1,independent:2,notebook:3}[stage];
@@ -47,7 +47,7 @@ test("all 48 implemented levels open for a new student with empty progress",asyn
   await expect(page.locator(".world-planned")).toHaveCount(3);
 });
 
-test("two-step solution earns two stars; replaying optimally upgrades the best rating",async({page})=>{
+test("two-step solution earns two stars; replaying optimally upgrades the best rating @smoke",async({page})=>{
   test.setTimeout(95000);
   await openLevel(page,"guided",1);
   await page.locator("#motion-toggle").click(); // short accessible snapshots
@@ -73,7 +73,7 @@ test("two-step solution earns two stars; replaying optimally upgrades the best r
   await expect(page.locator("#level-progress")).toContainText("3 / 60 stars");
 });
 
-test("two manual hand visits count as one optimal move, not two",async({page})=>{
+test("two manual hand visits count as one optimal move, not two @smoke",async({page})=>{
   test.setTimeout(65000);
   await openLevel(page,"independent",1);
   await page.locator("#motion-toggle").click();
@@ -87,7 +87,7 @@ test("two manual hand visits count as one optimal move, not two",async({page})=>
   expect(saved.independent["1"]).toBe(1);
 });
 
-test("notebook earns its stars only after checked working is physically replayed",async({page})=>{
+test("notebook earns its stars only after checked working is physically replayed @smoke",async({page})=>{
   test.setTimeout(110000);
   await openLevel(page,"notebook",1);
   await write(page,"x + 2 = 7");
