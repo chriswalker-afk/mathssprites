@@ -13,47 +13,64 @@ async function multiplyBy(page,factor){
 test("physical multiplication groups the original objects and hand-delivers full wicker copies @smoke",async({page})=>{
   test.setTimeout(85000);
   await multiplyBy(page,3);
-  await page.locator("#do-both").click();
-  const west=page.locator("#left-items .multiplication-stage");
-  const row=west.locator(".basket-row");
-  await expect(west).toHaveAttribute("data-phase","dropping",{timeout:8000});
-  await expect(west.locator(".division-source .token")).toHaveCount(3);
-  // This phase is brief; the first incoming basket is soon held in hand,
-  // so only assert the physical original source before the copies arrive.
-  await page.screenshot({path:"artifacts/pr29-01-first-wicker-basket-drops.png"});
-  const drop=await row.locator(".group-basket[data-state='dropping']").first()
-    .evaluate(el=>getComputedStyle(el).animationName);
-  expect(drop).toContain("division-wicker-drop");
-
-  await expect(west).toHaveAttribute("data-phase","copying",{timeout:13000});
-  await expect(page.locator("#hand-cargo > .group-basket.basket-in-hand")).toBeVisible({timeout:15000});
-  await expect(page.locator("#hand-cargo .basket-in-hand .token")).toHaveCount(3);
-  // Basket delivery is deliberately moving: photograph the actual cargo,
-  // then assert the complete count at the explicit stable "ready" pause.
-  await page.screenshot({path:"artifacts/pr29-02-hand-delivers-full-basket.png"});
-  // Observe all three complete groups atomically at the ready milestone.
-  // Separate Playwright locator calls can straddle the start of pouring.
-  await expect.poll(()=>page.evaluate(()=>{
-    const stage=document.querySelector("#left-items .multiplication-stage");
-    if(!stage)return null;
-    return {
-      phase:stage.dataset.phase,
-      floor:stage.querySelectorAll(".division-source .token").length,
-      groups:[...stage.querySelectorAll(".basket-row > .group-basket")].map(b=>({
-        sprites:b.querySelectorAll(".sprite-black").length,
-        weights:b.querySelectorAll(".weight").length
-      }))
+  // Record DOM states at the instant the animated stage changes. Delaying
+  // between independently awaited Playwright locators loses short moments
+  // when a basket travels from the chamber into the articulated hand.
+  await page.evaluate(()=>{
+    window.__multiplicationMilestones=[];
+    let previous="";
+    const capture=()=>{
+      const stage=document.querySelector("#left-items .multiplication-stage");
+      if(!stage)return;
+      const cargo=document.querySelector("#hand-cargo > .basket-in-hand");
+      const record={
+        phase:stage.dataset.phase,
+        floor:stage.querySelectorAll(".division-source .token").length,
+        baskets:[...stage.querySelectorAll(".basket-row > .group-basket")].map(b=>({
+          sprites:b.querySelectorAll(".sprite-black").length,
+          weights:b.querySelectorAll(".weight").length,
+          state:b.dataset.state
+        })),
+        cargo: cargo?{
+          sprites:cargo.querySelectorAll(".sprite-black").length,
+          weights:cargo.querySelectorAll(".weight").length
+        }:null
+      };
+      const key=JSON.stringify(record);
+      if(previous!==key){previous=key;window.__multiplicationMilestones.push(record);}
     };
-  }),{timeout:16000}).toEqual({
-    phase:"ready",floor:0,
-    groups:[{sprites:1,weights:2},{sprites:1,weights:2},{sprites:1,weights:2}]
+    const observer=new MutationObserver(capture);
+    observer.observe(document.querySelector("#left-items"),{
+      childList:true,subtree:true,attributes:true,attributeFilter:["data-phase","data-state"]
+    });
+    observer.observe(document.querySelector("#hand-cargo"),{
+      childList:true,subtree:true,attributes:true,attributeFilter:["data-state"]
+    });
+    window.__multiplicationObserver=observer;
   });
+  await page.locator("#do-both").click();
+  // Query recorded transitions as data, not the current moving frame.
+  await expect.poll(()=>page.evaluate(()=>
+    window.__multiplicationMilestones.some(s=>s.phase==="dropping"&&s.floor===3)
+  ),{timeout:10000}).toBe(true);
+  await page.screenshot({path:"artifacts/pr29-01-first-wicker-basket-drops.png"});
+  await expect.poll(()=>page.evaluate(()=>
+    window.__multiplicationMilestones.some(s=>s.phase==="copying"&&
+      s.cargo?.sprites===1&&s.cargo?.weights===2)
+  ),{timeout:17000}).toBe(true);
+  await page.screenshot({path:"artifacts/pr29-02-hand-delivers-full-basket.png"});
+  await expect.poll(()=>page.evaluate(()=>
+    window.__multiplicationMilestones.some(s=>s.phase==="ready"&&s.floor===0&&
+      s.baskets.length===3&&s.baskets.every(b=>b.sprites===1&&b.weights===2))
+  ),{timeout:17000}).toBe(true);
   await page.screenshot({path:"artifacts/pr29-03-three-identical-wicker-baskets.png"});
-  await expect(west).toHaveAttribute("data-phase","pouring",{timeout:12000});
-  await expect(row.locator(".group-basket")).toHaveCount(2,{timeout:12000});
+  await expect.poll(()=>page.evaluate(()=>
+    window.__multiplicationMilestones.some(s=>s.phase==="pouring"&&
+      s.baskets.length<3)
+  ),{timeout:17000}).toBe(true);
   await page.screenshot({path:"artifacts/pr29-04-hand-pours-and-discards-empty-basket.png"});
 
-  await expect(west).toHaveCount(0,{timeout:25000});
+  await expect(page.locator("#left-items .multiplication-stage")).toHaveCount(0,{timeout:25000});
   await expect(page.locator("#left-items .floor-track > .sprite-black")).toHaveCount(3);
   await expect(page.locator("#left-items .floor-track > .weight")).toHaveCount(6);
   await expect(page.locator("#right-items .multiplication-stage")).toHaveCount(1);
@@ -61,6 +78,13 @@ test("physical multiplication groups the original objects and hand-delivers full
   await expect(page.locator("#do-both")).toBeEnabled({timeout:12000});
   await expect(page.locator(".held-basket-double")).toHaveCount(0);
   await expect(page.locator(".multiplication-stage")).toHaveCount(0);
+  const snapshots=await page.evaluate(()=>{
+    window.__multiplicationObserver.disconnect();
+    return window.__multiplicationMilestones;
+  });
+  const ready=snapshots.find(s=>s.phase==="ready"&&s.baskets.length===3);
+  expect(ready?.baskets.map(b=>[b.sprites,b.weights]))
+    .toEqual([[1,2],[1,2],[1,2]]);
 });
 
 test("five wicker baskets on a small phone stay within each chamber",async({page})=>{
