@@ -23,7 +23,7 @@ export function multiplicationBasketTiming(factor,reduced=false) {
     dropMs:reduced?0:530,
     shareMs:reduced?0:470,
     shareGap:reduced?0:fast?8:22,
-    settleMs:reduced?500:fast?370:610,
+    settleMs:reduced?500:fast?720:960,
     deliverMs:reduced?0:fast?120:195,
     placeMs:reduced?0:fast?175:260,
     reachMs:reduced?0:fast?130:205,
