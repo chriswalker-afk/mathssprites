@@ -178,7 +178,8 @@ function renderWorlds() {
         clean(world.subtitle) + '</p>' +
       '<div class="world-card-footer"><span class="world-progress">' + progressLine + '</span>' +
         (world.available
-          ? '<button type="button" class="primary-btn" data-world-stages="'+clean(world.id)+'">Explore stages →</button>'
+          ? '<button type="button" class="primary-btn" data-world-stages="'+clean(world.id)+'">'+
+            (world.id==="workshop"?"Explore stages →":"Explore Opposites →")+'</button>'
           : '<span class="soon-lock" aria-label="This world is not available yet">◇ Locked</span>') +
       '</div></div></article>';
   }).join("");
