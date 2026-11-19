@@ -79,7 +79,7 @@ test("whole-group division, sprite removal and reversed equations remain valid",
   const two=apply(apply(startNotebook(level(3)),"−4"),"÷2");
   assert.equal(equation(two.state),"x = 4");
   const reverse=apply(apply(apply(startNotebook(level(10)),"−x"),"−3"),"÷2");
-  assert.equal(equation(reverse.state),"10 = 2x".replace("10 = 2x","5 = x"));
+  assert.equal(equation(reverse.state),"5 = x");
   assert.equal(isSolved(reverse.state),true);
   const across=apply(apply(startNotebook(level(9)),"−x"),"−3");
   assert.equal(equation(across.state),"x = 5");
