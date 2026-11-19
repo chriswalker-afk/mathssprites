@@ -50,7 +50,8 @@ export function createCampaignRegistry(definitions){
         assert(Number.isInteger(slot.chapterIndex)&&chapters[slot.chapterIndex],
           "level has no matching chapter in "+stage.id);
         assert(slot.level&&typeof slot.level==="object","level missing game definition in "+stage.id);
-        return Object.freeze({...slot,worldId:raw.id,stageId:stage.id,
+        return Object.freeze({...slot,available:slot.available!==false,
+          worldId:raw.id,stageId:stage.id,
           chapterId:chapters[slot.chapterIndex].id});
       });
       // Indexing star benchmarks by stable ID makes them survive a reordered
