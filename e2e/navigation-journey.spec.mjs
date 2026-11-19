@@ -84,6 +84,7 @@ test("Help and Settings return to the actual prior screen, not always Home @smok
   await expect(page.locator("#site-levels")).toHaveAttribute("data-active-stage","independent");
   await page.locator('.site-nav-links [data-screen="settings"]').click();
   await expect(page.locator("#settings-return")).toHaveText("← Back to levels");
+  await page.locator("#site-guided-help").focus();
   await page.keyboard.press("Escape");
   await expect(page.locator("#site-levels")).toBeVisible();
   await expect(page.locator("#board-continue")).toBeVisible();
