@@ -1,0 +1,163 @@
+/* PR36 — The Opposite Chambers: moonlit copper-and-silver ink, not a
+   repainted World 1 tile. This sheet changes only artwork and affordances.
+   Native hand, floor, scale and basket coordinates are never transformed. */
+#site-worlds .world-card.world-pale.world-ready{
+  border-color:#9bbdc7;
+  background:linear-gradient(135deg,#263e49,#1b2d39);
+}
+#site-worlds .world-card.world-pale.world-ready .world-card-scene{
+  border-right-color:#b1d5db;background:#294959;
+}
+#site-worlds .world-card.world-pale.world-ready .world-card-body .eyebrow,
+#site-worlds .world-card.world-pale.world-ready .world-subtitle{
+  color:#c4e1e1;
+}
+#site-worlds .world-card.world-pale.world-ready .world-progress{color:#bcdad8}
+#site-worlds .world-card.world-pale.world-ready .primary-btn{
+  background:linear-gradient(135deg,#bfdcd6,#91c4cf);
+  border-color:#d7f0ed;color:#18353c;
+}
+/* Stage gallery stays optional; use the same physical medallions but each
+   of World 2's three learning approaches has its own cool metalwork. */
+#site-stages[data-active-world="opposites"] .portal-kicker{color:#b4dce2}
+#site-stages[data-active-world="opposites"] .stage-card{
+  border-color:#799da7;
+  background:linear-gradient(155deg,#304d55,#1b2c37 78%);
+  box-shadow:inset 0 1px #e7f1ea29,0 14px 26px #04171f52;
+}
+#site-stages[data-active-world="opposites"] .stage-card[data-stage="independent"]{
+  border-color:#93b9b3;
+  background:linear-gradient(155deg,#294d4a,#1c3337 78%);
+}
+#site-stages[data-active-world="opposites"] .stage-card[data-stage="notebook"]{
+  border-color:#b7b1bd;
+  background:linear-gradient(155deg,#4a4657,#292d3d 78%);
+}
+#site-stages[data-active-world="opposites"] .stage-ornament{
+  background:radial-gradient(ellipse at center,#c7f1ee39,transparent 74%);
+}
+#site-stages[data-active-world="opposites"] .stage-tagline{color:#d0e3e0}
+#site-stages[data-active-world="opposites"] .stage-card-bottom .stage-count{color:#bedddc}
+#site-stages[data-active-world="opposites"] .stage-card .primary-btn{
+  color:#19363c;background:linear-gradient(130deg,#c1d9d8,#9fbfc8);
+  border-color:#e1ece9;
+}
+#site-stages #world1-workshop[hidden]{display:none!important}
+#home-stage-shortcuts[data-active-world="opposites"] .home-quick-feature{
+  border-color:#678f9a;background:linear-gradient(130deg,#234249,#1c2b38);
+}
+#home-stage-shortcuts[data-active-world="opposites"] .home-quick-feature:nth-child(2){
+  border-color:#76aba5;background:linear-gradient(130deg,#244b49,#1c3037);
+}
+#home-stage-shortcuts[data-active-world="opposites"] .home-quick-feature:nth-child(3){
+  border-color:#aaa2bd;background:linear-gradient(130deg,#3d3c50,#262b38);
+}
+/* The same five-four-three pinboard geometry, a different workshop identity. */
+#site-levels[data-active-world="opposites"]{
+  --board-light:#bedfe2;--board-rim:#729eaa;--board-ink:#254553;
+  background-image:
+    linear-gradient(180deg,#102e3c44,#102b3a16 60%),
+    url("../assets/portal/board-etching.svg");
+}
+#site-levels[data-active-world="opposites"] .experiment-board-nav{
+  background:linear-gradient(120deg,#1d414c,#182b3e);
+  border-color:#8cafb8;
+}
+#site-levels[data-active-world="opposites"] .map-selector-label,
+#site-levels[data-active-world="opposites"] .portal-heading h1{
+  color:#d9f0ed;
+}
+#site-levels[data-active-world="opposites"] .chapter-group{
+  border-color:#739baa;
+  background:linear-gradient(130deg,#2c4755,#1b2e3b);
+}
+#site-levels[data-active-world="opposites"] .chapter-group-heading h3{
+  color:#e4f0ec;
+}
+#site-levels[data-active-world="opposites"] .level-tile{
+  border-color:#769fa5;border-left-color:#bddde3;
+  background:linear-gradient(125deg,#31525d,#29404b);
+}
+#site-levels[data-active-world="opposites"] .level-tile.status-ready:hover{
+  background:linear-gradient(125deg,#416873,#34515a);
+}
+#site-levels[data-active-world="opposites"] .level-tile.status-complete{
+  border-left-color:#d7d4ad;
+  background:linear-gradient(125deg,#44575a,#34434f);
+}
+#site-levels[data-active-world="opposites"] .chapter-badge{
+  border-color:#9ac1c8;color:#e4f5eb;
+  background:#294f5e;
+}
+#site-levels[data-active-world="opposites"] .world1-progress-panel{
+  border-color:#6b9da8;background:linear-gradient(120deg,#203a48,#152934);
+}
+/* World 2's laboratory uses cool moonlight, silvery glass and rose balloons.
+   Crucially, these rules do not use transform/scale on the physical scene. */
+body[data-campaign-world="opposites"]{
+  --chapter-accent:#afd4d5;
+}
+body[data-campaign-world="opposites"] .playfield{
+  border-color:#749bac;
+  background:
+    radial-gradient(ellipse at 50% 5%,#8ab7ce35,transparent 60%),
+    linear-gradient(180deg,#263b4c,#132c3b 74%,#202c31);
+  box-shadow:inset 0 0 44px #060f1f73;
+}
+body[data-campaign-world="opposites"] .playfield .ambient-window{
+  opacity:.86;background:linear-gradient(#1d3b53,#2d5870 65%,#122c39);
+  border-color:#273945;box-shadow:inset 0 0 90px #071b33;
+}
+body[data-campaign-world="opposites"] .playfield .moon{
+  background:#e9f5f2;box-shadow:0 0 55px 23px #b5deee74;
+}
+body[data-campaign-world="opposites"] .room-roof{
+  border-color:#445d66;
+  background:linear-gradient(#6f8892,#405960);
+  box-shadow:inset 0 4px #a4c1c4,0 -5px 10px #0004;
+}
+body[data-campaign-world="opposites"] .room-interior{
+  border-color:#496773;border-top-color:#80a3a7;
+  background:
+    radial-gradient(ellipse at center,#7fbac327,transparent 65%),
+    linear-gradient(170deg,#223a46,#162c35 75%);
+}
+body[data-campaign-world="opposites"] .chapter-strip{
+  border-bottom-color:#94b8bc;
+}
+body[data-campaign-world="opposites"] .chapter-status,
+body[data-campaign-world="opposites"] .chapter-strip .eyebrow{
+  color:#b2d7dc;
+}
+body[data-campaign-world="opposites"] .notebook-intro{
+  border-color:#86a6ad;background:linear-gradient(160deg,#29444f,#1d303c);
+}
+body[data-campaign-world="opposites"] .notebook-paper{
+  border-color:#688592;
+  background:
+   repeating-linear-gradient(180deg,transparent 0 37px,#a6c2c155 38px,#a6c2c155 39px),
+   linear-gradient(110deg,#edf0e4,#d8e2da 78%);
+}
+.notebook-signed-operations{
+  display:flex;flex-wrap:wrap;align-items:center;gap:6px;
+  padding:7px 0 3px;
+}
+.notebook-signed-operations[hidden]{display:none!important}
+.notebook-signed-operations span{
+  flex-basis:100%;font-size:.73rem;font-weight:800;color:#60777d;
+}
+.notebook-signed-operations button{
+  cursor:pointer;min-height:35px;padding:5px 11px;
+  border:1px solid #91aab0;border-radius:9px;color:#24464e;
+  background:#e0ede7;font-weight:750;font-size:.78rem;
+}
+.notebook-signed-operations button:hover{background:#f3faf1}
+.notebook-signed-operations button:focus-visible{
+  outline:3px solid #2b6c79;outline-offset:2px;
+}
+@media(max-width:540px){
+  .notebook-signed-operations button{flex:1 1 40%;min-height:44px}
+}
+@media(prefers-reduced-motion:reduce){
+  #site-levels[data-active-world="opposites"] .level-tile{transition:none}
+}
