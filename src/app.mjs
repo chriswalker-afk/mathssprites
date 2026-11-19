@@ -55,6 +55,7 @@ let campaignStage = null; // null = separate advanced prototype preview
 let notebookSession=null; // only teacher prototype in PR20; never campaign progress
 let notebookPhase="idle"; // idle | writing | replaying | complete
 let notebookReplaySuccessful=false;
+let workshopActive=false; // free play only, never an indexed campaign level
 let guideEnabled = readGuideEnabled();
 let guideSeen = readGuideSeen();
 let independentGuideSeen=readIndependentGuideSeen();
@@ -298,6 +299,18 @@ function renderNotebookVisibility() {
   $("notebook-next").textContent=campaignLevelNumber===12
     ?"Finish Stage 3 →":"Next notebook level →";
 }
+/** Shared game renderer, but with zero campaign-credit navigation. */
+function renderWorkshopVisibility(){
+  document.body.classList.toggle("workshop-mode",workshopActive);
+  $("game-levels").textContent=workshopActive?"← Equation Workshop":"▦ Levels";
+  if(!workshopActive)return;
+  $("chapter").textContent="FREE PLAY · EQUATION WORKSHOP";
+  $("chapter-status").hidden=false;
+  $("chapter-status").textContent="CUSTOM EQUATION · NO CAMPAIGN PROGRESS";
+  $("game-guide-restart").hidden=true;
+  $("campaign-hand-mode").hidden=true;
+  $("mode-wrapper").hidden=false;
+}
 function notebookMessage(message,status="info"){
   $("notebook-feedback").textContent=message;
   $("notebook-feedback").dataset.status=status;
@@ -465,6 +478,7 @@ function render() {
   }
   renderFirstGuide();
   renderNotebookVisibility();
+  renderWorkshopVisibility();
 }
 /**
  * A two-stage hand movement, not an instant model update followed by an effect.
@@ -1185,6 +1199,7 @@ async function finishTurn() {
     // the comic-book retrospective covers the laboratory.
     $("scene").classList.add("solved-scene");
     $("level-clear-title").textContent =
+      workshopActive?"Your own equation, balanced!":
       campaignStage==="guided" && campaignLevelNumber===20?"Guided Balance mastered!":
       campaignStage==="independent" && campaignLevelNumber===16?"Independent Balance mastered!":
       campaignLevelNumber!==null && campaignLevelNumber%4===0?"Chapter complete!":
@@ -1204,7 +1219,8 @@ async function finishTurn() {
 }
 async function guidedMove() {
   // Stage 2 is manual-only, even if the hidden Guided Mirror control is called.
-  if (notebookSession || campaignStage==="independent" || busy || isSolved(state)) return;
+  if (notebookSession || campaignStage==="independent" ||
+      (workshopActive&&mode!=="auto") || busy || isSolved(state)) return;
   const action=currentAction();
   const outcome=perform(state,action,"auto");
   if(!outcome.ok) {
@@ -1362,7 +1378,8 @@ async function replayNotebookWithSprites() {
 async function manualMove(side) {
   // A student-facing Stage 1 cannot perform one-sided actions, even if an
   // invisible prototype button is activated programmatically.
-  if(notebookSession || campaignStage==="guided" || busy || isSolved(state))return;
+  if(notebookSession || campaignStage==="guided" ||
+     (workshopActive&&mode!=="manual") || busy || isSolved(state))return;
   const wasPending=!!state.pending,action=currentAction();
   const outcome=perform(state,action,"manual",side);
   if(!outcome.ok){
@@ -1418,7 +1435,8 @@ function startLevel(index, quantityMode, levelOverride=null, campaignNumber=null
   notebookSession=null;
   notebookPhase="idle";
   notebookReplaySuccessful=false;
-  document.body.classList.remove("notebook-mode");
+  workshopActive=false;
+  document.body.classList.remove("notebook-mode","workshop-mode");
   levelIndex = (index + LEVELS.length) % LEVELS.length;
   const level = levelOverride || LEVELS[levelIndex];
   activeLevel = level;
@@ -1730,7 +1748,8 @@ function drawReplay(index, { animate = !reducedMotion, complete = false } = {}) 
   $("replay-progress").textContent = "Panel " + (replayIndex + 1) + " of " + replayEntries.length;
   $("replay-back").disabled = replayIndex === 0;
   $("replay-next").disabled = replayIndex >= replayEntries.length - 1;
-  $("next-level").textContent = campaignLevelNumber !== null
+  $("next-level").textContent = workshopActive?"Build another equation →":
+    campaignLevelNumber !== null
     ? (campaignStage==="guided" && campaignLevelNumber===20?"Finish Stage 1 →":
        campaignStage==="independent" && campaignLevelNumber===16?"Finish Stage 2 →":
        "Next level →")
@@ -1751,7 +1770,8 @@ function showReplay() {
   stopReplay();
   replayEntries = [{ after: state.history[0]?.before || { left: state.left, right: state.right } },
     ...state.history.map(entry => ({ ...entry }))];
-  $("replay-level-stamp").textContent = campaignLevelNumber===null
+  $("replay-level-stamp").textContent = workshopActive?"YOUR EQUATION · FREE PLAY":
+    campaignLevelNumber===null
     ? "THE EXPERIMENT REVEALED"
     : "STAGE "+(campaignStage==="independent"?2:1)+" · LEVEL "+
       String(campaignLevelNumber).padStart(2,"0")+" / "+
@@ -1860,7 +1880,7 @@ $("quantity-mode").addEventListener("change", event => {
     : "Only positive sprites and weights are available in this lesson.",5300);
 });
 $("level-select").addEventListener("change", event => {
-  if (notebookSession || campaignLevelNumber !== null) return render();
+  if (notebookSession || workshopActive || campaignLevelNumber !== null) return render();
   startLevel(Number(event.target.value));
 });
 $("motion-toggle").addEventListener("click", () => chooseMotion(!reducedMotion));
@@ -1873,6 +1893,14 @@ $("undo").addEventListener("click", () => {
 });
 $("reset").addEventListener("click", () => {
   if(notebookSession)return;
+  if(workshopActive){
+    const level=currentLevel(),selected=mode;
+    startLevel(0,"positive",level,null);
+    workshopActive=true;
+    mode=selected;
+    render();
+    return;
+  }
   startLevel(levelIndex,state.quantityMode,campaignLevelNumber===null?null:currentLevel(),
     campaignLevelNumber,campaignStage);
 });
@@ -1910,6 +1938,11 @@ $("replay-speed").addEventListener("change", event => {
 });
 document.addEventListener("visibilitychange", () => { replayLastFrame = null; });
 $("next-level").addEventListener("click", () => {
+  if(workshopActive){
+    hideReplay();
+    window.dispatchEvent(new Event("mathssprites:workshop-another"));
+    return;
+  }
   if (campaignLevelNumber !== null) {
     hideReplay();
     window.dispatchEvent(new CustomEvent("mathssprites:advance"));
@@ -2003,6 +2036,24 @@ $("notebook-next").addEventListener("click",()=>{
   if(busy||!notebookReplaySuccessful||notebookPhase!=="complete"||
      campaignStage!=="notebook"||campaignLevelNumber===null)return;
   window.dispatchEvent(new CustomEvent("mathssprites:advance"));
+});
+/** Build a custom balance using the same 48-object, whole-number engine.
+ * No campaign number or stage is ever assigned, so completion earns no credit. */
+window.addEventListener("mathssprites:workshop-launch",event=>{
+  if(busy)return;
+  const {level,handMode}=event.detail||{};
+  if(!level?.lockPositive||level.quantityMode!=="positive"||
+     level.id!=="workshop-custom")return;
+  startLevel(0,"positive",level,null);
+  workshopActive=true;
+  mode=handMode==="manual"?"manual":"auto";
+  render();
+});
+window.addEventListener("mathssprites:workshop-close",()=>{
+  if(busy)return;
+  workshopActive=false;
+  document.body.classList.remove("workshop-mode");
+  render();
 });
 window.addEventListener("mathssprites:launch",event=>{
   const {number,legacyIndex,level,stage}=event.detail;

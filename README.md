@@ -2,7 +2,7 @@
 
 *Three ways to learn algebra: watch the balance, move both rooms, then solve on paper before the sprites move.*
 
-**Status:** World 1 has **three fully playable stages**: Stage 1 · Guided Balance (20 puzzles; hand mirrors the operation), Stage 2 · Independent Balance (16 puzzles; separate visits to each room), and Stage 3 · Algebra Apprentice (12 notebook-first puzzles; write every operation before the sprites replay it). Stage 3 features backwards-faded working, its own unlocks and saved progress. The Equation Workshop is planned for PR22. The 13 advanced experiments remain available separately for QA.
+**Status:** World 1 has **three fully playable stages**: Stage 1 · Guided Balance (20 puzzles; hand mirrors the operation), Stage 2 · Independent Balance (16 puzzles; separate visits to each room), and Stage 3 · Algebra Apprentice (12 notebook-first puzzles; write every operation before the sprites replay it). Stage 3 features backwards-faded working, its own unlocks and saved progress. The Equation Workshop is **playable free play (PR22)**: enter a valid positive-whole-number equation, generate two rooms, choose a hand mode and solve without changing campaign progress. The 13 advanced experiments remain available separately for QA.
 
 ## The idea
 
@@ -42,6 +42,7 @@ In Stages 1 and 2, **comic-book panels appear automatically** after physical suc
 - [Stage 2 Independent Balance: 16 puzzles and teacher routes](docs/STAGE2_CAMPAIGN.md)
 - [Stage 3 notebook-first engine and paper-to-sprites preview (PR20)](docs/STAGE3_NOTEBOOK_FOUNDATION.md)
 - [Stage 3 Algebra Apprentice: twelve puzzles and teacher routes (PR21)](docs/STAGE3_CAMPAIGN.md)
+- [Equation Workshop: custom equations, physical restrictions and examples (PR22)](docs/EQUATION_WORKSHOP.md)
 - [Two play modes, hand interactions and containers](docs/CONTROL_AND_CONTAINERS.md)
 - [Automatic comic-book equation replay](docs/COMIC_REPLAY.md)
 - [Negative sprites, balloons and zero pairs](docs/SIGNED_TOKENS.md)
@@ -50,7 +51,7 @@ In Stages 1 and 2, **comic-book panels appear automatically** after physical suc
 
 The default URL opens **Home → World Select → World 1 Stage Select**. Stage 1 · Guided Balance contains the existing **20 positive whole-number puzzles** across five chapters. Levels unlock sequentially; their original saved completion records remain unchanged. Teachers can open any Stage 1 level through Settings. The hand now always mirrors the chosen operation automatically in both rooms for Stage 1, and the optional four-step introduction still starts at Level 1. Completing Level 20 earns the **Stage 1** mastery screen rather than claiming that all of World 1 has been completed.
 
-The Stage Select page now offers **Stage 2 · Independent Balance (16 playable)** after the 20 Stage 1 puzzles are complete, or immediately through teacher access. Stage 2 has four chapters, its own first-level tutorial, independent progress, and matching-hand gameplay. **Stage 3 · Algebra Apprentice (12 playable)** unlocks after Stage 2 is mastered (or through Teacher access). It has three four-level chapters, backwards-faded written support, a separate saved record and replay-gated mastery. The **Equation Workshop remains planned**. Teacher access also retains the zero-credit notebook sandbox in Settings; its test route is `?notebook=two-step-09`. Mathematical Worlds 2–4—negatives, fractions and squares/square roots—are separate. See [Stage 2 teacher routes](docs/STAGE2_CAMPAIGN.md).
+The Stage Select page now offers **Stage 2 · Independent Balance (16 playable)** after the 20 Stage 1 puzzles are complete, or immediately through teacher access. Stage 2 has four chapters, its own first-level tutorial, independent progress, and matching-hand gameplay. **Stage 3 · Algebra Apprentice (12 playable)** unlocks after Stage 2 is mastered (or through Teacher access). It has three four-level chapters, backwards-faded written support, a separate saved record and replay-gated mastery. The **Equation Workshop is now playable**, open to every student without campaign prerequisites. Teacher access also retains the zero-credit notebook sandbox in Settings; its test route is `?notebook=two-step-09`. Mathematical Worlds 2–4—negatives, fractions and squares/square roots—are separate. See [Stage 2 teacher routes](docs/STAGE2_CAMPAIGN.md).
 
 The original **thirteen curated experiments** have not been deleted. To inspect and regression-test their advanced mechanics before the later worlds go live, use the explicit authoring preview link `?preview=resident`, choose any prototype experiment there, or use a known ID such as `?preview=make-square`. The prototype preview is separate from the student campaign.
 
@@ -58,6 +59,7 @@ The mathematical engine still supports the earlier experiments, including signed
 
 - **Guided mirror (Stage 1)**: choose an operation and the hand performs it in both rooms. The hand mode is fixed, with no player-facing dropdown.
 - **Your turn (Stage 2 / preview)**: make a change in one room; the real scale tips until you repeat that exact operation in the other. A mismatched second move is demonstrated, explained and undone.
+- **Equation Workshop (free play)**: write a positive whole-number equation, choose Guided Mirror or Your Turn, play its real physical balance and review your algebra without earning campaign progress.
 - **Write, then replay (Stage 3)**: the equation is on paper first. Each written line must be a genuine balanced operation; completed working is re-enacted by the hand before level credit is saved.
 - **Transparent baskets**: dividing means making two to five identical groups *within each room*, then retaining one group on each side.
 - **Pencil-paced comic replay**: once a lone dark sprite faces the correct number of weights, the hand's actual steps unfold as comic panels. The pencil moves to each **individual algebra symbol**, draws it, pauses between lines, and only then advances to the next panel. Pause, continue, manual steps, and writing-speed choices are available.

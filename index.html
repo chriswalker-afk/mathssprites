@@ -11,6 +11,7 @@
   <link rel="stylesheet" href="./src/polish.css" />
   <link rel="stylesheet" href="./src/stages.css" />
   <link rel="stylesheet" href="./src/notebook.css" />
+  <link rel="stylesheet" href="./src/workshop.css" />
   <script type="module" src="./src/app.mjs"></script>
   <script type="module" src="./src/site.mjs"></script>
 </head>
@@ -77,6 +78,50 @@
       <section id="world1-workshop" class="workshop-card" aria-label="Equation Workshop"></section>
       <p id="stage-teacher-note" class="teacher-note" hidden>Teacher access opens every implemented level in Stages 1–3; future worlds and free-play tools remain locked.</p>
     </main>
+    <main class="site-page" id="site-workshop" hidden>
+      <button type="button" id="workshop-back" class="site-back-link" data-screen="stages">← Back to stages</button>
+      <div class="portal-heading">
+        <div><div class="portal-kicker">WORLD 01 · FREE PLAY · NO CAMPAIGN PROGRESS</div>
+          <h1 id="workshop-heading" tabindex="-1">The Equation Workshop</h1>
+          <p>Make your own mystery. Write a positive whole-number equation and watch the sprites take their places in the two rooms.</p></div>
+      </div>
+      <div class="workshop-builder">
+        <section class="workshop-lesson" aria-label="How custom balances work">
+          <div class="workshop-glyph" aria-hidden="true">⚖</div>
+          <h2>One equation. Two rooms.</h2>
+          <p>Every <strong>x</strong> is a dark sprite; every whole number is a collection of brass weights. The workshop checks that the mystery can be represented and solved using the World 1 hand tools.</p>
+          <div class="workshop-lesson-example" aria-label="Illustration of an equation as physical rooms">
+            <div><span>WEST</span><strong>3 sprites + 5 weights</strong></div>
+            <span class="workshop-lesson-equals" aria-hidden="true">⚖</span>
+            <div><span>EAST</span><strong>20 weights</strong></div>
+          </div>
+          <p class="workshop-smallprint">For now: positive whole-number values, at most 48 objects per room, whole-object moves and two to five equal groups. Negative numbers, fractions, squares and roots belong to future worlds.</p>
+        </section>
+        <section class="workshop-form-card" aria-label="Build a custom equation">
+          <form id="workshop-form" novalidate>
+            <label for="workshop-equation">Your equation</label>
+            <input id="workshop-equation" type="text" maxlength="80" inputmode="text"
+              spellcheck="false" autocomplete="off" autocapitalize="off"
+              placeholder="e.g. 3x + 5 = 20" aria-describedby="workshop-feedback" required />
+            <div class="workshop-examples">
+              <span>Try an example:</span>
+              <button type="button" class="workshop-example" data-workshop-example="x + 3 = 8">x + 3 = 8</button>
+              <button type="button" class="workshop-example" data-workshop-example="3x + 5 = 20">3x + 5 = 20</button>
+              <button type="button" class="workshop-example" data-workshop-example="2x + 3 = x + 7">2x + 3 = x + 7</button>
+              <button type="button" class="workshop-example" data-workshop-example="19 = 2x + 9">19 = 2x + 9</button>
+            </div>
+            <label for="workshop-hand-mode">How should the hand work?</label>
+            <select id="workshop-hand-mode">
+              <option value="auto">Guided Mirror · one action changes both rooms</option>
+              <option value="manual">Your Turn · make the same move in each room</option>
+            </select>
+            <p id="workshop-feedback" class="workshop-feedback" role="status" aria-live="polite">The workshop will check your equation before creating a scene. Your campaign progress will not change.</p>
+            <button type="submit" class="primary-btn" id="workshop-create">Build my balance →</button>
+          </form>
+          <p class="workshop-storage-note">Free play only. You can return and enter another equation whenever you like; this does not unlock or complete campaign levels.</p>
+        </section>
+      </div>
+    </main>
     <main class="site-page" id="site-levels" hidden>
       <button type="button" id="site-back" class="site-back-link">← Back to stages</button>
       <div class="portal-heading">
@@ -109,7 +154,7 @@
           <li>Keep the rooms balanced by making matching changes to both.</li>
           <li>When one sprite is left facing only weights, watch the hand's moves turn into algebra in the comic replay.</li></ol>
         <p><strong>Stage 1 · Guided Balance:</strong> choose an action and the hand mirrors it automatically in both rooms. <strong>Stage 2 · Independent Balance:</strong> you make each move yourself in both rooms, one after the other. <strong>Stage 3 · Algebra Apprentice:</strong> you will write the solution first, then see your steps replayed with sprites. All three World 1 stages are playable.</p>
-        <p>In the first two stages, an inadvisable experiment is safe: the hand shows what went wrong, explains it and restores the objects. The Equation Workshop will eventually let you create your own equations.</p>
+        <p>In the first two stages, an inadvisable experiment is safe: the hand shows what went wrong, explains it and restores the objects. The Equation Workshop now lets you create your own positive-whole-number equations without affecting campaign progress.</p>
         <button type="button" class="primary-btn" data-screen="worlds">Choose your first world →</button>
       </div>
     </main>
@@ -127,7 +172,7 @@
           <p><strong>Teacher preview · Stage 3</strong> — try the paper-first equation editor with a sample positive whole-number puzzle. This is a prototype, not a Stage 3 level, and earns no campaign progress.</p>
           <button type="button" class="secondary-btn" id="site-notebook-preview">Preview the Algebra Apprentice notebook →</button>
         </div>
-        <p>Progress is stored on this browser only. No account is needed. Stage 1 (20 levels), Stage 2 (16 levels) and Stage 3 (12 notebook-first levels) save progress separately. Each new stage unlocks when the previous one is mastered; Teacher access opens all implemented levels. Later mathematical worlds and the Equation Workshop are still planned.</p>
+        <p>Progress is stored on this browser only. No account is needed. Stage 1 (20 levels), Stage 2 (16 levels) and Stage 3 (12 notebook-first levels) save progress separately. Each new stage unlocks when the previous one is mastered; Teacher access opens all implemented levels. Later mathematical worlds are still planned. The separate Equation Workshop is playable free play.</p>
         <button type="button" class="secondary-btn" id="site-motion">Use reduced motion</button>
         <p>Animation settings also apply to the hand, sprites and pencil inside levels.</p>
         <button type="button" class="primary-btn" data-screen="home">Back to the workshop →</button>
