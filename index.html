@@ -107,7 +107,7 @@
       </div>
       <div id="world1-stage-cards" class="world1-stage-grid" aria-label="World 1 learning stages"></div>
       <section id="world1-workshop" class="workshop-card" aria-label="Equation Workshop"></section>
-      <p id="stage-teacher-note" class="teacher-note" hidden>Teacher access opens every implemented level in Stages 1–3; future worlds and free-play tools remain locked.</p>
+      <p id="stage-teacher-note" class="teacher-note" hidden>Teacher tools include extra previews; all implemented student levels are open.</p>
     </main>
     <main class="site-page" id="site-workshop" hidden>
       <button type="button" id="workshop-back" class="site-back-link" data-screen="stages">← Back to stages</button>
@@ -172,8 +172,9 @@
           <p id="stage-finale-message">You've completed all 20 guided experiments. Stage 2 asks you to balance each room yourself.</p>
         </div>
       </section>
-      <div id="level-sections"></div>
-      <p id="teacher-note" class="teacher-note" hidden>Teacher access unlocks every implemented puzzle in this stage, without changing its mathematics.</p>
+      <p id="level-star-legend" class="level-star-legend">★★★ shortest route · ★★ one extra move · ★ two or more extra moves. Your best result is kept; all implemented levels are open.</p>
+       <div id="level-sections"></div>
+      <p id="teacher-note" class="teacher-note" hidden>Every implemented puzzle in this stage is open to students.</p>
     </main>
     <main class="site-page" id="site-help" hidden>
       <div class="site-content-panel">
@@ -194,7 +195,7 @@
         <div class="portal-kicker">THE WORKSHOP CONTROLS</div>
         <h2 tabindex="-1">Settings</h2>
         <label class="settings-option"><input id="teacher-unlock" type="checkbox" />
-          <span><strong>Teacher access</strong> — unlock every currently playable level for classroom use.</span></label>
+          <span><strong>Teacher tools</strong> — open additional authoring previews and classroom controls. All implemented levels are already available to students.</span></label>
         <label class="settings-option"><input id="site-guided-help" type="checkbox" checked />
           <span><strong>First-visit guide</strong> — show short, step-by-step instructions in Level 1. You can dismiss them at any time.</span></label>
         <button type="button" class="secondary-btn" id="site-replay-intro">Replay the Guided Balance introduction</button>
@@ -450,6 +451,7 @@
           <span class="clear-spark" aria-hidden="true">✦</span>
           <strong id="level-clear-title">Balance restored!</strong>
           <span id="level-clear-subtitle">Let's discover the algebra behind those moves.</span>
+           <span id="level-clear-rating" class="level-clear-rating" hidden></span>
         </div>
       </section>
 
@@ -507,6 +509,7 @@
           <div class="eyebrow" id="replay-level-stamp">THE EXPERIMENT REVEALED</div>
           <h2 id="replay-title">Your algebra, illustrated.</h2>
           <p>The sprites remember every move. Watch what your hand really did.</p>
+          <p id="replay-star-summary" class="replay-star-summary" hidden></p>
         </div>
         <button type="button" id="replay-close" class="replay-exit">← Back to the laboratory</button>
       </header>
