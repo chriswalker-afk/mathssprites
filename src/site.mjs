@@ -23,6 +23,10 @@ import {
   loadTeacherSetting, saveTeacherSetting
 } from "./progress.mjs";
 import {
+  loadRatings,saveRatings,recordBestMoves,bestMoves,optimalMoves,
+  starsForMoves,ratingForLevel,starGlyphs,totalEarnedStars,TOTAL_AVAILABLE_STARS
+} from "./star-ratings.mjs";
+import {
   readGuideEnabled, writeGuideEnabled, writeGuideSeen,writeIndependentGuideSeen
 } from "./onboarding.mjs";
 
@@ -34,6 +38,7 @@ window.addEventListener("mathssprites:motion-change",event=>{
 let progress = loadProgress();
 let stage2Progress = loadStage2Progress();
 let stage3Progress = loadStage3Progress();
+let ratings = loadRatings();
 let teacher = loadTeacherSetting();
 let guideEnabled = readGuideEnabled();
 let currentScreen = "home";
@@ -65,6 +70,7 @@ function unlocked(number) {
   return isWorld1Unlocked(number, progress.completed, teacher);
 }
 function homeAction() {
+  const starStatus=totalEarnedStars(ratings)+" / "+TOTAL_AVAILABLE_STARS+" stars earned";
   const stage1Ready=stageOneComplete(progress.completed);
   const stage2Ready=stageTwoComplete(stage2Progress.completed);
   if(stage1Ready&&stage2Ready&&stageCanOpen("notebook")){
@@ -74,7 +80,7 @@ function homeAction() {
       stage3Progress.completed.length
         ?"Continue Stage 3 · Level "+n+" →":"Begin Stage 3 · Algebra Apprentice →";
     $("home-progress").textContent="Stages 1 and 2 mastered · Stage 3 "+
-      stage3Progress.completed.length+"/12 complete · progress saved on this device";
+      stage3Progress.completed.length+"/12 complete · "+starStatus+" · saved on this device";
     return;
   }
   if(stage1Ready&&stageCanOpen("independent")){
@@ -82,7 +88,7 @@ function homeAction() {
     $("home-play").textContent=stage2Progress.completed.length
       ?"Continue Stage 2 · Level "+n+" →":"Begin Stage 2 · Independent Balance →";
     $("home-progress").textContent="Stage 1 mastered · Stage 2 "+
-      stage2Progress.completed.length+"/16 complete · progress saved on this device";
+      stage2Progress.completed.length+"/16 complete · "+starStatus+" · saved on this device";
     return;
   }
   const n=unlocked(progress.lastPlayed)?progress.lastPlayed:1;
@@ -91,8 +97,8 @@ function homeAction() {
     ? (progress.completed.includes(n)?"Replay Stage 1 · Level ":"Continue Stage 1 · Level ")+n+" →"
     : "Begin Stage 1 · Guided Balance →";
   $("home-progress").textContent=played
-    ? progress.completed.length+" of 20 Guided Balance experiments complete · saved on this device"
-    : "Stage 1: 20 playable experiments · Stage 2 opens after Stage 1";
+    ? progress.completed.length+" of 20 Guided Balance experiments complete · "+starStatus+" · saved on this device"
+    : "All 48 levels open across three stages · "+starStatus+" · saved on this device";
 }
 function renderWorlds() {
   $("world-cards").innerHTML = WORLDS.map(world => {
@@ -101,7 +107,7 @@ function renderWorlds() {
         ? "STAGES 1–2 MASTERED · STAGE 3 " + stage3Progress.completed.length + "/12 complete"
         : stageOneComplete(progress.completed)
         ? "STAGE 1 MASTERED · STAGE 2 " + stage2Progress.completed.length + "/16 complete"
-        : "STAGE 1 · " + progress.completed.length + "/20 complete · Stage 2 next")
+        : "STAGE 1 · " + progress.completed.length + "/20 complete · all stages open")
       : "COMING SOON";
     return '<article class="world-card world-' + world.theme +
       (world.available ? ' world-ready' : ' world-planned') + '">' +
@@ -121,7 +127,7 @@ function renderWorlds() {
   }).join("");
 }
 /** The three distinct representations appear before the existing chapter list.
- * Locked stages have no playable link, even when the teacher flag is on. */
+ * All three implemented learning stages are available to students. */
 function renderStages() {
   const statuses={
     guided:{progress,complete:stageOneComplete(progress.completed)},
@@ -134,7 +140,7 @@ function renderStages() {
     const countText=playable
       ? meta.progress.completed.length+" of "+stage.count+" experiments complete"
       : stage.available
-        ? stage.count+" experiments · complete Stage "+(stage.number-1)+" to unlock"
+        ? stage.count+" experiments · available to students"
         : stage.count+" new experiments planned";
     return '<article class="stage-card '+(playable?"stage-ready":"stage-planned")+
       '" data-stage="'+stage.id+'" aria-label="Stage '+stage.number+
