@@ -461,6 +461,10 @@ window.addEventListener("mathssprites:workshop-another",()=>showScreen("workshop
 $("site-shell").addEventListener("click", event => {
   const target = event.target.closest("button");
   if (!target || target.disabled) return;
+  if(target.id==="home-choose-level"){
+    boardReturnScreen="home";
+    return showScreen("levels");
+  }
   if(target.dataset.homeStage){
     const worldId=target.dataset.homeWorld;
     const slot=stageResumeLevel(campaign,worldId,target.dataset.homeStage);
