@@ -443,12 +443,37 @@ $("stages-back").addEventListener("click", () => showScreen("worlds"));
 window.addEventListener("mathssprites:solved",event=>{
   if(playingNumber===null || event.detail?.number!==playingNumber ||
      event.detail?.stage!==playingStage)return;
+  const slot=playingStage==="independent"?findIndependentLevel(playingNumber):
+    playingStage==="notebook"?findApprenticeLevel(playingNumber):findWorld1Level(playingNumber);
+  if(!slot||event.detail?.levelId!==slot.id)return;
+
+  // Preserve the original independent completion stores and their keys.
   if(playingStage==="independent")
     stage2Progress=saveStage2Progress(markStage2Complete(stage2Progress,playingNumber));
   else if(playingStage==="notebook")
     stage3Progress=saveStage3Progress(markStage3Complete(stage3Progress,playingNumber));
   else
     progress=saveProgress(markWorld1Complete(progress,playingNumber));
+
+  // Both hand visits make ONE algebra move. The score counts the final route,
+  // not failed trials, incomplete hand visits or undone transactions.
+  const moves=event.detail.moves;
+  const optimal=optimalMoves(playingStage,playingNumber);
+  const earned=starsForMoves(moves,optimal);
+  if(earned){
+    ratings=saveRatings(recordBestMoves(ratings,playingStage,playingNumber,moves));
+    const best=bestMoves(ratings,playingStage,playingNumber);
+    const bestRating=ratingForLevel(ratings,playingStage,playingNumber);
+    const message=starGlyphs(earned)+" "+earned+" star"+(earned===1?"":"s")+
+      " · "+moves+" "+(moves===1?"move":"moves")+" (optimal: "+optimal+
+      ") · Best: "+starGlyphs(bestRating)+" in "+best+" "+(best===1?"move":"moves");
+    $("level-clear-rating").textContent=message;
+    $("level-clear-rating").hidden=false;
+    $("replay-star-summary").textContent=message;
+    $("replay-star-summary").hidden=false;
+    if(playingStage==="notebook")
+      $("notebook-playback-message").textContent+=" · "+message;
+  }
   renderWorlds();
   renderStages();
   renderLevels();
