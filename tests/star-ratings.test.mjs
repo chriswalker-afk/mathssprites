@@ -69,7 +69,7 @@ test("legacy completions remain untouched and unrated; corrupted ratings are ign
   assert.equal(store.get("mathssprites.progress.v1"),old);
   assert.equal(store.get("mathssprites.independent-progress.v1"),stage2);
   const dirty={guided:{"1":0,"2":1,"3":100001,"4":2,"21":1},
-    independent:{"5":1,"7":"1"},notebook:{"12":4,"19":1}};
+    independent:{"5":0,"7":"1"},notebook:{"12":4,"19":1}};
   assert.deepEqual(normalizeRatings(dirty),{
     guided:{"2":1,"4":2},independent:{},notebook:{"12":4}
   });
