@@ -14,6 +14,7 @@
   <link rel="stylesheet" href="./src/workshop.css" />
   <link rel="stylesheet" href="./src/home-hero.css" />
   <link rel="stylesheet" href="./src/viewport-fit.css?v=28" />
+  <link rel="stylesheet" href="./src/scene-polish.css?v=30" />
   <script type="module" src="./src/app.mjs"></script>
   <script type="module" src="./src/site.mjs"></script>
 </head>
@@ -21,7 +22,15 @@
   <div class="site-shell" id="site-shell">
     <header class="site-nav">
       <button type="button" class="site-brand" data-screen="home" aria-label="Maths Sprites home">
-        <span class="brand-mark" aria-hidden="true"><i></i><i></i></span>
+        <span class="brand-sprite-frame" aria-hidden="true">
+            <span class="brand-sprite-actor token sprite sprite-black">
+              <span class="sprite-ground-shadow"></span>
+              <span class="sprite-reaction-shell"><span class="sprite-motion">
+                <span class="sprite-feet"></span>
+                <span class="sprite-body"><span class="sprite-eyes"><i></i><i></i></span></span>
+              </span></span>
+            </span>
+          </span>
         <span>Maths Sprites<span class="title-dot">.</span></span>
       </button>
       <nav class="site-nav-links" aria-label="Main menu">
@@ -216,8 +225,18 @@
   <div class="app-shell" id="game-shell" hidden>
     <header class="topbar">
       <div class="identity">
-        <span class="brand-mark" aria-hidden="true"><i></i><i></i></span>
-        <div><div class="eyebrow">THE EXPERIMENTAL WORKSHOP</div><h1>Maths Sprites<span class="title-dot">.</span></h1></div>
+        <button type="button" id="game-brand-home" class="game-sprite-home" aria-label="Return to Maths Sprites home" title="Home">
+          <span class="brand-sprite-frame" aria-hidden="true">
+            <span class="brand-sprite-actor token sprite sprite-black">
+              <span class="sprite-ground-shadow"></span>
+              <span class="sprite-reaction-shell"><span class="sprite-motion">
+                <span class="sprite-feet"></span>
+                <span class="sprite-body"><span class="sprite-eyes"><i></i><i></i></span></span>
+              </span></span>
+            </span>
+          </span>
+        </button>
+        <div class="identity-title"><div class="eyebrow">THE EXPERIMENTAL WORKSHOP</div><h1>Maths Sprites<span class="title-dot">.</span></h1></div>
       </div>
       <div class="header-actions">
         <button class="top-icon game-nav-button" id="game-home" type="button">⌂ Home</button>
@@ -306,7 +325,6 @@
         <div class="shelf shelf-left" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
         <div class="shelf shelf-right" aria-hidden="true"><i></i><i></i><i></i></div>
         <div class="light-pool" aria-hidden="true"></div>
-        <div class="scene-heading">THE BALANCE CHAMBERS <span class="scene-heading-rule"></span> LAB № 04</div>
         <div id="speech" class="speech" role="status" aria-live="polite" hidden></div>
 
         <div id="hand" class="giant-hand" data-phase="rest" aria-hidden="true">
@@ -410,7 +428,6 @@
 
         <div class="rooms-row" id="rooms-row">
           <div class="chamber" id="left-chamber" data-side="left">
-            <div class="room-roof" aria-hidden="true"><div class="roof-line"></div></div>
             <div class="room-interior">
               <div class="room-arch" aria-hidden="true"></div>
               <div class="room-window" aria-hidden="true"><span></span></div>
@@ -426,7 +443,6 @@
             <div class="scale-pan" aria-hidden="true"></div>
           </div>
           <div class="chamber" id="right-chamber" data-side="right">
-            <div class="room-roof" aria-hidden="true"><div class="roof-line"></div></div>
             <div class="room-interior">
               <div class="room-arch" aria-hidden="true"></div>
               <div class="room-window" aria-hidden="true"><span></span></div>
@@ -448,7 +464,7 @@
         <div class="scale-base" aria-hidden="true"></div>
         <div class="workbench" aria-hidden="true"></div>
         <div class="action-caption" id="action-caption" aria-live="polite" hidden></div>
-        <div class="scene-caption" id="balance-caption">A perfectly balanced mystery</div>
+        <div id="balance-caption" class="scene-status-visually-hidden" role="status" aria-live="polite"></div>
         <div id="level-clear" class="level-clear" role="status" aria-live="polite" hidden>
           <span class="clear-spark" aria-hidden="true">✦</span>
           <strong id="level-clear-title">Balance restored!</strong>
