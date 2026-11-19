@@ -154,7 +154,7 @@ test("explicit in-game Motion: on auto-plays even when the OS prefers reduced mo
   expect(cssAnimation).toContain("hero-item-land");
 });
 
-test("initial home load and reload do not select or focus the headline",async({page})=>{
+test("initial home load and reload do not select or focus the headline @smoke",async({page})=>{
   await expect(page.locator("#home-title")).not.toBeFocused();
   await page.reload();
   await expect(page.locator("#home-title")).not.toBeFocused();

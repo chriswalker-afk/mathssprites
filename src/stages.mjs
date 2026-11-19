@@ -44,10 +44,8 @@ export function findWorld1Stage(id) {
 export function canOpenWorld1Stage(id,{teacher=false,stage1Completed=false,stage2Completed=false}={}) {
   const stage=findWorld1Stage(id);
   if (!stage?.available) return false;
-  if (stage.id==="guided") return true;
-  if (teacher) return true;
-  if (stage.id==="independent") return stage1Completed;
-  return stage2Completed;
+  // No completion-based gates among the three fully implemented stages.
+  return true;
 }
 export function stageThreeComplete(completed=[]) {
   return APPRENTICE_LEVELS.every(slot=>completed.includes(slot.number));

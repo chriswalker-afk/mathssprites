@@ -100,20 +100,16 @@ test("the curriculum fades its model and first/last prompts without leaking curr
   }
 });
 
-test("Stage 3 sequential unlocking, teacher access and stage gating",()=>{
-  assert.equal(canOpenWorld1Stage("notebook"),false);
-  assert.equal(canOpenWorld1Stage("notebook",{stage1Completed:true}),false);
+test("every implemented notebook puzzle is open without prerequisite stages or teacher access",()=>{
+  assert.equal(canOpenWorld1Stage("notebook"),true);
+  assert.equal(canOpenWorld1Stage("notebook",{stage1Completed:true}),true);
   assert.equal(canOpenWorld1Stage("notebook",{stage2Completed:true}),true);
-  assert.equal(canOpenWorld1Stage("notebook",{teacher:true}),true);
   assert.equal(canOpenWorld1Stage("equation-workshop",{teacher:true,stage2Completed:true}),false);
-  assert.equal(isApprenticeUnlocked(1,[]),true);
-  assert.equal(isApprenticeUnlocked(2,[]),false);
-  assert.equal(isApprenticeUnlocked(2,[1]),true);
-  assert.equal(isApprenticeUnlocked(12,[1]),false);
-  assert.equal(isApprenticeUnlocked(12,[],true),true);
+  for(const slot of APPRENTICE_LEVELS)
+    assert.equal(isApprenticeUnlocked(slot.number,[],false),true);
   assert.equal(isApprenticeUnlocked(13,[],true),false);
   assert.equal(findApprenticeLevel(0),null);
-  assert.equal(nextApprenticeLevel(1,[1])?.number,2);
+  assert.equal(nextApprenticeLevel(1,[])?.number,2);
   assert.equal(nextApprenticeLevel(12,[],true),null);
   assert.equal(stageThreeComplete([]),false);
   assert.equal(stageThreeComplete(Array.from({length:12},(_,i)=>i+1)),true);

@@ -98,7 +98,7 @@ export function findApprenticeLevel(number){
 }
 export function isApprenticeUnlocked(number,completed=[],teacher=false){
  const slot=findApprenticeLevel(number);
- return !!slot && (teacher||slot.number===1||completed.includes(slot.number-1));
+ return !!slot?.available; // All implemented notebook levels are open to students.
 }
 export function nextApprenticeLevel(number,completed=[],teacher=false){
  const next=findApprenticeLevel(Number(number)+1);

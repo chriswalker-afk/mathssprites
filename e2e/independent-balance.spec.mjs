@@ -15,24 +15,25 @@ async function openStage2(page,{teacher=true,level=1}={}){
   await page.locator('[data-level="'+level+'"]').click();
   await expect(page.locator("#chapter-status")).toContainText("STAGE 2");
 }
-test("Stage 2 is locked before Stage 1 mastery but available after it",async({page})=>{
+test("Stage 2 and Stage 3 are selectable before Stage 1 is completed",async({page})=>{
   await page.locator('[data-screen="worlds"]').first().click();
   await page.getByRole("button",{name:"Explore stages"}).click();
-  await expect(page.locator('[data-stage="independent"] button')).toHaveCount(0);
-  await expect(page.locator('[data-stage="independent"]')).toContainText("Complete Stage 1");
+  await expect(page.locator('[data-stage="independent"] button')).toHaveCount(1);
+  await expect(page.locator('[data-stage="notebook"] button')).toHaveCount(1);
   const complete={completed:Array.from({length:20},(_,i)=>i+1),lastPlayed:20};
   await page.evaluate(v=>localStorage.setItem("mathssprites.progress.v1",JSON.stringify(v)),complete);
   await page.reload();
   await page.locator('[data-screen="worlds"]').first().click();
   await page.getByRole("button",{name:"Explore stages"}).click();
   await expect(page.locator('[data-stage="independent"] button')).toBeVisible();
-  await expect(page.locator('[data-stage="notebook"] button')).toHaveCount(0);
+  await expect(page.locator('[data-stage="notebook"] button')).toHaveCount(1);
   await expect(page.locator("#world1-workshop button")).toHaveCount(1);
   await page.getByRole("button",{name:"Choose Stage 2 levels"}).click();
   await expect(page.locator(".chapter-group")).toHaveCount(4);
   await expect(page.locator(".level-tile")).toHaveCount(16);
   await expect(page.locator('[data-level="1"]')).toBeEnabled();
-  await expect(page.locator('[data-level="2"]')).toBeDisabled();
+  await expect(page.locator('[data-level="2"]')).toBeEnabled();
+  await expect(page.locator('[data-level="16"]')).toBeEnabled();
 });
 
 test("the hand visits each chamber and shows a real temporary scale tilt",async({page})=>{

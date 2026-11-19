@@ -35,11 +35,10 @@ async function write(page,line){
   await page.locator("#notebook-equation").press("Enter");
 }
 
-test("Stage 3 is locked until Stage 2 is mastered; teacher access grants all twelve",async({page})=>{
+test("Stage 3 and all twelve notebook levels are open without prior mastery",async({page})=>{
   await page.locator('[data-screen="worlds"]').first().click();
   await page.getByRole("button",{name:"Explore stages"}).click();
-  await expect(page.locator('[data-stage="notebook"] button')).toHaveCount(0);
-  await expect(page.locator('[data-stage="notebook"]')).toContainText("Complete Stage 2");
+  await expect(page.locator('[data-stage="notebook"] button')).toHaveCount(1);
   await masterFirstTwo(page);
   await expect(page.locator("#home-play")).toContainText("Begin Stage 3");
   await page.locator('[data-screen="worlds"]').first().click();
@@ -49,7 +48,8 @@ test("Stage 3 is locked until Stage 2 is mastered; teacher access grants all twe
   await expect(page.locator(".chapter-group")).toHaveCount(3);
   await expect(page.locator(".level-tile")).toHaveCount(12);
   await expect(page.locator('[data-level="1"]')).toBeEnabled();
-  await expect(page.locator('[data-level="2"]')).toBeDisabled();
+  await expect(page.locator('[data-level="2"]')).toBeEnabled();
+  await expect(page.locator('[data-level="12"]')).toBeEnabled();
   await expect(page.locator("#world1-workshop button")).toHaveCount(1);
 });
 
