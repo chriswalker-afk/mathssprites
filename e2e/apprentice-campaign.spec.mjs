@@ -133,7 +133,7 @@ test("a fully mastered Stage 3 shows its own 12/12 banner and completion route",
   await page.evaluate(()=>localStorage.setItem("mathssprites.apprentice-progress.v1",
     JSON.stringify({completed:Array.from({length:12},(_,i)=>i+1),lastPlayed:12})));
   await page.reload();
-  await expect(page.locator("#home-play")).toContainText("Explore your mastered stages");
+  await expect(page.locator("#home-play")).toContainText("Replay Stage 3 · Level 12");
   await page.locator('[data-screen="worlds"]').first().click();
   await page.getByRole("button",{name:"Explore stages"}).click();
   await expect(page.locator('[data-stage="notebook"]')).toContainText("Stage mastered");
