@@ -1,6 +1,7 @@
 import { LEVELS } from "./engine.mjs";
 import {createWorkshopEquation} from "./equation-workshop.mjs";
 import {createHomeHero} from "./home-hero.mjs";
+import {loadResume,saveResume,resumeDestination,resumeLabel,RESUME_STAGE_NUMBERS} from "./resume.mjs";
 import {
   WORLDS, WORLD1_CHAPTERS, WORLD1_LEVELS, findWorld1Level,
   isWorld1Unlocked, nextWorld1Level
@@ -39,6 +40,7 @@ let progress = loadProgress();
 let stage2Progress = loadStage2Progress();
 let stage3Progress = loadStage3Progress();
 let ratings = loadRatings();
+let recent = loadResume();
 let teacher = loadTeacherSetting();
 let guideEnabled = readGuideEnabled();
 let currentScreen = "home";
@@ -69,37 +71,28 @@ function clean(text) {
 function unlocked(number) {
   return isWorld1Unlocked(number, progress.completed, teacher);
 }
-function homeAction() {
-  const starStatus=totalEarnedStars(ratings)+" / "+TOTAL_AVAILABLE_STARS+" stars earned";
-  const stage1Ready=stageOneComplete(progress.completed);
-  const stage2Ready=stageTwoComplete(stage2Progress.completed);
-  if(stage1Ready&&stage2Ready&&stageCanOpen("notebook")){
-    const mastered=stageThreeComplete(stage3Progress.completed);
-    const n=apprenticeUnlocked(stage3Progress.lastPlayed)?stage3Progress.lastPlayed:1;
-    $("home-play").textContent=mastered?"Explore your mastered stages →":
-      stage3Progress.completed.length
-        ?"Continue Stage 3 · Level "+n+" →":"Begin Stage 3 · Algebra Apprentice →";
-    $("home-progress").textContent="Stages 1 and 2 mastered · Stage 3 "+
-      stage3Progress.completed.length+"/12 complete · "+starStatus+" · saved on this device";
-    return;
-  }
-  if(stage1Ready&&stageCanOpen("independent")){
-    const n=independentUnlocked(stage2Progress.lastPlayed)?stage2Progress.lastPlayed:1;
-    $("home-play").textContent=stage2Progress.completed.length
-      ?"Continue Stage 2 · Level "+n+" →":"Begin Stage 2 · Independent Balance →";
-    $("home-progress").textContent="Stage 1 mastered · Stage 2 "+
-      stage2Progress.completed.length+"/16 complete · "+starStatus+" · saved on this device";
-    return;
-  }
-  const n=unlocked(progress.lastPlayed)?progress.lastPlayed:1;
-  const played=progress.completed.length>0;
-  $("home-play").textContent=played
-    ? (progress.completed.includes(n)?"Replay Stage 1 · Level ":"Continue Stage 1 · Level ")+n+" →"
-    : "Begin Stage 1 · Guided Balance →";
-  $("home-progress").textContent=played
-    ? progress.completed.length+" of 20 Guided Balance experiments complete · "+starStatus+" · saved on this device"
-    : "All 48 levels open across three stages · "+starStatus+" · saved on this device";
+function homeDestination() {
+  return resumeDestination(recent,progress,stage2Progress,stage3Progress);
 }
+function homeAction() {
+  const destination=homeDestination();
+  const current=destination.stage==="independent"?stage2Progress:
+    destination.stage==="notebook"?stage3Progress:progress;
+  const played=!!recent || progress.completed.length>0 ||
+    stage2Progress.completed.length>0 || stage3Progress.completed.length>0 ||
+    progress.lastPlayed>1 || stage2Progress.lastPlayed>1 || stage3Progress.lastPlayed>1;
+  $("home-play").textContent=resumeLabel(destination,{
+    played,completed:current.completed
+  });
+  const totalCompleted=progress.completed.length+stage2Progress.completed.length+
+    stage3Progress.completed.length;
+  $("home-progress").textContent="Continue from Stage "+
+    RESUME_STAGE_NUMBERS[destination.stage]+" · Level "+destination.number+
+    " · "+totalCompleted+" / 48 levels complete · "+
+    totalEarnedStars(ratings)+" / "+TOTAL_AVAILABLE_STARS+
+    " stars · saved on this browser";
+}
+
 function renderWorlds() {
   $("world-cards").innerHTML = WORLDS.map(world => {
     const progressLine = world.available
@@ -296,6 +289,7 @@ function launch(number,stage=selectedStage) {
   selectedStage=stage;
   playingStage=stage;
   playingNumber=slot.number;
+  recent=saveResume({stage,number:slot.number});
   currentScreen="game";
   if(stage==="independent")
     stage2Progress=saveStage2Progress({...stage2Progress,lastPlayed:slot.number});
@@ -375,14 +369,8 @@ $("site-shell").addEventListener("click", event => {
   if (target.dataset.level) return launch(Number(target.dataset.level));
 });
 $("home-play").addEventListener("click", () => {
-  if(stageOneComplete(progress.completed) && stageTwoComplete(stage2Progress.completed)){
-    if(stageThreeComplete(stage3Progress.completed))return showScreen("stages");
-    if(stageCanOpen("notebook"))
-      return launch(apprenticeUnlocked(stage3Progress.lastPlayed)?stage3Progress.lastPlayed:1,"notebook");
-  }
-  if(stageOneComplete(progress.completed) && stageCanOpen("independent"))
-    return launch(independentUnlocked(stage2Progress.lastPlayed)?stage2Progress.lastPlayed:1,"independent");
-  return launch(unlocked(progress.lastPlayed)?progress.lastPlayed:1,"guided");
+  const destination=homeDestination(); // exact same destination used by the label
+  launch(destination.number,destination.stage);
 });
 $("teacher-unlock").addEventListener("change", event => {
   teacher = saveTeacherSetting(event.target.checked);
@@ -455,6 +443,11 @@ window.addEventListener("mathssprites:solved",event=>{
   else
     progress=saveProgress(markWorld1Complete(progress,playingNumber));
 
+  // The home CTA must use the NEXT adjacent level (when there is one),
+  // even if a student solved the current level out of order.
+  const updated=playingStage==="independent"?stage2Progress:
+    playingStage==="notebook"?stage3Progress:progress;
+  recent=saveResume({stage:playingStage,number:updated.lastPlayed});
   // Both hand visits make ONE algebra move. The score counts the final route,
   // not failed trials, incomplete hand visits or undone transactions.
   const moves=event.detail.moves;
