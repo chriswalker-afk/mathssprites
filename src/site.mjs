@@ -561,6 +561,32 @@ $("site-shell").addEventListener("click", event => {
   if (target.dataset.level) return launch(target.dataset.levelId||
     Number(target.dataset.level),selectedStage,selectedWorld);
 });
+// Keep the native Tab order, with spatial arrow keys as a shortcut.
+$("site-levels").addEventListener("keydown",event=>{
+  if(event.altKey||event.ctrlKey||event.metaKey||event.shiftKey)return;
+  const button=event.target,key=event.key;
+  if(!(button instanceof HTMLButtonElement)||button.disabled)return;
+  if(!["ArrowLeft","ArrowRight","ArrowUp","ArrowDown","Home","End"].includes(key))return;
+  const group=button.closest("#map-world-tabs,#map-stage-tabs");
+  if(group){
+    const enabled=[...group.querySelectorAll("button:not(:disabled)")];
+    const index=enabled.indexOf(button);
+    if(index<0)return;
+    const next=key==="Home"?0:key==="End"?enabled.length-1:
+      Math.max(0,Math.min(enabled.length-1,index+
+        (key==="ArrowRight"||key==="ArrowDown"?1:-1)));
+    event.preventDefault();
+    if(next!==index)enabled[next].click();
+    return;
+  }
+  if(!button.matches(".level-tile"))return;
+  const tiles=[...$("level-sections").querySelectorAll(".level-tile:not(:disabled)")];
+  const index=tiles.indexOf(button);
+  if(index<0)return;
+  const next=spatialTileIndex(tiles.map(tile=>tile.getBoundingClientRect()),index,key);
+  event.preventDefault();
+  tiles[next]?.focus();
+});
 $("home-play").addEventListener("click", () => {
   const destination=homeDestination();
   launch(destination.levelId,destination.stageId,destination.worldId);
