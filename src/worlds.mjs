@@ -166,8 +166,9 @@ export function findWorld1Level(number) {
 export function isWorld1Unlocked(number, completed = [], teacher = false) {
   const slot = findWorld1Level(number);
   if (!slot?.available) return false;
-  if (teacher || slot.number === 1) return true;
-  return completed.includes(slot.number - 1);
+  // All implemented World 1 levels are selectable by every student.
+  // Progress and teacher access do not gate the campaign.
+  return true;
 }
 export function nextWorld1Level(number, completed = [], teacher = false) {
   const slot = findWorld1Level(Number(number) + 1);
