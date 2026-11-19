@@ -18,6 +18,9 @@
 /* 01 — normal-height and tall DESKTOPS: use spare space in the menu design,
    rather than leaving giant empty foil around a fixed 346px illustration. */
 @media (min-width:900px) and (min-height:790px){
+  /* Centre the chapter title WITH the experiment, never leave the title
+     stranded at the top while the board floats halfway down the page. */
+  .app-shell > main{justify-content:center}
   #site-home{gap:clamp(10px,1.3dvh,17px)}
   #site-home .landing-hero{
     align-self:center;
@@ -157,7 +160,7 @@
 @media (min-width:900px) and (max-width:1099px) and (min-height:790px){
   .app-shell .game-board{
     max-height:min(610px,calc(100dvh - 102px));
-    margin-block:auto;
+    margin-block:0;
   }
 }
 
@@ -174,7 +177,7 @@
   }
   .app-shell .game-board{
     max-height:var(--wide-board-height);
-    margin-block:auto;
+    margin-block:0;
     gap:clamp(11px,1vw,17px);
     grid-template-columns:minmax(0,1fr) clamp(300px,22vw,365px);
   }
