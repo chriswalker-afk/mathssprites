@@ -10,6 +10,7 @@ import {WORLD1_STAGES} from "./stages.mjs";
 import {INDEPENDENT_LEVELS,INDEPENDENT_CHAPTERS} from "./independent-levels.mjs";
 import {APPRENTICE_LEVELS,APPRENTICE_CHAPTERS} from "./apprentice-levels.mjs";
 import {OPTIMAL_MOVES} from "./star-ratings.mjs";
+import {OPPOSITE_CHAPTERS,OPPOSITE_LEVELS,OPPOSITE_STAGE_ORDER,OPPOSITE_OPERATIONS,OPPOSITE_KINDS} from "./opposite-levels.mjs";
 
 const stableId=/^[a-z][a-z0-9-]*$/;
 const assert=(v,msg)=>{if(!v)throw new Error("Campaign registry: "+msg);};
@@ -95,9 +96,34 @@ const WORLD1_CAMPAIGN_STAGES=WORLD1_STAGES.map((stage)=>{
     capabilities:{quantityMode:"positive",allowedOperations:WORLD1_OPERATIONS,
       handMode:stage.method}};
 });
+const OPPOSITE_STAGE_DATA={
+  guided:{title:"Guided Opposites",tagline:"Watch opposites make zero.",
+    intro:"Choose a signed move. The hand mirrors it in both chambers.",
+    finale:"You can explain both kinds of zero pair. Take the hand yourself in Independent Opposites.",
+    icon:"◯",emblems:["🎈","◯","±","⇄","✦"],method:"auto"},
+  independent:{title:"Independent Opposites",tagline:"Match every signed move.",
+    intro:"Change one chamber, then restore the balance in the other.",
+    finale:"Both chambers are yours to control. Now write every move in the signed notebook.",
+    icon:"⇄",emblems:["⚖","◯","÷","✦"],method:"manual"},
+  notebook:{title:"Signed Algebra Apprentice",tagline:"Write with negative terms.",
+    intro:"Choose signed operations in the maths editor. Sprites replay your verified work.",
+    finale:"You have completed the signed algebra notebooks.",
+    icon:"✎",emblems:["✎","±","✦"],method:"notebook"}
+};
+const WORLD2_CAMPAIGN_STAGES=OPPOSITE_STAGE_ORDER.map((id,index)=>{
+  const stage=OPPOSITE_STAGE_DATA[id];
+  const levels=OPPOSITE_LEVELS[id];
+  return {...stage,id,number:index+1,available:true,
+    chapters:OPPOSITE_CHAPTERS[id],levels,
+    optimalMoves:Object.fromEntries(levels.map(slot=>
+      [slot.id,slot.level.referenceRoute.length])),
+    capabilities:{quantityMode:"signed",allowedOperations:OPPOSITE_OPERATIONS,
+      allowedKinds:OPPOSITE_KINDS,handMode:stage.method}};
+});
 export const CAMPAIGN_REGISTRY=createCampaignRegistry(WORLDS.map(world=>({
   ...world,icon:{workshop:"⚖",opposites:"±",fractions:"½",squares:"□"}[world.id],
-  stages:world.id==="workshop"?WORLD1_CAMPAIGN_STAGES:[]
+  stages:world.id==="workshop"?WORLD1_CAMPAIGN_STAGES:
+    world.id==="opposites"?WORLD2_CAMPAIGN_STAGES:[]
 })));
 export function findCampaignWorld(worldId,registry=CAMPAIGN_REGISTRY){
   return registry.find(w=>w.id===worldId)||null;
