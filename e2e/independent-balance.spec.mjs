@@ -52,7 +52,8 @@ test("the hand visits each chamber and shows a real temporary scale tilt",async(
   await expect(page.locator("#left-action")).toHaveClass(/coach-focus/);
   await page.locator("#motion-toggle").click(); // use short physical motion
   await page.locator("#left-action").click();
-  await expect(page.locator("#balance-caption")).toHaveClass(/unbalanced/);
+  await expect(page.locator("#balance-caption")).toContainText("waiting");
+  await expect(page.locator("#rooms-row")).not.toHaveAttribute("style", /rotate\(0deg\)/);
   await expect(page.locator("#balance-caption")).toContainText("waiting");
   await expect(page.locator("#right-action")).toContainText("Match the move here");
   await expect(page.locator("#guide-message")).toContainText("SAME removal");
@@ -76,11 +77,13 @@ test("the student may begin in the east; one-sided Undo cancels an unmatched mov
   await openStage2(page);
   await page.locator("#motion-toggle").click();
   await page.locator("#right-action").click();
-  await expect(page.locator("#balance-caption")).toHaveClass(/unbalanced/);
+  await expect(page.locator("#balance-caption")).toContainText("waiting");
+  await expect(page.locator("#rooms-row")).not.toHaveAttribute("style", /rotate\(0deg\)/);
   await expect(page.locator("#left-action")).toContainText("Match the move here");
   await expect(page.locator("#guide-message")).toContainText("other chamber");
   await page.locator("#undo").click();
-  await expect(page.locator("#balance-caption")).not.toHaveClass(/unbalanced/);
+  await expect(page.locator("#balance-caption")).toHaveText("");
+  await expect(page.locator("#rooms-row")).toHaveAttribute("style", /rotate\(0deg\)/);
   await expect(page.locator("#right-items .weight")).toHaveCount(7);
   await expect(page.locator("#left-items .weight")).toHaveCount(2);
   await expect(page.locator("#left-action")).toContainText("Use hand here");

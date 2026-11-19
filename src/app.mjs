@@ -61,7 +61,15 @@ let factor = 3;
 let state = initialState(LEVELS[0]);
 let activeLevel = LEVELS[0];
 let campaignLevelNumber = null;
-let campaignStage = null; // null = separate advanced prototype preview
+let campaignStage = null; // internal UI mode: guided | independent | notebook
+let campaignStageId = null; // stable stage ID for world-aware progress events
+let campaignWorldId = null;
+let campaignWorldNumber = 1;
+let campaignStageNumber = 1;
+let campaignStageLevelCount = 20;
+let campaignChapterIndex = null;
+let campaignChapterTitle = null;
+let campaignChapterSlots = [];
 let notebookSession=null; // only teacher prototype in PR20; never campaign progress
 let notebookPhase="idle"; // idle | writing | replaying | complete
 let notebookReplaySuccessful=false;
@@ -220,12 +228,12 @@ function clearSpeech() {
   $("speech").hidden = true;
 }
 function activeFirstGuide() {
-  return campaignStage==="guided" && campaignLevelNumber===1 &&
-    guideEnabled && !guideSeen && !guideDismissed;
+  return campaignWorldId==="workshop" && campaignStage==="guided" &&
+    campaignLevelNumber===1 && guideEnabled && !guideSeen && !guideDismissed;
 }
 function activeIndependentGuide() {
-  return campaignStage==="independent" && campaignLevelNumber===1 &&
-    guideEnabled && !independentGuideSeen && !guideDismissed;
+  return campaignWorldId==="workshop" && campaignStage==="independent" &&
+    campaignLevelNumber===1 && guideEnabled && !independentGuideSeen && !guideDismissed;
 }
 function activeCampaignGuide() {
   return activeFirstGuide() || activeIndependentGuide();
@@ -247,7 +255,8 @@ function guideTarget(name) {
 function renderFirstGuide() {
   for (const item of document.querySelectorAll(".coach-focus"))
     item.classList.remove("coach-focus");
-  $("game-guide-restart").hidden = campaignLevelNumber !== 1 || campaignStage===null;
+  $("game-guide-restart").hidden = campaignWorldId!=="workshop" ||
+    campaignLevelNumber !== 1 || campaignStage===null;
   $("game-guide-restart").disabled = busy;
   $("game-guide-restart").setAttribute("aria-label",
     campaignStage==="independent"?"Replay Independent Balance introduction":
@@ -283,14 +292,16 @@ function renderNotebookVisibility() {
     : "Let's discover the algebra behind those moves.";
   if(!active)return;
   $("chapter").textContent=campaign
-    ?"STAGE 3 · "+currentLevel().chapter:"STAGE 3 · ALGEBRA APPRENTICE PROTOTYPE";
+    ?"STAGE "+campaignStageNumber+" · "+(currentLevel().chapter||campaignChapterTitle||"Equations")
+    :"STAGE 3 · ALGEBRA APPRENTICE PROTOTYPE";
   $("chapter-status").hidden=false;
+  const notebookLocation="WORLD "+campaignWorldNumber+" · STAGE "+campaignStageNumber+
+    " · LEVEL "+String(campaignLevelNumber||1).padStart(2,"0")+" / "+
+    campaignStageLevelCount;
   $("chapter-status").textContent=campaign
-    ?"WORLD 1 · STAGE 3 · LEVEL "+String(campaignLevelNumber).padStart(2,"0")+" / 12"
-    :"PAPER FIRST · SPRITE REPLAY SECOND · NO PROGRESS";
+    ?notebookLocation:"PAPER FIRST · SPRITE REPLAY SECOND · NO PROGRESS";
   $("notebook-stage-kicker").textContent=campaign
-    ?"WORLD 1 · STAGE 3 · LEVEL "+String(campaignLevelNumber).padStart(2,"0")+" / 12"
-    :"STAGE 3 · ALGEBRA APPRENTICE · TEACHER PROTOTYPE";
+    ?notebookLocation:"STAGE 3 · ALGEBRA APPRENTICE · TEACHER PROTOTYPE";
   $("notebook-stage-note").textContent=campaign
     ?"Campaign experiment · Progress saved after a successful sprite replay"
     :"Practice preview · No levels or progress earned";
@@ -411,35 +422,47 @@ function renderNotebookPaper() {
 function render() {
   const lvl = currentLevel();
   if (campaignLevelNumber !== null)
-    document.body.dataset.workshopChapter = String(Math.ceil(campaignLevelNumber / 4));
+    document.body.dataset.workshopChapter = String(
+      (campaignChapterIndex??Math.floor((campaignLevelNumber-1)/4))+1);
   else delete document.body.dataset.workshopChapter;
   if(campaignStage)document.body.dataset.workshopStage=campaignStage;
   else delete document.body.dataset.workshopStage;
   const shown = visible();
   renderRoom("left", shown.left, groups.left);
   renderRoom("right", shown.right, groups.right);
-  $("chapter").textContent = lvl.chapter;
+  $("chapter").textContent = lvl.chapter ||
+    (campaignChapterTitle?(String((campaignChapterIndex??0)+1).padStart(2,"0")+
+      " · "+campaignChapterTitle):"AN EQUATION TO EXPLORE");
   $("level-title").textContent = lvl.title;
   $("level-prompt").textContent = lvl.prompt;
   $("chapter-status").hidden = campaignLevelNumber === null;
-  const briefings=campaignStage==="independent"?INDEPENDENT_BRIEFINGS:CHAPTER_BRIEFINGS;
+  // Existing World 1 teacher cues remain, but future mathematical worlds
+  // get their own stage/chapter facts rather than World 1's fixed 20/16 map.
+  const briefings=campaignWorldId==="workshop"
+    ?(campaignStage==="independent"?INDEPENDENT_BRIEFINGS:CHAPTER_BRIEFINGS):{};
   $("chapter-briefing").hidden =
     campaignLevelNumber===null || !briefings[campaignLevelNumber];
-  if (campaignLevelNumber !== null) {
-    const stageNumber=campaignStage==="independent"?2:1;
-    $("chapter-status").textContent = "WORLD 1 · STAGE " + stageNumber +
-      " · LEVEL " + String(campaignLevelNumber).padStart(2,"0") +
-      " / " + (stageNumber===2?16:20);
+  if(campaignLevelNumber!==null){
+    $("chapter-status").textContent="WORLD "+campaignWorldNumber+
+      " · STAGE "+campaignStageNumber+" · LEVEL "+
+      String(campaignLevelNumber).padStart(2,"0")+" / "+campaignStageLevelCount;
     if(briefings[campaignLevelNumber])
       $("chapter-briefing").textContent=briefings[campaignLevelNumber];
   }
-  const chapterStart = campaignLevelNumber===null?0:Math.floor((campaignLevelNumber-1)/4)*4;
-  const dotLevels = campaignLevelNumber===null?LEVELS:
-    (campaignStage==="independent"?INDEPENDENT_LEVELS:WORLD1_LEVELS).slice(chapterStart,chapterStart+4);
-  const dotIndex = campaignLevelNumber === null ? levelIndex : campaignLevelNumber - 1 - chapterStart;
-  $("step-dots").innerHTML = dotLevels.map((item, i) =>
-    '<span class="progress-dot ' + (i <= dotIndex ? "lit" : "") +
-    (i === dotIndex ? " current" : "") + '" title="' + item.title + '"></span>').join("");
+  const chapterStart=campaignLevelNumber===null?0:
+    Math.floor((campaignLevelNumber-1)/4)*4;
+  const dotLevels=campaignLevelNumber===null?LEVELS:
+    campaignChapterSlots.length?campaignChapterSlots:
+    (campaignStage==="independent"?INDEPENDENT_LEVELS:WORLD1_LEVELS)
+      .slice(chapterStart,chapterStart+4);
+  const dotIndex=campaignLevelNumber===null?levelIndex:
+    campaignChapterSlots.length?
+      Math.max(0,dotLevels.findIndex(item=>item.id===lvl.id)):
+      campaignLevelNumber-1-chapterStart;
+  $("step-dots").innerHTML=dotLevels.map((item,i)=>
+    '<span class="progress-dot '+(i<=dotIndex?"lit":"")+
+    (i===dotIndex?" current":"")+'" title="'+
+    String(item.title||"Level").replace(/"/g,"&quot;")+'"></span>').join("");
 
   const balance = currentDifference(shown);
   const degrees = failureTilt || (balance === 0 ? 0 : (balance < 0 ? 3.5 : -3.5));
@@ -479,8 +502,7 @@ function render() {
   const inCampaign=campaignLevelNumber!==null;
   $("mode-wrapper").hidden=inCampaign;
   $("campaign-hand-mode").hidden=!inCampaign;
-  $("campaign-hand-label").textContent=campaignStage==="independent"
-    ?"STAGE 2 · HAND CONTROL":"STAGE 1 · HAND CONTROL";
+  $("campaign-hand-label").textContent="STAGE "+campaignStageNumber+" · HAND CONTROL";
   $("campaign-hand-title").textContent=campaignStage==="independent"
     ?"Your Turn":"Guided Mirror";
   $("campaign-hand-help").textContent=campaignStage==="independent"
@@ -1269,7 +1291,7 @@ async function finishTurn() {
     }
     if(campaignLevelNumber!==null)
       window.dispatchEvent(new CustomEvent("mathssprites:solved",
-        {detail:{stage:campaignStage,number:campaignLevelNumber,
+        {detail:{worldId:campaignWorldId,stage:campaignStageId,number:campaignLevelNumber,
           levelId:currentLevel().id,moves:state.history.length}}));
     busy = true; render();
     // The student must be able to SEE the final physical balance before
@@ -1438,7 +1460,7 @@ async function replayNotebookWithSprites() {
     // The teacher sandbox keeps its own zero-credit behaviour.
     if(campaignStage==="notebook"&&campaignLevelNumber!==null)
       window.dispatchEvent(new CustomEvent("mathssprites:solved",
-        {detail:{stage:"notebook",number:campaignLevelNumber,
+        {detail:{worldId:campaignWorldId,stage:campaignStageId,number:campaignLevelNumber,
           levelId:currentLevel().id,moves:state.history.length}}));
   } catch {
     state=initialState(notebookSession.level);
@@ -1510,7 +1532,8 @@ async function manualMove(side) {
     await finishTurn();
   }
 }
-function startLevel(index, quantityMode, levelOverride=null, campaignNumber=null, stage="guided") {
+function startLevel(index, quantityMode, levelOverride=null, campaignNumber=null,
+  stage="guided",campaignInfo={}) {
   stopReplay();
   replayEntries = [];
   notebookSession=null;
@@ -1522,7 +1545,22 @@ function startLevel(index, quantityMode, levelOverride=null, campaignNumber=null
   const level = levelOverride || LEVELS[levelIndex];
   activeLevel = level;
   campaignLevelNumber=campaignNumber;
-  campaignStage=campaignNumber===null?null:stage;
+  campaignStageId=campaignNumber===null?null:stage;
+  campaignWorldId=campaignNumber===null?null:campaignInfo.worldId||"workshop";
+  const method=campaignInfo.method||
+    (stage==="independent"?"manual":stage==="notebook"?"notebook":"auto");
+  campaignStage=campaignNumber===null?null:
+    method==="manual"?"independent":method==="notebook"?"notebook":"guided";
+  campaignWorldNumber=campaignInfo.worldNumber||1;
+  campaignStageNumber=campaignInfo.stageNumber||
+    (campaignStage==="independent"?2:campaignStage==="notebook"?3:1);
+  campaignStageLevelCount=campaignInfo.stageLength||
+    (campaignStage==="independent"?16:campaignStage==="notebook"?12:20);
+  campaignChapterIndex=Number.isInteger(campaignInfo.chapterIndex)?
+    campaignInfo.chapterIndex:null;
+  campaignChapterTitle=campaignInfo.chapterTitle||null;
+  campaignChapterSlots=Array.isArray(campaignInfo.chapterLevels)?
+    campaignInfo.chapterLevels:[];
   if(campaignStage==="guided")mode="auto";
   if(campaignStage==="independent")mode="manual";
   guideStep=0;
@@ -1784,10 +1822,12 @@ function updateReplayEndNote() {
   const note = $("replay-end-note");
   note.hidden = !ready || campaignLevelNumber === null;
   if (ready && campaignLevelNumber !== null)
-    note.textContent=campaignStage==="independent" && campaignLevelNumber===16
-      ? "Stage 2 complete. Algebra Apprentice is coming next!"
-      : campaignStage==="guided" && campaignLevelNumber===20
-        ? "Guided Balance complete. Independent Balance is unlocked!"
+    note.textContent=campaignWorldId==="workshop" &&
+      campaignStage==="independent" && campaignLevelNumber===16
+      ? "Stage 2 complete. Try Algebra Apprentice next!"
+      : campaignWorldId==="workshop" &&
+        campaignStage==="guided" && campaignLevelNumber===20
+        ? "Guided Balance complete. Try Independent Balance next!"
         : "Level "+campaignLevelNumber+" solved · keep exploring!";
 }
 function drawReplay(index, { animate = !reducedMotion, complete = false } = {}) {
@@ -1835,9 +1875,8 @@ function drawReplay(index, { animate = !reducedMotion, complete = false } = {}) 
   $("replay-next").disabled = replayIndex >= replayEntries.length - 1;
   $("next-level").textContent = workshopActive?"Build another equation →":
     campaignLevelNumber !== null
-    ? (campaignStage==="guided" && campaignLevelNumber===20 ||
-       campaignStage==="independent" && campaignLevelNumber===16
-        ?"Back to stages →":"Next level →")
+    ? (campaignLevelNumber===campaignStageLevelCount
+        ?"Back to level map →":"Next level →")
     : levelIndex === LEVELS.length - 1
       ? "Play from the beginning →" : "Next experiment →";
   $("next-level").disabled = replayIndex !== replayEntries.length - 1 ||
@@ -1858,9 +1897,9 @@ function showReplay() {
   $("replay-level-stamp").textContent = workshopActive?"YOUR EQUATION · FREE PLAY":
     campaignLevelNumber===null
     ? "THE EXPERIMENT REVEALED"
-    : "STAGE "+(campaignStage==="independent"?2:1)+" · LEVEL "+
+    : "WORLD "+campaignWorldNumber+" · STAGE "+campaignStageNumber+" · LEVEL "+
       String(campaignLevelNumber).padStart(2,"0")+" / "+
-      (campaignStage==="independent"?16:20)+" · "+
+      campaignStageLevelCount+" · "+
       (guideWasActive && campaignLevelNumber===1
         ? (campaignStage==="independent"?"FIRST INDEPENDENT DISCOVERY":"FIRST DISCOVERY")
         : "BALANCE RESTORED");
@@ -2035,9 +2074,10 @@ $("next-level").addEventListener("click", () => {
 });
 /** PR20 notebook sandbox: Stage 3 puzzle content and saved progress arrive
  * in PR21. No notebook preview ever dispatches mathssprites:solved. */
-function openNotebookLevel(level,number=null){
+function openNotebookLevel(level,number=null,context={}){
   if(busy)return;
-  startLevel(0,"positive",level,number,number===null?"guided":"notebook");
+  startLevel(0,levelQuantityMode(level),level,number,
+    number===null?"guided":context.stage||"notebook",context);
   notebookSession=startNotebook(level);
   notebookPhase="writing";
   notebookReplaySuccessful=false;
@@ -2054,8 +2094,9 @@ window.addEventListener("mathssprites:notebook-preview",event=>{
   openNotebookLevel(event.detail?.level);
 });
 window.addEventListener("mathssprites:notebook-campaign",event=>{
-  if(event.detail?.stage!=="notebook"||!Number.isInteger(event.detail?.number))return;
-  openNotebookLevel(event.detail.level,event.detail.number);
+  if((event.detail?.method!=="notebook"&&event.detail?.stage!=="notebook")||
+     !Number.isInteger(event.detail?.number))return;
+  openNotebookLevel(event.detail.level,event.detail.number,event.detail);
 });
 window.addEventListener("mathssprites:notebook-close",()=>{
   if(busy)return;
@@ -2192,8 +2233,9 @@ window.addEventListener("mathssprites:workshop-close",()=>{
   render();
 });
 window.addEventListener("mathssprites:launch",event=>{
-  const {number,legacyIndex,level,stage}=event.detail;
-  startLevel(legacyIndex,"positive",level,number,stage);
+  const {number,legacyIndex,level,stage}=event.detail||{};
+  if(!level||!Number.isInteger(number))return;
+  startLevel(legacyIndex||0,levelQuantityMode(level),level,number,stage,event.detail);
 });
 window.addEventListener("mathssprites:preview", event => startLevel(event.detail.index));
 function leaveGame(screen) {
