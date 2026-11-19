@@ -58,8 +58,8 @@ let currentScreen = "home";
 let playingNumber = null;
 let playingStage = null;
 let playingWorld = null;
-let selectedWorld = "workshop";
-let selectedStage = "guided";
+let selectedWorld = campaignResume?.worldId||"workshop";
+let selectedStage = campaignResume?.stageId||"guided";
 let boardReturnScreen = "home";
 function stageCanOpen(id) {
   return canOpenWorld1Stage(id,{
@@ -339,6 +339,7 @@ function showScreen(name,{focusHeading=true}={}) {
   currentScreen = name;
   playingNumber = null;
   playingStage = null;
+  playingWorld = null;
   $("site-shell").hidden = false;
   $("game-shell").hidden = true;
   document.body.classList.remove("preview-mode");
@@ -347,7 +348,11 @@ function showScreen(name,{focusHeading=true}={}) {
   if (name === "home") homeAction();
   if (name === "worlds") renderWorlds();
   if (name === "stages") renderStages();
-  if (name === "levels") renderLevels();
+  if (name === "levels"){
+    renderLevels();
+    $("site-back").textContent=boardReturnScreen==="stages"
+      ?"← Back to stages":"← Home";
+  }
   if (name === "settings") renderSettings();
   if (name === "workshop") $("workshop-equation").focus({preventScroll:true});
   homeHero.setActive(name==="home");
@@ -357,33 +362,41 @@ function showScreen(name,{focusHeading=true}={}) {
   if (heading && focusHeading) heading.focus({preventScroll:true});
   window.scrollTo?.(0,0);
 }
-function launch(number,stage=selectedStage) {
-  if(!stageCanOpen(stage)||!["guided","independent","notebook"].includes(stage))return false;
-  const slot=stage==="independent"?findIndependentLevel(number):
-    stage==="notebook"?findApprenticeLevel(number):findWorld1Level(number);
-  const allowed=stage==="independent"?independentUnlocked(number):
-    stage==="notebook"?apprenticeUnlocked(number):unlocked(number);
-  if(!slot?.level||!allowed)return false;
+function launch(levelIdOrNumber,stageId=selectedStage,worldId=selectedWorld) {
+  if(!isCampaignPlayable(worldId,stageId,levelIdOrNumber))return false;
+  const slot=findCampaignLevel(worldId,stageId,levelIdOrNumber);
+  const stage=findCampaignStage(worldId,stageId);
+  if(!slot?.level||!stage)return false;
   homeHero.setActive(false);
-  selectedStage=stage;
-  playingStage=stage;
+  selectedWorld=worldId;
+  selectedStage=stageId;
+  playingWorld=worldId;
+  playingStage=stageId;
   playingNumber=slot.number;
-  recent=saveResume({stage,number:slot.number});
+  const destination={worldId,stageId,levelId:slot.id};
+  campaignResume=saveCampaignResume(destination);
+  campaign=saveCampaignRecords(withCampaignLastPlayed(campaign,worldId,stageId,slot.id));
+  // Dual-write the unchanged World 1 legacy format until every old browser
+  // client has migrated. New worlds write ONLY their own v2 campaign record.
+  if(worldId==="workshop"){
+    recent=saveResume({stage:stageId,number:slot.number});
+    if(stageId==="independent")
+      stage2Progress=saveStage2Progress({...stage2Progress,lastPlayed:slot.number});
+    else if(stageId==="notebook")
+      stage3Progress=saveStage3Progress({...stage3Progress,lastPlayed:slot.number});
+    else progress=saveProgress({...progress,lastPlayed:slot.number});
+  }
   currentScreen="game";
-  if(stage==="independent")
-    stage2Progress=saveStage2Progress({...stage2Progress,lastPlayed:slot.number});
-  else if(stage==="notebook")
-    stage3Progress=saveStage3Progress({...stage3Progress,lastPlayed:slot.number});
-  else progress=saveProgress({...progress,lastPlayed:slot.number});
   $("site-shell").hidden=true;
   $("game-shell").hidden=false;
   document.body.classList.remove("preview-mode");
-  if(stage==="notebook")
+  if(stage.method==="notebook")
     window.dispatchEvent(new CustomEvent("mathssprites:notebook-campaign",
-      {detail:{stage,number:slot.number,level:slot.level}}));
+      {detail:{worldId,stage:stageId,number:slot.number,level:slot.level}}));
   else
     window.dispatchEvent(new CustomEvent("mathssprites:launch",
-      {detail:{stage,number:slot.number,legacyIndex:slot.legacyIndex,level:slot.level}}));
+      {detail:{worldId,stage:stageId,number:slot.number,
+        legacyIndex:slot.legacyIndex||0,level:slot.level}}));
   $("level-title").setAttribute("tabindex","-1");
   $("level-title").focus({preventScroll:true});
   window.scrollTo?.(0,0);
@@ -401,6 +414,7 @@ function launchWorkshopScene(level,handMode){
   homeHero.setActive(false);
   playingNumber=null;
   playingStage=null;
+  playingWorld=null;
   currentScreen="workshop-game";
   $("site-shell").hidden=true;
   $("game-shell").hidden=false;
@@ -486,6 +500,7 @@ function launchNotebookPreview(level=WORLD1_LEVELS[8].level){
   homeHero.setActive(false);
   playingStage=null;
   playingNumber=null;
+  playingWorld=null;
   currentScreen="notebook-preview";
   $("site-shell").hidden=true;
   $("game-shell").hidden=false;
