@@ -6,7 +6,7 @@
 import {WORLD1_OPERATIONS} from "./worlds.mjs";
 
 export const APPRENTICE_CHAPTERS=Object.freeze([
- {title:"Written with You",description:"Learn to show the balancing operation on paper, then gradually work without prompts."},
+ {title:"Written with You",description:"Choose balancing operations and see each next equation calculated; gradually work without prompts."},
  {title:"Choose the Route",description:"Decide which written transformation to make, even when more than one method works."},
  {title:"Apprentice Challenges",description:"Work independently with sprites on both sides and reversed equations."}
 ]);
@@ -23,7 +23,7 @@ const raw=[
   prompt:"The written equation contains identical sprites. What could happen to both sides?",
   left:{posX:2},right:{posOne:12},solution:6,
   scaffold:{kind:"first",heading:"Your first move",
-    text:"Start by thinking about equal groups. What operation would turn the pair of sprites into one sprite? Write the new equation."},
+    text:"Start by thinking about equal groups. Which operation would turn the pair of sprites into one sprite? Let the editor calculate the new equation."},
   suggested:"How many equal baskets would give you one sprite in the left chamber?"},
  {id:"apprentice-03",title:"Think about the finish",
   prompt:"Two kinds of move are needed. Plan how your final equation will show a single sprite.",
@@ -32,7 +32,7 @@ const raw=[
     text:"At the end, once the loose weights have been cleared, you can share complete groups. Decide for yourself what to remove first."},
   suggested:"Before grouping, do the loose weights match the groups of sprites?"},
  {id:"apprentice-04",title:"Your first solo page",
-  prompt:"There are no written clues this time. Choose a balanced strategy and record each line.",
+  prompt:"There are no operation clues this time. Choose a balanced strategy and let your notebook record each result.",
   left:{posX:3,posOne:6},right:{posOne:21},solution:5,
   scaffold:{kind:"none"},
   suggested:"You can clear loose weights first, or group the complete contents if they share a common factor."},
@@ -61,7 +61,7 @@ const raw=[
 
  // Chapter 3: two-sided x, reversed destination, multi-operation and a final challenge.
  {id:"apprentice-09",title:"A mystery next door",
-  prompt:"Sprites are on BOTH sides. Find a series of balanced written equations.",
+  prompt:"Sprites are on BOTH sides. Choose operations that simplify both sides equally.",
   left:{posX:2,posOne:3},right:{posX:1,posOne:8},solution:5,
   scaffold:{kind:"none"},
   suggested:"How can you clear equal mystery sprites without changing the balance?"},
@@ -71,7 +71,7 @@ const raw=[
   scaffold:{kind:"none"},
   suggested:"Remove identical sprites from both sides, then remove equal weights. Share into whole baskets."},
  {id:"apprentice-11",title:"Many moves, one balance",
-  prompt:"Your notebook must show every step. Look for a sequence that leaves one sprite.",
+  prompt:"Your notebook must show every operation. Find a sequence that leaves one sprite.",
   left:{posX:4,posOne:7},right:{posX:2,posOne:17},solution:5,
   scaffold:{kind:"none"},
   suggested:"Clear the shared sprites before the weights, then compare the remaining groups."},
