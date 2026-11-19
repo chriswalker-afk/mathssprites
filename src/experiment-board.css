@@ -64,7 +64,7 @@
   grid-template-rows:repeat(var(--map-rows,4),minmax(0,1fr))
 }
 #site-levels .chapter-group{min-width:0}
-#site-levels[data-map-world="opposites"] .map-world-button[aria-pressed="true"]{
+#site-levels[data-active-world="opposites"] .map-world-button[aria-pressed="true"]{
   background:#415b63
 }
 @media (min-width:900px) and (min-height:500px){
