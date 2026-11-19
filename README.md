@@ -38,6 +38,7 @@ In Stages 1 and 2, **comic-book panels appear automatically** after physical suc
 - [Visual and animation direction](docs/ART_DIRECTION.md)
 - [Level progression and first playable milestone](docs/LEVEL_ROADMAP.md)
 - [Home, worlds and level selection (PR14)](docs/WORLD_NAVIGATION.md)
+- [Animated home hero and scale storyboard (PR23)](docs/HOME_HERO_PR23.md)
 - [World 1 three-stage progression (PR18–19)](docs/WORLD1_STAGES.md)
 - [Stage 2 Independent Balance: 16 puzzles and teacher routes](docs/STAGE2_CAMPAIGN.md)
 - [Stage 3 notebook-first engine and paper-to-sprites preview (PR20)](docs/STAGE3_NOTEBOOK_FOUNDATION.md)
