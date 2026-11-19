@@ -551,34 +551,39 @@ $("site-back").addEventListener("click", () =>
   showScreen(boardReturnScreen==="stages"?"stages":"home"));
 $("stages-back").addEventListener("click", () => showScreen("worlds"));
 window.addEventListener("mathssprites:solved",event=>{
-  if(playingNumber===null || event.detail?.number!==playingNumber ||
-     event.detail?.stage!==playingStage)return;
-  const slot=playingStage==="independent"?findIndependentLevel(playingNumber):
-    playingStage==="notebook"?findApprenticeLevel(playingNumber):findWorld1Level(playingNumber);
+  if(playingNumber===null||!playingWorld||
+     event.detail?.number!==playingNumber||event.detail?.stage!==playingStage||
+     (event.detail?.worldId&&event.detail.worldId!==playingWorld))return;
+  const slot=findCampaignLevel(playingWorld,playingStage,playingNumber);
   if(!slot||event.detail?.levelId!==slot.id)return;
-
-  // Preserve the original independent completion stores and their keys.
-  if(playingStage==="independent")
-    stage2Progress=saveStage2Progress(markStage2Complete(stage2Progress,playingNumber));
-  else if(playingStage==="notebook")
-    stage3Progress=saveStage3Progress(markStage3Complete(stage3Progress,playingNumber));
-  else
-    progress=saveProgress(markWorld1Complete(progress,playingNumber));
-
-  // The home CTA must use the NEXT adjacent level (when there is one),
-  // even if a student solved the current level out of order.
-  const updated=playingStage==="independent"?stage2Progress:
-    playingStage==="notebook"?stage3Progress:progress;
-  recent=saveResume({stage:playingStage,number:updated.lastPlayed});
-  // Both hand visits make ONE algebra move. The score counts the final route,
-  // not failed trials, incomplete hand visits or undone transactions.
+  const worldId=playingWorld,stageId=playingStage;
   const moves=event.detail.moves;
-  const optimal=optimalMoves(playingStage,playingNumber);
+  campaign=saveCampaignRecords(withCampaignCompleted(
+    campaign,worldId,stageId,slot.id,moves));
+  const record=campaignStageRecord(campaign,worldId,stageId);
+  campaignResume=saveCampaignResume({worldId,stageId,levelId:record.lastPlayed});
+
+  // Unchanged World 1 keys and all historical star ratings are mirrored for
+  // old clients. New-world completions NEVER enter those World 1 keys.
+  if(worldId==="workshop"){
+    if(stageId==="independent")
+      stage2Progress=saveStage2Progress(markStage2Complete(stage2Progress,playingNumber));
+    else if(stageId==="notebook")
+      stage3Progress=saveStage3Progress(markStage3Complete(stage3Progress,playingNumber));
+    else progress=saveProgress(markWorld1Complete(progress,playingNumber));
+    const previous=stageId==="independent"?stage2Progress:
+      stageId==="notebook"?stage3Progress:progress;
+    recent=saveResume({stage:stageId,number:previous.lastPlayed});
+    const oldOptimal=optimalMoves(stageId,playingNumber);
+    if(starsForMoves(moves,oldOptimal))
+      ratings=saveRatings(recordBestMoves(ratings,stageId,playingNumber,moves));
+  }
+
+  const optimal=campaignOptimalMoves(worldId,stageId,slot.id);
   const earned=starsForMoves(moves,optimal);
   if(earned){
-    ratings=saveRatings(recordBestMoves(ratings,playingStage,playingNumber,moves));
-    const best=bestMoves(ratings,playingStage,playingNumber);
-    const bestRating=ratingForLevel(ratings,playingStage,playingNumber);
+    const best=record.bestMoves[slot.id],bestRating=campaignStars(
+      campaign,worldId,stageId,slot.id);
     const message=starGlyphs(earned)+" "+earned+" star"+(earned===1?"":"s")+
       " · "+moves+" "+(moves===1?"move":"moves")+" (optimal: "+optimal+
       ") · Best: "+starGlyphs(bestRating)+" in "+best+" "+(best===1?"move":"moves");
@@ -603,14 +608,10 @@ window.addEventListener("mathssprites:leave",event=>{
   showScreen(event.detail?.screen==="home"?"home":"levels");
 });
 window.addEventListener("mathssprites:advance",()=>{
-  if(playingNumber===null)return showScreen("levels");
-  const next=playingStage==="independent"
-    ? nextIndependentLevel(playingNumber,stage2Progress.completed,teacher)
-    : playingStage==="notebook"
-      ? nextApprenticeLevel(playingNumber,stage3Progress.completed,teacher)
-      : nextWorld1Level(playingNumber,progress.completed,teacher);
-  if(next)launch(next.number,playingStage);
-  else showScreen("stages");
+  if(playingNumber===null||!playingWorld)return showScreen("levels");
+  const next=nextCampaignLevel(playingWorld,playingStage,playingNumber);
+  if(next)launch(next.id,playingStage,playingWorld);
+  else showScreen("levels");
 });
 
 const params = new URLSearchParams(window.location.search);
