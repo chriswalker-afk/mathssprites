@@ -16,6 +16,7 @@
   <link rel="stylesheet" href="./src/home-hero.css" />
   <link rel="stylesheet" href="./src/viewport-fit.css?v=28" />
   <link rel="stylesheet" href="./src/scene-polish.css?v=30" />
+  <link rel="stylesheet" href="./src/experiment-board.css?v=32" />
   <script type="module" src="./src/app.mjs"></script>
   <script type="module" src="./src/site.mjs"></script>
 </head>
@@ -36,7 +37,7 @@
       </button>
       <nav class="site-nav-links" aria-label="Main menu">
         <button type="button" data-screen="home">Home</button>
-        <button type="button" data-screen="worlds">Worlds</button>
+        <button type="button" data-screen="worlds" aria-label="Choose a world">Worlds</button>
         <button type="button" data-screen="help">How to play</button>
         <button type="button" data-screen="settings">Settings</button>
       </nav>
@@ -49,7 +50,7 @@
           <p>Balance the scale, experiment with sprites and weights, and discover the algebra hiding inside.</p>
           <div class="landing-actions">
             <button type="button" id="home-play" class="primary-btn">Start Stage 1 · Level 1 →</button>
-            <button type="button" class="secondary-btn" data-screen="worlds">Choose a world</button>
+            <button type="button" class="secondary-btn" data-screen="levels">Choose a level →</button>
           </div>
           <span id="home-progress" class="landing-progress" aria-live="polite"></span>
         </div>
@@ -92,14 +93,7 @@
           </div>
         </div>
       </section>
-      <section class="portal-features" aria-label="Explore the workshop">
-        <article class="portal-feature"><span class="feature-icon" aria-hidden="true">⚖</span>
-          <h3>Keep the balance</h3><p>Whatever you do in one chamber, do the same to the other.</p></article>
-        <article class="portal-feature"><span class="feature-icon" aria-hidden="true">✦</span>
-          <h3>Meet the sprites</h3><p>Watch the little residents react to every carefully chosen move.</p></article>
-        <article class="portal-feature"><span class="feature-icon" aria-hidden="true">✎</span>
-          <h3>Discover the maths</h3><p>Once the puzzle is solved, your moves become an animated algebra comic.</p></article>
-      </section>
+      <section id="home-stage-shortcuts" class="portal-features" aria-label="Quick play by learning stage"></section>
     </main>
     <main class="site-page" id="site-worlds" hidden>
       <div class="portal-heading"><div><div class="portal-kicker">CHOOSE YOUR LABORATORY</div>
@@ -165,14 +159,24 @@
       </div>
     </main>
     <main class="site-page" id="site-levels" hidden>
-      <button type="button" id="site-back" class="site-back-link">← Back to stages</button>
+      <button type="button" id="site-back" class="site-back-link">← Home</button>
+      <div class="experiment-board-nav" aria-label="Experiment Board selection">
+        <div class="map-selector">
+          <span class="map-selector-label">WORLD</span>
+          <div id="map-world-tabs" class="map-world-tabs" role="group" aria-label="Choose a mathematical world"></div>
+        </div>
+        <div class="map-selector">
+          <span class="map-selector-label">HOW TO LEARN</span>
+          <div id="map-stage-tabs" class="map-stage-tabs" role="group" aria-label="Choose how to learn"></div>
+        </div>
+      </div>
       <div class="portal-heading">
         <div><div id="levels-stage-kicker" class="portal-kicker">WORLD 01 · STAGE 1 · POSITIVE WHOLE NUMBERS</div>
           <h1 id="levels-stage-title" tabindex="-1">Guided Balance</h1>
           <p id="levels-stage-intro">Choose the operation. The hand automatically makes the same change to both rooms.</p></div>
         <span id="level-progress" class="landing-progress" aria-live="polite"></span>
       </div>
-      <div class="world1-progress-panel" aria-label="World 1 completion">
+      <div class="world1-progress-panel" aria-label="Selected stage completion">
         <div class="world1-progress-labels"><span id="world1-progress-description">Stage 1 · Guided Balance</span><span id="world1-progress-number">0 of 20 complete</span></div>
         <progress id="world1-progress-bar" value="0" max="20" aria-label="Completed experiments in the selected learning stage"></progress>
       </div>
