@@ -10,6 +10,7 @@ import {
 } from "./campaign-records.mjs";
 import {createWorkshopEquation} from "./equation-workshop.mjs";
 import {createHomeHero} from "./home-hero.mjs";
+import {compactWorldProgress,compactStageProgress,briefStageIntro} from "./menu-copy.mjs";
 import {loadResume,saveResume,resumeDestination,resumeLabel,RESUME_STAGE_NUMBERS} from "./resume.mjs";
 import {
   WORLDS, WORLD1_CHAPTERS, WORLD1_LEVELS, findWorld1Level,
@@ -143,21 +144,14 @@ function homeAction() {
   $("home-progress").textContent=
     (world?.title||"Balance Workshop")+" · "+
     totals.completed+"/"+totals.count+" levels · "+totals.earned+"/"+totals.available+
-    " stars · saved here";
+    " ★ · saved here";
   renderHomeQuickStages();
 }
 
 function renderWorlds() {
   $("world-cards").innerHTML = CAMPAIGN_REGISTRY.map(world => {
-    const progressLine = !world.available?"COMING SOON":world.id==="workshop"
-      ? (stageOneComplete(progress.completed) && stageTwoComplete(stage2Progress.completed)
-        ? "STAGES 1–2 MASTERED · STAGE 3 " + stage3Progress.completed.length + "/12 complete"
-        : stageOneComplete(progress.completed)
-        ? "STAGE 1 MASTERED · STAGE 2 " + stage2Progress.completed.length + "/16 complete"
-        : "STAGE 1 · " + progress.completed.length + "/20 complete · all stages open")
-      : (()=>{const totals=campaignStarTotals(campaign,{worldId:world.id});
-        return totals.completed+" / "+totals.count+" levels complete · "+
-          totals.earned+" / "+totals.available+" stars";})();
+    const totals=campaignStarTotals(campaign,{worldId:world.id});
+    const progressLine=compactWorldProgress(world,totals);
     const artwork=PORTAL_DOOR_ART[world.id];
     return '<article class="world-card world-' + world.theme +
       (world.available ? ' world-ready' : ' world-planned') +
@@ -171,7 +165,7 @@ function renderWorlds() {
       '<div class="world-card-body"><div class="eyebrow">WORLD ' +
         String(world.number).padStart(2,"0") + '</div>' +
       '<h3>' + clean(world.title) + '</h3><p class="world-subtitle">' +
-        clean(world.subtitle) + '</p><p>' + clean(world.description) + '</p>' +
+        clean(world.subtitle) + '</p>' +
       '<div class="world-card-footer"><span>' + progressLine + '</span>' +
         (world.available
           ? (world.id==="workshop"
@@ -192,12 +186,10 @@ function renderStages() {
   $("world1-stage-cards").innerHTML=WORLD1_STAGES.map(stage=>{
     const playable=stageCanOpen(stage.id),meta=statuses[stage.id];
     const finished=meta.complete;
-    const countText=(playable
-      ? meta.progress.completed.length+" of "+stage.count+" experiments complete"
-      : stage.available
-        ? stage.count+" experiments · available to students"
-        : stage.count+" new experiments planned")+
-        (playable?" · "+totalEarnedStars(ratings,stage.id)+" / "+(stage.count*3)+" stars":"");
+    const countText=playable
+      ? compactStageProgress(meta.progress.completed.length,stage.count,
+          totalEarnedStars(ratings,stage.id),stage.count*3)
+      : stage.count+" levels · coming soon";
     return '<article class="stage-card '+(playable?"stage-ready":"stage-planned")+
       '" data-stage="'+stage.id+'" aria-label="Stage '+stage.number+
       ': '+clean(stage.title)+(playable?", available":", locked")+'">'+
@@ -208,7 +200,7 @@ function renderStages() {
         portalStageArt(stage.id,stage.icon)+'</div>'+
       '<h2>'+clean(stage.title)+'</h2>'+
       '<p class="stage-tagline">'+clean(stage.tagline)+'</p>'+
-      '<p>'+clean(stage.description)+'</p>'+
+      
       '<div class="stage-card-bottom"><span class="stage-count">'+countText+'</span>'+
       (playable
         ? '<button type="button" class="primary-btn" data-stage-open="'+stage.id+'"'+
@@ -222,7 +214,7 @@ function renderStages() {
     '<div class="workshop-glyph" aria-hidden="true">'+EQUATION_WORKSHOP.icon+'</div>'+
     '<div class="workshop-content"><div class="portal-kicker">FREE PLAY · AVAILABLE TO EVERYONE</div>'+
     '<h2>'+clean(EQUATION_WORKSHOP.title)+'</h2>'+
-    '<p>'+clean(EQUATION_WORKSHOP.description)+'</p>'+
+    '<p>Create your own balance without changing campaign progress.</p>'+
     '<button type="button" class="primary-btn" data-screen="workshop">Create your own equation →</button></div>';
   $("stage-teacher-note").hidden=!teacher;
   $("stage-teacher-note").textContent=
@@ -279,11 +271,10 @@ function renderLevels() {
   $("levels-stage-kicker").textContent="WORLD "+String(world.number).padStart(2,"0")+
     " · "+world.subtitle;
   $("levels-stage-title").textContent=stage.title;
-  $("levels-stage-intro").textContent=stage.intro||stage.tagline||
-    "Choose an experiment to play.";
-  $("level-progress").textContent=completed+" / "+total+" experiments · "+
-    stageStars.earned+" / "+stageStars.available+" stars earned";
-  $("world1-progress-description").textContent=world.title+" · "+stage.title;
+  $("levels-stage-intro").textContent=briefStageIntro(stage);
+  $("level-progress").textContent=stageStars.earned+" / "+
+    stageStars.available+" stars earned";
+  $("world1-progress-description").textContent=stage.title+" progress";
   $("world1-progress-bar").max=total||1;
   $("world1-progress-bar").value=completed;
   $("world1-progress-number").textContent=completed+" of "+total+" complete";
@@ -318,7 +309,7 @@ function renderLevels() {
         '<span class="tile-name">'+clean(slot.title)+'</span>'+
         '<span class="tile-stars" data-stars="'+rating+'" aria-hidden="true">'+starGlyphs(rating)+'</span>'+
         '<span class="tile-status">'+(done?"✓ ":open?"✦ ":"◇ ")+
-          (done&&!rating?"Completed · replay for stars":tag)+'</span></button>';
+          (done&&!rating?"Completed · replay for stars":done?"Completed":open?"Play":"Locked")+'</span></button>';
     }).join("");
     return '<section class="chapter-group chapter-theme-'+(index+1)+
       (slots.length>0&&finished===slots.length?' chapter-complete':'')+
@@ -330,7 +321,7 @@ function renderLevels() {
       String(index+1).padStart(2,"0")+'</span><div><h3>'+clean(chapter.title)+
       '</h3><p>'+clean(chapter.description||"")+'</p>'+
       '<p class="chapter-stat">'+(slots.length>0&&finished===slots.length?
-        "CHAPTER MASTERED":finished+" of "+slots.length+" experiments complete")+
+        "Mastered":finished+" / "+slots.length+" complete")+
       '</p></div></div><div class="chapter-illustration" aria-hidden="true">'+
       clean(stage.emblems?.[index]||"✦")+'</div></div><div class="level-grid">'+cards+
       '</div></section>';
@@ -347,6 +338,7 @@ function renderSettings() {
   const motion = $("motion-toggle").textContent;
   $("site-motion").textContent = motion === "Motion: reduced"
     ? "Turn animations on" : "Use reduced motion";
+  $("site-motion").setAttribute("aria-pressed",String(motion === "Motion: reduced"));
 }
 function showScreen(name,{focusHeading=true}={}) {
   if (!screenNames.includes(name)) return;
@@ -372,12 +364,19 @@ function showScreen(name,{focusHeading=true}={}) {
       ?"← Back to stages":"← Home";
   }
   if (name === "settings") renderSettings();
-  if (name === "workshop") $("workshop-equation").focus({preventScroll:true});
+  const activeTopLevel=(name==="levels"||name==="stages"||name==="workshop")
+    ?"worlds":name;
+  document.querySelectorAll(".site-nav-links button[data-screen]").forEach(button=>{
+    if(button.dataset.screen===activeTopLevel)
+      button.setAttribute("aria-current","page");
+    else button.removeAttribute("aria-current");
+  });
   homeHero.setActive(name==="home");
   const heading = $("site-" + name).querySelector("h1, h2");
-  // The initial home page must not show a focus ring around its headline.
-  // Focus headings for actual navigation transitions where they orient users.
-  if (heading && focusHeading) heading.focus({preventScroll:true});
+  // Focus the usable input at the desk, and the heading elsewhere.
+  // The initial home question receives no reload focus ring.
+  if(name==="workshop")$("workshop-equation").focus({preventScroll:true});
+  else if(heading&&focusHeading)heading.focus({preventScroll:true});
   window.scrollTo?.(0,0);
 }
 function launch(levelIdOrNumber,stageId=selectedStage,worldId=selectedWorld) {
@@ -459,14 +458,14 @@ $("workshop-form").addEventListener("submit",event=>{
     $("workshop-equation").focus();
     return;
   }
-  workshopStatus("Valid balance! Your equation is ready to explore. No campaign progress has been changed.","success");
+  workshopStatus("Equation ready.","success");
   launchWorkshopScene(result.level,$("workshop-hand-mode").value);
 });
 $("workshop-form").addEventListener("click",event=>{
   const example=event.target.closest("[data-workshop-example]");
   if(!example)return;
   $("workshop-equation").value=example.dataset.workshopExample;
-  workshopStatus("Example loaded. Choose your hand mode and build the balance.");
+  workshopStatus("Example ready. Choose how the hand moves.");
   $("workshop-equation").focus();
 });
 $("workshop-equation").addEventListener("input",()=>{
