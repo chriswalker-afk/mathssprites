@@ -20,8 +20,8 @@ async function doOneManualMove(page){
   await page.locator("#right-action").click();
 }
 async function write(page,text){
-  await page.locator("#notebook-equation").fill(text);
-  await page.locator("#notebook-equation").press("Enter");
+  await page.locator("#notebook-operation").fill(text);
+  await page.locator("#notebook-operation").press("Enter");
 }
 
 test.beforeEach(async({page})=>{
@@ -90,8 +90,8 @@ test("two manual hand visits count as one optimal move, not two @smoke",async({p
 test("notebook earns its stars only after checked working is physically replayed @smoke",async({page})=>{
   test.setTimeout(110000);
   await openLevel(page,"notebook",1);
-  await write(page,"x + 2 = 7");
-  await write(page,"x = 5");
+  await write(page,"−1");
+  await write(page,"−2");
   await expect(page.locator("#notebook-replay")).toBeEnabled();
   expect(await page.evaluate(()=>localStorage.getItem("mathssprites.stars.v1"))).toBeNull();
   await page.locator("#motion-toggle").click();
