@@ -266,7 +266,10 @@ function renderLevels() {
   const levels=stage.levels,chapters=stage.chapters;
   const current=campaignStageRecord(campaign,world.id,stage.id);
   const total=levels.filter(x=>x.available).length,completed=current.completed.length;
-  const suggested=boardContinueLevel(stage,current);
+  const resumed=campaignResume?.worldId===world.id &&
+    campaignResume?.stageId===stage.id &&
+    campaignResume?.levelId===current.lastPlayed;
+  const suggested=boardContinueLevel(stage,current,{resumed});
   const stageStars=campaignStarTotals(campaign,{worldId:world.id,stageId:stage.id});
   $("site-levels").dataset.activeWorld=world.id;
   $("site-levels").dataset.activeStage=stage.id;
