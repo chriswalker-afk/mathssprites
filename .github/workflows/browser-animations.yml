@@ -44,7 +44,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: maths-sprites-viewport-preview
-          path: artifacts/pr27-*.png
+          path: |
+            artifacts/pr27-*.png
+            artifacts/pr28-*.png
           if-no-files-found: ignore
           retention-days: 7
       - name: Keep screenshots and traces on smoke failures
