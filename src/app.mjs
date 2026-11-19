@@ -292,14 +292,16 @@ function renderNotebookVisibility() {
     : "Let's discover the algebra behind those moves.";
   if(!active)return;
   $("chapter").textContent=campaign
-    ?"STAGE 3 · "+currentLevel().chapter:"STAGE 3 · ALGEBRA APPRENTICE PROTOTYPE";
+    ?"STAGE "+campaignStageNumber+" · "+(currentLevel().chapter||campaignChapterTitle||"Equations")
+    :"STAGE 3 · ALGEBRA APPRENTICE PROTOTYPE";
   $("chapter-status").hidden=false;
+  const notebookLocation="WORLD "+campaignWorldNumber+" · STAGE "+campaignStageNumber+
+    " · LEVEL "+String(campaignLevelNumber||1).padStart(2,"0")+" / "+
+    campaignStageLevelCount;
   $("chapter-status").textContent=campaign
-    ?"WORLD 1 · STAGE 3 · LEVEL "+String(campaignLevelNumber).padStart(2,"0")+" / 12"
-    :"PAPER FIRST · SPRITE REPLAY SECOND · NO PROGRESS";
+    ?notebookLocation:"PAPER FIRST · SPRITE REPLAY SECOND · NO PROGRESS";
   $("notebook-stage-kicker").textContent=campaign
-    ?"WORLD 1 · STAGE 3 · LEVEL "+String(campaignLevelNumber).padStart(2,"0")+" / 12"
-    :"STAGE 3 · ALGEBRA APPRENTICE · TEACHER PROTOTYPE";
+    ?notebookLocation:"STAGE 3 · ALGEBRA APPRENTICE · TEACHER PROTOTYPE";
   $("notebook-stage-note").textContent=campaign
     ?"Campaign experiment · Progress saved after a successful sprite replay"
     :"Practice preview · No levels or progress earned";
