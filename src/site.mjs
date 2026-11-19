@@ -392,13 +392,18 @@ function launch(levelIdOrNumber,stageId=selectedStage,worldId=selectedWorld) {
   $("site-shell").hidden=true;
   $("game-shell").hidden=false;
   document.body.classList.remove("preview-mode");
+  const world=findCampaignWorld(worldId);
+  const context={worldId,stage:stageId,number:slot.number,method:stage.method,
+    stageNumber:stage.number,stageLength:stage.levels.length,
+    worldNumber:world.number,chapterIndex:slot.chapterIndex,
+    chapterLevels:stage.levels.filter(s=>s.chapterIndex===slot.chapterIndex)
+      .map(s=>({id:s.id,title:s.title,number:s.number}))};
   if(stage.method==="notebook")
     window.dispatchEvent(new CustomEvent("mathssprites:notebook-campaign",
-      {detail:{worldId,stage:stageId,number:slot.number,level:slot.level}}));
+      {detail:{...context,level:slot.level}}));
   else
     window.dispatchEvent(new CustomEvent("mathssprites:launch",
-      {detail:{worldId,stage:stageId,number:slot.number,
-        legacyIndex:slot.legacyIndex||0,level:slot.level}}));
+      {detail:{...context,legacyIndex:slot.legacyIndex||0,level:slot.level}}));
   $("level-title").setAttribute("tabindex","-1");
   $("level-title").focus({preventScroll:true});
   window.scrollTo?.(0,0);
