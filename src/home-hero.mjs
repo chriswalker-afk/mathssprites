@@ -105,6 +105,7 @@ export class HomeHeroAnimator{
   }
   syncPlayback(){
     const reduced=this.isStaticPreference();
+    this.root.dataset.manualPlay=String(this.manualPlay);
     // The former implementation HID Play whenever animations were reduced.
     // On a school device with a saved preference, the hero was permanently
     // static with no visible explanation or way to start it.
