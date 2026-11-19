@@ -10,14 +10,14 @@ async function startFirstLevel(page) {
   await page.getByRole("button",{name:"Choose Stage 1 levels"}).click();
   await page.locator('[data-level="1"]').click();
 }
-test("home is the real entry point; four distinct world cards, three locked", async ({page}) => {
+test("home is the real entry point; four distinct world cards, two locked", async ({page}) => {
   await expect(page.locator("#site-home")).toBeVisible();
   await expect(page.locator("#game-shell")).toBeHidden();
   await expect(page.getByRole("heading",{name:"How much does the sprite weigh?"})).toBeVisible();
   await page.locator('[data-screen="worlds"]').first().click();
   await expect(page.locator(".world-card")).toHaveCount(4);
-  await expect(page.locator(".world-ready")).toHaveCount(1);
-  await expect(page.locator(".world-planned")).toHaveCount(3);
+  await expect(page.locator(".world-ready")).toHaveCount(2);
+  await expect(page.locator(".world-planned")).toHaveCount(2);
   await expect(page.getByText("The Opposite Chambers")).toBeVisible();
   await expect(page.getByText("The Fraction Workshop")).toBeVisible();
   await expect(page.getByText("The Square Laboratory")).toBeVisible();
