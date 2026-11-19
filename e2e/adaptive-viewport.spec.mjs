@@ -137,6 +137,32 @@ test("the world, stage, level and notebook pages also use the screen without cli
     await page.locator("#game-home").click();
   }
 });
+test("signed zero-pair hand actions still commit in both tall desktop hand modes @smoke",async({page})=>{
+  test.setTimeout(105000);
+  await page.setViewportSize({width:2048,height:1252});
+  await page.locator("#home-choose-level").click();
+  await page.locator('[data-map-world="opposites"]').click();
+  await page.locator('[data-level="1"]').click();
+  if(await page.locator("#guide-skip").isVisible())await page.locator("#guide-skip").click();
+  await expect(page.locator("#left-items .balloon")).toHaveCount(1);
+  await page.locator("#do-both").click();
+  await expect(page.locator("#left-items .balloon")).toHaveCount(0,{timeout:35000});
+  await expect(page.locator("#replay-backdrop")).toBeVisible({timeout:35000});
+  await page.locator("#replay-close").click();
+  await page.locator("#game-home").click();
+
+  await page.setViewportSize({width:1200,height:1252});
+  await page.locator("#home-choose-level").click();
+  await page.locator('[data-map-world="opposites"]').click();
+  await page.locator('[data-map-stage="independent"]').click();
+  await page.locator('[data-level="1"]').click();
+  if(await page.locator("#guide-skip").isVisible())await page.locator("#guide-skip").click();
+  await expect(page.locator("#left-items .balloon")).toHaveCount(2);
+  await page.locator("#left-action").click();
+  await page.locator("#right-action").click();
+  await expect(page.locator("#left-items .balloon")).toHaveCount(0,{timeout:35000});
+  await expect(page.locator("#replay-backdrop")).toBeVisible({timeout:35000});
+});
 test("phone and portrait tablet keep natural scrolling and reachable controls @smoke",async({page})=>{
   test.setTimeout(55000);
   for(const size of [
