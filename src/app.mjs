@@ -364,6 +364,8 @@ function renderNotebookMathEditor(){
     arrow.textContent="Operation on both sides";
   }
   $("notebook-apply").disabled=!preview.ok||notebookPhase!=="writing"||busy;
+  input.setAttribute("aria-invalid",String(!!text.trim()&&!preview.ok&&
+    preview.code!=="incomplete"));
   const sign=parsed.ok ? parsed.display[0]:text.trim().slice(0,1);
   for(const button of document.querySelectorAll("[data-notebook-symbol]"))
     button.setAttribute("aria-pressed",String(button.dataset.notebookSymbol===sign));
