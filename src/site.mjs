@@ -137,7 +137,7 @@ function homeAction() {
 }
 
 function renderWorlds() {
-  $("world-cards").innerHTML = WORLDS.map(world => {
+  $("world-cards").innerHTML = CAMPAIGN_REGISTRY.map(world => {
     const progressLine = world.available
       ? (stageOneComplete(progress.completed) && stageTwoComplete(stage2Progress.completed)
         ? "STAGES 1–2 MASTERED · STAGE 3 " + stage3Progress.completed.length + "/12 complete"
@@ -157,7 +157,9 @@ function renderWorlds() {
         clean(world.subtitle) + '</p><p>' + clean(world.description) + '</p>' +
       '<div class="world-card-footer"><span>' + progressLine + '</span>' +
         (world.available
-          ? '<button type="button" class="primary-btn" data-screen="stages">Explore stages →</button>'
+          ? (world.id==="workshop"
+            ? '<button type="button" class="primary-btn" data-screen="stages">Explore stages →</button>'
+            : '<button type="button" class="primary-btn" data-map-world="'+clean(world.id)+'">Choose levels →</button>')
           : '<span class="soon-lock" aria-label="This world is not available yet">◇ Locked</span>') +
       '</div></div></article>';
   }).join("");
