@@ -219,8 +219,12 @@ function showTrialSpeech(message, ms) {
   // the top of the laboratory. Bring the scene back into view for the lesson.
   $("scene").scrollIntoView({block:"center", behavior:"auto"});
 }
+function setFeedback(message,tone="info") {
+  $("feedback").textContent=message;
+  $("feedback").dataset.tone=tone;
+}
 function notify(message) {
-  $("feedback").textContent = message;
+  setFeedback(message,"warning");
   setSpeech(message);
 }
 function clearSpeech() {
@@ -560,6 +564,7 @@ function render() {
   $("reset").disabled = busy;
   $("hint").disabled = busy;
   if (isSolved(state)) {
+    $("feedback").dataset.tone="success";
     $("feedback").innerHTML = '<span class="success-mark">✦</span> Mystery solved. ' +
       '<button id="watch-again" class="inline-link" type="button">Watch the comic again</button>';
   }
@@ -1175,7 +1180,7 @@ async function animateRejectedAction(action, failure, preferredSide, rollbackPen
   const issue = preview.ok ? failure : preview;
   busy = true;
   clearSpeech();
-  $("feedback").textContent = "The hand is trying that experiment...";
+  setFeedback("The hand is trying that experiment...","working");
   render();
   try {
     if(issue.code==="fraction"){
@@ -1197,7 +1202,7 @@ async function animateRejectedAction(action, failure, preferredSide, rollbackPen
     // cut pieces or spilling tokens for themselves.
     await sleep(reducedMotion ? 220 : 850);
     const message = attemptMessage(issue, action, side);
-    $("feedback").textContent = message;
+    setFeedback(message,"warning");
     showTrialSpeech(message, reducedMotion ? 4500 : 7600);
     await sleep(reducedMotion ? 650 : 2450);
     // FIRST stitch each physical fragment back into the ORIGINAL object;
@@ -1228,7 +1233,7 @@ async function animateMismatchedManualAction(side, firstAction, action) {
   const firstSide = state.pending.first;
   busy = true;
   clearSpeech();
-  $("feedback").textContent = "Let's see what happens when the rooms receive different moves...";
+  setFeedback("Let's see what happens when the rooms receive different moves...","working");
   render();
   try {
     const before=visibleRooms(state);
@@ -1264,7 +1269,7 @@ async function animateMismatchedManualAction(side, firstAction, action) {
     await sleep(reducedMotion ? 200 : 1100); // Observe the new balance pose.
     const difference = currentDifference(override);
     const message = mismatchedMoveMessage(firstAction, action, firstSide, difference);
-    $("feedback").textContent = message;
+    setFeedback(message,"warning");
     showTrialSpeech(message, reducedMotion ? 5000 : 8000);
     await sleep(reducedMotion ? 750 : 2300); // Explain before restoring.
     $("scene").classList.add("scene-rewinding");
@@ -1302,6 +1307,7 @@ async function finishTurn() {
     $("level-clear-title").textContent =
       workshopActive?"Your own equation, balanced!":"Balance restored!";
     $("level-clear").hidden = false;
+    $("feedback").dataset.tone="success";
     $("feedback").textContent = state.goal === "square" || state.goal==="area"
       ? "A complete in-room square! Its physical regions match the squared side."
       : "One sprite, and its matching weights. The rooms are balanced!";
@@ -1311,7 +1317,7 @@ async function finishTurn() {
     busy = false; render();
     showReplay();
   } else {
-    $("feedback").textContent = "Still balanced. What should the hand try next?";
+    setFeedback("Still balanced. What should the hand try next?");
   }
 }
 async function guidedMove() {
@@ -1331,7 +1337,7 @@ async function guidedMove() {
     right:previewRoomAction(previous.right,action,state.quantityMode,"right")
   };
   busy=true;clearSpeech();
-  $("feedback").textContent=operationDescription(action)+"...";
+  setFeedback(operationDescription(action)+"...","working");
   try {
     if(action.op==="divide"){
       await neutraliseBeforeDivision(action,previews);
@@ -1521,7 +1527,7 @@ async function manualMove(side) {
     override=null;groups[side]=0;busy=false;render();clearNeutralEffect(side);
   }
   if(state.pending) {
-    $("feedback").textContent="One room done. The scale is tilted! Now make the matching move in the other room.";
+    setFeedback("One room done. The scale is tilted! Now make the matching move in the other room.","working");
     renderFirstGuide();
   } else {
     if(activeIndependentGuide()) {
@@ -1599,6 +1605,7 @@ function startLevel(index, quantityMode, levelOverride=null, campaignNumber=null
   $("replay-star-summary").textContent="";
   clearSpeech();
   $("replay-backdrop").hidden = true;
+  $("feedback").dataset.tone="info";
   $("feedback").textContent = campaignStage==="independent"
     ? "Your turn: choose an operation and move the hand in one room. Match it in the other to level the scale."
     : level.lockPositive
@@ -2012,7 +2019,7 @@ $("motion-enable").addEventListener("click", () => chooseMotion(false));
 $("undo").addEventListener("click", () => {
   if (notebookSession || busy) return;
   state = undo(state); clearSpeech();
-  $("feedback").textContent = "The hand has put everything back.";
+  setFeedback("The hand has put everything back.");
   render();
 });
 $("reset").addEventListener("click", () => {
