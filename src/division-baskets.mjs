@@ -155,13 +155,13 @@ export async function playDivisionBaskets({
         const end=token.getBoundingClientRect();
         token.style.setProperty("--basket-share-x",Math.round(start[i].left-end.left)+"px");
         token.style.setProperty("--basket-share-y",Math.round(start[i].top-end.top)+"px");
-        token.style.animationDelay=(i*delay)+"ms";
+        token.style.setProperty("--basket-share-delay",(i*delay)+"ms");
         token.classList.add("basket-sharing-token");
       });
       await sleep(timing.shareMs+Math.max(0,tokens.length-1)*delay+30);
       tokens.forEach(token=>{
         token.classList.remove("basket-sharing-token");
-        token.style.removeProperty("animation-delay");
+        token.style.removeProperty("--basket-share-delay");
         token.style.removeProperty("--basket-share-x");
         token.style.removeProperty("--basket-share-y");
       });
