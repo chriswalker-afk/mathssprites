@@ -192,6 +192,8 @@
   .app-shell .game-board .playfield{height:100%;min-height:0}
   .app-shell .rooms-row{
     top:calc(101px + var(--wide-scene-shift));
+    /* The tilt must still pivot at the beam, even with taller chambers. */
+    transform-origin:50% calc(350px + var(--wide-room-growth));
   }
   .app-shell .room-interior{height:var(--wide-room-height)}
   .app-shell .room-items{
