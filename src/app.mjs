@@ -61,7 +61,15 @@ let factor = 3;
 let state = initialState(LEVELS[0]);
 let activeLevel = LEVELS[0];
 let campaignLevelNumber = null;
-let campaignStage = null; // null = separate advanced prototype preview
+let campaignStage = null; // internal UI mode: guided | independent | notebook
+let campaignStageId = null; // stable stage ID for world-aware progress events
+let campaignWorldId = null;
+let campaignWorldNumber = 1;
+let campaignStageNumber = 1;
+let campaignStageLevelCount = 20;
+let campaignChapterIndex = null;
+let campaignChapterTitle = null;
+let campaignChapterSlots = [];
 let notebookSession=null; // only teacher prototype in PR20; never campaign progress
 let notebookPhase="idle"; // idle | writing | replaying | complete
 let notebookReplaySuccessful=false;
@@ -220,12 +228,12 @@ function clearSpeech() {
   $("speech").hidden = true;
 }
 function activeFirstGuide() {
-  return campaignStage==="guided" && campaignLevelNumber===1 &&
-    guideEnabled && !guideSeen && !guideDismissed;
+  return campaignWorldId==="workshop" && campaignStage==="guided" &&
+    campaignLevelNumber===1 && guideEnabled && !guideSeen && !guideDismissed;
 }
 function activeIndependentGuide() {
-  return campaignStage==="independent" && campaignLevelNumber===1 &&
-    guideEnabled && !independentGuideSeen && !guideDismissed;
+  return campaignWorldId==="workshop" && campaignStage==="independent" &&
+    campaignLevelNumber===1 && guideEnabled && !independentGuideSeen && !guideDismissed;
 }
 function activeCampaignGuide() {
   return activeFirstGuide() || activeIndependentGuide();
@@ -247,7 +255,8 @@ function guideTarget(name) {
 function renderFirstGuide() {
   for (const item of document.querySelectorAll(".coach-focus"))
     item.classList.remove("coach-focus");
-  $("game-guide-restart").hidden = campaignLevelNumber !== 1 || campaignStage===null;
+  $("game-guide-restart").hidden = campaignWorldId!=="workshop" ||
+    campaignLevelNumber !== 1 || campaignStage===null;
   $("game-guide-restart").disabled = busy;
   $("game-guide-restart").setAttribute("aria-label",
     campaignStage==="independent"?"Replay Independent Balance introduction":
@@ -411,35 +420,47 @@ function renderNotebookPaper() {
 function render() {
   const lvl = currentLevel();
   if (campaignLevelNumber !== null)
-    document.body.dataset.workshopChapter = String(Math.ceil(campaignLevelNumber / 4));
+    document.body.dataset.workshopChapter = String(
+      (campaignChapterIndex??Math.floor((campaignLevelNumber-1)/4))+1);
   else delete document.body.dataset.workshopChapter;
   if(campaignStage)document.body.dataset.workshopStage=campaignStage;
   else delete document.body.dataset.workshopStage;
   const shown = visible();
   renderRoom("left", shown.left, groups.left);
   renderRoom("right", shown.right, groups.right);
-  $("chapter").textContent = lvl.chapter;
+  $("chapter").textContent = lvl.chapter ||
+    (campaignChapterTitle?(String((campaignChapterIndex??0)+1).padStart(2,"0")+
+      " · "+campaignChapterTitle):"AN EQUATION TO EXPLORE");
   $("level-title").textContent = lvl.title;
   $("level-prompt").textContent = lvl.prompt;
   $("chapter-status").hidden = campaignLevelNumber === null;
-  const briefings=campaignStage==="independent"?INDEPENDENT_BRIEFINGS:CHAPTER_BRIEFINGS;
+  // Existing World 1 teacher cues remain, but future mathematical worlds
+  // get their own stage/chapter facts rather than World 1's fixed 20/16 map.
+  const briefings=campaignWorldId==="workshop"
+    ?(campaignStage==="independent"?INDEPENDENT_BRIEFINGS:CHAPTER_BRIEFINGS):{};
   $("chapter-briefing").hidden =
     campaignLevelNumber===null || !briefings[campaignLevelNumber];
-  if (campaignLevelNumber !== null) {
-    const stageNumber=campaignStage==="independent"?2:1;
-    $("chapter-status").textContent = "WORLD 1 · STAGE " + stageNumber +
-      " · LEVEL " + String(campaignLevelNumber).padStart(2,"0") +
-      " / " + (stageNumber===2?16:20);
+  if(campaignLevelNumber!==null){
+    $("chapter-status").textContent="WORLD "+campaignWorldNumber+
+      " · STAGE "+campaignStageNumber+" · LEVEL "+
+      String(campaignLevelNumber).padStart(2,"0")+" / "+campaignStageLevelCount;
     if(briefings[campaignLevelNumber])
       $("chapter-briefing").textContent=briefings[campaignLevelNumber];
   }
-  const chapterStart = campaignLevelNumber===null?0:Math.floor((campaignLevelNumber-1)/4)*4;
-  const dotLevels = campaignLevelNumber===null?LEVELS:
-    (campaignStage==="independent"?INDEPENDENT_LEVELS:WORLD1_LEVELS).slice(chapterStart,chapterStart+4);
-  const dotIndex = campaignLevelNumber === null ? levelIndex : campaignLevelNumber - 1 - chapterStart;
-  $("step-dots").innerHTML = dotLevels.map((item, i) =>
-    '<span class="progress-dot ' + (i <= dotIndex ? "lit" : "") +
-    (i === dotIndex ? " current" : "") + '" title="' + item.title + '"></span>').join("");
+  const chapterStart=campaignLevelNumber===null?0:
+    Math.floor((campaignLevelNumber-1)/4)*4;
+  const dotLevels=campaignLevelNumber===null?LEVELS:
+    campaignChapterSlots.length?campaignChapterSlots:
+    (campaignStage==="independent"?INDEPENDENT_LEVELS:WORLD1_LEVELS)
+      .slice(chapterStart,chapterStart+4);
+  const dotIndex=campaignLevelNumber===null?levelIndex:
+    campaignChapterSlots.length?
+      Math.max(0,dotLevels.findIndex(item=>item.id===lvl.id)):
+      campaignLevelNumber-1-chapterStart;
+  $("step-dots").innerHTML=dotLevels.map((item,i)=>
+    '<span class="progress-dot '+(i<=dotIndex?"lit":"")+
+    (i===dotIndex?" current":"")+'" title="'+
+    String(item.title||"Level").replace(/"/g,"&quot;")+'"></span>').join("");
 
   const balance = currentDifference(shown);
   const degrees = failureTilt || (balance === 0 ? 0 : (balance < 0 ? 3.5 : -3.5));
@@ -479,8 +500,7 @@ function render() {
   const inCampaign=campaignLevelNumber!==null;
   $("mode-wrapper").hidden=inCampaign;
   $("campaign-hand-mode").hidden=!inCampaign;
-  $("campaign-hand-label").textContent=campaignStage==="independent"
-    ?"STAGE 2 · HAND CONTROL":"STAGE 1 · HAND CONTROL";
+  $("campaign-hand-label").textContent="STAGE "+campaignStageNumber+" · HAND CONTROL";
   $("campaign-hand-title").textContent=campaignStage==="independent"
     ?"Your Turn":"Guided Mirror";
   $("campaign-hand-help").textContent=campaignStage==="independent"
