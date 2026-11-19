@@ -88,13 +88,16 @@ export function notebookCandidates() {
 const CANDIDATES=Object.freeze(notebookCandidates());
 
 export function startNotebook(level) {
-  if(!level?.lockPositive||level.quantityMode!=="positive" ||
+  const positive=level?.lockPositive&&level.quantityMode==="positive";
+  const signed=!level?.lockPositive&&level?.quantityMode==="signed";
+  if((!positive&&!signed) ||
      level.goal&&level.goal!=="isolate" ||
      !Array.isArray(level.allowedOperations) ||
      level.allowedOperations.some(op=>!["remove","add","divide","multiply"].includes(op)) ||
+     ["left","right"].some(side=>level[side]?.posX2) ||
      !validInitialLevel(level) ||
      !Number.isInteger(level.solution)||level.solution<=0)
-    throw new RangeError("A notebook preview requires a valid positive whole-number linear level.");
+    throw new RangeError("A notebook preview requires a valid positive whole-number linear level or signed Opposite Chambers level.");
   const state=initialState(level);
   if(isSolved(state)) throw new RangeError("This equation is already solved.");
   return {level,state,steps:[]};
@@ -103,6 +106,8 @@ export function startNotebook(level) {
 export function tryNotebookLine(session,text) {
   if(!session?.level||!session.state||!Array.isArray(session.steps))
     return error("session","Start a notebook experiment first.");
+  if(session.level.quantityMode==="signed")
+    return error("signed-editor","Use the signed operation-first editor: choose +, −, × or ÷ for both sides.");
   if(isSolved(session.state))
     return error("complete","Your written solution is complete. Replay it with the sprites.");
   if(session.steps.length>=NOTEBOOK_MAX_STEPS)
