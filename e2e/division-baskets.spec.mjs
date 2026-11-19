@@ -4,7 +4,7 @@ test.beforeEach(async({page})=>{
   await page.emulateMedia({reducedMotion:"no-preference"});
   await page.goto("/?preview=baskets");
 });
-test("real baskets fall EMPTY, receive the original tokens, and are carried away individually",async({page})=>{
+test("real baskets fall EMPTY, receive the original tokens, and are carried away individually @smoke",async({page})=>{
   test.setTimeout(65000);
   await page.locator("#do-both").click();
   const west=page.locator("#left-items .division-stage");
