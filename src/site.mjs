@@ -596,8 +596,11 @@ document.addEventListener("keydown",event=>{
   if(event.key!=="Escape"||event.defaultPrevented||event.altKey||
      event.ctrlKey||event.metaKey)return;
   const active=event.target;
-  if(active instanceof HTMLElement &&
-    active.closest("input,textarea,select,[contenteditable]"))return;
+  const editing=active instanceof HTMLElement &&
+    (active.matches("textarea,select,[contenteditable]") ||
+      (active instanceof HTMLInputElement &&
+        !["checkbox","radio","button"].includes(active.type)));
+  if(editing)return;
   const previous={
     worlds:"home",stages:"worlds",workshop:"stages",
     levels:boardReturnScreen,help:supportReturnScreen,settings:supportReturnScreen
