@@ -47,6 +47,14 @@ test("World 2 mirrors the three World 1 stage sizes and chapter shapes",()=>{
    assert.equal(nextCampaignLevel("opposites",id,sizes[id]),null);
  }
 });
+test("only real first signed hand levels trigger World 2 onboarding",()=>{
+ for(const stage of OPPOSITE_STAGE_ORDER){
+  for(const [i,slot] of OPPOSITE_LEVELS[stage].entries()){
+   assert.equal(slot.level.signedIntroduction,stage!=="notebook"&&i===0,
+    slot.id+" should not inherit another world's first-visit tutorial");
+  }
+ }
+});
 test("all 48 signed puzzles have exact positive solutions and executable routes",()=>{
  for(const id of OPPOSITE_STAGE_ORDER)for(const slot of OPPOSITE_LEVELS[id]){
   const level=slot.level;
