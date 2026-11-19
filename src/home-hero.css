@@ -223,14 +223,14 @@
 }
 .reduce-motion .hero-arriving,.reduce-motion .hero-pan-impact{animation:none!important}
 .reduce-motion .hero-items{transition:none!important}
-.hero-art[data-manual-play="true"] .hero-arriving{
+.hero-art[data-motion-opt-in="true"] .hero-arriving{
  animation:hero-item-land var(--hero-flight,.57s) cubic-bezier(.14,.72,.32,1.16) both!important;
 }
-.hero-art[data-manual-play="true"] .hero-pan-impact{
+.hero-art[data-motion-opt-in="true"] .hero-pan-impact{
  animation:hero-pan-bounce .45s cubic-bezier(.2,.7,.3,1)!important;
 }
-.hero-art[data-manual-play="true"] .hero-is-paused .hero-arriving,
-.hero-art[data-manual-play="true"] .hero-is-paused .hero-pan-impact{
+.hero-art[data-motion-opt-in="true"] .hero-is-paused .hero-arriving,
+.hero-art[data-motion-opt-in="true"] .hero-is-paused .hero-pan-impact{
  animation-play-state:paused!important;
 }
 .hero-motion-note{
