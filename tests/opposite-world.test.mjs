@@ -132,7 +132,7 @@ test("signed editor distinguishes +(−x), −(−x), +(−1), −(−1) and ren
  assert.match(html,/<mo>−<\/mo>/);
  assert.match(html,/<mi>x<\/mi>/);
  const positive=initialState(CAMPAIGN_REGISTRY[0].stages[0].levels[0].level);
- assert.equal(levelActionPermission(positive,{op:"add",kind:"negX",count:1}).ok,false);
+ assert.equal(perform(positive,{op:"add",kind:"negX",count:1}).ok,false);
  assert.equal(previewNotebookOperation(
   startNotebook(CAMPAIGN_REGISTRY[0].stages[2].levels[0].level),"+(−x)").ok,false);
 });
