@@ -245,6 +245,7 @@ function activeIndependentGuide() {
 }
 function activeSignedGuide(){
   return campaignWorldId==="opposites" && campaignLevelNumber===1 &&
+    currentLevel().signedIntroduction===true &&
     ["guided","independent"].includes(campaignStage) &&
     guideEnabled && !signedGuideSeen[campaignStage] && !guideDismissed;
 }
