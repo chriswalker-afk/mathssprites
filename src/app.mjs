@@ -298,7 +298,7 @@ function renderNotebookVisibility() {
   $("notebook-next").hidden=!campaign||notebookPhase!=="complete"||
     !notebookReplaySuccessful;
   $("notebook-next").textContent=campaignLevelNumber===12
-    ?"Finish Stage 3 →":"Next notebook level →";
+    ?"Back to stages →":"Next notebook level →";
 }
 /** Shared game renderer, but with zero campaign-credit navigation. */
 function renderWorkshopVisibility(){
@@ -1205,12 +1205,10 @@ async function finishTurn() {
     // The student must be able to SEE the final physical balance before
     // the comic-book retrospective covers the laboratory.
     $("scene").classList.add("solved-scene");
+    // A level can now be played out of order; its number alone is NOT
+    // evidence that a whole chapter or stage has been mastered.
     $("level-clear-title").textContent =
-      workshopActive?"Your own equation, balanced!":
-      campaignStage==="guided" && campaignLevelNumber===20?"Guided Balance mastered!":
-      campaignStage==="independent" && campaignLevelNumber===16?"Independent Balance mastered!":
-      campaignLevelNumber!==null && campaignLevelNumber%4===0?"Chapter complete!":
-      "Balance restored!";
+      workshopActive?"Your own equation, balanced!":"Balance restored!";
     $("level-clear").hidden = false;
     $("feedback").textContent = state.goal === "square" || state.goal==="area"
       ? "A complete in-room square! Its physical regions match the squared side."
@@ -1762,9 +1760,9 @@ function drawReplay(index, { animate = !reducedMotion, complete = false } = {}) 
   $("replay-next").disabled = replayIndex >= replayEntries.length - 1;
   $("next-level").textContent = workshopActive?"Build another equation →":
     campaignLevelNumber !== null
-    ? (campaignStage==="guided" && campaignLevelNumber===20?"Finish Stage 1 →":
-       campaignStage==="independent" && campaignLevelNumber===16?"Finish Stage 2 →":
-       "Next level →")
+    ? (campaignStage==="guided" && campaignLevelNumber===20 ||
+       campaignStage==="independent" && campaignLevelNumber===16
+        ?"Back to stages →":"Next level →")
     : levelIndex === LEVELS.length - 1
       ? "Play from the beginning →" : "Next experiment →";
   $("next-level").disabled = replayIndex !== replayEntries.length - 1 ||
