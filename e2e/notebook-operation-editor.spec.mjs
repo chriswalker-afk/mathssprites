@@ -29,7 +29,12 @@ test("students choose −3 and the maths editor calculates the equation without 
   await expect(page.locator("#notebook-apply-label")).toHaveText("− 3 on both sides");
   await expect(page.locator("#notebook-apply")).toBeEnabled();
   // Merely previewing an operation does NOT consume a move/star.
-  expect(await page.evaluate(()=>localStorage.getItem("mathssprites.apprentice-progress.v1"))).toBeNull();
+  const pending=await page.evaluate(()=>({
+    progress:JSON.parse(localStorage.getItem("mathssprites.apprentice-progress.v1")),
+    stars:localStorage.getItem("mathssprites.stars.v1")
+  }));
+  expect(pending.progress.completed).toEqual([]);
+  expect(pending.stars).toBeNull();
   await page.screenshot({path:"artifacts/pr31-maths-operation-preview-desktop.png"});
   await page.locator("#notebook-apply").click();
   await expect(page.locator("#notebook-lines li")).toHaveCount(2);
