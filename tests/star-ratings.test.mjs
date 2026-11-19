@@ -94,14 +94,20 @@ for(const op of ["divide","multiply"])
 
 function keyOf(state){
   const a=state.left,b=state.right;
-  return [a.posX,a.posOne,b.posX,b.posOne].join(",");
+  // The state of a sealed crate is NOT equivalent to loose tokens, even
+  // though their algebraic expressions have the same value.
+  return [a.posX,a.posOne,a.crates?.count||0,
+    b.posX,b.posOne,b.crates?.count||0].join(",");
 }
 function shortestLegalRoute(level,maximum){
   let frontier=[initialState(level)];
   let seen=new Set(frontier.map(keyOf));
   for(let depth=1;depth<=maximum;depth++){
     const next=[];
-    for(const state of frontier)for(const action of allActions){
+    for(const state of frontier)for(const action of [
+      ...allActions,
+      ...(level.groupedPrototype?[{op:"unpack",side:"left"},{op:"unpack",side:"right"}]:[])
+    ]){
       const candidate=perform(state,action);
       if(!candidate.ok)continue;
       if(isSolved(candidate.state))return depth;
