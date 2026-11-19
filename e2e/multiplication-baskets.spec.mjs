@@ -6,8 +6,13 @@ test.beforeEach(async({page})=>{
 });
 async function multiplyBy(page,factor){
   await page.locator('[data-operation="multiply"]').click();
-  for(let n=3;n<factor;n++)await page.locator("#amount-up").click();
-  for(let n=3;n>factor;n--)await page.locator("#amount-down").click();
+  // Every level may have its own starting factor (resident starts at 2).
+  // Read the ACTUAL control rather than assuming a fixed default of three.
+  const starting=Number((await page.locator("#amount-value").textContent()).trim());
+  expect(Number.isInteger(starting)).toBe(true);
+  for(let n=starting;n<factor;n++)await page.locator("#amount-up").click();
+  for(let n=starting;n>factor;n--)await page.locator("#amount-down").click();
+  await expect(page.locator("#amount-value")).toHaveText(String(factor));
 }
 
 test("physical multiplication groups the original objects and hand-delivers full wicker copies @smoke",async({page})=>{
