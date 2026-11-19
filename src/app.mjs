@@ -1820,10 +1820,12 @@ function updateReplayEndNote() {
   const note = $("replay-end-note");
   note.hidden = !ready || campaignLevelNumber === null;
   if (ready && campaignLevelNumber !== null)
-    note.textContent=campaignStage==="independent" && campaignLevelNumber===16
-      ? "Stage 2 complete. Algebra Apprentice is coming next!"
-      : campaignStage==="guided" && campaignLevelNumber===20
-        ? "Guided Balance complete. Independent Balance is unlocked!"
+    note.textContent=campaignWorldId==="workshop" &&
+      campaignStage==="independent" && campaignLevelNumber===16
+      ? "Stage 2 complete. Try Algebra Apprentice next!"
+      : campaignWorldId==="workshop" &&
+        campaignStage==="guided" && campaignLevelNumber===20
+        ? "Guided Balance complete. Try Independent Balance next!"
         : "Level "+campaignLevelNumber+" solved · keep exploring!";
 }
 function drawReplay(index, { animate = !reducedMotion, complete = false } = {}) {
