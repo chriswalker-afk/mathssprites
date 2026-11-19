@@ -122,12 +122,14 @@ test("phone levels and contextual return are accessible without horizontal overf
   await expect(page.locator('[data-level="4"]')).toBeFocused();
   await page.locator('.site-nav-links [data-screen="settings"]').click();
   await expect(page.locator("#settings-return")).toContainText("levels");
+  await page.screenshot({path:"artifacts/pr35-phone-settings-375x812.png",fullPage:true});
   await page.locator("#settings-return").click();
   for(const sel of ["#site-levels","#board-continue","#map-stage-tabs"]){
     await expect(page.locator(sel)).toBeVisible();
   }
   const width=await page.evaluate(()=>document.documentElement.scrollWidth);
   expect(width).toBeLessThanOrEqual(378);
+  await page.screenshot({path:"artifacts/pr35-phone-board-375x812.png",fullPage:true});
 });
 for(const size of [{width:1024,height:720},{width:1092,height:540}]){
   test("continuation action fits without document scroll at "+size.width+"x"+size.height+" @smoke",async({page})=>{
