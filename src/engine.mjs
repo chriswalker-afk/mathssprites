@@ -4,6 +4,7 @@
  * Both play modes commit exactly one two-sided transaction per mathematical step.
  */
 import { neutralPairSequence } from "./neutral-pairs.mjs";
+import {cloneCrate,crateCount,crateAlgebra,crateContentsTotal,looseAfterUnpack,crateLabel} from "./group-crates.mjs";
 export const TOKEN_KINDS = ["posX", "negX", "posX2", "posOne", "negOne"];
 export const QUANTITY_MODES = Object.freeze(["positive","signed"]);
 export function levelQuantityMode(level) {
@@ -102,11 +103,16 @@ export const LEVELS = [
 ];
 
 export function room(values = {}) {
-  return Object.fromEntries(TOKEN_KINDS.map(key => [key, Number(values[key] || 0)]));
+  const result=Object.fromEntries(TOKEN_KINDS.map(key => [key, Number(values[key] || 0)]));
+  if(values?.crates?.count)result.crates=cloneCrate(values.crates);
+  return result;
 }
 export function copyRoom(value) { return room(value); }
 export function canonical(value) {
-  return { x2: value.posX2 || 0, x: value.posX - value.negX, constant: value.posOne - value.negOne };
+  const grouped=crateAlgebra(value);
+  return {x2:(value.posX2||0)+grouped.x2,
+    x:(value.posX||0)-(value.negX||0)+grouped.x,
+    constant:(value.posOne||0)-(value.negOne||0)+grouped.constant};
 }
 export function evaluate(value, x) {
   const terms = canonical(value);
@@ -139,11 +145,11 @@ export function balanceDifference(state) {
 }
 export function isSolved(state) {
   if (state.pending) return false;
-  const isOneSprite = r => r.posX === 1 && r.negX === 0 && r.posX2 === 0 &&
+  const isOneSprite = r => !crateCount(r) && r.posX === 1 && r.negX === 0 && r.posX2 === 0 &&
     r.posOne === 0 && r.negOne === 0;
-  const isOneSquare = r => r.posX2 === 1 && r.posX === 0 && r.negX === 0 &&
+  const isOneSquare = r => !crateCount(r) && r.posX2 === 1 && r.posX === 0 && r.negX === 0 &&
     r.posOne === 0 && r.negOne === 0;
-  const isWeights = (r, n) => r.posX2 === 0 && r.posX === 0 && r.negX === 0 &&
+  const isWeights = (r, n) => !crateCount(r) && r.posX2 === 0 && r.posX === 0 && r.negX === 0 &&
     r.negOne === 0 && r.posOne === n;
   if (state.goal === "area") {
     return !!state.areaTarget && ["left","right"].every(side =>
@@ -168,11 +174,13 @@ export function normalize(value) {
   return { after: next, cancellations: { sprites, constants } };
 }
 function countTokens(value) {
-  return TOKEN_KINDS.reduce((sum, kind) => sum + value[kind], 0);
+  return crateCount(value)+TOKEN_KINDS.reduce((sum, kind) => sum + value[kind], 0);
 }
 function check(action) {
-  if (!["add", "remove", "multiply", "divide", "square", "sqrt"].includes(action?.op))
+  if (!["add", "remove", "multiply", "divide", "square", "sqrt", "unpack"].includes(action?.op))
     return "Choose an operation first.";
+  if(action.op==="unpack" && !["left","right"].includes(action.side))
+    return "Choose which sealed crate to unpack.";
   if (action.op === "add" || action.op === "remove") {
     if (!TOKEN_KINDS.includes(action.kind)) return "Choose a kind of object.";
     if (!Number.isInteger(action.count) || action.count < 1 || action.count > 12)
@@ -249,12 +257,26 @@ function transform(source, action, side = "room") {
   const next = room(source);
   let priorCancellations = { sprites: 0, constants: 0 };
   let preDivisionEvents = [];
+  if(action.op==="unpack"){
+    if(side===action.side){
+      if(!crateCount(next))return {ok:false,code:"no-crates",
+        reason:"There are no sealed crates left in that room."};
+      const unpacked=looseAfterUnpack(next);
+      Object.assign(next,unpacked);
+      delete next.crates;
+    }
+  }
   if (action.op === "add") next[action.kind] += action.count;
   if (action.op === "remove") {
-    if (next[action.kind] < action.count)
+    if (next[action.kind] < action.count){
+      const locked=crateContentsTotal(next,action.kind);
+      if(locked>0)return {ok:false,code:"locked-crate",kind:action.kind,
+        available:next[action.kind],sealed:locked,
+        reason:"Those objects are still sealed in a crate! Unpack the group, or work with whole crates first."};
       return { ok: false, code: "missing", kind: action.kind, needed: action.count,
         available: next[action.kind],
         reason: "I can't take away something that isn't in that room." };
+    }
     next[action.kind] -= action.count;
   }
   if (action.op === "square" || action.op === "sqrt") {
@@ -289,12 +311,17 @@ function transform(source, action, side = "room") {
   }
   if (action.op === "multiply") {
     TOKEN_KINDS.forEach(kind => { next[kind] *= action.factor; });
+    if(crateCount(next))next.crates.count*=action.factor;
   }
   if (action.op === "divide") {
     const normalized = normalize(next);
     const compact = normalized.after;
     preDivisionEvents = neutralPairSequence(next,side);
     priorCancellations = normalized.cancellations;
+    if(crateCount(compact)%action.factor!==0)
+      return {ok:false,code:"crate-split",kind:"crate",
+        count:crateCount(compact),factor:action.factor,
+        reason:"A sealed crate must stay whole. Divide into complete groups of crates, or unpack them first."};
     const splitKind = TOKEN_KINDS.find(kind => compact[kind] % action.factor !== 0);
     if (splitKind) {
       const splitCount = compact[splitKind];
@@ -304,6 +331,9 @@ function transform(source, action, side = "room") {
         reason: "That would leave part of a sprite or weight. I'm saving fractions for another experiment." };
     }
     TOKEN_KINDS.forEach(kind => { next[kind] = compact[kind] / action.factor; });
+    if(crateCount(compact))next.crates={...cloneCrate(compact.crates),
+      count:crateCount(compact)/action.factor};
+    else delete next.crates;
   }
   const raw = room(next);
   const reduced = normalize(next);
@@ -344,6 +374,9 @@ export function levelActionPermission(state, action) {
       action.kind === "posX2")
     return {ok:false,code:"locked-kind",
       reason:"Square-shaped sprites belong to the Square Laboratory, not this workshop."};
+  if(action?.op==="unpack"&&!crateCount(state?.[action.side]))
+    return {ok:false,code:"no-crates",
+      reason:"There are no sealed crates left to open."};
   if (state.allowedOperations && !state.allowedOperations.includes(action?.op))
     return {ok:false,code:"locked-operation",
       reason:"That tool belongs to a later laboratory. Use the whole-number tools here."};
@@ -357,6 +390,15 @@ export function prepare(state, action) {
   if (error) return { ok: false, reason: error };
   const permission=quantityPermission(state.quantityMode||"positive",action);
   if(!permission.ok)return permission;
+  // Unpacking preserves value inside ONE room: an identity rewrite, not
+  // a one-sided algebraic transformation. No other action uses this branch.
+  if(action.op==="unpack"){
+    const left=transform(state.left,action,"left");
+    if(!left.ok)return {...left,side:"left"};
+    const right=transform(state.right,action,"right");
+    if(!right.ok)return {...right,side:"right"};
+    return {ok:true,pair:{left,right}};
+  }
   const left = transform(state.left, action,"left");
   if (!left.ok) return { ...left, side: "left" };
   const right = transform(state.right, action,"right");
@@ -386,6 +428,14 @@ export function perform(state, action, mode = "auto", side) {
   if(!worldPermission.ok)return worldPermission;
   const permission=quantityPermission(state.quantityMode||"positive",action);
   if(!permission.ok)return permission;
+  if(action.op==="unpack"){
+    if(state.pending||mode!=="auto")return {ok:false,code:"unpack-mode",
+      reason:"Unpacking changes how we see one room; finish the current experiment first."};
+    const prepared=prepare(state,action);
+    if(!prepared.ok)return prepared;
+    return {ok:true,committed:true,
+      state:commit(state,action,prepared.pair,"rewrite")};
+  }
   if (state.pending) {
     if (side !== (state.pending.first === "left" ? "right" : "left"))
       return { ok: false, code: "wrong-side", reason: "Now make the matching move in the other room." };
@@ -429,6 +479,14 @@ export function undo(state) {
     history: state.history.slice(0, -1), pending: null };
 }
 export function expression(value) {
+  if(crateCount(value)){
+    const count=crateCount(value);
+    const grouped=(count===1?"":String(count))+
+      "("+crateLabel(value.crates.contents)+")";
+    const loose=expression(room({...value,crates:null}));
+    return loose==="0"?grouped:
+      grouped+(loose.startsWith("−")?" − "+loose.slice(1):" + "+loose);
+  }
   const { x, constant } = canonical(value);
   const { x2 } = canonical(value);
   const sqTerm = x2 === 0 ? "" : (x2 === 1 ? "" : String(x2)) + "x²";
@@ -446,6 +504,8 @@ export function expression(value) {
 export function equation(pair) { return expression(pair.left) + " = " + expression(pair.right); }
 const TOKEN_NAME = { posX: "dark sprite", negX: "pale sprite", posX2: "square x² sprite", posOne: "weight", negOne: "balloon" };
 export function operationDescription(action) {
+  if(action.op==="unpack")return "Unpack the sealed crates in the "+
+    (action.side==="left"?"west":"east")+" room (same value)";
   if (action.op === "square") return "Square both entire sides (x ≥ 0)";
   if (action.op === "sqrt") return "Take the principal square root of both sides (x ≥ 0)";
   if (action.op === "multiply") return "Make " + action.factor + " complete copies in each room";
@@ -454,6 +514,8 @@ export function operationDescription(action) {
   return (action.op === "add" ? "Add " : "Remove ") + action.count + " " + unit + " in each room";
 }
 export function algebraOperation(action) {
+  if(action.op==="unpack")return "Expand the brackets in the "+
+    (action.side==="left"?"left":"right")+" expression — no change in value";
   if (action.op === "square") return "Square both sides (x ≥ 0)";
   if (action.op === "sqrt") return "Take √ of both sides (principal root, x ≥ 0)";
   if (action.op === "divide") return "÷ " + action.factor + " on both sides";
