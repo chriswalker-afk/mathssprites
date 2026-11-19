@@ -22,6 +22,7 @@
   <link rel="stylesheet" href="./src/navigation-journey.css?v=35" />
   <link rel="stylesheet" href="./src/opposites-world.css?v=36" />
   <link rel="stylesheet" href="./src/viewport-adaptive.css?v=37" />
+  <link rel="stylesheet" href="./src/group-crates.css?v=38" />
   <script type="module" src="./src/app.mjs"></script>
   <script type="module" src="./src/site.mjs"></script>
 </head>
@@ -584,6 +585,14 @@
               <div class="control-label" id="amount-label">3 · How many?</div>
               <div class="stepper"><button type="button" id="amount-down" aria-label="Decrease amount">−</button><output id="amount-value">2</output><button type="button" id="amount-up" aria-label="Increase amount">+</button></div>
             </div>
+          </div>
+          <div class="crate-controls" id="crate-controls" hidden>
+            <div class="eyebrow">THE SEALED BRACKETS</div>
+            <p>Each glass-fronted crate holds <strong>x + 3</strong>. Unpack, or divide complete crates first.</p>
+            <button type="button" id="unpack-crates" class="secondary-btn"
+              aria-label="Unpack the sealed bracket group without changing the room's value">
+              <span aria-hidden="true">▣</span> Unpack the crates
+            </button>
           </div>
           <div class="control-bottom">
             <div class="small-actions">
