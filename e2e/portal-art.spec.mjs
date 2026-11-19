@@ -40,8 +40,8 @@ test("the Hall of Doors contains four distinct locally loaded artworks, with fut
     new URL(img.currentSrc).pathname
   ));
   expect(new Set(sources).size).toBe(4);
-  await expect(page.locator(".world-ready")).toHaveCount(1);
-  await expect(page.locator(".world-planned")).toHaveCount(3);
+  await expect(page.locator(".world-ready")).toHaveCount(2);
+  await expect(page.locator(".world-planned")).toHaveCount(2);
   await expect(page.locator(".world-planned button")).toHaveCount(0);
   await page.screenshot({path:"artifacts/pr33-hall-of-doors-1280.png"});
   await page.getByRole("button",{name:"Explore stages"}).click();
@@ -61,7 +61,7 @@ test("Experiment Board displays its engraved surface, all 48 levels and retains 
   await page.locator('[data-map-stage="notebook"]').click();
   await expect(page.locator("#site-levels")).toHaveAttribute("data-active-stage","notebook");
   await expect(page.locator(".level-tile")).toHaveCount(12);
-  await expect(page.locator('.map-world-button:disabled')).toHaveCount(3);
+  await expect(page.locator('.map-world-button:disabled')).toHaveCount(2);
   await page.screenshot({path:"artifacts/pr33-experiment-board-1280.png"});
 });
 test("Inventor's Desk has its illustrated sketch and functional accessible equation editor @smoke",async({page})=>{
