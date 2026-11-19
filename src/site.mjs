@@ -258,8 +258,8 @@ function renderLevels() {
   const total=levels.filter(x=>x.available).length,completed=current.completed.length;
   const next=levels.find(slot=>slot.available&&!current.completed.includes(slot.id));
   const stageStars=campaignStarTotals(campaign,{worldId:world.id,stageId:stage.id});
-  $("site-levels").dataset.mapWorld=world.id;
-  $("site-levels").dataset.mapStage=stage.id;
+  $("site-levels").dataset.activeWorld=world.id;
+  $("site-levels").dataset.activeStage=stage.id;
   $("levels-stage-kicker").textContent="WORLD "+String(world.number).padStart(2,"0")+
     " · "+world.subtitle;
   $("levels-stage-title").textContent=stage.title;
