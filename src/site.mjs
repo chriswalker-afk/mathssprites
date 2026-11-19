@@ -138,18 +138,20 @@ function homeAction() {
 
 function renderWorlds() {
   $("world-cards").innerHTML = CAMPAIGN_REGISTRY.map(world => {
-    const progressLine = world.available
+    const progressLine = !world.available?"COMING SOON":world.id==="workshop"
       ? (stageOneComplete(progress.completed) && stageTwoComplete(stage2Progress.completed)
         ? "STAGES 1–2 MASTERED · STAGE 3 " + stage3Progress.completed.length + "/12 complete"
         : stageOneComplete(progress.completed)
         ? "STAGE 1 MASTERED · STAGE 2 " + stage2Progress.completed.length + "/16 complete"
         : "STAGE 1 · " + progress.completed.length + "/20 complete · all stages open")
-      : "COMING SOON";
+      : (()=>{const totals=campaignStarTotals(campaign,{worldId:world.id});
+        return totals.completed+" / "+totals.count+" levels complete · "+
+          totals.earned+" / "+totals.available+" stars";})();
     return '<article class="world-card world-' + world.theme +
       (world.available ? ' world-ready' : ' world-planned') + '">' +
       '<div class="world-card-scene" aria-hidden="true">' +
         '<span class="world-symbol">' +
-        (world.number === 1 ? "⚖" : world.number === 2 ? "±" : world.number === 3 ? "½" : "□") +
+        clean(world.icon||"✦") +
         '</span><span class="world-card-orbit"></span></div>' +
       '<div class="world-card-body"><div class="eyebrow">WORLD ' +
         String(world.number).padStart(2,"0") + '</div>' +
