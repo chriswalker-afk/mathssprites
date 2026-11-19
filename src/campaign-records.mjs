@@ -51,8 +51,8 @@ export function normalizeCampaignRecords(value,registry=CAMPAIGN_REGISTRY){
   return result;
 }
 function stageOptimalMoves(stage,levelId){
-  const index=stage.levels.findIndex(s=>s.id===levelId);
-  const n=stage.optimalMoves[index];
+  // Benchmarks follow the stable level ID even when a curriculum is reordered.
+  const n=stage.optimalMoves[levelId];
   return Number.isInteger(n)&&n>=1?n:null;
 }
 /** Legacy numbers convert to immutable World 1 level IDs. No legacy key is
