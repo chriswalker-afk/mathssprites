@@ -30,7 +30,9 @@ async function measure(page){
      const r=el.getBoundingClientRect();
      return {x:r.x,y:r.y,top:r.top,bottom:r.bottom,width:r.width,height:r.height};
    };
-   return {w:innerWidth,h:innerHeight,
+   const row=document.querySelector(".rooms-row");
+   const pivotY=row?Number.parseFloat(getComputedStyle(row).transformOrigin.split(" ")[1]):null;
+   return {w:innerWidth,h:innerHeight,pivotY,
      scrollW:document.documentElement.scrollWidth,
      scrollH:document.documentElement.scrollHeight,
      nav:b(".site-nav"),hero:b("#site-home .landing-hero"),
@@ -96,6 +98,9 @@ test("real room/pan/beam/pedestal remain connected while tall gameplay uses larg
       expect(m.scene.height).toBeGreaterThan(675);
       expect(Math.abs(m.bench.top-m.base.bottom)).toBeLessThan(38);
       expect(m.room.height).toBeGreaterThan(350);
+      // The row rotates around the same brass pivot as the beam — no
+      // detached scale when a manual action temporarily unbalances it.
+      expect(Math.abs((m.beam.top-m.rooms.top)-m.pivotY)).toBeLessThan(12);
     }
     if(size.width<1100&&size.height>=790){
       expect(m.scene.height).toBeLessThanOrEqual(620);
@@ -159,6 +164,8 @@ test("signed zero-pair hand actions still commit in both tall desktop hand modes
   if(await page.locator("#guide-skip").isVisible())await page.locator("#guide-skip").click();
   await expect(page.locator("#left-items .balloon")).toHaveCount(2);
   await page.locator("#left-action").click();
+  await expect(page.locator("#balance-caption")).toContainText("matching move");
+  await page.screenshot({path:"artifacts/pr37-independent-pending-tall.png",fullPage:true});
   await page.locator("#right-action").click();
   await expect(page.locator("#left-items .balloon")).toHaveCount(0,{timeout:35000});
   await expect(page.locator("#replay-backdrop")).toBeVisible({timeout:35000});
