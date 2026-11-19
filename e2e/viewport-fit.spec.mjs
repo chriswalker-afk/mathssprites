@@ -221,7 +221,7 @@ for(const size of scaledLaptopViews){
   });
 }
 
-test("very short or mobile viewports preserve scrolling, not clipped controls",async({page})=>{
+test("very short or mobile viewports preserve scrolling, not clipped controls @smoke",async({page})=>{
   await page.setViewportSize({width:1092,height:460});
   await page.goto("/");
   // Layout must NOT force a hidden fixed-height shell at inaccessible heights.
