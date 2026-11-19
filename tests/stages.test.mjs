@@ -20,19 +20,13 @@ test("World 1 has three teaching stages and a separate, playable free-play tool"
   assert.equal(findWorld1Stage("inexistent"),null);
 });
 
-test("Stage 2 unlocks on Stage 1 mastery; Stage 3 unlocks on Stage 2 mastery",()=>{
-  assert.equal(canOpenWorld1Stage("guided"),true);
-  assert.equal(canOpenWorld1Stage("independent"),false);
-  assert.equal(canOpenWorld1Stage("independent",{stage1Completed:true}),true);
-  assert.equal(canOpenWorld1Stage("independent",{teacher:true}),true);
-  assert.equal(canOpenWorld1Stage("independent",{stage2Completed:true}),false);
-  assert.equal(canOpenWorld1Stage("notebook"),false);
-  assert.equal(canOpenWorld1Stage("notebook",{stage1Completed:true}),false);
-  assert.equal(canOpenWorld1Stage("notebook",{stage2Completed:true}),true);
-  assert.equal(canOpenWorld1Stage("notebook",{teacher:true}),true);
-  assert.equal(stageThreeComplete(Array.from({length:12},(_,i)=>i+1)),true);
+test("all three implemented stages are available to students; unbuilt stages are not",()=>{
+  for(const stage of ["guided","independent","notebook"])
+    assert.equal(canOpenWorld1Stage(stage),true);
+  assert.equal(canOpenWorld1Stage("notebook",{stage1Completed:false,stage2Completed:false}),true);
   assert.equal(canOpenWorld1Stage("equation-workshop",{teacher:true,stage1Completed:true}),false);
   assert.equal(canOpenWorld1Stage("bogus"),false);
+  assert.equal(stageThreeComplete(Array.from({length:12},(_,i)=>i+1)),true);
   assert.equal(stageTwoComplete([]),false);
   assert.equal(stageTwoComplete(Array.from({length:16},(_,i)=>i+1)),true);
 });
