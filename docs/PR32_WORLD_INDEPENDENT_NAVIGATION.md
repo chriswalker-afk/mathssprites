@@ -38,6 +38,8 @@ These IDs are stable. A level is identified by **world ID + stage ID + level ID*
 
 `src/site.mjs` looks up levels, game modes and navigation from the registry. Adding another world is configuration plus real puzzles/engine capabilities, not another hardcoded menu branch.
 
+`src/app.mjs` now accepts **world ID, stage ID, learning method, chapter metadata, world/stage number and level count** in its launch event. It chooses the room's quantity mode from the actual level definition instead of forcing "positive", so future signed-number puzzles can show balloons and negative sprites. It keeps an internal hand/editor mode separate from the external stable stage ID, ensuring a new stage named `signed-independent` can still use the manual hand without sending World 1 progress events. The World 1 tutorials/briefings remain restricted to World 1 rather than being accidentally displayed in new worlds.
+
 ## Saving and migrating progress
 `src/campaign-records.mjs` introduces:
 - `mathssprites.campaign.v2`: `{version:2,worlds:{[worldId]:{stages:{[stageId]:{completed:[stableLevelId],lastPlayed:stableLevelId,bestMoves:{[stableLevelId]:moves}}}}}}`.
@@ -59,6 +61,7 @@ There is no user login or remote data transfer. Progress remains in the student'
 - **Migration test:** existing World 1 completed IDs, high-score moves, last level, and v1 keys are preserved after v2 save/reload. No false stars.
 - **Browser navigation:** Home → Board → chosen level; stage switching without another screen; one-click last-played stage shortcuts; disabled unbuilt worlds; correct return route, progress, and star ratings after reload.
 - **Laptop snapshots:** 1024×720 and 1092×540; no document scrolling or clipped level tiles. Mobile remains scrollable/tappable.
+- **Future runtime fixture:** synthetic World 2 launch with signed objects and a single-chapter map; verify the live game scene, signed tokens, correct world/stage numbering and a manual or notebook stage whose ID differs from World 1.
 - **Regression:** full existing mathematics, basket, Algebra Apprentice, and star-rating suites unchanged. The physical scene coordinates are not altered.
 
 ## Future PRs
