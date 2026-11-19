@@ -237,6 +237,13 @@ export class HomeHeroAnimator{
         this.emit(step);
         this.wait=step.gapMs??HERO_STEP_MS;
       }else{
+        // "Hold" means the FINAL object has landed and the real beam has
+        // settled, not merely that the last throw has been scheduled.
+        if(this.pending.length || Math.abs(this.angle-this.target)>.18 ||
+           Math.abs(this.velocity)>.16){
+          this.wait=95;
+          return;
+        }
         this.phase="hold";
         this.root.dataset.phase="hold";
         this.wait=HERO_HOLD_MS;
