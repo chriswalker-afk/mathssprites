@@ -44,7 +44,7 @@ test("all 48 implemented levels open for a new student with empty progress @smok
   await expect(page.locator('[data-stage="notebook"] button')).toHaveCount(1);
   await expect(page.locator("#world1-workshop")).toBeVisible();
   await page.locator('[data-screen="worlds"]').first().click();
-  await expect(page.locator(".world-planned")).toHaveCount(3);
+  await expect(page.locator(".world-planned")).toHaveCount(2);
 });
 
 test("two-step solution earns two stars; replaying optimally upgrades the best rating @smoke",async({page})=>{

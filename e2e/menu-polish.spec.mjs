@@ -19,7 +19,7 @@ test("world cards show only essential information, and future doors stay locked 
   await expect(page.locator(".world-card")).toHaveCount(4);
   await expect(page.locator(".world-card-body .world-subtitle")).toHaveCount(4);
   await expect(page.locator(".world-card-body p:not(.world-subtitle)")).toHaveCount(0);
-  await expect(page.locator(".world-card-footer")).toContainText(["0 / 48 complete","COMING SOON","COMING SOON","COMING SOON"]);
+  await expect(page.locator(".world-card-footer")).toContainText(["0 / 48 complete","0 / 48 complete","COMING SOON","COMING SOON"]);
   await expect(page.locator(".world-planned button")).toHaveCount(0);
   await page.getByRole("button",{name:"Explore stages"}).click();
   await expect(page.locator(".stage-card")).toHaveCount(3);

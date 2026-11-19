@@ -13,28 +13,33 @@ function failure(code,message){return {ok:false,code,message};}
 const OP_SYMBOLS=Object.freeze({add:"+",remove:"−",multiply:"×",divide:"÷"});
 export function parseNotebookOperation(expression){
   if(typeof expression!=="string"||expression.length>24)
-    return failure("syntax","Write an operation such as −3, +x, ×2 or ÷3.");
+    return failure("syntax","Write an operation such as −3, +(−x), ×2 or ÷3.");
   const compact=expression.replace(/\s+/g,"")
     .replace(/[−–—]/g,"-").replace(/[⋅·*]/g,"×").replace(/\//g,"÷");
   if(!compact||/^[+\-×÷]$/.test(compact))
-    return failure("incomplete","Choose +, −, × or ÷, then enter a number or x.");
-  const match=/^([+\-×÷])(\d{1,3}x?|x)$/.exec(compact);
+    return failure("incomplete","Choose +, −, × or ÷, then an object or a factor.");
+  // Explicit brackets preserve the physical difference between subtracting
+  // a negative object and subtracting a positive object.
+  const match=/^([+\-×÷])(?:\(-(\d{1,3}x?|x)\)|(\d{1,3}x?|x))$/.exec(compact);
   if(!match)
-    return failure("syntax","Use one operation: +3, −2x, ×3 or ÷2 (not a whole equation).");
-  const [,sign,operand]=match;
+    return failure("syntax","Use one operation, such as +3, −x, +(−x), −(−2) or ÷3.");
+  const [,sign,negativeOperand,positiveOperand]=match;
+  const signed=negativeOperand!==undefined,operand=negativeOperand||positiveOperand;
   if(sign==="+"||sign==="-"){
     const sprite=operand.endsWith("x");
     const digits=sprite?operand.slice(0,-1):operand;
     if(/^0\d/.test(digits)||digits==="0"||/[^0-9]/.test(digits))
-      return failure("number","Use positive whole objects with no leading zeros.");
+      return failure("number","Use whole objects with no leading zeros.");
     const count=digits===""&&sprite?1:Number(digits);
     if(!Number.isInteger(count)||count<1||count>12)
-      return failure("range","Choose 1–12 sprites or weights for + and −.");
-    const action={op:sign==="+"?"add":"remove",kind:sprite?"posX":"posOne",count};
-    return {ok:true,action,display:sign+(count===1&&sprite?"":count)+(sprite?"x":"")};
+      return failure("range","Choose 1–12 sprites or weights.");
+    const kind=sprite?(signed?"negX":"posX"):(signed?"negOne":"posOne");
+    const action={op:sign==="+"?"add":"remove",kind,count};
+    const term=(count===1&&sprite?"":count)+(sprite?"x":"");
+    return {ok:true,action,display:sign+(signed?"(−"+term+")":term)};
   }
-  if(operand.endsWith("x"))
-    return failure("factor","Multiplication and division need a whole-number factor (2–5), not x.");
+  if(signed||operand.endsWith("x"))
+    return failure("factor","Multiplication and division need a positive whole-number factor (2–5).");
   const factor=Number(operand);
   if(!/^[2-5]$/.test(operand)||!Number.isInteger(factor))
     return failure("factor","Choose a whole-number factor from 2 to 5.");
@@ -42,22 +47,17 @@ export function parseNotebookOperation(expression){
     display:sign+factor};
 }
 function expressionMarkup(room){
-  const c=canonical(room);
-  const terms=[];
-  if(c.x2){
-    if(c.x2!==1)terms.push("<mn>"+c.x2+"</mn>");
-    terms.push("<msup><mi>x</mi><mn>2</mn></msup>");
-  }
-  if(c.x){
-    if(terms.length)terms.push("<mo>+</mo>");
-    if(c.x!==1)terms.push("<mn>"+c.x+"</mn>");
-    terms.push("<mi>x</mi>");
-  }
-  if(c.constant||!terms.length){
-    if(terms.length)terms.push("<mo>+</mo>");
-    terms.push("<mn>"+c.constant+"</mn>");
-  }
-  return terms.join("");
+  const c=canonical(room),terms=[];
+  const push=(amount,body)=>{
+    if(!amount)return;
+    if(terms.length||amount<0)terms.push("<mo>"+(amount<0?"−":"+")+"</mo>");
+    terms.push(body(Math.abs(amount)));
+  };
+  push(c.x2,n=>(n===1?"":"<mn>"+n+"</mn>")+
+    "<msup><mi>x</mi><mn>2</mn></msup>");
+  push(c.x,n=>(n===1?"":"<mn>"+n+"</mn>")+"<mi>x</mi>");
+  push(c.constant,n=>"<mn>"+n+"</mn>");
+  return terms.length?terms.join(""):"<mn>0</mn>";
 }
 export function notebookEquationMathML(state){
   if(!state?.left||!state?.right)throw new TypeError("An equation needs two rooms");
@@ -72,10 +72,12 @@ export function notebookOperationMathML(action){
   const n=action.factor??action.count;
   if(!Number.isInteger(n)||n<1||n>12)
     throw new RangeError("Invalid operation operand");
-  const variable=action.kind==="posX";
-  const term=(variable?(n===1?"":"<mn>"+n+"</mn>")+"<mi>x</mi>":"<mn>"+n+"</mn>");
+  const variable=action.kind==="posX"||action.kind==="negX";
+  const negative=action.kind==="negX"||action.kind==="negOne";
+  const term=variable?(n===1?"":"<mn>"+n+"</mn>")+"<mi>x</mi>":"<mn>"+n+"</mn>";
+  const signedTerm=negative?"<mo>(</mo><mo>−</mo>"+term+"<mo>)</mo>":term;
   return '<math xmlns="http://www.w3.org/1998/Math/MathML" display="inline">'+
-    "<mrow><mo>"+symbol+"</mo>"+term+"</mrow></math>";
+    "<mrow><mo>"+symbol+"</mo>"+signedTerm+"</mrow></math>";
 }
 export function previewNotebookOperation(session,expression){
   if(!session?.level||!session.state||!Array.isArray(session.steps))
@@ -86,6 +88,9 @@ export function previewNotebookOperation(session,expression){
     return failure("step-limit","You have used all 16 steps. Undo or start again.");
   const parsed=parseNotebookOperation(expression);
   if(!parsed.ok)return parsed;
+  if((parsed.action.kind==="negX"||parsed.action.kind==="negOne") &&
+      session.level.quantityMode!=="signed")
+    return failure("locked-negative","White sprites and balloons belong to the Opposite Chambers.");
   const changed=perform(session.state,parsed.action,"auto");
   if(!changed.ok)
     return failure(changed.code||"illegal",changed.reason||

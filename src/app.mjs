@@ -28,6 +28,7 @@ import {
   introductionCue,independentIntroductionCue,readGuideEnabled,readGuideSeen,
   writeGuideEnabled,writeGuideSeen,readIndependentGuideSeen,writeIndependentGuideSeen
 } from "./onboarding.mjs";
+import {readOppositesGuideSeen,writeOppositesGuideSeen,oppositeIntroductionCue} from "./opposite-onboarding.mjs";
 
 const $ = id => document.getElementById(id);
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
@@ -70,6 +71,7 @@ let campaignStageLevelCount = 20;
 let campaignChapterIndex = null;
 let campaignChapterTitle = null;
 let campaignChapterSlots = [];
+let currentCampaignContext = null;
 let notebookSession=null; // only teacher prototype in PR20; never campaign progress
 let notebookPhase="idle"; // idle | writing | replaying | complete
 let notebookReplaySuccessful=false;
@@ -77,6 +79,8 @@ let workshopActive=false; // free play only, never an indexed campaign level
 let guideEnabled = readGuideEnabled();
 let guideSeen = readGuideSeen();
 let independentGuideSeen=readIndependentGuideSeen();
+const signedGuideSeen={guided:readOppositesGuideSeen("guided"),
+  independent:readOppositesGuideSeen("independent")};
 let guideStep = 0;
 let guideDismissed = false;
 let guideWasActive = false;
@@ -239,10 +243,18 @@ function activeIndependentGuide() {
   return campaignWorldId==="workshop" && campaignStage==="independent" &&
     campaignLevelNumber===1 && guideEnabled && !independentGuideSeen && !guideDismissed;
 }
+function activeSignedGuide(){
+  return campaignWorldId==="opposites" && campaignLevelNumber===1 &&
+    currentLevel().signedIntroduction===true &&
+    ["guided","independent"].includes(campaignStage) &&
+    guideEnabled && !signedGuideSeen[campaignStage] && !guideDismissed;
+}
 function activeCampaignGuide() {
-  return activeFirstGuide() || activeIndependentGuide();
+  return activeFirstGuide() || activeIndependentGuide() || activeSignedGuide();
 }
 function currentGuideCue() {
+  if(activeSignedGuide())
+    return oppositeIntroductionCue(guideStep,{manual:campaignStage==="independent"});
   return activeIndependentGuide()
     ? independentIntroductionCue(guideStep,{pending:state.pending?.first||null,busy})
     : introductionCue(guideStep,{mode,pending:state.pending?.first||null,busy});
@@ -259,18 +271,20 @@ function guideTarget(name) {
 function renderFirstGuide() {
   for (const item of document.querySelectorAll(".coach-focus"))
     item.classList.remove("coach-focus");
-  $("game-guide-restart").hidden = campaignWorldId!=="workshop" ||
-    campaignLevelNumber !== 1 || campaignStage===null;
+  $("game-guide-restart").hidden = !["workshop","opposites"].includes(campaignWorldId) ||
+    campaignLevelNumber !== 1 || !["guided","independent"].includes(campaignStage);
   $("game-guide-restart").disabled = busy;
   $("game-guide-restart").setAttribute("aria-label",
-    campaignStage==="independent"?"Replay Independent Balance introduction":
-    "Replay Guided Balance introduction");
+    campaignWorldId==="opposites"?"Replay Opposite Chambers introduction":
+      campaignStage==="independent"?"Replay Independent Balance introduction":
+        "Replay Guided Balance introduction");
   const visible = activeCampaignGuide() && !isSolved(state);
   $("apprentice-guide").hidden = !visible;
   if (!visible) return;
   $("apprentice-guide").setAttribute("aria-label",
-    campaignStage==="independent"?"Independent hand-control introduction":
-    "Guided Mirror introduction");
+    campaignWorldId==="opposites"?"Opposite Chambers introduction":
+      campaignStage==="independent"?"Independent hand-control introduction":
+        "Guided Mirror introduction");
   const cue = currentGuideCue();
   $("guide-progress").textContent = cue.progress;
   $("guide-title").textContent = cue.title;
@@ -309,6 +323,10 @@ function renderNotebookVisibility() {
   $("notebook-stage-note").textContent=campaign
     ?"Campaign experiment · Progress saved after a successful sprite replay"
     :"Practice preview · No levels or progress earned";
+  $("notebook-signed-operations").hidden=currentLevel().quantityMode!=="signed";
+  $("notebook-operation-tip").textContent=currentLevel().quantityMode==="signed"
+    ?"Use +(−x) for a pale sprite or −(−1) to remove a balloon. Whole objects only."
+    :"Choose an operation for both sides, not an answer. Use −x to remove a dark sprite.";
   $("notebook-level-prompt").textContent=campaign
     ? currentLevel().prompt
     : "You already have the equation. Choose an operation for both sides. The maths editor calculates the new equation automatically; the sprites will replay your route.";
@@ -327,8 +345,8 @@ function renderNotebookVisibility() {
   $("notebook-watch-again").hidden=notebookPhase!=="complete";
   $("notebook-next").hidden=!campaign||notebookPhase!=="complete"||
     !notebookReplaySuccessful;
-  $("notebook-next").textContent=campaignLevelNumber===12
-    ?"Back to stages →":"Next notebook level →";
+  $("notebook-next").textContent=campaignLevelNumber>=campaignStageLevelCount
+    ?"Back to levels →":"Next notebook level →";
 }
 /** Shared game renderer, but with zero campaign-credit navigation. */
 function renderWorkshopVisibility(){
@@ -438,6 +456,8 @@ function render() {
     (campaignChapterTitle?(String((campaignChapterIndex??0)+1).padStart(2,"0")+
       " · "+campaignChapterTitle):"AN EQUATION TO EXPLORE");
   $("level-title").textContent = lvl.title;
+  if(campaignWorldId)document.body.dataset.campaignWorld=campaignWorldId;
+  else delete document.body.dataset.campaignWorld;
   $("level-prompt").textContent = lvl.prompt;
   $("chapter-status").hidden = campaignLevelNumber === null;
   // Existing World 1 teacher cues remain, but future mathematical worlds
@@ -490,6 +510,7 @@ function render() {
     button.classList.toggle("selected", button.dataset.kind === kind);
     const signedObject=button.dataset.kind==="negX"||button.dataset.kind==="negOne";
     const unavailable = (signedObject && state.quantityMode!=="signed") ||
+      (lvl.allowedKinds && !lvl.allowedKinds.includes(button.dataset.kind)) ||
       (lvl.lockPositive && button.dataset.kind === "posX2");
     button.hidden=unavailable;
     button.disabled = busy || isSolved(state) || unavailable;
@@ -1294,6 +1315,10 @@ async function finishTurn() {
       independentGuideSeen=writeIndependentGuideSeen(true);
       guideDismissed=true;
     }
+    if(activeSignedGuide()){
+      signedGuideSeen[campaignStage]=writeOppositesGuideSeen(campaignStage,true);
+      guideDismissed=true;
+    }
     if(campaignLevelNumber!==null)
       window.dispatchEvent(new CustomEvent("mathssprites:solved",
         {detail:{worldId:campaignWorldId,stage:campaignStageId,number:campaignLevelNumber,
@@ -1535,6 +1560,11 @@ async function manualMove(side) {
       guideDismissed=true;
       renderFirstGuide();
     }
+    if(activeSignedGuide()){
+      signedGuideSeen[campaignStage]=writeOppositesGuideSeen(campaignStage,true);
+      guideDismissed=true;
+      renderFirstGuide();
+    }
     await finishTurn();
   }
 }
@@ -1567,6 +1597,11 @@ function startLevel(index, quantityMode, levelOverride=null, campaignNumber=null
   campaignChapterTitle=campaignInfo.chapterTitle||null;
   campaignChapterSlots=Array.isArray(campaignInfo.chapterLevels)?
     campaignInfo.chapterLevels:[];
+  currentCampaignContext=campaignNumber===null?null:{...campaignInfo,
+    worldId:campaignWorldId,stage:campaignStageId,number:campaignNumber,
+    method,worldNumber:campaignWorldNumber,stageNumber:campaignStageNumber,
+    stageLength:campaignStageLevelCount,chapterIndex:campaignChapterIndex,
+    chapterTitle:campaignChapterTitle,chapterLevels:campaignChapterSlots};
   if(campaignStage==="guided")mode="auto";
   if(campaignStage==="independent")mode="manual";
   guideStep=0;
@@ -1976,7 +2011,9 @@ $("guide-next").addEventListener("click", () => {
   target?.scrollIntoView?.({block:"nearest",behavior:reducedMotion?"instant":"smooth"});
 });
 $("guide-skip").addEventListener("click",()=>{
-  if(campaignStage==="independent")
+  if(activeSignedGuide())
+    signedGuideSeen[campaignStage]=writeOppositesGuideSeen(campaignStage,true);
+  else if(campaignStage==="independent")
     independentGuideSeen=writeIndependentGuideSeen(true);
   else guideSeen=writeGuideSeen(true);
   guideDismissed=true;
@@ -1986,7 +2023,10 @@ $("guide-skip").addEventListener("click",()=>{
 window.addEventListener("mathssprites:guide-setting",event=>{
   guideEnabled=!!event.detail.enabled;
   if(event.detail.reset){
-    if(event.detail.stage==="independent")
+    if(event.detail.worldId==="opposites"&&
+       ["guided","independent"].includes(event.detail.stage))
+      signedGuideSeen[event.detail.stage]=writeOppositesGuideSeen(event.detail.stage,false);
+    else if(event.detail.stage==="independent")
       independentGuideSeen=writeIndependentGuideSeen(false);
     else guideSeen=writeGuideSeen(false);
     guideStep=0;
@@ -1997,7 +2037,7 @@ window.addEventListener("mathssprites:guide-setting",event=>{
 $("game-guide-restart").addEventListener("click",()=>{
   if(busy || campaignLevelNumber!==1 || campaignStage===null)return;
   window.dispatchEvent(new CustomEvent("mathssprites:restart-guide",
-    {detail:{stage:campaignStage}}));
+    {detail:{stage:campaignStage,worldId:campaignWorldId}}));
 });
 $("quantity-mode").addEventListener("change", event => {
   if(busy||state.pending)return render();
@@ -2033,7 +2073,7 @@ $("reset").addEventListener("click", () => {
     return;
   }
   startLevel(levelIndex,state.quantityMode,campaignLevelNumber===null?null:currentLevel(),
-    campaignLevelNumber,campaignStage);
+    campaignLevelNumber,campaignStageId||campaignStage,currentCampaignContext||{});
 });
 $("hint").addEventListener("click", () => setSpeech(currentLevel().suggested, 6200));
 $("feedback").addEventListener("click", event => {
@@ -2092,7 +2132,9 @@ function openNotebookLevel(level,number=null,context={}){
   $("notebook-hint-message").hidden=true;
   $("notebook-hint-message").textContent="";
   $("notebook-operation").value="";
-  notebookMessage("Choose an operation for BOTH sides, such as −3, −x or ÷2. The editor calculates the next equation.");
+  notebookMessage(level.quantityMode==="signed"
+    ?"Choose a signed operation for both sides: +2, +(−x), −(−1), or ÷2. The editor calculates the result."
+    :"Choose an operation for BOTH sides, such as −3, −x or ÷2. The editor calculates the next equation.");
   renderNotebookPaper();
   render();
   $("notebook-operation").focus({preventScroll:true});
@@ -2121,6 +2163,16 @@ $("notebook-hint").addEventListener("click",()=>{
 });
 /** Operation editor: clicking a maths sign or keypad key edits only the
  * proposed operation; the original equation and engine history stay intact. */
+document.querySelectorAll("[data-notebook-insert]").forEach(button=>{
+  button.addEventListener("click",()=>{
+    if(!notebookSession||notebookSession.level.quantityMode!=="signed"||
+       notebookPhase!=="writing"||busy)return;
+    const input=$("notebook-operation");
+    input.value=button.dataset.notebookInsert;
+    input.focus({preventScroll:true});
+    input.dispatchEvent(new Event("input",{bubbles:true}));
+  });
+});
 $("notebook-operation").addEventListener("input",()=>{
   if(notebookSession&&notebookPhase==="writing"){
     const preview=previewNotebookOperation(notebookSession,$("notebook-operation").value);

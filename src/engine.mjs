@@ -121,6 +121,7 @@ export function initialState(level = LEVELS[0], quantityMode = levelQuantityMode
       [level.left,level.right].some(r=>r?.negX || r?.negOne))
     throw new RangeError("A signed experiment cannot start in positive-only mode");
   return { levelId: level.id, quantityMode,
+    allowedKinds: level.allowedKinds ? [...level.allowedKinds] : null,
     allowedOperations: level.allowedOperations ? [...level.allowedOperations] : null,
     lockPositive: !!level.lockPositive,
     goal: level.goal || "isolate", solution: level.solution,
@@ -333,6 +334,10 @@ export function previewRoomAction(source, action, quantityMode = "signed", side 
 /** World-specific permissions live in the pure engine; a hidden DOM button
  * must never be the only barrier between introductory and advanced maths. */
 export function levelActionPermission(state, action) {
+  if((action?.op==="add"||action?.op==="remove") && state.allowedKinds &&
+    !state.allowedKinds.includes(action.kind))
+    return {ok:false,code:"locked-kind",
+      reason:"That object belongs to a different mathematical world."};
   if (state.lockPositive && state.quantityMode !== "positive")
     return {ok:false,code:"locked-world",reason:"This workshop uses positive objects only."};
   if (state.lockPositive && (action?.op === "add" || action?.op === "remove") &&
