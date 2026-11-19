@@ -83,7 +83,8 @@ test("manual hand mode requires two separate room visits and keeps its own contr
   await page.locator("#motion-toggle").click();
   await page.locator("#amount-up").click();
   await page.locator("#left-action").click();
-  await expect(page.locator("#balance-caption")).toHaveClass(/unbalanced/);
+  await expect(page.locator("#balance-caption")).toContainText("waiting");
+  await expect(page.locator("#rooms-row")).not.toHaveAttribute("style", /rotate\(0deg\)/);
   await expect(page.locator("#right-action")).toContainText("Match the move here");
   await page.locator("#right-action").click();
   await expect(page.locator("#replay-backdrop")).toBeVisible({timeout:28000});
@@ -126,7 +127,8 @@ test("free-play hand mode may be changed; reset restores the custom equation and
   await page.locator("#motion-toggle").click();
   await page.locator('[data-kind="posX"]').click();
   await page.locator("#left-action").click();
-  await expect(page.locator("#balance-caption")).toHaveClass(/unbalanced/);
+  await expect(page.locator("#balance-caption")).toContainText("waiting");
+  await expect(page.locator("#rooms-row")).not.toHaveAttribute("style", /rotate\(0deg\)/);
   await page.locator("#reset").click();
   await expect(page.locator("#mode-select")).toHaveValue("manual");
   await expect(page.locator("#left-items .sprite-black")).toHaveCount(2);
