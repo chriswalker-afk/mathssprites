@@ -130,6 +130,7 @@ function renderHomeQuickStages(){
         '<small>Level '+(slot?.number||1)+' · '+meta.completed+'/'+meta.count+' complete</small>'+
         '</span><span class="quick-arrow" aria-hidden="true">›</span></button></article>';
   }).join("");
+  $("home-stage-shortcuts").dataset.activeWorld=world.id;
   $("home-stage-shortcuts").hidden=stages.length===0;
 }
 function homeAction() {
