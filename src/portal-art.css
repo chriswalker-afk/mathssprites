@@ -1,0 +1,388 @@
+/* PR33 — four illustrated places within one Maths Sprites laboratory.
+ * This sheet changes the visual language only: no scale physics, item
+ * coordinates, curriculum gating, progress, or operation hit targets.
+ * The decorative illustrations are local, original SVGs with empty alt text. */
+:root{
+  --portal-brass:#d5b17a;
+  --portal-moss:#49645a;
+  --portal-wood:#2c2923;
+  --portal-paper:#f4e5c8;
+}
+/* The permanent laboratory nameplate is shared by all four places. */
+.site-nav{
+  background:linear-gradient(180deg,#1b2929 0%,#1d2b29 76%,#403829 100%);
+  border-bottom:2px solid #8f764b70;
+  box-shadow:inset 0 -1px #dfbd8350;
+}
+.site-brand{color:#f5e5c5;letter-spacing:.01em}
+.site-nav-links button{
+  border:1px solid transparent;
+  transition:background .15s,border-color .15s;
+}
+.site-nav-links button:hover{
+  color:#ffe9be;border-color:#b9955580;
+  background:#baa16b20;
+}
+.site-nav-links button:focus-visible,
+.site-brand:focus-visible{outline:2px solid #f5d5a0;outline-offset:3px}
+
+/* 01 · LABORATORY FOYER — the original mathematically truthful living scale
+ * stays the hero. Shelves, lamps and carved stone sit far behind it. */
+#site-home .landing-hero{
+  border:2px solid #977850;
+  background-image:
+    url("../assets/portal/foyer-ambient.svg"),
+    radial-gradient(ellipse at 75% 37%,#c1955f2f 0%,transparent 51%),
+    linear-gradient(135deg,#283a35 0%,#1b302e 43%,#141f22 100%);
+  background-size:cover,auto,auto;
+  background-position:center,center,center;
+  box-shadow:0 12px 40px #0006,inset 0 0 48px #0007;
+}
+#site-home .landing-hero::after{
+  inset:7px;border-color:#d5b47b42;box-shadow:inset 0 0 0 1px #291c1560;
+}
+#site-home .landing-copy{position:relative;z-index:2}
+#site-home .landing-copy .portal-kicker{color:#e0bf86}
+#site-home .landing-copy h1{text-shadow:0 3px 17px #000b,0 1px 0 #d6b87c44}
+#home-stage-shortcuts .home-quick-feature{
+  position:relative;
+  border:1px solid #9e84559c;
+  background:linear-gradient(115deg,#2c3d34,#152826);
+  box-shadow:inset 0 1px #dcc3913d,0 6px 12px #0002;
+}
+#home-stage-shortcuts .home-quick-feature::before{
+  content:"";position:absolute;inset:4px;pointer-events:none;
+  border:1px solid #dfc68f2e;border-radius:9px;
+}
+#home-stage-shortcuts .home-quick-feature:nth-child(2){
+  background:linear-gradient(115deg,#244446,#1a3032);
+  border-color:#8ea49c96;
+}
+#home-stage-shortcuts .home-quick-feature:nth-child(3){
+  background:linear-gradient(115deg,#493d35,#292a28);
+  border-color:#ba9b7796;
+}
+#home-stage-shortcuts .home-stage-quick{
+  position:relative;z-index:1;
+  transition:background .14s;
+}
+#home-stage-shortcuts .home-stage-quick .feature-icon{
+  display:grid;place-items:center;flex:none;margin:0;overflow:visible;
+}
+.portal-stage-medallion{
+  width:100%;height:100%;max-width:100%;
+  display:block;object-fit:contain;
+  filter:drop-shadow(0 2px 3px #0008);
+}
+#home-stage-shortcuts .feature-icon .portal-stage-medallion{
+  width:38px;height:38px;
+}
+#home-stage-shortcuts .home-stage-details strong{color:#f1deba}
+#home-stage-shortcuts .quick-arrow{color:#e3c38c}
+#home-hero-art .hero-illustration{
+  filter:drop-shadow(0 8px 15px #0d181a70);
+}
+
+/* 02 · HALL OF DOORS — each mathematical world has a different illustrated
+ * door; each silhouette and icon remain distinguishable without colour. */
+#site-worlds .portal-heading .portal-kicker{color:#e5c88f}
+#site-worlds .world-card{
+  position:relative;
+  border:1px solid #9b815e;
+  background:linear-gradient(132deg,#27382f,#1c2a28);
+  box-shadow:0 9px 23px #0005,inset 0 1px #e2c18c25;
+}
+#site-worlds .world-card-scene{
+  isolation:isolate;overflow:hidden;
+  background:#223e3b;
+  border-right:3px solid #94744e;
+}
+#site-worlds .world-card-scene::before{
+  content:"";position:absolute;inset:5px;border:1px solid #e0c79952;
+  border-radius:8px;z-index:2;pointer-events:none;
+}
+#site-worlds .world-card-scene .hall-door-art{
+  width:100%;height:100%;display:block;
+  object-fit:cover;object-position:center 45%;
+  transform:scale(1.01);
+  transition:transform .25s ease,filter .25s ease;
+}
+#site-worlds .world-card-scene .hall-door-mist{
+  position:absolute;inset:auto 0 0;height:27%;pointer-events:none;
+  background:linear-gradient(0deg,#0d2326a8,transparent);
+}
+#site-worlds .world-card.world-ready:hover .hall-door-art{
+  transform:scale(1.055);
+}
+#site-worlds .world-card.world-planned{
+  opacity:1;border-color:#536d6c;
+  background:linear-gradient(125deg,#203132,#1d292e);
+}
+#site-worlds .world-planned .hall-door-art{
+  filter:saturate(.72) brightness(.72);
+}
+#site-worlds .world-card.world-pale .world-card-scene{background:#26434b;border-right-color:#90adbd}
+#site-worlds .world-card.world-glass .world-card-scene{background:#25484a;border-right-color:#86b7ab}
+#site-worlds .world-card.world-square .world-card-scene{background:#514052;border-right-color:#a89bb7}
+#site-worlds .world-card-body{position:relative;z-index:1}
+#site-worlds .world-card-body .eyebrow{
+  color:#d5bd89;font-weight:800;letter-spacing:.12em;
+}
+#site-worlds .world-card-body h3{color:#f1e4cf;text-wrap:balance}
+#site-worlds .world-card-body .world-subtitle{color:#dec69c}
+#site-worlds .world-card-footer{border-top-color:#b3a07d45}
+#site-worlds .world-card-footer .soon-lock{
+  border:1px solid #a7b4ad60;border-radius:8px;
+  padding:5px 10px;color:#bdccca;background:#8ea59c13;
+}
+#site-worlds .world-card-footer .primary-btn{
+  background:linear-gradient(160deg,#c6a36a,#ac8853);
+  color:#182824;border-color:#dfc38a;
+}
+
+/* Intermediate World 1 stage gallery: three physical medallions rather
+ * than generic glowing characters. Its entry route remains optional. */
+#site-stages .stage-card{
+  background:linear-gradient(155deg,#32423b,#192b2a 78%);
+  border-color:#8a754e;box-shadow:inset 0 1px #e4c48c30,0 12px 22px #0003;
+}
+#site-stages .stage-card[data-stage="independent"]{
+  background:linear-gradient(155deg,#304747,#1c2c30 78%);
+  border-color:#6e9e9b;
+}
+#site-stages .stage-card[data-stage="notebook"]{
+  background:linear-gradient(155deg,#403b31,#262a28 78%);
+  border-color:#ab8d64;
+}
+#site-stages .stage-ornament{
+  min-width:0;overflow:hidden;
+  background:radial-gradient(ellipse at center,#dfc28b34,transparent 72%);
+}
+#site-stages .stage-ornament .portal-stage-medallion{
+  width:clamp(40px,7dvh,74px);height:100%;max-height:100%;
+}
+#site-stages .stage-ornament .portal-stage-fallback{
+  color:#e3c38d;font-size:2rem;
+}
+#site-stages .workshop-card{
+  border-color:#bb975f;background:
+  linear-gradient(115deg,#75583c36,transparent 60%),
+  #263631;box-shadow:inset 0 1px #eccd9360;
+}
+
+/* 03 · EXPERIMENT BOARD — engraved walnut frame, chalk grid, pinned
+ * chapter sheets and metal stars. All 48 tiles keep their tested geometry. */
+#site-levels{
+  --board-light:#cdb07c;
+  --board-ink:#31423b;
+  --board-rim:#8d7149;
+  background-image:
+    linear-gradient(180deg,#0f23251d,#13252700 33%),
+    url("../assets/portal/board-etching.svg");
+  background-size:auto,100% auto;
+  background-position:center,top;
+  background-repeat:no-repeat;
+}
+#site-levels[data-active-stage="independent"]{
+  --board-light:#b3d0c4;--board-rim:#7c9f98;--board-ink:#244a48;
+}
+#site-levels[data-active-stage="notebook"]{
+  --board-light:#e5cda5;--board-rim:#b19a7c;--board-ink:#594d3b;
+}
+#site-levels .experiment-board-nav{
+  position:relative;isolation:isolate;
+  border:2px solid var(--board-rim);
+  background-image:
+    linear-gradient(90deg,#162625f2,#243830f2),
+    url("../assets/portal/board-etching.svg");
+  background-size:cover,cover;
+  box-shadow:inset 0 1px #f6e8c82b,inset 0 -2px #090f1070,0 6px 14px #0003;
+}
+#site-levels .board-brass-seal{
+  position:absolute;right:3px;top:2px;pointer-events:none;
+  line-height:1;font-size:.85rem;color:var(--board-light);opacity:.46;
+}
+#site-levels .map-selector-label{color:var(--board-light)}
+#site-levels .map-world-button,#site-levels .map-stage-button{
+  background:linear-gradient(175deg,#2b413b,#192827);
+  border-color:#7a886f;box-shadow:inset 0 1px #dbd5ad22;
+  color:#f4e6ca;
+}
+#site-levels .map-world-button[aria-pressed="true"],
+#site-levels .map-stage-button[aria-pressed="true"]{
+  border-color:var(--board-light);
+  background:linear-gradient(175deg,#546950,#344a42);
+  box-shadow:inset 0 0 0 1px #e9d29b7d,0 2px 7px #0005;
+}
+#site-levels .map-world-button:disabled{
+  background:#1d2f30;color:#b6c2b9;opacity:.46;
+}
+#site-levels .map-world-button:focus-visible,
+#site-levels .map-stage-button:focus-visible,
+#site-levels .level-tile:focus-visible{
+  outline:3px solid #ffe2a7;outline-offset:2px;
+}
+#site-levels .portal-heading h1{color:#f0dbb5}
+#site-levels .world1-progress-panel{
+  border:1px solid #9e8a66;border-radius:10px;
+  background:linear-gradient(100deg,#2c3930,#1b2b29);
+  box-shadow:inset 0 1px #e0c29327;
+}
+#site-levels .world1-progress-panel progress{accent-color:var(--board-light)}
+#site-levels #level-sections .chapter-group{
+  position:relative;isolation:isolate;overflow:hidden;
+  border:2px solid var(--board-rim);
+  background:
+    linear-gradient(140deg,#e3d4b80c,#39493a0c),
+    repeating-linear-gradient(0deg,transparent 0px,transparent 18px,#decf9e0a 19px),
+    linear-gradient(180deg,#27382f,#1a2927);
+  box-shadow:inset 0 2px #e3c69a40,inset 0 -2px #080d0c4d,0 5px 15px #0003;
+}
+#site-levels #level-sections .chapter-group::before{
+  content:"";position:absolute;pointer-events:none;
+  top:3px;right:7px;width:5px;height:5px;border-radius:50%;
+  background:#d8ba81;box-shadow:0 0 0 1px #47321b,0 1px 2px #000;
+}
+#site-levels #level-sections .chapter-group-heading h3{
+  color:#efe0c4;text-shadow:0 1px #0009;
+}
+#site-levels #level-sections .chapter-badge{
+  color:var(--board-light);border-color:var(--board-rim);
+  background:radial-gradient(circle,#475345,#252f2c);
+}
+#site-levels #level-sections .level-tile{
+  position:relative;overflow:hidden;
+  border:1px solid #6c806c;
+  border-left:3px solid #bca477;
+  background:linear-gradient(115deg,#33453b,#26362f);
+  box-shadow:inset 0 1px #f3e4ba10,0 2px 3px #0002;
+  transition:background .14s,border-color .14s;
+}
+#site-levels #level-sections .level-tile.status-ready:hover{
+  background:linear-gradient(115deg,#465e4a,#2b4336);
+  border-color:var(--board-light);transform:none;
+}
+#site-levels #level-sections .level-tile.status-complete{
+  background:linear-gradient(110deg,#514b35,#343c30);
+  border-color:var(--board-light);border-left-color:#e4bf72;
+}
+#site-levels #level-sections .level-tile.level-next{
+  box-shadow:inset 0 0 0 1px var(--board-light),0 0 9px #d2b6752d;
+}
+#site-levels #level-sections .level-tile .tile-number{color:#f4d49d}
+#site-levels #level-sections .level-tile .tile-stars{color:#dbca93}
+#site-levels #level-sections .level-tile .tile-status{color:#c5d6c7}
+#site-levels[data-active-stage="independent"] #level-sections .level-tile{
+  border-left-color:#8cbbb2;background:linear-gradient(110deg,#2d4845,#213b39);
+}
+#site-levels[data-active-stage="notebook"] #level-sections .level-tile{
+  border-left-color:#d9bd96;background:linear-gradient(110deg,#463e30,#37352b);
+}
+#site-levels[data-active-stage="notebook"] #level-sections .level-tile.status-complete{
+  background:linear-gradient(110deg,#62553d,#3d3a2f);
+}
+
+/* 04 · INVENTOR'S DESK — the form is a readable paper workspace; brass
+ * objects and drawings stay behind information, never over the inputs. */
+#site-workshop .portal-kicker{color:#e9c991}
+#site-workshop .workshop-builder{position:relative}
+#site-workshop .workshop-lesson{
+  position:relative;isolation:isolate;overflow:hidden;
+  border:2px solid #947b55;
+  background:radial-gradient(ellipse at 85% 8%,#a78d6040,transparent 57%),
+    linear-gradient(150deg,#2e423a,#1c2c2b);
+}
+#site-workshop .workshop-lesson::before{
+  content:"";position:absolute;inset:7px;
+  border:1px solid #c6a77741;pointer-events:none;border-radius:10px;
+}
+#site-workshop .workshop-lesson > :not(.inventor-art){
+  position:relative;z-index:1;
+}
+#site-workshop .workshop-lesson .inventor-art{
+  position:absolute;right:-20px;top:4px;width:min(55%,205px);
+  z-index:0;opacity:.28;pointer-events:none;
+  transform:rotate(2deg);
+}
+#site-workshop .workshop-lesson .inventor-art img{
+  display:block;width:100%;height:auto;
+  filter:sepia(.25) saturate(.84);
+}
+#site-workshop .workshop-lesson .workshop-glyph{
+  display:grid;place-items:center;
+  width:45px;height:45px;margin-bottom:9px;
+  border-radius:50%;border:1px solid #d6b678;
+  background:#19332c;color:#f3d59c;
+  box-shadow:0 0 0 4px #a5854b24;
+}
+#site-workshop .workshop-lesson h2{text-shadow:0 2px #1118}
+#site-workshop .workshop-lesson-example{
+  border-color:#b39860;background:
+    repeating-linear-gradient(0deg,transparent,transparent 19px,#dfd5a20e 20px),
+    #19302c;
+  box-shadow:inset 0 1px #d8c09332;
+}
+#site-workshop .workshop-form-card{
+  position:relative;
+  border:2px solid #b28d5c;
+  background-image:
+    repeating-linear-gradient(0deg,transparent,transparent 24px,#a58c6255 25px),
+    linear-gradient(140deg,#f9ecd3,#e4d1ac);
+  background-size:100% 100%,auto;
+  box-shadow:inset 0 0 0 5px #ffefcf59,0 12px 25px #0005;
+}
+#site-workshop .workshop-form-card::before,
+#site-workshop .workshop-form-card::after{
+  content:"";position:absolute;top:9px;width:8px;height:8px;
+  border-radius:50%;background:#b99a67;
+  box-shadow:inset 0 1px #e9d2a4,0 1px 2px #5e452f91;pointer-events:none;
+}
+#site-workshop .workshop-form-card::before{left:10px}
+#site-workshop .workshop-form-card::after{right:10px}
+#site-workshop #workshop-equation{
+  background:#fff8e6;border-color:#947654;
+  box-shadow:inset 0 2px 5px #9d866226;
+}
+#site-workshop #workshop-equation:focus-visible,
+#site-workshop #workshop-hand-mode:focus-visible{
+  outline:3px solid #3b6c70;outline-offset:2px;
+}
+/* No new heights on laptop layouts: all transformations are decorative,
+ * stage art inherits the available boxes, and images are not focusable. */
+@media(min-width:900px) and (min-height:500px){
+  #home-stage-shortcuts .feature-icon .portal-stage-medallion{
+    width:27px;height:27px;
+  }
+  #site-stages .stage-ornament .portal-stage-medallion{
+    width:clamp(30px,5.9dvh,58px);
+  }
+  #site-worlds .hall-door-art{object-position:center center}
+}
+@media(min-width:900px) and (min-height:500px) and (max-height:649px){
+  #home-stage-shortcuts .feature-icon .portal-stage-medallion{width:23px;height:23px}
+  #site-stages .stage-ornament .portal-stage-medallion{width:25px}
+  #site-levels .board-brass-seal{font-size:.64rem}
+  #site-workshop .workshop-lesson .inventor-art{
+    width:110px;top:0;right:0;opacity:.21;
+  }
+  #site-workshop .workshop-lesson .workshop-glyph{
+    width:29px;height:29px;margin-bottom:4px;font-size:1rem;
+  }
+}
+@media(max-width:899px){
+  #site-worlds .world-card-scene{min-height:135px}
+  #site-worlds .hall-door-art{object-position:center 45%}
+  #site-workshop .workshop-lesson .inventor-art{width:155px;opacity:.20}
+}
+@media(max-width:520px){
+  #home-stage-shortcuts .feature-icon .portal-stage-medallion{width:35px;height:35px}
+  #site-worlds .world-card-scene{height:180px}
+  #site-stages .stage-ornament .portal-stage-medallion{width:60px}
+}
+@media(prefers-reduced-motion:reduce){
+  #site-worlds .world-card-scene .hall-door-art,
+  #home-stage-shortcuts .home-stage-quick,
+  #site-levels #level-sections .level-tile,
+  .site-nav-links button{transition:none!important}
+  #site-worlds .world-card.world-ready:hover .hall-door-art{transform:none}
+}

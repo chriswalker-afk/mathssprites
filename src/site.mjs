@@ -82,6 +82,16 @@ function clean(text) {
   return String(text).replace(/[&<>"']/g, ch =>
     ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" })[ch]);
 }
+const PORTAL_DOOR_ART=Object.freeze({
+  workshop:"balance",opposites:"opposites",fractions:"fractions",squares:"squares"
+});
+const PORTAL_STAGE_ART=new Set(["guided","independent","notebook"]);
+function portalStageArt(id,icon="✦") {
+  return PORTAL_STAGE_ART.has(id)
+    ? '<img class="portal-stage-medallion" src="./assets/portal/stage-'+id+
+      '.svg" alt="" loading="lazy" width="160" height="160" />'
+    : '<span class="portal-stage-fallback">'+clean(icon)+'</span>';
+}
 function unlocked(number) {
   return isWorld1Unlocked(number, progress.completed, teacher);
 }
@@ -105,7 +115,8 @@ function renderHomeQuickStages(){
         clean(stage.id)+'" data-home-world="'+clean(world.id)+'"'+
         (!slot?' disabled':'')+
         ' aria-label="Play '+clean(stage.title)+' from level '+(slot?.number||1)+'">'+
-        '<span class="feature-icon" aria-hidden="true">'+clean(stage.icon||"⚖")+'</span>'+
+        '<span class="feature-icon" aria-hidden="true">'+
+          portalStageArt(stage.id,stage.icon||"⚖")+'</span>'+
         '<span class="home-stage-details"><strong>'+clean(stage.title)+'</strong>'+
         '<small>Level '+(slot?.number||1)+' · '+meta.completed+'/'+meta.count+' complete</small>'+
         '</span><span class="quick-arrow" aria-hidden="true">›</span></button></article>';
@@ -147,12 +158,16 @@ function renderWorlds() {
       : (()=>{const totals=campaignStarTotals(campaign,{worldId:world.id});
         return totals.completed+" / "+totals.count+" levels complete · "+
           totals.earned+" / "+totals.available+" stars";})();
+    const artwork=PORTAL_DOOR_ART[world.id];
     return '<article class="world-card world-' + world.theme +
-      (world.available ? ' world-ready' : ' world-planned') + '">' +
+      (world.available ? ' world-ready' : ' world-planned') +
+      '" data-world-art="'+clean(world.id)+'">' +
       '<div class="world-card-scene" aria-hidden="true">' +
-        '<span class="world-symbol">' +
-        clean(world.icon||"✦") +
-        '</span><span class="world-card-orbit"></span></div>' +
+        (artwork
+          ? '<img class="hall-door-art" src="./assets/portal/door-'+artwork+
+            '.svg" width="320" height="360" alt="" loading="lazy" decoding="async" />'
+          : '<span class="world-symbol">'+clean(world.icon||"✦")+'</span>')+
+        '<span class="hall-door-mist"></span></div>' +
       '<div class="world-card-body"><div class="eyebrow">WORLD ' +
         String(world.number).padStart(2,"0") + '</div>' +
       '<h3>' + clean(world.title) + '</h3><p class="world-subtitle">' +
@@ -189,7 +204,8 @@ function renderStages() {
       '<div class="stage-top"><span class="stage-no">STAGE '+String(stage.number).padStart(2,"0")+
       '</span><span class="stage-tag">'+(finished?"Stage mastered":
         playable?"Ready to play":stage.available?"Complete Stage "+(stage.number-1):"Coming soon")+
-      '</span></div><div class="stage-ornament" aria-hidden="true">'+stage.icon+'</div>'+
+      '</span></div><div class="stage-ornament" aria-hidden="true">'+
+        portalStageArt(stage.id,stage.icon)+'</div>'+
       '<h2>'+clean(stage.title)+'</h2>'+
       '<p class="stage-tagline">'+clean(stage.tagline)+'</p>'+
       '<p>'+clean(stage.description)+'</p>'+
