@@ -19,7 +19,8 @@ test("four visible worlds, five four-level chapters and twenty implemented puzzl
   assert.equal(LEVELS.length, 13, "Original advanced experiments remain intact");
   for (const slot of WORLD1_LEVELS.filter(s => s.available)) {
     assert.ok(validInitialLevel(slot.level), "Level " + slot.number + " has a valid balance");
-    assert.deepEqual(slot.level.allowedOperations, WORLD1_OPERATIONS);
+    assert.deepEqual(slot.level.allowedOperations,
+      slot.number===19?[...WORLD1_OPERATIONS,"unpack"]:WORLD1_OPERATIONS);
     assert.equal(slot.level.lockPositive, true);
     assert.ok(Number.isInteger(slot.level.solution) && slot.level.solution > 0);
   }
