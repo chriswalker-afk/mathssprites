@@ -39,6 +39,14 @@ jobs:
         run: npm install --no-save --ignore-scripts --no-audit --no-fund --prefer-offline @playwright/test@1.65.1
       - name: Fast browser checks — navigation, stars, notebook and scene animation
         run: npx playwright test --grep @smoke --workers=2
+      - name: Keep viewport screenshots for compact layout review
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: maths-sprites-viewport-preview
+          path: artifacts/pr27-*.png
+          if-no-files-found: ignore
+          retention-days: 7
       - name: Keep screenshots and traces on smoke failures
         if: failure()
         uses: actions/upload-artifact@v4
