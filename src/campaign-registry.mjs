@@ -12,7 +12,6 @@ import {APPRENTICE_LEVELS,APPRENTICE_CHAPTERS} from "./apprentice-levels.mjs";
 import {OPTIMAL_MOVES} from "./star-ratings.mjs";
 
 const stableId=/^[a-z][a-z0-9-]*$/;
-const slug=(s)=>String(s).toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
 const assert=(v,msg)=>{if(!v)throw new Error("Campaign registry: "+msg);};
 
 /** Can be used by a test fixture for a second world before it is published. */
@@ -34,8 +33,9 @@ export function createCampaignRegistry(definitions){
       assert(Array.isArray(stage.chapters)&&stage.chapters.length>0,"stage has no chapters");
       assert(Array.isArray(stage.levels)&&stage.levels.length>0,"stage has no levels");
       const chapters=stage.chapters.map((chapter,ci)=>{
-        const id=chapter.id||slug(chapter.title);
-        assert(stableId.test(id),"invalid chapter ID");
+        const id=chapter.id;
+        assert(typeof id==="string"&&stableId.test(id),
+          "each chapter must have a permanent stable ID");
         assert(typeof chapter.title==="string"&&chapter.title.length>0,"chapter title missing");
         return Object.freeze({...chapter,id,index:ci});
       });
@@ -53,10 +53,16 @@ export function createCampaignRegistry(definitions){
         return Object.freeze({...slot,worldId:raw.id,stageId:stage.id,
           chapterId:chapters[slot.chapterIndex].id});
       });
-      const benchmarks=Array.isArray(stage.optimalMoves)?stage.optimalMoves:[];
+      // Indexing star benchmarks by stable ID makes them survive a reordered
+      // curriculum. Historical World 1 arrays are converted on first load.
+      const benchmarks=stage.optimalMoves||{};
+      const byLevel=Object.fromEntries(levels.flatMap((slot,i)=>{
+        const optimal=Array.isArray(benchmarks)?benchmarks[i]:benchmarks[slot.id];
+        return Number.isInteger(optimal)&&optimal>=1?[[slot.id,optimal]]:[];
+      }));
       return Object.freeze({...stage,number:stage.number??si+1,
         count:levels.length,chapters:Object.freeze(chapters),levels:Object.freeze(levels),
-        optimalMoves:Object.freeze([...benchmarks]),available:stage.available!==false});
+        optimalMoves:Object.freeze(byLevel),available:stage.available!==false});
     });
     return Object.freeze({...raw,number:raw.number??wi+1,
       available:raw.available!==false&&normalStages.some(s=>s.available),
@@ -79,7 +85,12 @@ const WORLD1_CAMPAIGN_STAGES=WORLD1_STAGES.map((stage)=>{
       intro:"Choose each algebra operation. The editor calculates the equation; sprites replay your work.",
       finale:"All apprentice notebooks complete. Make your own equation in the Workshop."}
   };
-  return {...stage,...configs[stage.id],optimalMoves:OPTIMAL_MOVES[stage.id],
+  const config=configs[stage.id];
+  return {...stage,...config,
+    chapters:config.chapters.map((chapter,i)=>({
+      ...chapter,id:stage.id+"-chapter-"+String(i+1).padStart(2,"0")
+    })),
+    optimalMoves:OPTIMAL_MOVES[stage.id],
     capabilities:{quantityMode:"positive",allowedOperations:WORLD1_OPERATIONS,
       handMode:stage.method}};
 });
