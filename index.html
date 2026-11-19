@@ -13,6 +13,7 @@
   <link rel="stylesheet" href="./src/notebook.css" />
   <link rel="stylesheet" href="./src/workshop.css" />
   <link rel="stylesheet" href="./src/home-hero.css" />
+  <link rel="stylesheet" href="./src/viewport-fit.css" />
   <script type="module" src="./src/app.mjs"></script>
   <script type="module" src="./src/site.mjs"></script>
 </head>
@@ -37,7 +38,7 @@
           <h1 id="home-title" tabindex="-1">How much does the sprite weigh?</h1>
           <p>Balance the scale, experiment with sprites and weights, and discover the algebra hiding inside.</p>
           <div class="landing-actions">
-            <button type="button" id="home-play" class="primary-btn">Begin your first experiment →</button>
+            <button type="button" id="home-play" class="primary-btn">Start Stage 1 · Level 1 →</button>
             <button type="button" class="secondary-btn" data-screen="worlds">Choose a world</button>
           </div>
           <span id="home-progress" class="landing-progress" aria-live="polite"></span>
@@ -204,7 +205,7 @@
           <p><strong>Teacher preview · Stage 3</strong> — try the paper-first equation editor with a sample positive whole-number puzzle. This is a prototype, not a Stage 3 level, and earns no campaign progress.</p>
           <button type="button" class="secondary-btn" id="site-notebook-preview">Preview the Algebra Apprentice notebook →</button>
         </div>
-        <p>Progress is stored on this browser only. No account is needed. Stage 1 (20 levels), Stage 2 (16 levels) and Stage 3 (12 notebook-first levels) save progress separately. Each new stage unlocks when the previous one is mastered; Teacher access opens all implemented levels. Later mathematical worlds are still planned. The separate Equation Workshop is playable free play.</p>
+        <p>Progress and best stars are stored on this browser only. No account is needed. All 48 implemented levels across three stages are open from the start. Later mathematical worlds are still planned, and the Equation Workshop is available as free play.</p>
         <button type="button" class="secondary-btn" id="site-motion">Use reduced motion</button>
         <p>Animation settings also apply to the hand, sprites and pencil inside levels.</p>
         <button type="button" class="primary-btn" data-screen="home">Back to the workshop →</button>
@@ -299,6 +300,7 @@
           <button id="notebook-next" type="button" class="primary-btn" hidden>Next notebook level →</button>
         </div>
       </section>
+      <div class="game-board" id="game-board">
       <section class="playfield" id="scene" aria-label="Balance laboratory scene">
         <div class="ambient-window" aria-hidden="true"><div class="moon"></div></div>
         <div class="shelf shelf-left" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
@@ -498,6 +500,7 @@
         </div>
       </section>
 
+      </div><!-- game-board: scene and tools share a desktop viewport -->
       <div class="footer-note">The equations are hiding in the rooms. Solve the puzzle to discover them. <span>Made for curious mathematicians.</span></div>
     </main>
   </div>

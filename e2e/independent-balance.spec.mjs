@@ -143,7 +143,7 @@ test("Stage 2 chapter handovers and independent final mastery stay separate from
       completed:Array.from({length:16},(_,i)=>i+1),lastPlayed:16}));
   });
   await page.reload();
-  await expect(page.locator("#home-play")).toContainText("Begin Stage 3");
+  await expect(page.locator("#home-play")).toContainText("Continue Stage 3 · Level 1");
   await page.locator('[data-screen="worlds"]').first().click();
   await page.getByRole("button",{name:"Explore stages"}).click();
   await expect(page.locator('[data-stage="independent"]')).toContainText("Stage mastered");
