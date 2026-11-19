@@ -14,6 +14,7 @@ import { floorScaleToFit, inRoomBoxPlan, areaMathLabel } from "./area-layout.mjs
 import { itemWord, attemptMessage, mismatchedMoveMessage } from "./attempt-feedback.mjs";
 import { fractionCutPlan } from "./fraction-theatre.mjs";
 import {neutralPairSequence, neutralPairSummary} from "./neutral-pairs.mjs";
+import {crateCount,crateMarkup} from "./group-crates.mjs";
 import { WORLD1_LEVELS } from "./worlds.mjs";
 import {INDEPENDENT_LEVELS} from "./independent-levels.mjs";
 import {
@@ -115,6 +116,7 @@ function possessiveCount(number, singular, plural) {
 }
 function roomSummary(r) {
   const parts = [
+    crateCount(r) && possessiveCount(crateCount(r),"sealed bracket crate","sealed bracket crates"),
     r.posX && possessiveCount(r.posX, "dark sprite", "dark sprites"),
     r.negX && possessiveCount(r.negX, "pale sprite", "pale sprites"),
     r.posX2 && possessiveCount(r.posX2, "square sprite", "square sprites"),
@@ -146,7 +148,7 @@ function token(kind, i, mini = false, side = "left") {
   return '<span class="token balloon" title="A little floating balloon"><i class="balloon-body"></i><i class="balloon-knot"></i><i class="balloon-string"></i></span>';
 }
 function allTokens(r, mini = false, side = "left") {
-  let html = "";
+  let html = mini?"":crateMarkup(r);
   for (const kind of TOKEN_KINDS) {
     for (let i = 0; i < r[kind]; i++) html += token(kind, i, mini, side);
   }
@@ -157,7 +159,8 @@ function renderRoom(side, r, groupCount) {
   // Only rebuild a room when its actual contents change. Otherwise the idle
   // sprites are repeatedly destroyed and their bouncing animations restart.
   const signature = currentLevel().id + "|" + side + "|" +
-    TOKEN_KINDS.map(key => r[key]).join(":") + "|groups:" + groupCount;
+    TOKEN_KINDS.map(key => r[key]).join(":") +
+    "|crates:" + JSON.stringify(r.crates||null) + "|groups:" + groupCount;
   // Positive groups are division baskets; negative groups are multiplication.
   // The mathematical room values never change merely because a stage exists.
   const multiplying=groupCount<0;
@@ -165,7 +168,7 @@ function renderRoom(side, r, groupCount) {
   if (node.dataset.signature === signature) { resizeFloor(side); return; }
   node.dataset.signature = signature;
   node.setAttribute("aria-label", (side === "left" ? "West chamber: " : "East chamber: ") + roomSummary(r));
-  const total = TOKEN_KINDS.reduce((a, field) => a + r[field], 0);
+  const total = crateCount(r)+TOKEN_KINDS.reduce((a, field) => a + r[field], 0);
   node.classList.toggle("crowded", total > 16);
   if (basketCount) {
     // Both inverse operations use the SAME solid wicker stage. Multiplication
@@ -553,6 +556,10 @@ function render() {
   document.body.classList.toggle("reduce-motion", reducedMotion);
   $("motion-notice").hidden = !reducedMotion;
 
+  const crateSide=crateCount(shown.left)?"left":crateCount(shown.right)?"right":null;
+  $("crate-controls").hidden=!lvl.groupedPrototype||!crateSide||!!notebookSession;
+  $("unpack-crates").disabled=busy||awaiting||isSolved(state)||!crateSide;
+  $("unpack-crates").dataset.crateSide=crateSide||"";
   $("do-both").hidden = mode !== "auto";
   $("do-both").disabled = busy || awaiting || isSolved(state);
   $("manual-explanation").hidden = mode !== "manual";
@@ -599,6 +606,7 @@ function render() {
  * corresponding visual transformation. Only then does it leave the screen.
  */
 function handProp(action, side) {
+  if(action.op==="unpack")return "";
   if (action.op === "square") {
     const area = areaArrangement(visible()[side], "square");
     if (area?.symbolic)
@@ -629,6 +637,8 @@ function handProp(action, side) {
 }
 function roomOperationText(action, side) {
   const roomName=side==="left"?"west":"east";
+  if(action.op==="unpack")return "The hand unlatches the "+roomName+
+    " crate. Each sprite and weight becomes loose — the value stays the same...";
   if (action.op==="square"||action.op==="sqrt") {
     const area=areaArrangement(visible()[side],action.op);
     if (!area||area.kind==="zero") return "The hand checks the empty box...";
@@ -1139,7 +1149,12 @@ function failureStage(side, issue, action) {
   stage.dataset.issue = issue.code || "invalid";
   let html = "";
   if (issue.code === "fraction") return showFractionCut(side,issue);
-  if (issue.code === "overflow") {
+  if (issue.code==="locked-crate"||issue.code==="crate-split"){
+    for(const crate of $(side+"-items").querySelectorAll(".sealed-crate"))
+      crate.classList.add("crate-locked-rattle");
+    html='<div class="attempt-caption">The latch rattles, but the crate stays shut.</div>'+
+      '<span class="attempt-hint">Work with whole crates, or unpack first!</span>';
+  } else if (issue.code === "overflow") {
     const type = issue.kind === "posX" || issue.kind === "negX" ? "sprite-spill" :
       issue.kind === "posX2" ? "square-spill sprite-spill" :
       issue.kind === "negOne" ? "balloon-spill" : "weight-spill";
@@ -1176,6 +1191,8 @@ function clearFailureStage(side) {
   delete stage.dataset.cutSources;
   for(const token of $(side+"-items").querySelectorAll(".fraction-original-hidden"))
     token.classList.remove("fraction-original-hidden");
+  for(const crate of $(side+"-items").querySelectorAll(".crate-locked-rattle"))
+    crate.classList.remove("crate-locked-rattle");
   $(side + "-chamber").classList.remove("attempt-fraction", "attempt-overflow",
     "attempt-missing", "attempt-unsupported-area", "attempt-invalid");
 }
@@ -1651,7 +1668,9 @@ function startLevel(index, quantityMode, levelOverride=null, campaignNumber=null
   render();
 }
 function miniItems(r) {
-  let out = "";
+  let out = crateCount(r)
+    ?Array.from({length:crateCount(r)},()=>'<span class="mini-token mini-crate" aria-label="sealed bracket crate">('+ (r.crates.contents.posX?"x":"")+" + "+r.crates.contents.posOne+')</span>').join("")
+    :"";
   for (const type of TOKEN_KINDS) for (let i = 0; i < r[type]; i++) out += token(type, i, true);
   return out || '<span class="mini-empty">empty</span>';
 }
@@ -1684,7 +1703,9 @@ function panelHTML(entry, index, active) {
     '</div><div class="panel-footnote">' + (index === 0 ? "The two little rooms start in balance." :
       zeroPairs.length ? "The same operation on both sides; "+neutralPairSummary(zeroPairs)+
         " cancelled inside their rooms (each pair has value zero)." :
-      "The same mathematical change happened on both sides.") + '</div></article>';
+      entry.action?.op==="unpack"
+        ?"Opening brackets changes the arrangement, not the value of the room."
+        :"The same mathematical change happened on both sides.") + '</div></article>';
 }
 /**
  * Comic replay is deliberately paced by the pencil, not by a slideshow timer.
