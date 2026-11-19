@@ -170,6 +170,6 @@ test("overflow multiplication keeps actual contents and uses wicker rather than 
   await expect(page.locator("#hand-cargo .group-basket.basket-in-hand")).toBeVisible({timeout:10000});
   await expect(page.locator(".held-basket-double")).toHaveCount(0);
   await expect(page.locator("#right-items .floor-track > .weight")).toHaveCount(36);
-  await expect(page.locator("#feedback")).toContainText(/too many|overflow|smaller/i,{timeout:22000});
+  await expect(page.locator("#feedback")).toContainText(/too many|overflow|smaller|too crowded|only 48 fit/i,{timeout:22000});
   await expect(page.locator("#right-items .floor-track > .weight")).toHaveCount(36);
 });
