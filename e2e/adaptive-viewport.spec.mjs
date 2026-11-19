@@ -38,6 +38,7 @@ async function measure(page){
      actions:b("#site-home .landing-actions"),
      animation:b("#site-home .hero-illustration"),
      shortcuts:b("#home-stage-shortcuts"),
+     chapter:b(".app-shell .chapter-strip"),
      board:b(".app-shell .game-board"),
      scene:b("#scene"),rail:b(".experiment-controls"),
      rooms:b(".rooms-row"),room:b("#left-chamber .room-interior"),
@@ -82,6 +83,9 @@ test("real room/pan/beam/pedestal remain connected while tall gameplay uses larg
     withinScreen(m);
     expect(m.scene.bottom).toBeLessThanOrEqual(m.h+3);
     expect(m.board.bottom).toBeLessThanOrEqual(m.h+3);
+    // The chapter title and stage are one composition, not two components
+    // separated by a large auto margin on a tall display.
+    expect(m.board.top-m.chapter.bottom).toBeLessThan(32);
     expect(m.rail.bottom).toBeLessThanOrEqual(m.h+3);
     expect(m.scene.height).toBeGreaterThan(300);
     // Every scene is still mathematically connected, with no floating
