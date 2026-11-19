@@ -23,7 +23,7 @@ test("home is the real entry point; four distinct world cards, three locked", as
   await expect(page.getByText("The Square Laboratory")).toBeVisible();
 });
 
-test("all 20 levels are selectable from a fresh student account", async ({page}) => {
+test("all 20 levels are selectable from a fresh student account @smoke", async ({page}) => {
   await page.locator('[data-screen="worlds"]').first().click();
   await page.getByRole("button",{name:"Explore stages"}).click();
   await page.getByRole("button",{name:"Choose Stage 1 levels"}).click();
