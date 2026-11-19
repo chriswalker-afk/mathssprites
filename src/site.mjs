@@ -137,11 +137,12 @@ function renderStages() {
   $("world1-stage-cards").innerHTML=WORLD1_STAGES.map(stage=>{
     const playable=stageCanOpen(stage.id),meta=statuses[stage.id];
     const finished=meta.complete;
-    const countText=playable
+    const countText=(playable
       ? meta.progress.completed.length+" of "+stage.count+" experiments complete"
       : stage.available
         ? stage.count+" experiments · available to students"
-        : stage.count+" new experiments planned";
+        : stage.count+" new experiments planned")+
+        (playable?" · "+totalEarnedStars(ratings,stage.id)+" / "+(stage.count*3)+" stars":"");
     return '<article class="stage-card '+(playable?"stage-ready":"stage-planned")+
       '" data-stage="'+stage.id+'" aria-label="Stage '+stage.number+
       ': '+clean(stage.title)+(playable?", available":", locked")+'">'+
@@ -169,8 +170,8 @@ function renderStages() {
     '<button type="button" class="primary-btn" data-screen="workshop">Create your own equation →</button></div>';
   $("stage-teacher-note").hidden=!teacher;
   $("stage-teacher-note").textContent=
-    "Teacher access opens all implemented levels in Stages 1, 2 and 3. "+
-    "Other mathematical worlds are under construction. The Equation Workshop is available to everyone.";
+    "All 48 implemented levels are open to students. Teacher tools retain extra previews. "+
+    "Other mathematical worlds are under construction.";
 }
 function renderLevels() {
   const configs={
@@ -198,7 +199,8 @@ function renderLevels() {
   $("levels-stage-kicker").textContent="WORLD 01 · STAGE "+cfg.number+" · POSITIVE WHOLE NUMBERS";
   $("levels-stage-title").textContent=cfg.title;
   $("levels-stage-intro").textContent=cfg.intro;
-  $("level-progress").textContent=completed+" / "+total+" experiments complete";
+  $("level-progress").textContent=completed+" / "+total+" experiments complete · "+
+    totalEarnedStars(ratings,selectedStage)+" / "+(total*3)+" stars earned";
   $("world1-progress-description").textContent="Stage "+cfg.number+" · "+cfg.title;
   $("world1-progress-bar").max=total;
   $("world1-progress-bar").value=completed;
@@ -217,13 +219,20 @@ function renderLevels() {
       const next=slot.number===nextNumber;
       const tag=done?"Completed":open?"Ready to play":"Locked";
       const status=done?"complete":open?"ready":"locked";
+      const rating=ratingForLevel(ratings,selectedStage,slot.number);
+      const best=bestMoves(ratings,selectedStage,slot.number);
+      const ratingLabel=rating
+        ?rating+" of 3 stars, best "+best+" "+(best===1?"move":"moves")
+        :done?"Previously completed, replay to earn stars":"Not rated yet";
       return '<button type="button" class="level-tile status-'+status+
         (next?' level-next':'')+'" data-level="'+slot.number+'"'+(open?"":" disabled")+
         (next?' aria-current="step"':'')+
-        ' aria-label="Stage '+cfg.number+' Level '+slot.number+': '+clean(slot.title)+'. '+tag+'">'+
+        ' aria-label="Stage '+cfg.number+' Level '+slot.number+': '+clean(slot.title)+'. '+tag+'. '+ratingLabel+'">'+
         '<span class="tile-number">'+String(slot.number).padStart(2,"0")+'</span>'+
         '<span class="tile-name">'+clean(slot.title)+'</span>'+
-        '<span class="tile-status">'+(done?"✓ ":open?"✦ ":"◇ ")+tag+'</span></button>';
+        '<span class="tile-stars" data-stars="'+rating+'" aria-hidden="true">'+starGlyphs(rating)+'</span>'+
+        '<span class="tile-status">'+(done?"✓ ":open?"✦ ":"◇ ")+
+          (done&&!rating?"Completed · replay for stars":tag)+'</span></button>';
     }).join("");
     return '<section class="chapter-group chapter-theme-'+(index+1)+
       (finished===4?' chapter-complete':'')+
@@ -237,8 +246,8 @@ function renderLevels() {
       cfg.emblems[index]+'</div></div><div class="level-grid">'+cards+'</div></section>';
   }).join("");
   $("teacher-note").hidden=!teacher;
-  $("teacher-note").textContent="Teacher access: all "+total+" puzzles in Stage "+cfg.number+
-    " are unlocked, without changing their mathematical restrictions.";
+  $("teacher-note").textContent="All "+total+" puzzles in Stage "+cfg.number+
+    " are available to students. Teacher tools provide additional previews.";
 }
 function renderSettings() {
   $("teacher-unlock").checked = teacher;
