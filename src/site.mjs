@@ -166,7 +166,7 @@ function renderWorlds() {
         String(world.number).padStart(2,"0") + '</div>' +
       '<h3>' + clean(world.title) + '</h3><p class="world-subtitle">' +
         clean(world.subtitle) + '</p>' +
-      '<div class="world-card-footer"><span>' + progressLine + '</span>' +
+      '<div class="world-card-footer"><span class="world-progress">' + progressLine + '</span>' +
         (world.available
           ? (world.id==="workshop"
             ? '<button type="button" class="primary-btn" data-screen="stages">Explore stages →</button>'
