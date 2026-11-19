@@ -55,6 +55,7 @@ jobs:
             artifacts/pr34-*.png
             artifacts/pr35-*.png
             artifacts/pr36-*.png
+            artifacts/pr37-*.png
           if-no-files-found: ignore
           retention-days: 7
       - name: Keep screenshots and traces on smoke failures
