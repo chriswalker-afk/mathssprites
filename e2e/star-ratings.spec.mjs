@@ -73,21 +73,18 @@ test("two-step solution earns two stars; replaying optimally upgrades the best r
   await expect(page.locator("#level-progress")).toContainText("3 / 60 stars");
 });
 
-test("manual room visits are one move; provisional half-move earns no stars",async({page})=>{
-  test.setTimeout(85000);
+test("two manual hand visits count as one optimal move, not two",async({page})=>{
+  test.setTimeout(65000);
   await openLevel(page,"independent",1);
   await page.locator("#motion-toggle").click();
-  await page.locator("#amount-down").click(); // remove one, twice
   await page.locator("#left-action").click();
-  let saved=await page.evaluate(()=>localStorage.getItem("mathssprites.stars.v1"));
-  expect(saved).toBeNull();
+  expect(await page.evaluate(()=>localStorage.getItem("mathssprites.stars.v1"))).toBeNull();
+  await expect(page.locator("#right-action")).toContainText("Match the move",{timeout:14000});
   await page.locator("#right-action").click();
-  await expect(page.locator("#left-action")).toBeEnabled({timeout:12000});
-  await doOneManualMove(page);
-  await expect(page.locator("#replay-backdrop")).toBeVisible({timeout:18000});
-  await expect(page.locator("#replay-star-summary")).toContainText("★★☆ 2 stars");
-  saved=await page.evaluate(()=>JSON.parse(localStorage.getItem("mathssprites.stars.v1")));
-  expect(saved.independent["1"]).toBe(2);
+  await expect(page.locator("#replay-backdrop")).toBeVisible({timeout:20000});
+  await expect(page.locator("#replay-star-summary")).toContainText("★★★ 3 stars");
+  const saved=await page.evaluate(()=>JSON.parse(localStorage.getItem("mathssprites.stars.v1")));
+  expect(saved.independent["1"]).toBe(1);
 });
 
 test("notebook earns its stars only after checked working is physically replayed",async({page})=>{
