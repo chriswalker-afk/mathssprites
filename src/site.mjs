@@ -170,9 +170,7 @@ function renderWorlds() {
         clean(world.subtitle) + '</p>' +
       '<div class="world-card-footer"><span class="world-progress">' + progressLine + '</span>' +
         (world.available
-          ? (world.id==="workshop"
-            ? '<button type="button" class="primary-btn" data-screen="stages">Explore stages →</button>'
-            : '<button type="button" class="primary-btn" data-map-world="'+clean(world.id)+'">Choose levels →</button>')
+          ? '<button type="button" class="primary-btn" data-world-stages="'+clean(world.id)+'">Explore stages →</button>'
           : '<span class="soon-lock" aria-label="This world is not available yet">◇ Locked</span>') +
       '</div></div></article>';
   }).join("");
@@ -180,48 +178,45 @@ function renderWorlds() {
 /** The three distinct representations appear before the existing chapter list.
  * All three implemented learning stages are available to students. */
 function renderStages() {
-  const statuses={
-    guided:{progress,complete:stageOneComplete(progress.completed)},
-    independent:{progress:stage2Progress,complete:stageTwoComplete(stage2Progress.completed)},
-    notebook:{progress:stage3Progress,complete:stageThreeComplete(stage3Progress.completed)}
-  };
-  $("world1-stage-cards").innerHTML=WORLD1_STAGES.map(stage=>{
-    const playable=stageCanOpen(stage.id),meta=statuses[stage.id];
-    const finished=meta.complete;
-    const countText=playable
-      ? compactStageProgress(meta.progress.completed.length,stage.count,
-          totalEarnedStars(ratings,stage.id),stage.count*3)
-      : stage.count+" levels · coming soon";
+  const world=findCampaignWorld(selectedWorld);
+  if(!world?.available)return;
+  $("site-stages").dataset.activeWorld=world.id;
+  $("stages-world-kicker").textContent="WORLD "+String(world.number).padStart(2,"0")+" · "+
+    world.title.toUpperCase();
+  $("world1-stage-cards").setAttribute("aria-label",world.title+" learning stages");
+  $("world1-stage-cards").innerHTML=world.stages.map(stage=>{
+    const record=campaignStageRecord(campaign,world.id,stage.id);
+    const score=campaignStarTotals(campaign,{worldId:world.id,stageId:stage.id});
+    const playable=stage.available,finished=score.count>0&&score.completed===score.count;
+    const countText=compactStageProgress(score.completed,stage.count,score.earned,score.available);
     return '<article class="stage-card '+(playable?"stage-ready":"stage-planned")+
-      '" data-stage="'+stage.id+'" aria-label="Stage '+stage.number+
-      ': '+clean(stage.title)+(playable?", available":", locked")+'">'+
+      '" data-stage="'+clean(stage.id)+'" aria-label="Stage '+stage.number+
+      ': '+clean(stage.title)+(playable?", available":", unavailable")+'">'+
       '<div class="stage-top"><span class="stage-no">STAGE '+String(stage.number).padStart(2,"0")+
-      '</span><span class="stage-tag">'+(finished?"Stage mastered":
-        playable?"Ready to play":stage.available?"Complete Stage "+(stage.number-1):"Coming soon")+
+      '</span><span class="stage-tag">'+(finished?"Stage mastered":playable?"Ready to play":"Coming soon")+
       '</span></div><div class="stage-ornament" aria-hidden="true">'+
         portalStageArt(stage.id,stage.icon)+'</div>'+
       '<h2>'+clean(stage.title)+'</h2>'+
-      '<p class="stage-tagline">'+clean(stage.tagline)+'</p>'+
-      
+      '<p class="stage-tagline">'+clean(stage.tagline||"Explore this learning approach.")+'</p>'+
       '<div class="stage-card-bottom"><span class="stage-count">'+countText+'</span>'+
       (playable
-        ? '<button type="button" class="primary-btn" data-stage-open="'+stage.id+'"'+
-          (stage.id==="guided"?' data-screen="levels"':'')+
-          '>Choose Stage '+stage.number+' levels →</button>'
-        : '<span class="stage-coming" aria-label="This stage is unavailable">'+
-            (stage.available?"◇ Complete Stage "+(stage.number-1)+" to unlock":"◇ New levels in development")+
-          '</span>')+'</div></article>';
+        ? '<button type="button" class="primary-btn" data-stage-open="'+clean(stage.id)+'">Choose Stage '+
+          stage.number+' levels →</button>'
+        : '<span class="stage-coming">◇ In development</span>')+
+      '</div></article>';
   }).join("");
-  $("world1-workshop").innerHTML=
-    '<div class="workshop-glyph" aria-hidden="true">'+EQUATION_WORKSHOP.icon+'</div>'+
-    '<div class="workshop-content"><div class="portal-kicker">FREE PLAY · AVAILABLE TO EVERYONE</div>'+
-    '<h2>'+clean(EQUATION_WORKSHOP.title)+'</h2>'+
-    '<p>Create your own balance without changing campaign progress.</p>'+
-    '<button type="button" class="primary-btn" data-screen="workshop">Create your own equation →</button></div>';
-  $("stage-teacher-note").hidden=!teacher;
+  $("world1-workshop").hidden=world.id!=="workshop";
+  if(world.id==="workshop"){
+    $("world1-workshop").innerHTML=
+      '<div class="workshop-glyph" aria-hidden="true">'+EQUATION_WORKSHOP.icon+'</div>'+
+      '<div class="workshop-content"><div class="portal-kicker">FREE PLAY · AVAILABLE TO EVERYONE</div>'+
+      '<h2>'+clean(EQUATION_WORKSHOP.title)+'</h2>'+
+      '<p>Create your own balance without changing campaign progress.</p>'+
+      '<button type="button" class="primary-btn" data-screen="workshop">Create your own equation →</button></div>';
+  }
+  $("stage-teacher-note").hidden=!teacher||world.id!=="workshop";
   $("stage-teacher-note").textContent=
-    "All 48 implemented levels are open to students. Teacher tools retain extra previews. "+
-    "Other mathematical worlds are under construction.";
+    "All 48 implemented World 1 levels are open to students; teacher tools add previews.";
 }
 /** One Experiment Board, regardless of world or the number of stages.
  * World and stage switches update the SAME map rather than opening menus. */
