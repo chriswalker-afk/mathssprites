@@ -43,7 +43,8 @@ test("menu artwork is separated from the engine and its required controls",()=>{
   assert.match(html,/id="map-world-tabs"/);
   assert.match(html,/id="map-stage-tabs"/);
   assert.match(html,/id="workshop-equation"/);
-  for(const name of ["foyer-ambient","board-etching","inventors-desk"])
+  for(const name of ["foyer-ambient","board-etching"])
     assert.match(css,new RegExp(name+"\\.svg"));
+  assert.match(html,/inventors-desk\\.svg/);
   assert.doesNotMatch(css,/#(?:scene|rooms-row|scale-beam|left-action|right-action)\b/);
 });
