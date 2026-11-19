@@ -177,6 +177,22 @@
    base and complete room row: the brass pedestal remains on the wooden table.
    No transform scales the physical scene or alters hand hit-testing. */
 @media (min-width:1100px) and (min-height:790px){
+  /* The compact laptop header was also being kept at miniature type sizes
+     on large monitors. Spend a little of that new space on legibility. */
+  .site-nav{padding:11px 0;gap:16px}
+  .site-brand{font-size:1.28rem}
+  .site-nav-links button{min-height:39px;padding:8px 12px;font-size:.86rem}
+  .app-shell .topbar{padding:7px 4px;gap:13px}
+  .app-shell .identity h1{font-size:clamp(1.22rem,1.15vw,1.50rem)}
+  .app-shell .game-sprite-home{width:44px;height:44px}
+  .app-shell .game-sprite-home .brand-sprite-frame{width:38px;height:38px}
+  .app-shell .header-actions{gap:7px}
+  .app-shell .top-icon{min-height:39px;padding:8px 11px;font-size:.78rem}
+  .app-shell #campaign-hand-mode:not([hidden]){min-height:39px;padding:7px 11px}
+  .app-shell .chapter-strip{padding:6px 3px;gap:12px}
+  .app-shell .chapter-strip #chapter{font-size:.66rem}
+  .app-shell .chapter-strip #level-title{font-size:clamp(1.10rem,1.35vw,1.42rem)}
+  .app-shell .chapter-strip .chapter-status{font-size:.68rem}
   .app-shell{
     --wide-board-height:min(calc(100dvh - 104px),820px);
     --wide-room-height:clamp(365px,37dvh,440px);
