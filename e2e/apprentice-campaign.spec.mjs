@@ -40,7 +40,7 @@ test("Stage 3 and all twelve notebook levels are open without prior mastery",asy
   await page.getByRole("button",{name:"Explore stages"}).click();
   await expect(page.locator('[data-stage="notebook"] button')).toHaveCount(1);
   await masterFirstTwo(page);
-  await expect(page.locator("#home-play")).toContainText("Begin Stage 3");
+  await expect(page.locator("#home-play")).toContainText("Continue Stage 3 · Level 1");
   await page.locator('[data-screen="worlds"]').first().click();
   await page.getByRole("button",{name:"Explore stages"}).click();
   await expect(page.locator('[data-stage="notebook"] button')).toHaveCount(1);
