@@ -366,7 +366,7 @@ function renderNotebookMathEditor(){
   $("notebook-apply").disabled=!preview.ok||notebookPhase!=="writing"||busy;
   input.setAttribute("aria-invalid",String(!!text.trim()&&!preview.ok&&
     preview.code!=="incomplete"));
-  const sign=parsed.ok ? parsed.display[0]:text.trim().slice(0,1);
+  const sign=(parsed.ok?parsed.display[0]:text.trim().slice(0,1)).replace("-","−");
   for(const button of document.querySelectorAll("[data-notebook-symbol]"))
     button.setAttribute("aria-pressed",String(button.dataset.notebookSymbol===sign));
 }
@@ -2075,7 +2075,13 @@ $("notebook-hint").addEventListener("click",()=>{
  * proposed operation; the original equation and engine history stay intact. */
 $("notebook-operation").addEventListener("input",()=>{
   if(notebookSession&&notebookPhase==="writing"){
-    $("notebook-operation").setAttribute("aria-invalid","false");
+    const preview=previewNotebookOperation(notebookSession,$("notebook-operation").value);
+    if(!preview.ok&&preview.code!=="incomplete")
+      notebookMessage(preview.message,"error");
+    else if(preview.ok)
+      notebookMessage("Preview ready: "+preview.line+". Apply this change to both sides when you are ready.");
+    else
+      notebookMessage("Choose an operation and an amount. The editor calculates the new equation.");
     renderNotebookMathEditor();
   }
 });
