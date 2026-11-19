@@ -55,17 +55,14 @@ test("campaign restrictions are enforced by the engine, not only by hiding butto
     "Advanced preview experiments still support squares");
 });
 
-test("unlocking is sequential; teacher access unlocks all twenty complete levels", () => {
-  assert.equal(isWorld1Unlocked(1,[]),true);
-  assert.equal(isWorld1Unlocked(2,[]),false);
-  assert.equal(isWorld1Unlocked(2,[1]),true);
-  assert.equal(isWorld1Unlocked(5,[],true),true);
-  assert.equal(isWorld1Unlocked(6,[1,2,3,4,5],true),true);
-  assert.equal(isWorld1Unlocked(20,[],true),true);
-  assert.equal(isWorld1Unlocked(20,[],false),false);
-  assert.equal(nextWorld1Level(1,[1]),WORLD1_LEVELS[1]);
-  assert.equal(nextWorld1Level(5,[1,2,3,4,5]),WORLD1_LEVELS[5]);
-  assert.equal(nextWorld1Level(20,Array.from({length:20},(_,i)=>i+1)),null);
+test("all twenty implemented levels are open to students without teacher overrides", () => {
+  for(const slot of WORLD1_LEVELS)
+    assert.equal(isWorld1Unlocked(slot.number,[],false),true);
+  assert.equal(isWorld1Unlocked(21,[],true),false);
+  assert.equal(isWorld1Unlocked(0,[],true),false);
+  assert.equal(nextWorld1Level(1,[]),WORLD1_LEVELS[1]);
+  assert.equal(nextWorld1Level(5,[]),WORLD1_LEVELS[5]);
+  assert.equal(nextWorld1Level(20,[]),null);
 });
 
 test("progress survives reloads, ignores invalid data and works without localStorage", () => {
