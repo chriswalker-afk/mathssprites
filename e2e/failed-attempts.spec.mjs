@@ -190,7 +190,7 @@ test("a failed root shows why x+2 cannot form the square area, then undoes the a
   await expect(page.locator("#replay-backdrop")).toBeHidden();
 });
 
-test("reducing motion still gives an understandable fractional preview and reversal",async ({page})=>{
+test("reducing motion still gives an understandable fractional preview and reversal @smoke",async ({page})=>{
   await page.locator("#motion-toggle").click();
   await expect(page.locator("#motion-toggle")).toHaveText("Motion: reduced");
   await page.locator('[data-operation="divide"]').click();
