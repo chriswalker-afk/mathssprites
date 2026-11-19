@@ -109,7 +109,9 @@ test("grouped sprites gently bob inside baskets while counting remains legible o
   await page.setViewportSize({ width: 390, height: 844 });
   await page.locator("#level-select").selectOption("1");
   await page.locator("#do-both").click();
-  const groups = page.locator("#left-items .group-basket");
+  // First the originals must visibly travel into the EMPTY baskets.
+  await expect(page.locator("#left-items .division-stage")).toHaveAttribute("data-phase","ready",{timeout:12000});
+  const groups = page.locator("#left-items .basket-row > .group-basket");
   await expect(groups).toHaveCount(3);
   const animations = await page.locator("#left-items .group-basket .sprite-motion").evaluateAll(nodes =>
     nodes.map(el => getComputedStyle(el).animationName));

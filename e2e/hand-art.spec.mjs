@@ -73,16 +73,20 @@ test("add enters holding a weight, visibly releases it and withdraws empty",asyn
   await expect(page.locator("#replay-backdrop")).toBeHidden();
 });
 
-test("a grouping operation shows the baskets first and then removes a complete group",async ({page})=>{
+test("a grouping operation drops real baskets and the hand carries them away individually",async ({page})=>{
+  test.setTimeout(65000);
   await page.locator("#level-select").selectOption("1");
   await page.locator("#do-both").click();
-  await expect(page.locator("#left-items .group-basket")).toHaveCount(3);
-  await expect(page.locator("#right-items .group-basket")).toHaveCount(3);
+  await expect(page.locator("#left-items .division-stage")).toHaveAttribute("data-phase","ready",{timeout:12000});
+  await expect(page.locator("#left-items .basket-row > .group-basket")).toHaveCount(3);
+  await expect(page.locator("#right-items .basket-row > .group-basket")).toHaveCount(3);
   await page.screenshot({path:"artifacts/illustrated-hand-baskets-before.png"});
-  await expect(page.locator("#left-items .group-basket")).toHaveCount(0);
-  await expect(page.locator("#hand-cargo .held-basket")).toBeVisible();
-  await expect(page.locator("#right-items .group-basket")).toHaveCount(3);
-  await expect(page.locator("#replay-backdrop")).toBeVisible();
+  await expect(page.locator("#left-items .basket-row > .group-basket")).toHaveCount(2,{timeout:11000});
+  await expect(page.locator("#hand-cargo > .basket-in-hand")).toBeVisible({timeout:10000});
+  await expect(page.locator("#left-items .basket-row > .group-basket")).toHaveCount(1,{timeout:12000});
+  await expect(page.locator("#left-items .floor-track > .sprite-black")).toHaveCount(1,{timeout:12000});
+  await expect(page.locator("#right-items .basket-row > .group-basket")).toHaveCount(3);
+  await expect(page.locator("#replay-backdrop")).toBeVisible({timeout:32000});
 });
 
 test("new hand remains legible and reaches into the room on mobile",async ({page})=>{

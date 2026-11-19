@@ -4,6 +4,7 @@ import {
 } from "./engine.mjs";
 import { buildWritingTimeline, symbolsOf, WRITING_PACE } from "./replay-timeline.mjs";
 import { handMotionPlan } from "./hand-timeline.mjs";
+import { divisionBasketMarkup, playDivisionBaskets } from "./division-baskets.mjs";
 import { spriteMotionProfile, spriteMotionStyle } from "./sprite-motion.mjs";
 import { pickSpriteHandReaction, dodgeOffsetPx } from "./sprite-reactions.mjs";
 import { floorScaleToFit, inRoomBoxPlan, areaMathLabel } from "./area-layout.mjs";
@@ -143,22 +144,20 @@ function renderRoom(side, r, groupCount) {
   node.setAttribute("aria-label", (side === "left" ? "West chamber: " : "East chamber: ") + roomSummary(r));
   const total = TOKEN_KINDS.reduce((a, field) => a + r[field], 0);
   node.classList.toggle("crowded", total > 16);
-  if (!total) {
-    node.innerHTML = '<div class="room-empty" aria-hidden="true">a quiet moment...</div>';
+  if (groupCount) {
+    // Keep the original token nodes on the floor until they physically move
+    // into real baskets. The engine has already validated whole-item sharing.
+    node.innerHTML = '<div class="division-stage" data-phase="waiting" style="--division-factor:' +
+      groupCount + '">' +
+      '<div class="division-source floor-shell"><div class="items-grid floor-track" data-layout="floor">' +
+      allTokens(r, false, side) + '</div></div>' +
+      '<div class="basket-row" aria-label="' + groupCount + ' equal groups">' +
+      divisionBasketMarkup(groupCount) + '</div></div>';
+    resizeFloor(side);
     return;
   }
-  if (groupCount) {
-    const each = {};
-    for (const field of TOKEN_KINDS) each[field] = r[field] / groupCount;
-    // Group view is only opened after the engine has validated whole-item partitioning.
-    let baskets = "";
-    for (let i = 0; i < groupCount; i++) {
-      baskets += '<div class="group-basket"><div class="basket-contents">' +
-          allTokens(each, false, side + "-basket-" + i) +
-        '</div><span class="basket-lip"></span></div>';
-    }
-    node.innerHTML = '<div class="basket-row" aria-label="' + groupCount +
-      ' identical groups">' + baskets + '</div>';
+  if (!total) {
+    node.innerHTML = '<div class="room-empty" aria-hidden="true">a quiet moment...</div>';
     return;
   }
   node.innerHTML = '<div class="floor-shell"><div class="items-grid floor-track" data-layout="floor">' +
@@ -744,6 +743,11 @@ function animateClassFrame() {
   });
 }
 async function handAct(side, action, applyAtContact) {
+  // PR25: division has its own series of real basket pickups and ONE algebraic
+  // contact. Failed fractional cuts still use the original precision cutter.
+  if (action.op === "divide" && !action.fractionAttempt)
+    return playDivisionBaskets({side,factor:action.factor,reduced:reducedMotion,
+      applyAtContact,sleep});
   const hand = $("hand");
   const cargo = $("hand-cargo");
   const target = $(side + "-chamber");
@@ -1146,7 +1150,7 @@ async function animateMismatchedManualAction(side, firstAction, action) {
       }
       override={...before,[side]:room(attempted.beforeGroups)};
       groups[side]=action.factor;render();
-      await sleep(reducedMotion?160:860);
+
     }
     await handAct(side, action, async() => {
       if(action.op!=="divide"&&attempted.cancellationEvents.length){
@@ -1242,7 +1246,7 @@ async function guidedMove() {
       await neutraliseBeforeDivision(action,previews);
       groups={left:action.factor,right:action.factor};
       render();
-      await sleep(reducedMotion?550:1350);
+
     }else render();
     const beforeRight=action.op==="divide"
       ? room(previews.right.beforeGroups) : previous.right;
@@ -1317,7 +1321,7 @@ async function replayNotebookWithSprites() {
         await neutraliseBeforeDivision(action,previews);
         groups={left:action.factor,right:action.factor};
         render();
-        await sleep(reducedMotion?350:900);
+  
       } else render();
       const beforeRight=action.op==="divide"
         ? room(previews.right.beforeGroups) : previous.right;
@@ -1404,7 +1408,7 @@ async function manualMove(side) {
       }
       override={...before,[side]:room(preview.beforeGroups)};
       groups[side]=action.factor;render();
-      await sleep(reducedMotion?500:1100);
+
     }
     await handAct(side,action,async()=>{
       state=outcome.state;
