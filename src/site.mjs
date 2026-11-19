@@ -452,18 +452,45 @@ window.addEventListener("mathssprites:workshop-another",()=>showScreen("workshop
 
 $("site-shell").addEventListener("click", event => {
   const target = event.target.closest("button");
-  if (!target) return;
-  if (target.dataset.stageOpen) {
-    if(!stageCanOpen(target.dataset.stageOpen))return;
-    selectedStage=target.dataset.stageOpen;
+  if (!target || target.disabled) return;
+  if(target.dataset.homeStage){
+    const worldId=target.dataset.homeWorld;
+    const slot=stageResumeLevel(campaign,worldId,target.dataset.homeStage);
+    if(slot)launch(slot.id,target.dataset.homeStage,worldId);
+    return;
+  }
+  if(target.dataset.mapWorld){
+    const world=findCampaignWorld(target.dataset.mapWorld);
+    if(!world?.available)return;
+    selectedWorld=world.id;
+    if(!findCampaignStage(world.id,selectedStage)?.available)
+      selectedStage=world.stages.find(stage=>stage.available)?.id||"guided";
+    boardReturnScreen="home";
     return showScreen("levels");
   }
-  if (target.dataset.screen) return showScreen(target.dataset.screen);
-  if (target.dataset.level) return launch(Number(target.dataset.level));
+  if(target.dataset.mapStage){
+    if(!findCampaignStage(selectedWorld,target.dataset.mapStage)?.available)return;
+    selectedStage=target.dataset.mapStage;
+    return renderLevels();
+  }
+  if (target.dataset.stageOpen) {
+    if(!stageCanOpen(target.dataset.stageOpen))return;
+    selectedWorld="workshop"; // World 1 stage gallery is retained for discovery.
+    selectedStage=target.dataset.stageOpen;
+    boardReturnScreen="stages";
+    return showScreen("levels");
+  }
+  if (target.dataset.screen){
+    if(target.dataset.screen==="levels")boardReturnScreen="home";
+    if(target.dataset.screen==="stages")selectedWorld="workshop";
+    return showScreen(target.dataset.screen);
+  }
+  if (target.dataset.level) return launch(target.dataset.levelId||
+    Number(target.dataset.level),selectedStage,selectedWorld);
 });
 $("home-play").addEventListener("click", () => {
-  const destination=homeDestination(); // exact same destination used by the label
-  launch(destination.number,destination.stage);
+  const destination=homeDestination();
+  launch(destination.levelId,destination.stageId,destination.worldId);
 });
 $("teacher-unlock").addEventListener("change", event => {
   teacher = saveTeacherSetting(event.target.checked);
@@ -483,7 +510,7 @@ function restartFirstExperimentGuide() {
   writeGuideSeen(false);
   window.dispatchEvent(new CustomEvent("mathssprites:guide-setting",
     {detail:{enabled:true, reset:true}}));
-  launch(1,"guided");
+  launch(1,"guided","workshop");
 }
 $("site-replay-intro").addEventListener("click", restartFirstExperimentGuide);
 function restartIndependentIntroduction() {
@@ -492,7 +519,7 @@ function restartIndependentIntroduction() {
   writeIndependentGuideSeen(false);
   window.dispatchEvent(new CustomEvent("mathssprites:guide-setting",
     {detail:{enabled:true,stage:"independent",reset:true}}));
-  launch(1,"independent");
+  launch(1,"independent","workshop");
 }
 $("site-replay-independent").addEventListener("click",restartIndependentIntroduction);
 /** Teacher-facing preview only: PR21 will add real Stage 3 levels and progress. */
@@ -520,7 +547,8 @@ $("site-motion").addEventListener("click", () => {
   $("motion-toggle").click();
   renderSettings();
 });
-$("site-back").addEventListener("click", () => showScreen("stages"));
+$("site-back").addEventListener("click", () =>
+  showScreen(boardReturnScreen==="stages"?"stages":"home"));
 $("stages-back").addEventListener("click", () => showScreen("worlds"));
 window.addEventListener("mathssprites:solved",event=>{
   if(playingNumber===null || event.detail?.number!==playingNumber ||
