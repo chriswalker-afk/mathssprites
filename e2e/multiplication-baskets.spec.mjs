@@ -28,8 +28,12 @@ test("physical multiplication groups the original objects and hand-delivers full
   await expect(west).toHaveAttribute("data-phase","copying",{timeout:13000});
   await expect(page.locator("#hand-cargo > .group-basket.basket-in-hand")).toBeVisible({timeout:15000});
   await expect(page.locator("#hand-cargo .basket-in-hand .token")).toHaveCount(3);
-  expect(await page.locator("#left-items .basket-row > .group-basket").count()+
-    await page.locator("#hand-cargo > .basket-in-hand").count()).toBe(3);
+  // Query the moving scene and cargo in ONE browser tick: separate awaited
+  // counts can race as the basket is returned from the hand to the chamber.
+  await expect.poll(()=>page.evaluate(()=>
+    document.querySelectorAll("#left-items .basket-row > .group-basket").length+
+    document.querySelectorAll("#hand-cargo > .basket-in-hand").length
+  ),{timeout:5000}).toBe(3);
   await page.screenshot({path:"artifacts/pr29-02-hand-delivers-full-basket.png"});
   await expect(west).toHaveAttribute("data-phase","ready",{timeout:14000});
   await expect(row.locator(".group-basket")).toHaveCount(3);
