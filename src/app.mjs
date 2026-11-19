@@ -396,10 +396,11 @@ function render() {
   $("scale-beam").style.transform = "rotate(" + degrees + "deg)";
   $("dial-needle").style.transform = "translateX(-50%) rotate(" + (degrees * -7) + "deg)";
   const awaiting = !!state.pending;
+  // Keep balance feedback accessible but remove decorative narration from
+  // the actual scene. The artwork should speak for itself when level.
   $("balance-caption").textContent = (awaiting || override)
     ? "The balance is waiting for its matching move"
-    : "Two rooms. One perfectly balanced mystery.";
-  $("balance-caption").classList.toggle("unbalanced", balance !== 0);
+    : balance !== 0 ? "The scale is unbalanced." : "";
   for (const button of document.querySelectorAll("[data-operation]")) {
     const available = !lvl.allowedOperations || lvl.allowedOperations.includes(button.dataset.operation);
     button.hidden = !available;
@@ -447,6 +448,7 @@ function render() {
   $("level-select").value = String(levelIndex);
   $("level-select").disabled = busy || awaiting || campaignLevelNumber !== null;
   $("game-home").disabled = busy;
+  $("game-brand-home").disabled = busy;
   $("game-levels").disabled = busy;
   $("motion-toggle").textContent = reducedMotion ? "Motion: reduced" : "Motion: on";
   $("motion-toggle").setAttribute("aria-pressed", String(reducedMotion));
@@ -2098,6 +2100,7 @@ function leaveGame(screen) {
   window.dispatchEvent(new CustomEvent("mathssprites:leave", {detail:{screen}}));
 }
 $("game-home").addEventListener("click", () => leaveGame("home"));
+$("game-brand-home").addEventListener("click", () => leaveGame("home"));
 $("game-levels").addEventListener("click", () => leaveGame("levels"));
 document.addEventListener("keydown", event => {
   if (event.key === "Escape" && !$("replay-backdrop").hidden) { hideReplay(); return; }
