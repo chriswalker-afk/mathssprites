@@ -244,6 +244,14 @@
   .app-shell .notebook-help{font-size:.74rem}
 }
 
+/* Override the default tall-game rail only after it is declared, so
+   very wide monitors genuinely gain a wider, less cramped control surface. */
+@media (min-width:1600px) and (min-height:790px){
+  .app-shell .game-board{
+    grid-template-columns:minmax(0,1fr) clamp(325px,22vw,382px);
+  }
+}
+
 /* In wide-but-short or extremely zoomed windows, PR28 owns compact geometry.
    Mobile/touch layouts remain document-scroll experiences (not clipped
    pseudo-fullscreen views). No hover-only controls or scrolling traps added. */
