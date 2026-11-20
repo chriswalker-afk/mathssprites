@@ -134,9 +134,8 @@ test("opening stays silent and the resulting comic is a visual storyboard, not m
   await expect(page.locator("#left-items .sealed-crate")).toHaveCount(0,{timeout:30000});
   await page.locator('[data-operation="remove"]').click();
   await page.locator('[data-kind="posOne"]').click();
-  const old=Number(await page.locator("#amount-value").textContent());
-  for(let i=old;i<6;i++)await clickWithReferenceMove(page,"#amount-up");
-  for(let i=old;i>6;i--)await clickWithReferenceMove(page,"#amount-down");
+  await page.locator("#amount-up").click();
+  for(let i=1;i<6;i++)await page.locator("#amount-up").click();
   await clickWithReferenceMove(page,"#do-both");
   await expect(page.locator("#right-items .weight")).toHaveCount(8,{timeout:30000});
   await page.locator('[data-operation="divide"]').click();
