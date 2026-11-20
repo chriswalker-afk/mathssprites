@@ -167,7 +167,7 @@ function renderRoom(side, r, groupCount) {
   const signature = currentLevel().id + "|" + side + "|" +
     TOKEN_KINDS.map(key => r[key]).join(":") +
     "|crates:" + JSON.stringify(r.crates||null) + "|groups:" + groupCount;
-  // Positive groups are division baskets; negative groups are multiplication.
+  // Loose-object division uses baskets; whole sealed crates go straight to the hand.
   // The mathematical room values never change merely because a stage exists.
   const multiplying=groupCount<0;
   const basketCount=Math.abs(groupCount);
