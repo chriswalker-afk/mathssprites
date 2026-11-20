@@ -113,6 +113,10 @@ test("crate rooms retain separate intact crates while all loose weights still pi
   checkPiles(await measureWeights(page,"left",true),1);
   checkPiles(await measureWeights(page,"right"),23);
   await expect(east.locator(".floor-track > .weight")).toHaveCount(23);
+  // Plaques have matching ART, not the same CSS identity: crate controls
+  // must still find exactly one crate label when another room has 23 weights.
+  await expect(page.locator(".crate-stack-count")).toHaveCount(1);
+  await expect(page.locator(".weight-stack-count")).toHaveCount(1);
   await expect(west).toHaveAttribute("aria-label",/3 sealed crates, 2 dark sprites, 1 weight/);
 });
 
