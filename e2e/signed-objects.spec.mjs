@@ -1,4 +1,4 @@
-import {clickWithReferenceMove} from "./reference-move-helper.mjs";
+import {clickWithReferenceMove,chooseReferenceMoveIfBlank} from "./reference-move-helper.mjs";
 import {test,expect} from "@playwright/test";
 
 test.beforeEach(async({page})=>{
@@ -15,6 +15,7 @@ test("maths mode is INDEPENDENT of hand control, and positive-only lessons hide 
   await expect(page.locator("#quantity-mode")).toHaveValue("positive");
   await page.locator("#quantity-mode").selectOption("signed");
   await expect(page.locator("#mode-select")).toHaveValue("manual");
+  await page.locator('[data-operation="add"]').click();
   await expect(page.locator('[data-kind="negX"]')).toBeVisible();
   await expect(page.locator('[data-kind="negOne"]')).toBeVisible();
   await expect(page.locator("#journal-legend")).toContainText("white");
@@ -57,6 +58,9 @@ test("signed balloon rescue shows two distinct lifts before revealing x = 4",asy
   await expect(page.locator("#quantity-mode")).toHaveValue("signed");
   await expect(page.locator("#quantity-mode option[value=positive]")).toBeDisabled();
   await expect(page.locator("#left-items .balloon")).toHaveCount(2);
+  await expect(page.locator('[data-kind="negOne"]')).toBeHidden();
+  await expect(page.locator("[data-operation].selected")).toHaveCount(0);
+  await chooseReferenceMoveIfBlank(page);
   await expect(page.locator('[data-kind="negOne"]')).toBeVisible();
   await expect(page.locator('[data-operation="add"]')).toHaveClass(/selected/);
   await expect(page.locator('[data-kind="posOne"]')).toHaveClass(/selected/);
@@ -86,6 +90,8 @@ test("white sprite chapter pairs dark with pale in each room then isolates x",as
   test.setTimeout(65000);
   await page.locator("#level-select").selectOption("11");
   await expect(page.locator("#quantity-mode")).toHaveValue("signed");
+  await expect(page.locator("[data-kind].selected")).toHaveCount(0);
+  await chooseReferenceMoveIfBlank(page);
   await expect(page.locator('[data-kind="negX"]')).toHaveClass(/selected/);
   await expect(page.locator("#amount-value")).toHaveText("1");
   await clickWithReferenceMove(page,"#do-both");
@@ -96,6 +102,7 @@ test("white sprite chapter pairs dark with pale in each room then isolates x",as
   await expect(page.locator("#left-items .sprite-black")).toHaveCount(1);
   await page.locator('[data-operation="remove"]').click();
   await page.locator('[data-kind="posOne"]').click();
+  await clickWithReferenceMove(page,"#amount-up");
   await clickWithReferenceMove(page,"#amount-up");
   await clickWithReferenceMove(page,"#amount-up");
   await expect(page.locator("#amount-value")).toHaveText("3");
