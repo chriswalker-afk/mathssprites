@@ -1,3 +1,4 @@
+import {clickWithReferenceMove} from "./reference-move-helper.mjs";
 import {test,expect} from "@playwright/test";
 
 test.beforeEach(async({page})=>{
@@ -26,8 +27,8 @@ test("students can opt into white sprites on an introductory puzzle and see a RE
   await page.locator("#quantity-mode").selectOption("signed");
   await page.locator('[data-operation="add"]').click();
   await page.locator('[data-kind="negX"]').click();
-  await page.locator("#amount-down").click(); // one white sprite
-  await page.locator("#do-both").click();
+  await clickWithReferenceMove(page,"#amount-down"); // one white sprite
+  await clickWithReferenceMove(page,"#do-both");
   const effect=page.locator("#left-neutral-effect");
   await expect(effect).toHaveAttribute("data-pair-type","sprites",{timeout:16000});
   await expect(page.locator("#left-items .zero-pair-actor")).toHaveCount(2);
@@ -60,7 +61,7 @@ test("signed balloon rescue shows two distinct lifts before revealing x = 4",asy
   await expect(page.locator('[data-operation="add"]')).toHaveClass(/selected/);
   await expect(page.locator('[data-kind="posOne"]')).toHaveClass(/selected/);
   await expect(page.locator("#amount-value")).toHaveText("2");
-  await page.locator("#do-both").click();
+  await clickWithReferenceMove(page,"#do-both");
   const effect=page.locator("#left-neutral-effect");
   await expect(effect).toHaveAttribute("data-pair-type","constants",{timeout:17000});
   await expect(page.locator("#left-items .zero-pair-actor")).toHaveCount(2);
@@ -87,7 +88,7 @@ test("white sprite chapter pairs dark with pale in each room then isolates x",as
   await expect(page.locator("#quantity-mode")).toHaveValue("signed");
   await expect(page.locator('[data-kind="negX"]')).toHaveClass(/selected/);
   await expect(page.locator("#amount-value")).toHaveText("1");
-  await page.locator("#do-both").click();
+  await clickWithReferenceMove(page,"#do-both");
   await expect(page.locator("#left-neutral-effect")).toHaveAttribute("data-pair-type","sprites",{timeout:17000});
   await expect(page.locator("#right-neutral-effect")).toHaveAttribute("data-pair-type","sprites",{timeout:17000});
   await expect(page.locator("#left-items .sprite-white")).toHaveCount(0,{timeout:18000});
@@ -95,10 +96,10 @@ test("white sprite chapter pairs dark with pale in each room then isolates x",as
   await expect(page.locator("#left-items .sprite-black")).toHaveCount(1);
   await page.locator('[data-operation="remove"]').click();
   await page.locator('[data-kind="posOne"]').click();
-  await page.locator("#amount-up").click();
-  await page.locator("#amount-up").click();
+  await clickWithReferenceMove(page,"#amount-up");
+  await clickWithReferenceMove(page,"#amount-up");
   await expect(page.locator("#amount-value")).toHaveText("3");
-  await page.locator("#do-both").click();
+  await clickWithReferenceMove(page,"#do-both");
   await expect(page.locator("#replay-backdrop")).toBeVisible({timeout:20000});
   await page.locator("#replay-skip").click();
   await expect(page.locator("#pencil-lines")).toContainText("x = 4");
@@ -108,14 +109,14 @@ test("white sprite chapter pairs dark with pale in each room then isolates x",as
 test("both sorts of zero pair solve the combined signed puzzle with two committed steps",async({page})=>{
   test.setTimeout(85000);
   await page.locator("#level-select").selectOption("12");
-  await page.locator("#do-both").click();
+  await clickWithReferenceMove(page,"#do-both");
   await expect(page.locator("#left-neutral-effect")).toHaveAttribute("data-pair-type","constants",{timeout:17000});
   await expect(page.locator("#left-items .balloon")).toHaveCount(0,{timeout:22000});
   await expect(page.locator("#right-items .weight")).toHaveCount(4);
   await page.locator('[data-kind="negX"]').click();
-  await page.locator("#amount-down").click();
+  await clickWithReferenceMove(page,"#amount-down");
   await expect(page.locator("#amount-value")).toHaveText("1");
-  await page.locator("#do-both").click();
+  await clickWithReferenceMove(page,"#do-both");
   await expect(page.locator("#left-neutral-effect")).toHaveAttribute("data-pair-type","sprites",{timeout:17000});
   await expect(page.locator("#right-neutral-effect")).toHaveAttribute("data-pair-type","sprites",{timeout:17000});
   await expect(page.locator("#replay-backdrop")).toBeVisible({timeout:20000});
@@ -129,13 +130,13 @@ test("Your Turn only provisionally changes the first signed room until the oppos
   test.setTimeout(68000);
   await page.locator("#level-select").selectOption("10");
   await page.locator("#mode-select").selectOption("manual");
-  await page.locator("#left-action").click();
+  await clickWithReferenceMove(page,"#left-action");
   await expect(page.locator("#left-neutral-effect")).toHaveAttribute("data-pair-type","constants",{timeout:16000});
   await expect(page.locator("#left-items .balloon")).toHaveCount(0,{timeout:20000});
   await expect(page.locator("#left-items .sprite-black")).toHaveCount(1);
   await expect(page.locator("#right-items .weight")).toHaveCount(2);
   await expect(page.locator("#replay-backdrop")).toBeHidden();
-  await page.locator("#right-action").click();
+  await clickWithReferenceMove(page,"#right-action");
   await expect(page.locator("#right-items .weight")).toHaveCount(4,{timeout:16000});
   await expect(page.locator("#replay-backdrop")).toBeVisible({timeout:20000});
   await page.locator("#replay-close").click();
@@ -149,7 +150,7 @@ test("reduced motion teaches balloon and weight cancellation as a clear static s
   await page.locator("#motion-toggle").click();
   await expect(page.locator("#motion-toggle")).toHaveText("Motion: reduced");
   await page.locator("#level-select").selectOption("10");
-  await page.locator("#do-both").click();
+  await clickWithReferenceMove(page,"#do-both");
   const effect=page.locator("#left-neutral-effect");
   await expect(effect).toHaveAttribute("data-pair-type","constants",{timeout:10000});
   await expect(effect.locator(".balloon-trail")).toHaveCSS("animation-name","none");
