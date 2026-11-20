@@ -38,6 +38,20 @@ export function crateExpansionPlan(value){
   const spriteResult=productTerm(totalSprites,"x");
   const spriteMath=count+" × "+spriteUnit+" = "+spriteResult;
   const weightMath=count+" × "+weightsPerCrate+" = "+totalWeights;
+  // In-room physical storyboard. All lids open sequentially, the creatures
+  // emerge together, the wooden panels fold, the hidden weights become visible,
+  // then weights tumble out as identifiable crate-by-crate packets.
+  const physicalPhases=Object.freeze([
+    ...Array.from({length:count},(_,crateIndex)=>Object.freeze({phase:"open",crateIndex})),
+    Object.freeze({phase:"sprites-bouncing",count:totalSprites}),
+    Object.freeze({phase:"sprites-landed",count:totalSprites}),
+    Object.freeze({phase:"panels-falling"}),
+    Object.freeze({phase:"weights-revealed",count:totalWeights}),
+    ...Array.from({length:count},(_,crateIndex)=>Object.freeze({
+      phase:"weights-tumbling",crateIndex,count:weightsPerCrate
+    })),
+    Object.freeze({phase:"settle"})
+  ]);
   const steps=[
     ...Array.from({length:count},(_,crateIndex)=>Object.freeze({
       phase:"open",crateIndex,
@@ -60,6 +74,7 @@ export function crateExpansionPlan(value){
   return Object.freeze({
     count,spritesPerCrate,weightsPerCrate,totalSprites,totalWeights,
     spriteMath,weightMath,sharedLabel:crateContentsDescription(value),
+    physicalPhases,
     steps:Object.freeze(steps.map(s=>Object.freeze(s)))
   });
 }

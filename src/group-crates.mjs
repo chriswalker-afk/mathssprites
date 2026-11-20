@@ -97,10 +97,15 @@ export function crateMarkup(value){
     '<i class="crate-sign-stud crate-stud-three"></i>'+
     '<i class="crate-sign-stud crate-stud-four"></i></span>';
   const pictureIndex=Math.floor(count/2);
+  const bayWeights=Array.from({length:Math.min(12,contents.posOne||0)},(_,n)=>
+    '<span class="crate-bay-weight" data-weight-index="'+n+'" aria-hidden="true"></span>').join("");
   const tokens=Array.from({length:count},(_,index)=>
     '<span class="token sealed-crate" data-crate-index="'+index+
     '" data-crate-state="sealed" role="img" aria-label="Sealed crate '+(index+1)+
     ' of '+count+', containing '+description+'" title="Sealed wooden crate: '+description+'">'+
+      '<span class="crate-weight-bay" aria-hidden="true">'+bayWeights+'</span>'+
+      '<span class="crate-side-panel crate-side-left" aria-hidden="true"></span>'+
+      '<span class="crate-side-panel crate-side-right" aria-hidden="true"></span>'+
       '<span class="crate-wood-face" aria-hidden="true">'+
         '<span class="crate-wood-grain"></span>'+
         '<span class="crate-diagonal-brace"></span>'+
@@ -112,9 +117,9 @@ export function crateMarkup(value){
         '<i class="crate-corner-stud stud-tr"></i>'+
         '<i class="crate-corner-stud stud-bl"></i>'+
         '<i class="crate-corner-stud stud-br"></i>'+
+        (index===pictureIndex?picture:"")+
       '</span>'+
       '<span class="crate-lid" aria-hidden="true"></span>'+
-      (index===pictureIndex?picture:"")+
       '<span class="crate-hidden-contents" aria-hidden="true">'+sprites+weights+'</span>'+
     '</span>').join("");
   const label='<span class="crate-stack-count" role="text" aria-label="'+count+

@@ -13,10 +13,13 @@ test("real baskets fall EMPTY, receive the original tokens, and are carried away
   await expect(row.locator(":scope > .group-basket")).toHaveCount(3);
   await expect(west.locator(".division-source .token")).toHaveCount(3);
   await expect(west.locator(".basket-contents .token")).toHaveCount(0);
-  await page.screenshot({path:"artifacts/pr25-01-wicker-baskets-dropping.png"});
+  // Inspect the active CSS while the baskets are still falling.
+  // A screenshot can consume the entire 530ms landing animation, leaving
+  // animationName="none" even though the visible basket choreography worked.
   const landingAnimation=await row.locator(".group-basket[data-state='dropping']").first().evaluate(el=>
     getComputedStyle(el).animationName);
   expect(landingAnimation).toContain("division-wicker-drop");
+  await page.screenshot({path:"artifacts/pr25-01-wicker-baskets-dropping.png"});
 
   await expect(west).toHaveAttribute("data-phase","ready",{timeout:10000});
   await expect(west.locator(".division-source .token")).toHaveCount(0);

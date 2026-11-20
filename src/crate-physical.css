@@ -1,0 +1,175 @@
+/* PR41 — Everything happens IN THE LABORATORY. No text, trays, cards,
+   notation, or explanatory interfaces appear in the physical sequence.
+   The accepted PR40 closed wooden crates and single picture sign stay intact. */
+
+/* Solid contents are hidden behind the sealed front and side boards until
+   the sprites have landed. Opening a lid alone cannot reveal the weights. */
+.sealed-crate .crate-weight-bay{
+  position:absolute;inset:9px 10px 7px;
+  z-index:3;display:flex;align-items:center;justify-content:center;
+  gap:2px;padding:4px 1px;overflow:hidden;border-radius:2px;
+  background:linear-gradient(120deg,#3d2b1f,#624329 56%,#35241b);
+  box-shadow:inset 0 0 8px #110c099c,inset 0 2px #c4955844;
+  opacity:0;visibility:hidden;
+}
+.sealed-crate .crate-bay-weight{
+  display:inline-block;position:relative;flex:none;
+  width:clamp(7px,calc(var(--crate-w)*.13),15px);
+  height:clamp(10px,calc(var(--crate-h)*.34),26px);
+  margin:0 1px;
+  background:linear-gradient(95deg,#f0d28d,#c49a57 44%,#856039 95%);
+  border:1px solid #e4bd80;
+  clip-path:polygon(27% 0,73% 0,100% 100%,0 100%);
+  filter:drop-shadow(0 1px 2px #1e120b);
+  opacity:1;
+}
+.sealed-crate.crate-panels-down .crate-weight-bay{
+  opacity:1;visibility:visible;
+  transition:opacity .18s ease .23s;
+}
+.sealed-crate .crate-weight-bay .crate-weight-taken{
+  opacity:0;visibility:hidden;
+}
+
+/* The previously static face is NOW a genuine bottom-hinged board. The
+   illustrated sign is part of this board: it falls WITH the wood. */
+.sealed-crate .crate-wood-face{
+  z-index:6;transform-origin:50% 100%;
+  backface-visibility:visible;
+  transition:transform .68s cubic-bezier(.22,.77,.24,1.08),
+    opacity .58s ease;
+  will-change:transform;
+}
+.sealed-crate .crate-side-panel{
+  position:absolute;z-index:5;top:4px;bottom:3px;width:13%;
+  border:2px solid #c28c50;border-radius:2px;
+  background:repeating-linear-gradient(90deg,#845029 0 3px,#b87e42 4px 7px);
+  box-shadow:inset 1px 1px #e3b5758c,1px 2px 3px #2113078c;
+  transform:rotate(0deg);transition:transform .67s cubic-bezier(.3,.75,.22,1.06);
+  will-change:transform;
+}
+.sealed-crate .crate-side-left{left:0;transform-origin:left bottom}
+.sealed-crate .crate-side-right{right:0;transform-origin:right bottom}
+.sealed-crate.crate-panels-down .crate-wood-face{
+  transform:perspective(260px) rotateX(-79deg) translateY(2px);
+  opacity:.78;
+}
+.sealed-crate.crate-panels-down .crate-side-left{
+  transform:rotate(-76deg) translate(-8px,5px);
+}
+.sealed-crate.crate-panels-down .crate-side-right{
+  transform:rotate(76deg) translate(8px,5px);
+}
+.sealed-crate.crate-panels-down{
+  background:linear-gradient(90deg,#6d482c,#573a27 47%,#332117);
+  box-shadow:inset 0 0 0 3px #c08b50,inset 0 5px 9px #120c0896,
+    0 5px 6px #070b0c96;
+}
+.sealed-crate.crate-panels-down .crate-picture-sign{
+  pointer-events:none;
+}
+.sealed-crate.crate-empty{
+  opacity:.12;transform:translateY(14px) scale(.96);
+  transition:opacity .58s ease,transform .58s ease;
+}
+
+/* The scene overlay is physically transparent and stays strictly within
+   the same room. It contains only animated sprites and brass weights.
+   There is NO separate illustrated counting/teaching stage. */
+.crate-physical-scene{
+  position:absolute;inset:0;z-index:9;
+  background:none!important;border:0!important;box-shadow:none!important;
+  overflow:hidden;pointer-events:none;
+}
+.crate-physical-scene::before,
+.crate-physical-scene::after{content:none!important}
+.crate-escaped-actor{
+  position:absolute;z-index:3;display:block;
+  opacity:0;visibility:hidden;
+  pointer-events:none;
+  transform-origin:50% 100%;
+  filter:drop-shadow(0 3px 2px #0009);
+}
+.crate-escaped-actor.released{opacity:1;visibility:visible}
+.crate-escaped-actor.landed{opacity:1;visibility:visible}
+.crate-escaped-actor>.token{
+  position:absolute!important;left:0;top:0;flex:none;
+  transform:scale(var(--escape-scale,1))!important;
+  transform-origin:0 0!important;
+  margin:0!important;
+}
+.crate-escaped-sprite>.token{width:46px;height:47px}
+.crate-escaped-weight>.token{width:29px;height:32px}
+/* The flying actors use familiar sprite faces and feet, but have no
+   perpetual jumping animation that could fight the authored landing bounce. */
+.crate-escaped-sprite .sprite-motion,
+.crate-escaped-sprite .sprite-reaction-shell,
+.crate-escaped-sprite .sprite-feet,
+.crate-escaped-sprite .sprite-body,
+.crate-escaped-sprite .sprite-ground-shadow{
+  animation:none!important;
+}
+.crate-escaped-weight .weight-handle{top:0;left:36%;width:28%;height:10px}
+.crate-escaped-weight .weight-shine{left:8px;top:10px;height:16px}
+
+/* Tiny, optional pause button exists ONLY WHILE the crates are being opened.
+   The initial panel remains just "SEALED CRATES" and "Open crates". */
+#crate-controls{position:relative}
+#crate-animation-pause[hidden]{display:none!important}
+#crate-animation-pause{
+  position:absolute;top:5px;right:6px;
+  min-height:23px;width:28px;padding:0;
+  border:1px solid #c4ab77;border-radius:6px;
+  color:#f1debc;background:#344941;
+  font-size:.75rem;line-height:21px;
+}
+#crate-animation-pause:focus-visible{outline:3px solid #f4d89a;outline-offset:2px}
+#crate-controls .eyebrow{font-weight:800}
+#crate-controls p{display:none!important}
+@media(min-width:900px) and (max-height:649px){
+  .sealed-crate .crate-weight-bay{inset:5px 7px 4px;gap:1px;padding:2px}
+  .sealed-crate .crate-bay-weight{margin:0}
+  #crate-animation-pause{min-height:24px}
+}
+@media(max-width:899px){
+  .sealed-crate .crate-weight-bay{inset:5px 6px 4px;gap:1px;padding:1px}
+  .sealed-crate .crate-bay-weight{margin:0}
+}
+@media(prefers-reduced-motion:reduce){
+  .sealed-crate .crate-wood-face,.sealed-crate .crate-side-panel,
+  .sealed-crate .crate-weight-bay{transition-duration:.01s!important}
+  .crate-escaped-actor{transition:none!important}
+}
+.reduce-motion .sealed-crate .crate-wood-face,
+.reduce-motion .sealed-crate .crate-side-panel,
+.reduce-motion .sealed-crate .crate-weight-bay{transition-duration:.01s!important}
+
+/* Comic storyboard: pictures, not mathematical captions. */
+.comic-crate-story{
+  display:flex;gap:5px;align-items:stretch;justify-content:center;
+  padding:7px 4px;margin:5px 0;background:transparent;
+}
+.comic-crate-story .comic-crate-frame{
+  display:flex;flex:1 1 0;min-width:0;min-height:50px;
+  flex-direction:column;gap:4px;align-items:center;justify-content:center;
+  border:1px solid #9c825e;border-radius:6px;
+  background:linear-gradient(#344c43,#233832);color:#edc58e;
+}
+.comic-crate-story .comic-crate-wood{
+  width:23px;height:21px;border:3px solid #bd8d55;
+  background:linear-gradient(35deg,transparent 43%,#d7a46a 45% 58%,transparent 60%),
+    #84522b;box-shadow:inset 1px 1px #f0c78c79;
+}
+.comic-crate-story .comic-crate-lid-open{transform:rotate(-19deg)}
+.comic-crate-story .comic-crate-panels-down{transform:rotateX(-73deg)}
+.comic-crate-story .comic-crate-objects{display:flex;gap:2px;align-items:end}
+.comic-crate-story .comic-crate-sprite{
+  width:12px;height:13px;border-radius:50%;background:#283735;
+  border:2px solid #84978b;box-shadow:inset 0 2px #a8bcb2;
+}
+.comic-crate-story .comic-crate-weight{
+  width:8px;height:12px;
+  clip-path:polygon(27% 0,72% 0,100% 100%,0 100%);
+  background:linear-gradient(110deg,#f2d693,#a56f34);
+}
+.comic-crate-story .comic-crowbar-mark{font-size:1.16rem;color:#e1ddcf}

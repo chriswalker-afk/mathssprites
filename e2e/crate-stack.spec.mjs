@@ -6,7 +6,7 @@ async function openLevel19(page){
   await page.locator('[data-map-world="workshop"]').click();
   await page.locator('[data-map-stage="guided"]').click();
   await page.locator('[data-level="19"]').click();
-  await expect(page.locator("#level-title")).toHaveText("The sealed brackets");
+  await expect(page.locator("#level-title")).toHaveText("Sealed Crates");
 }
 async function geometry(page){
   return page.evaluate(()=>{

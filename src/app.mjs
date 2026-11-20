@@ -15,7 +15,7 @@ import { itemWord, attemptMessage, mismatchedMoveMessage } from "./attempt-feedb
 import { fractionCutPlan } from "./fraction-theatre.mjs";
 import {neutralPairSequence, neutralPairSummary} from "./neutral-pairs.mjs";
 import {crateCount,crateMarkup} from "./group-crates.mjs";
-import {crateExpansionPlan,crateExpansionReplayNotes} from "./crate-expansion.mjs";
+import {crateExpansionPlan} from "./crate-expansion.mjs";
 import {createCrateExpansionView} from "./crate-expansion-view.mjs";
 import { WORLD1_LEVELS } from "./worlds.mjs";
 import {INDEPENDENT_LEVELS} from "./independent-levels.mjs";
@@ -90,6 +90,7 @@ let guideWasActive = false;
 function currentLevel() { return activeLevel; }
 let busy = false;
 let crateExpansionRunning=false; // Visual demonstration only: no partial model commits.
+let activeCrateView=null; // Only the in-room crate choreography can be paused.
 let override = null;
 let groups = { left: 0, right: 0 };
 let failureTilt = 0; // transient presentation only; no effect on the math engine
@@ -119,7 +120,7 @@ function possessiveCount(number, singular, plural) {
 }
 function roomSummary(r) {
   const parts = [
-    crateCount(r) && possessiveCount(crateCount(r),"sealed bracket crate","sealed bracket crates"),
+    crateCount(r) && possessiveCount(crateCount(r),"sealed crate","sealed crates"),
     r.posX && possessiveCount(r.posX, "dark sprite", "dark sprites"),
     r.negX && possessiveCount(r.negX, "pale sprite", "pale sprites"),
     r.posX2 && possessiveCount(r.posX2, "square sprite", "square sprites"),
@@ -465,7 +466,7 @@ function render() {
   $("level-title").textContent = lvl.title;
   if(campaignWorldId)document.body.dataset.campaignWorld=campaignWorldId;
   else delete document.body.dataset.campaignWorld;
-  $("level-prompt").textContent = lvl.prompt;
+  $("level-prompt").textContent = lvl.groupedPrototype?"":lvl.prompt;
   $("chapter-status").hidden = campaignLevelNumber === null;
   // Existing World 1 teacher cues remain, but future mathematical worlds
   // get their own stage/chapter facts rather than World 1's fixed 20/16 map.
@@ -562,6 +563,13 @@ function render() {
 
   const crateSide=crateCount(shown.left)?"left":crateCount(shown.right)?"right":null;
   $("crate-controls").hidden=!lvl.groupedPrototype||!crateSide||!!notebookSession;
+  const cratePause=$("crate-animation-pause");
+  cratePause.hidden=!crateExpansionRunning;
+  cratePause.disabled=!activeCrateView;
+  cratePause.textContent=activeCrateView?.paused?"▶":"Ⅱ";
+  cratePause.setAttribute("aria-pressed",String(!!activeCrateView?.paused));
+  cratePause.setAttribute("aria-label",activeCrateView?.paused?
+    "Resume crate animation":"Pause crate animation");
   $("unpack-crates").disabled=busy||awaiting||isSolved(state)||!crateSide;
   $("unpack-crates").dataset.crateSide=crateSide||"";
   $("do-both").hidden = mode !== "auto";
@@ -650,9 +658,7 @@ function handProp(action, side) {
 }
 function roomOperationText(action, side) {
   const roomName=side==="left"?"west":"east";
-  if(action.op==="unpack")return "The hand uses a crowbar to open crate "+
-    (Number.isInteger(action.crateIndex)?action.crateIndex+1:"")+
-    " in the "+roomName+" chamber. The contents stay inside until both lids are open.";
+  if(action.op==="unpack")return "";
   if (action.op==="square"||action.op==="sqrt") {
     const area=areaArrangement(visible()[side],action.op);
     if (!area||area.kind==="zero") return "The hand checks the empty box...";
@@ -949,7 +955,7 @@ async function handAct(side, action, applyAtContact) {
 
   const caption = $("action-caption");
   caption.textContent = roomOperationText(action, side);
-  caption.hidden = false;
+  caption.hidden = action.op==="unpack";
   cargo.innerHTML = handProp(action, side);
   cargo.classList.remove("sprite-captured");
   if(action.op==="unpack")hand.dataset.crowbar="true";
@@ -1029,7 +1035,9 @@ async function handAct(side, action, applyAtContact) {
           target.classList.remove("hand-target");
           break;
       }
-      await sleep(beat.delay);
+      if(action.op==="unpack"&&activeCrateView)
+        await activeCrateView.hold(beat.delay);
+      else await sleep(beat.delay);
     }
   } finally {
     // No animation state should leak into the next room or next level.
@@ -1382,7 +1390,7 @@ async function finishTurn() {
     busy = false; render();
     showReplay();
   } else {
-    setFeedback("Still balanced. What should the hand try next?");
+    setFeedback(currentLevel().groupedPrototype?"":"Still balanced. What should the hand try next?");
   }
 }
 async function guidedMove() {
@@ -1402,7 +1410,7 @@ async function guidedMove() {
     right:previewRoomAction(previous.right,action,state.quantityMode,"right")
   };
   busy=true;clearSpeech();
-  setFeedback(operationDescription(action)+"...","working");
+  setFeedback(currentLevel().groupedPrototype?"":operationDescription(action)+"...","working");
   try {
     if(action.op==="divide"){
       await neutraliseBeforeDivision(action,previews);
@@ -1462,47 +1470,49 @@ async function unpackCrates(){
   const result=perform(state,action,"auto");
   if(!result.ok)return notify(result.reason);
   const plan=crateExpansionPlan(state[side]);
+  const levelIdAtStart=currentLevel().id;
   let view=null,committed=false;
   busy=true;
   crateExpansionRunning=true;
   clearSpeech();
-  setFeedback("Watch the crowbar open every crate, then count the sprites and weights separately.","working");
+  setFeedback("");
   render();
   try{
     view=createCrateExpansionView({
       side,chamber:$(side+"-chamber").querySelector(".room-interior"),
-      items:$(side+"-items"),plan,tokenMarkup:token,sleep,reducedMotion
+      items:$(side+"-items"),plan,tokenMarkup:token,reducedMotion
     });
-    for(const step of plan.steps.filter(step=>step.phase==="open")){
-      view.announce("opening",step.description);
+    activeCrateView=view;
+    render(); // Enable the in-animation pause button; no room rebuild.
+    for(const step of plan.physicalPhases.filter(step=>step.phase==="open")){
+      view.announce("opening");
       await handAct(side,{...action,crateIndex:step.crateIndex},async()=>{
         view.openCrate(step.crateIndex);
-        // The crowbar visibly prises each lid before the hand moves to
-        // the next crate; contents are not released at this contact.
-        await sleep(reducedMotion?210:420);
+        await view.hold(reducedMotion?130:340);
       });
     }
-    // All lids have opened. Show ALL sprites from all crates first, then
-    // weights in source-crate groups, with an equation for each product.
+    // All sprites bounce together onto the REAL room floor. Only then do the
+    // wooden fronts fall down to reveal the weights, which physically tumble
+    // out of their original crates. There is no instructional counting tray.
     await view.playReleaseSteps();
-    state=result.state; // ONE undoable identity rewrite, after all visuals.
+    if(currentLevel().id!==levelIdAtStart)
+      throw new Error("Crate animation was interrupted by a level change.");
+    state=result.state; // ONE undoable identity rewrite after final settling.
     committed=true;
   }catch(error){
-    setFeedback("The crates are still sealed. Try expanding brackets again.","error");
+    setFeedback("The crates are closed again.","warning");
   }finally{
     view?.destroy();
+    activeCrateView=null;
     crateExpansionRunning=false;
     busy=false;
     override=null;
-    // In an interruption, do not leave staged miniature actors, open lids,
-    // or stale floor signatures behind.
     delete $(side+"-items").dataset.signature;
     render();
   }
   if(!committed)return;
   await finishTurn();
-  if(!isSolved(state))
-    setSpeech("Two multiplications! We counted the sprites, then the weights. The room's value never changed.",5800);
+  if(!isSolved(state))setFeedback("");
 }
 /** Replay a CHECKED algebra notebook as consecutive real hand movements.
  * The pure engine's committed history, never user text, provides the actions.
@@ -1720,6 +1730,8 @@ function startLevel(index, quantityMode, levelOverride=null, campaignNumber=null
   $("scene").classList.remove("scene-failed-balance", "scene-rewinding");
   delete $("scene").dataset.balanceOutcome;
   busy = false;
+  activeCrateView?.destroy();
+  activeCrateView=null;
   crateExpansionRunning=false;
   for(const leftover of document.querySelectorAll(".crate-expansion-stage"))
     leftover.remove();
@@ -1752,6 +1764,7 @@ function startLevel(index, quantityMode, levelOverride=null, campaignNumber=null
     : state.quantityMode==="signed"
       ? "Signed objects are active: white sprites and balloons are opposites. Make a zero pair!"
       : "Positive objects only. Signed objects can be enabled with Maths mode.";
+  if(level.groupedPrototype)$("feedback").textContent="";
   render();
 }
 function miniItems(r) {
@@ -1779,30 +1792,44 @@ function replayZeroPairNotes(entry) {
       (event.type==="sprites"?"(+x) + (−x) = 0":"(+1) + (−1) = 0")
   }));
 }
+function crateComicStory(before){
+  const plan=crateExpansionPlan(before);
+  const sprites=Array.from({length:plan.totalSprites},()=>
+    '<span class="comic-crate-sprite"></span>').join("");
+  const weights=Array.from({length:plan.totalWeights},()=>
+    '<span class="comic-crate-weight"></span>').join("");
+  const groups=Array.from({length:plan.count},()=>'<span class="comic-crate-wood"></span>').join("");
+  return '<div class="comic-crate-story" role="img" '+
+    'aria-label="Sealed crates open, sprites escape, wooden fronts fall, and weights tumble out">'+
+      '<div class="comic-crate-frame">'+groups+'</div>'+
+      '<div class="comic-crate-frame"><span class="comic-crowbar-mark">⌁</span>'+
+        '<div class="comic-crate-objects">'+sprites+'</div></div>'+
+      '<div class="comic-crate-frame"><span class="comic-crate-wood comic-crate-panels-down"></span>'+
+        '<div class="comic-crate-objects">'+weights+'</div></div>'+
+      '<div class="comic-crate-frame"><div class="comic-crate-objects">'+sprites+weights+
+        '</div></div>'+
+    '</div>';
+}
 function panelHTML(entry, index, active) {
   const zeroPairs=recordedZeroEvents(entry);
+  const isCrate=currentLevel().groupedPrototype;
+  const opened=entry.action?.op==="unpack";
   const title = index === 0 ? "Before the hand began" : "Move " + index;
-  const subtitle = index === 0 ? "Every object has a hidden value..." : operationDescription(entry.action);
-  const expanded=entry.action?.op==="unpack"
-    ?crateExpansionReplayNotes(entry.before[entry.action.side]):null;
-  const sequence=expanded
-    ?'<div class="comic-crate-sequence" aria-label="Expansion: open crates, take all sprites, then weights">'+
-      '<div class="comic-crate-beat"><span class="comic-crowbar-mark" aria-hidden="true">⌁</span>'+
-        '<span>'+expanded.opening+'</span></div>'+
-      '<div class="comic-crate-beat"><span class="comic-sprite-mark" aria-hidden="true">●</span>'+
-        '<span>Sprites: <strong>'+expanded.sprites+'</strong></span></div>'+
-      '<div class="comic-crate-beat"><span class="comic-weight-mark" aria-hidden="true">◆</span>'+
-        '<span>Weights: <strong>'+expanded.weights+'</strong></span></div></div>'
-    :"";
-  return '<article class="comic-panel ' + (active ? "current-panel" : "old-panel") + '" data-panel="' + index + '">' +
-    '<header><strong>' + title + '</strong><small>' + subtitle + '</small></header>' +
+  const subtitle = index === 0 ? "Every object has a hidden value..." :
+    operationDescription(entry.action);
+  const story=opened?crateComicStory(entry.before[entry.action.side]):"";
+  const footnote = opened?"":zeroPairs.length
+    ? "The same operation on both sides; "+neutralPairSummary(zeroPairs)+
+      " cancelled inside their rooms (each pair has value zero)."
+    :index===0?"The two little rooms start in balance."
+      :"The same mathematical change happened on both sides.";
+  return '<article class="comic-panel ' + (active ? "current-panel" : "old-panel") +
+    '" data-panel="' + index + '">' +
+    (isCrate?"":'<header><strong>'+title+'</strong><small>'+subtitle+'</small></header>')+
     '<div class="mini-stage" id="mini-stage-' + index + '">' +
-    miniRooms(entry.after) + '</div>'+sequence+
-    '<div class="panel-footnote">' + (index === 0 ? "The two little rooms start in balance." :
-      zeroPairs.length ? "The same operation on both sides; "+neutralPairSummary(zeroPairs)+
-        " cancelled inside their rooms (each pair has value zero)." :
-      expanded ?expanded.summary+" Opening brackets changes the arrangement, not the value.":
-      "The same mathematical change happened on both sides.") + '</div></article>';
+    miniRooms(entry.after)+'</div>'+story+
+    (isCrate?"":'<div class="panel-footnote">'+footnote+'</div>')+
+    '</article>';
 }
 /**
  * Comic replay is deliberately paced by the pencil, not by a slideshow timer.
@@ -1815,16 +1842,15 @@ function escapeInk(value) {
   }[symbol]));
 }
 function notebookLines(entry, index) {
-  if (index === 0) return [{ type: "equation", text: equation(entry.after) }];
-  if(entry.action?.op==="unpack"){
-    const notes=crateExpansionReplayNotes(entry.before[entry.action.side]);
-    return [
-      {type:"operation",text:notes.opening},
-      {type:"operation",text:"All sprites: "+notes.sprites},
-      {type:"operation",text:"All weights: "+notes.weights},
-      {type:"equation",text:equation(entry.after)}
-    ];
+  // This particular discovery puzzle has a picture-first comic. The paper
+  // framework needs a short line to pace the pencil but must not narrate the
+  // equation or write out the multiplication in front of the students.
+  if(currentLevel().groupedPrototype){
+    const cue=index===0?"▣":entry.action?.op==="unpack"
+      ?"▣    ●    ◆":"⚖";
+    return [{type:"operation",text:cue}];
   }
+  if (index === 0) return [{ type: "equation", text: equation(entry.after) }];
   return [
     { type: "operation", text: algebraOperation(entry.action) },
     ...replayZeroPairNotes(entry),
@@ -1951,6 +1977,7 @@ function processReplayEvent(event) {
       updateReplayEndNote();
       break;
   }
+  if(currentLevel().groupedPrototype)$("writing-status").textContent="";
 }
 function tickReplay(timestamp) {
   replayFrame = null;
@@ -2035,7 +2062,8 @@ function drawReplay(index, { animate = !reducedMotion, complete = false } = {}) 
     ? buildWritingTimeline(lines, { opening: replayIndex === 0,pace })
     : { events: [], durationMs: complete ? 0 : 3900 };
   $("pencil").hidden = true;
-  $("writing-status").textContent = complete ? "This panel's algebra is fully written."
+  $("writing-status").textContent = currentLevel().groupedPrototype?"":complete
+    ? "This panel's algebra is fully written."
     : reducedMotion ? "Complete algebra shown, without animation."
     : replayIndex === 0 ? "The pencil is about to reveal the hidden equation..."
     : "First the hand replays the move, then the pencil writes...";
@@ -2117,6 +2145,12 @@ $("amount-up").addEventListener("click", () => {
   render();
 });
 $("unpack-crates").addEventListener("click",unpackCrates);
+$("crate-animation-pause").addEventListener("click",()=>{
+  if(!activeCrateView||!crateExpansionRunning)return;
+  if(activeCrateView.paused)activeCrateView.resume();
+  else activeCrateView.pause();
+  render();
+});
 $("do-both").addEventListener("click", guidedMove);
 $("left-action").addEventListener("click", () => manualMove("left"));
 $("right-action").addEventListener("click", () => manualMove("right"));
