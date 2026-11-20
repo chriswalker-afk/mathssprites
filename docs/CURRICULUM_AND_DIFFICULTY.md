@@ -1,4 +1,4 @@
-# Maths Sprites — Curriculum definitions and difficulty metadata (PR46)
+# Maths Sprites — Curriculum definitions and difficulty metadata (PR46–PR50)
 
 ## Purpose and scope
 
@@ -34,6 +34,8 @@ Run:
     npm run curriculum -- --world workshop --stage guided
     npm run curriculum -- --world opposites --stage notebook
     npm run curriculum -- --json
+    npm run audit:world2
+    npm run audit:world2 -- --json
 
 The JSON report can be used later to chart difficulty, find missing objectives
 or compare planned challenge with student attempt data. It is not part of
@@ -58,11 +60,15 @@ concept. The authored bands are **initial hypotheses for play-testing**, not
 empirical claims about pupils.
 
 Each record also carries complexitySignals:
-- benchmarkMoves: **proven shortest legal move count** for World 1 (the
-  already tested OPTIMAL_MOVES baseline), but **authored valid route length**
-  for World 2. These are intentionally labelled differently; do not use
-  World 2 values as certified minima or give stars from them without separate
-  proofs.
+- benchmarkMoves: **independently proven shortest legal move count** in
+  BOTH worlds. World 1 uses its positive whole-object search and World 2's
+  PR50 test exhaustively searches all four signed object types and permitted
+  factors through the real engine. Star par is never inferred from a hint or
+  example route.
+- authoredRouteMoves: the separately kept example route length for World 2
+  (null in World 1). A valid teaching route can be longer or use different
+  signed cancellations than a shortest route; do not silently change stars
+  when an authored example is revised.
 - variableSides, changesOrientation: unknowns on both sides and/or
   the remaining variable on the right
 - signedObjectTypes: number of distinct signed-object types initially present
@@ -72,6 +78,7 @@ Each record also carries complexitySignals:
 - fractionTrap, multipleSolutionRoutes, sealedGroupReasoning: explicitly
   authored mathematical/representation flags (not guessed from the quantity)
 - referenceOperations: only for World 2, kept exclusively in author metadata
+- benchmarkType: "proven-minimum" for BOTH worlds (not "authored-valid-route")
 
 ## Curriculum strands
 
@@ -103,7 +110,7 @@ representation, signed numbers and mathematical communication.
 - Do not surface difficulty, mathematical reference routes or equation metadata
   before the student solves a room; PR45's neutral selections remain protected.
 
-## How to use this in the next difficulty-balancing pass
+## How to use the metadata for future play-testing
 
 First review the npm run curriculum output **chapter by chapter** and identify
 sudden spikes, repeated objective types, unnecessary busywork and levels where
@@ -119,3 +126,11 @@ Balance and Algebra Apprentice. PR48 adds four Guided crate experiments
 positions and legacy progress. New curriculum records have explicit complexity
 and difficulty bands; a crate rewrite is one equivalent-expression step,
 not a pair of opposite hand visits.
+
+PR49 rebalanced signed representations without changing IDs. **PR50 independently
+certified the shortest legal solution length for all 48 World 2 levels**:
+all 48 authored reference routes happened to be optimal, so existing stars,
+content revision markers, and saved completions are unaffected. Future route
+edits cannot silently change star targets. See
+[the full audit](WORLD2_OPTIMAL_ROUTE_AUDIT.md) and the reproducible
+`npm run audit:world2` report; both are teacher/developer resources.
