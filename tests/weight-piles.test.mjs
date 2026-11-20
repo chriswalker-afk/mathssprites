@@ -12,7 +12,11 @@ test("weight piles always use three lower slots then two resting above",()=>{
     const plan=Array.from({length:count},(_,i)=>weightPilePosition(i,count));
     assert.equal(plan.length,count);
     assert.ok(plan.every(Object.isFrozen));
-    const groups=Map.groupBy(plan,x=>x.pile);
+    const groups=new Map();
+    for(const position of plan){
+      if(!groups.has(position.pile))groups.set(position.pile,[]);
+      groups.get(position.pile).push(position);
+    }
     assert.equal(groups.size,Math.ceil(count/5));
     for(const [index,items] of groups){
       const size=Math.min(5,count-index*5);
