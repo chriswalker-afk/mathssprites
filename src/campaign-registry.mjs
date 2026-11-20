@@ -10,6 +10,7 @@ import {WORLD1_STAGES} from "./stages.mjs";
 import {INDEPENDENT_LEVELS,INDEPENDENT_CHAPTERS} from "./independent-levels.mjs";
 import {APPRENTICE_LEVELS,APPRENTICE_CHAPTERS} from "./apprentice-levels.mjs";
 import {OPTIMAL_MOVES} from "./star-ratings.mjs";
+import {OPPOSITE_OPTIMAL_MOVES} from "./opposite-star-benchmarks.mjs";
 import {OPPOSITE_CHAPTERS,OPPOSITE_LEVELS,OPPOSITE_STAGE_ORDER,OPPOSITE_OPERATIONS,OPPOSITE_KINDS} from "./opposite-levels.mjs";
 
 const stableId=/^[a-z][a-z0-9-]*$/;
@@ -115,8 +116,10 @@ const WORLD2_CAMPAIGN_STAGES=OPPOSITE_STAGE_ORDER.map((id,index)=>{
   const levels=OPPOSITE_LEVELS[id];
   return {...stage,id,number:index+1,available:true,
     chapters:OPPOSITE_CHAPTERS[id],levels,
+    // PR50: stars use certified shortest legal move counts by stable ID,
+    // never the length of an authored pedagogical example route.
     optimalMoves:Object.fromEntries(levels.map(slot=>
-      [slot.id,slot.level.referenceRoute.length])),
+      [slot.id,OPPOSITE_OPTIMAL_MOVES[id][slot.number-1]])),
     capabilities:{quantityMode:"signed",allowedOperations:OPPOSITE_OPERATIONS,
       allowedKinds:OPPOSITE_KINDS,handMode:stage.method}};
 });

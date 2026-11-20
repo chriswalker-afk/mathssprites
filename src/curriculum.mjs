@@ -14,6 +14,7 @@ import {INDEPENDENT_LEVELS} from "./independent-levels.mjs";
 import {APPRENTICE_LEVELS} from "./apprentice-levels.mjs";
 import {OPPOSITE_LEVELS} from "./opposite-levels.mjs";
 import {OPTIMAL_MOVES} from "./star-ratings.mjs";
+import {OPPOSITE_OPTIMAL_MOVES} from "./opposite-star-benchmarks.mjs";
 
 const skill=(label,strand,canDo,prerequisites=[])=>Object.freeze({
   label,strand,canDo,prerequisites:Object.freeze([...prerequisites])
@@ -232,9 +233,13 @@ function makeEntry(worldId,stage,slot){
   const skillIds=freezeList(skills);
   const prerequisiteSkillIds=freezeList(new Set(skillIds.flatMap(id=>
     CURRICULUM_SKILLS[id]?.prerequisites||[])));
-  const benchmarkMoves=worldId==="workshop"
-    ?OPTIMAL_MOVES[stage][number-1]:level.referenceRoute.length;
-  const benchmarkType=worldId==="workshop"?"proven-minimum":"authored-valid-route";
+  // Both worlds now have independently certified, engine-exhaustive star
+  // targets. The World 2 referenceRoute remains an author example, not
+  // the definition of "optimal" or a student-facing instruction.
+  const benchmarkMoves=(worldId==="workshop"?OPTIMAL_MOVES:
+    OPPOSITE_OPTIMAL_MOVES)[stage][number-1];
+  const benchmarkType="proven-minimum";
+  const authoredRouteMoves=worldId==="opposites"?level.referenceRoute.length:null;
   const referenceOperations=worldId==="opposites"
     ?freezeList(new Set(level.referenceRoute.map(step=>step.op))):freezeList([]);
   const initialZeroPairs=["left","right"].reduce((total,side)=>{
@@ -245,6 +250,7 @@ function makeEntry(worldId,stage,slot){
   const complexitySignals=Object.freeze({
     benchmarkMoves,
     benchmarkType,
+    authoredRouteMoves,
     referenceOperations,
     variableSides:flags.variablesOnBothSides?2:1,
     changesOrientation:flags.reversed,

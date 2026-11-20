@@ -24,6 +24,16 @@ test("World 2 rebalance and save migration run the correct focused browser group
     ["navigation","signed","physics"]);
   assert.deepEqual(selectBrowserGroups(["src/polish.css"]),["navigation","layout"]);
 });
+test("certified World 2 par data and registry changes cannot skip star/navigation QA",()=>{
+  assert.deepEqual(selectBrowserGroups(["src/opposite-star-benchmarks.mjs"]),
+    ["navigation","signed","physics"]);
+  assert.deepEqual(selectBrowserGroups(["src/campaign-registry.mjs"]),
+    ["navigation","notebook","signed","physics"]);
+  assert.deepEqual(selectBrowserGroups([
+    "scripts/world2-shortest-routes.mjs","scripts/audit-world2-routes.mjs",
+    "tests/world2-optimal-routes.test.mjs"
+  ]),[],"teacher audit and test-only changes do not launch animations");
+});
 test("shared maths and entrypoint changes trigger multiple independent safety checks",()=>{
   assert.deepEqual(selectBrowserGroups(["src/engine.mjs"]),["crates","notebook","signed","physics"]);
   assert.equal(selectBrowserGroups(["src/app.mjs"]).length,Object.keys(GROUP_SPECS).length);

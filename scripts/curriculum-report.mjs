@@ -64,7 +64,7 @@ if(asJSON){
     "# Maths Sprites — Curriculum and difficulty authoring report",
     "",
     "Covers "+rows.length+" playable campaign levels; mathematical equations appear here for teachers only.",
-    "Bands describe authored reasoning demand (1–5). World 1 move benchmarks are proven minimums; World 2 route lengths are authored valid routes, **not necessarily shortest**.",
+    "Bands describe authored reasoning demand (1–5). Both World 1 and World 2 star benchmarks are independently proven minimums under their legal game-engine actions; World 2 authored example routes remain separate.",
     ""
   ];
   for(const [worldId,stages] of Object.entries(sources)){
@@ -73,13 +73,14 @@ if(asJSON){
       if(stageOnly&&stage!==stageOnly)continue;
       const section=rows.filter(row=>row.worldId===worldId&&row.stage===stage);
       lines.push("## "+worldId+" / "+stage,"",
-        "| # | ID | Equation | Tier | Route length | Objective / skills | Difficulty features |",
-        "|---:|---|---|---|---:|---|---|");
+        "| # | ID | Equation | Tier | Proven minimum | Authored route | Objective / skills | Difficulty features |",
+        "|---:|---|---|---|---:|---:|---|---|");
       for(const row of section){
         const record=[
           row.number,row.id,row.equation,
           row.difficulty.tier+" — "+row.difficulty.label,
           row.difficulty.complexitySignals.benchmarkMoves,
+          row.difficulty.complexitySignals.authoredRouteMoves??"—",
           row.skillIds.join(", "),
           flags(row)
         ];
