@@ -94,8 +94,9 @@ function checkPiles(data,count,{expectedLabel=count>10}={}){
 
 test("all Guided weights form 3+2 floor piles, including 1–4 remainders and >10 plaques @quick @smoke",async({page})=>{
   test.setTimeout(105000);
-  // 5, 12 (5+5+2), 10, 16 (5+5+5+1), 25, 29 (5×5+4)
-  for(const [level,count] of [[1,5],[4,12],[6,10],[7,16],[8,25],[20,29]]){
+  // 5, 10 (no plaque), 11 (first plaque), 12 (5+5+2),
+  // 16 (5+5+5+1), 25, 29 (five full piles + four remainder).
+  for(const [level,count] of [[1,5],[6,10],[9,11],[4,12],[7,16],[8,25],[20,29]]){
     await openGuided(page,level);
     checkPiles(await measureWeights(page,"right"),count);
     await page.locator("#game-levels").click();
