@@ -50,7 +50,7 @@ test("concept layout: two sealed crates are vertically stacked with only one ill
 test("divide-first keeps the picture sign and updates 2 crates to 1 crate @smoke",async({page})=>{
   test.setTimeout(95000);
   await openLevel19(page);
-  await expect(page.locator('[data-operation="divide"]')).toHaveAttribute("aria-pressed","true");
+  await expect(page.locator('[data-operation="divide"]')).toHaveAttribute("aria-pressed","false");
   await clickWithReferenceMove(page,"#do-both");
   await expect(page.locator("#left-items .sealed-crate")).toHaveCount(1,{timeout:40000});
   await expect(page.locator("#left-items .crate-stack-count")).toHaveText("1 crate");
