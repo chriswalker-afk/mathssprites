@@ -309,15 +309,18 @@ function renderLevels() {
     const finished=slots.filter(slot=>current.completed.includes(slot.id)).length;
     const cards=slots.map(slot=>{
       const done=current.completed.includes(slot.id);
+      const historical=!done&&!!current.historical?.[slot.id];
       const open=isCampaignPlayable(world.id,stage.id,slot.id);
       const highlighted=slot.id===suggested?.id;
-      const tag=done?"Completed":open?"Ready to play":"Locked";
-      const status=done?"complete":open?"ready":"locked";
+      const tag=done?"Completed":historical?"Previously completed; revised puzzle":
+        open?"Ready to play":"Locked";
+      const status=done?"complete":historical?"revised":open?"ready":"locked";
       const rating=campaignStars(campaign,world.id,stage.id,slot.id);
       const best=current.bestMoves[slot.id];
       const ratingLabel=rating?rating+" of 3 stars, best "+best+" "+
-        (best===1?"move":"moves"):done?"Previously completed, replay to earn stars":
-        "Not rated yet";
+        (best===1?"move":"moves"):historical?
+          "Your earlier result is preserved; try the revised challenge to earn new stars":
+        done?"Previously completed, replay to earn stars":"Not rated yet";
       return '<button type="button" class="level-tile status-'+status+
         (highlighted?' level-next':'')+'" data-level="'+slot.number+
         '" data-level-id="'+clean(slot.id)+'"'+(open?"":" disabled")+
@@ -327,8 +330,9 @@ function renderLevels() {
         '<span class="tile-number">'+String(slot.number).padStart(2,"0")+'</span>'+
         '<span class="tile-name">'+clean(slot.title)+'</span>'+
         '<span class="tile-stars" data-stars="'+rating+'" aria-hidden="true">'+starGlyphs(rating)+'</span>'+
-        '<span class="tile-status">'+(done?"✓ ":open?"✦ ":"◇ ")+
-          (done&&!rating?"Completed · replay for stars":done?"Completed":open?"Play":"Locked")+'</span></button>';
+        '<span class="tile-status">'+(done?"✓ ":historical?"↻ ":open?"✦ ":"◇ ")+
+          (done&&!rating?"Completed · replay for stars":done?"Completed":
+            historical?"Revised · replay":open?"Play":"Locked")+'</span></button>';
     }).join("");
     return '<section class="chapter-group chapter-theme-'+(index+1)+
       (slots.length>0&&finished===slots.length?' chapter-complete':'')+

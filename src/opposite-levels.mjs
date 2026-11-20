@@ -12,6 +12,18 @@ import {OPPOSITE_APPRENTICE_RAW} from "./opposite-apprentice.mjs";
 
 export const OPPOSITE_OPERATIONS=Object.freeze(["remove","add","divide","multiply"]);
 export const OPPOSITE_KINDS=Object.freeze(["posX","negX","posOne","negOne"]);
+
+/**
+ * PR49 changes the actual mathematical/physical demand of these existing IDs.
+ * IDs and positions stay stable; old completions are archived separately
+ * rather than silently granting completion or stars for a revised puzzle.
+ * A revision is never a source of hints or a starting control selection.
+ */
+export const OPPOSITE_CONTENT_REVISIONS=Object.freeze({
+ guided:Object.freeze([5,6,9,10,18]),
+ independent:Object.freeze([5,6,15]),
+ notebook:Object.freeze([5,6,8])
+});
 export const OPPOSITE_CHAPTERS=Object.freeze({
  guided:[
   {id:"balloon-basics",title:"Balloons Make Zero",description:"Balloons lift their opposite weights away."},
@@ -87,6 +99,7 @@ function stageLevels(id,rows){
     };
     const level=Object.freeze({
       id:levelId,title,number,solution,
+      contentRevision:OPPOSITE_CONTENT_REVISIONS[id].includes(number)?2:1,
       left:Object.freeze(physical(west)),right:Object.freeze(physical(east)),
       chapter:String(chapterIndex+1).padStart(2,"0")+" · "+chapters[chapterIndex].title,
       prompt:INTRO[id][chapterIndex],
