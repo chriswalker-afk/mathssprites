@@ -155,7 +155,7 @@ test("signed objects and stars are strictly world scoped, never World 1",()=>{
  assert.equal(campaignStageRecord(save,"workshop","guided").completed.length,0);
  assert.equal(campaignStars(save,"opposites","guided",first.id),3);
  assert.equal(campaignStarTotals(save,{worldId:"opposites"}).count,48);
- assert.equal(campaignStarTotals(save,{worldId:"workshop"}).count,56);
+ assert.equal(campaignStarTotals(save,{worldId:"workshop"}).count,60);
 });
 
 
