@@ -13,7 +13,9 @@ export function crateFloorLandingPlan(width,floorY,spriteCount,weightCount){
   const total=spriteCount+weightCount;
   const spriteWidth=46,weightWidth=29,space=4;
   const natural=spriteCount*spriteWidth+weightCount*weightWidth+(total-1)*space;
-  const scale=Math.min(1,Math.max(.3,(width-18)/natural));
+  // Never overflow a narrow chamber, even when a future puzzle contains
+  // more crates than this initial two-crate prototype.
+  const scale=Math.min(1,(width-18)/natural);
   const gap=space*scale;
   const occupied=natural*scale;
   let x=(width-occupied)/2;
