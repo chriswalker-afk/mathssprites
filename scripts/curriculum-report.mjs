@@ -5,7 +5,7 @@
  *   npm run curriculum -- --world opposites --stage guided
  *   npm run curriculum -- --json
  */
-import {canonical} from "../src/engine.mjs";
+import {canonical,room} from "../src/engine.mjs";
 import {WORLD1_LEVELS} from "../src/worlds.mjs";
 import {INDEPENDENT_LEVELS} from "../src/independent-levels.mjs";
 import {APPRENTICE_LEVELS} from "../src/apprentice-levels.mjs";
@@ -27,7 +27,8 @@ if(stageOnly&&!["guided","independent","notebook"].includes(stageOnly))
   throw new Error("Unknown stage: "+stageOnly);
 
 function algebraicExpression(raw){
-  const {x,x2,constant}=canonical(raw);
+  // Sealed crates need the same zero-filled normalisation as live rooms.
+  const {x,x2,constant}=canonical(room(raw));
   const terms=[];
   for(const [coefficient,symbol] of [[x2,"x²"],[x,"x"]]){
     if(!coefficient)continue;
