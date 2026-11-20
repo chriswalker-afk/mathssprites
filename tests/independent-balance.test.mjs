@@ -30,24 +30,28 @@ const MODEL_ROUTES=[
  [removeSprites(1),removeWeights(2)],
  [removeSprites(1),removeWeights(1),divide(2)],
  [removeSprites(2),removeWeights(3),divide(2)],
- [divide(2),removeSprites(1),removeWeights(7)]
+ [divide(2),removeSprites(1),removeWeights(7)],
+ [divide(2),{op:"unpack",side:"left"},removeWeights(1)],
+ [divide(3),{op:"unpack",side:"left"},removeWeights(2)],
+ [divide(2),{op:"unpack",side:"left"},removeWeights(4)],
+ [{op:"unpack",side:"left"},removeSprites(2),removeWeights(6)]
 ];
 
-test("Stage 2 has 16 different valid positive whole-number puzzles in four chapters",()=>{
-  assert.equal(INDEPENDENT_CHAPTERS.length,4);
-  assert.equal(INDEPENDENT_LEVELS.length,16);
-  assert.equal(new Set(INDEPENDENT_LEVELS.map(slot=>slot.id)).size,16);
+test("Stage 2 has 20 different valid positive whole-number puzzles in five chapters",()=>{
+  assert.equal(INDEPENDENT_CHAPTERS.length,5);
+  assert.equal(INDEPENDENT_LEVELS.length,20);
+  assert.equal(new Set(INDEPENDENT_LEVELS.map(slot=>slot.id)).size,20);
   assert.deepEqual(INDEPENDENT_LEVELS.map(slot=>slot.number),
-    Array.from({length:16},(_,i)=>i+1));
+    Array.from({length:20},(_,i)=>i+1));
   assert.deepEqual(INDEPENDENT_LEVELS.map(slot=>slot.chapterIndex),
-    Array.from({length:16},(_,i)=>Math.floor(i/4)));
+    Array.from({length:20},(_,i)=>Math.floor(i/4)));
   for(const slot of INDEPENDENT_LEVELS){
     const lvl=slot.level;
     assert.equal(slot.available,true,slot.id);
     assert.ok(validInitialLevel(lvl),"balanced and physically valid: "+slot.id);
     assert.equal(lvl.lockPositive,true,slot.id);
     assert.equal(lvl.quantityMode,"positive");
-    assert.deepEqual(lvl.allowedOperations,WORLD1_OPERATIONS);
+    assert.deepEqual(lvl.allowedOperations,lvl.groupedPrototype?[...WORLD1_OPERATIONS,"unpack"]:WORLD1_OPERATIONS);
     assert.equal(Number.isInteger(lvl.solution)&&lvl.solution>0,true);
     assert.equal(lvl.solution<=12,true);
     for(const side of [lvl.left,lvl.right]){
@@ -66,6 +70,16 @@ test("every puzzle has a complete checked manual route, with a genuine provision
     let state=initialState(slot.level);
     assert.equal(isSolved(state),false,slot.id+" should require a move");
     for(const [j,action] of MODEL_ROUTES[i].entries()){
+      if(action.op==="unpack"){
+        const opened=perform(state,action,"auto");
+        assert.equal(opened.ok,true,slot.id+" local crate rewrite");
+        assert.equal(opened.state.history[j].mode,"rewrite");
+        assert.equal(opened.state.history.length,j+1);
+        assert.equal(balanceDifference(opened.state),0);
+        assert.equal(opened.state.pending,null);
+        state=opened.state;
+        continue;
+      }
       const side=(i+j)%2?"right":"left"; // both starting directions work
       const opposite=side==="left"?"right":"left";
       const before=equation(state);
@@ -110,10 +124,11 @@ test("either room can be first; unequal second hand actions are rejected without
 test("every Stage 2 level is directly selectable without completion or teacher access",()=>{
   for(const slot of INDEPENDENT_LEVELS)
     assert.equal(isIndependentUnlocked(slot.number,[],false),true);
-  assert.equal(isIndependentUnlocked(17,[],true),false);
+  assert.equal(isIndependentUnlocked(21,[],true),false);
   assert.equal(nextIndependentLevel(1,[]),findIndependentLevel(2));
-  assert.equal(nextIndependentLevel(16,[],false),null);
-  assert.equal(findIndependentLevel(17),null);
+  assert.equal(nextIndependentLevel(16,[],false)?.number,17);
+  assert.equal(nextIndependentLevel(20,[],false),null);
+  assert.equal(findIndependentLevel(21),null);
 });
 
 test("Stage 2 storage preserves Stage 1 bytes and handles denied storage",()=>{
@@ -128,7 +143,7 @@ test("Stage 2 storage preserves Stage 1 bytes and handles denied storage",()=>{
   assert.deepEqual(loadStage2Progress(storage),first);
   assert.equal(map.get(PROGRESS_KEY),original,"Stage 1 storage is never touched");
   assert.deepEqual(loadProgress(storage),stage1);
-  assert.deepEqual(normalizeStage2Progress({completed:[1,1,"2",17,-1,3],lastPlayed:99}),
+  assert.deepEqual(normalizeStage2Progress({completed:[1,1,"2",21,-1,3],lastPlayed:99}),
     {completed:[1,3],lastPlayed:1});
   assert.deepEqual(loadStage2Progress({getItem(){throw Error("storage denied")}}),
     {completed:[],lastPlayed:1});
