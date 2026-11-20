@@ -466,7 +466,7 @@ function render() {
   $("level-title").textContent = lvl.title;
   if(campaignWorldId)document.body.dataset.campaignWorld=campaignWorldId;
   else delete document.body.dataset.campaignWorld;
-  $("level-prompt").textContent = lvl.prompt;
+  $("level-prompt").textContent = lvl.groupedPrototype?"":lvl.prompt;
   $("chapter-status").hidden = campaignLevelNumber === null;
   // Existing World 1 teacher cues remain, but future mathematical worlds
   // get their own stage/chapter facts rather than World 1's fixed 20/16 map.
@@ -1764,6 +1764,7 @@ function startLevel(index, quantityMode, levelOverride=null, campaignNumber=null
     : state.quantityMode==="signed"
       ? "Signed objects are active: white sprites and balloons are opposites. Make a zero pair!"
       : "Positive objects only. Signed objects can be enabled with Maths mode.";
+  if(level.groupedPrototype)$("feedback").textContent="";
   render();
 }
 function miniItems(r) {
@@ -1976,6 +1977,7 @@ function processReplayEvent(event) {
       updateReplayEndNote();
       break;
   }
+  if(currentLevel().groupedPrototype)$("writing-status").textContent="";
 }
 function tickReplay(timestamp) {
   replayFrame = null;
@@ -2060,7 +2062,8 @@ function drawReplay(index, { animate = !reducedMotion, complete = false } = {}) 
     ? buildWritingTimeline(lines, { opening: replayIndex === 0,pace })
     : { events: [], durationMs: complete ? 0 : 3900 };
   $("pencil").hidden = true;
-  $("writing-status").textContent = complete ? "This panel's algebra is fully written."
+  $("writing-status").textContent = currentLevel().groupedPrototype?"":complete
+    ? "This panel's algebra is fully written."
     : reducedMotion ? "Complete algebra shown, without animation."
     : replayIndex === 0 ? "The pencil is about to reveal the hidden equation..."
     : "First the hand replays the move, then the pencil writes...";
