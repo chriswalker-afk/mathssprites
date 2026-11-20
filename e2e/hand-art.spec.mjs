@@ -1,3 +1,4 @@
+import {clickWithReferenceMove} from "./reference-move-helper.mjs";
 import { test, expect } from "@playwright/test";
 
 test.beforeEach(async ({page}) => {
@@ -32,7 +33,7 @@ test("remove animates open hand, closing fingers, pickup and lift BEFORE changin
   await observeHand(page);
   const finger=page.locator("#hand .digit-index");
   const openTransform=await finger.evaluate(el=>getComputedStyle(el).transform);
-  await page.locator("#do-both").click();
+  await clickWithReferenceMove(page,"#do-both");
   await expect(page.locator("#hand")).toHaveAttribute("data-phase","grip");
   await page.waitForTimeout(110);
   const gripTransform=await finger.evaluate(el=>getComputedStyle(el).transform);
@@ -58,7 +59,7 @@ test("remove animates open hand, closing fingers, pickup and lift BEFORE changin
 test("add enters holding a weight, visibly releases it and withdraws empty",async ({page})=>{
   await observeHand(page);
   await page.locator('[data-operation="add"]').click();
-  await page.locator("#do-both").click();
+  await clickWithReferenceMove(page,"#do-both");
   await expect(page.locator("#hand")).toHaveAttribute("data-phase","carry");
   await expect(page.locator("#hand-cargo")).toBeVisible();
   await expect(page.locator("#left-items .weight")).toHaveCount(4);
@@ -76,7 +77,7 @@ test("add enters holding a weight, visibly releases it and withdraws empty",asyn
 test("a grouping operation drops real baskets and the hand carries them away individually",async ({page})=>{
   test.setTimeout(65000);
   await page.locator("#level-select").selectOption("1");
-  await page.locator("#do-both").click();
+  await clickWithReferenceMove(page,"#do-both");
   await expect(page.locator("#left-items .division-stage")).toHaveAttribute("data-phase","ready",{timeout:12000});
   await expect(page.locator("#left-items .basket-row > .group-basket")).toHaveCount(3);
   await expect(page.locator("#right-items .basket-row > .group-basket")).toHaveCount(3);
@@ -92,7 +93,7 @@ test("a grouping operation drops real baskets and the hand carries them away ind
 test("new hand remains legible and reaches into the room on mobile",async ({page})=>{
   await page.setViewportSize({width:390,height:844});
   await page.reload();
-  await page.locator("#do-both").click();
+  await clickWithReferenceMove(page,"#do-both");
   await expect(page.locator("#left-items .weight")).toHaveCount(0);
   const overlap=await page.evaluate(()=>{
     const art=document.querySelector("#hand svg").getBoundingClientRect();
