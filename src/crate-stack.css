@@ -3,7 +3,8 @@
    contents sign, and ONE count plaque pointing at the entire stack.
 
    IMPORTANT: every crate remains a DIRECT .token child of .floor-track.
-   The division-basket code moves real individual crates into real baskets.
+   When dividing a crate-only room, the hand takes ORIGINAL unwanted crates
+   directly; wicker baskets remain for ordinary loose-object division.
    The count plaque and pictogram are decoration, never algebraic tokens.
 */
 .room-items .items-grid.floor-track:has(> .sealed-crate){
@@ -232,8 +233,8 @@
   opacity:0;visibility:hidden;
 }
 
-/* Separate crate objects still travel one-per-basket. The sign is attached
-   to only the designated marked crate, not duplicated into each basket. */
+/* Legacy basket styles for mixed crate/loose-object rooms only. The new
+   crate-only path never uses these miniature basket appearances. */
 .group-basket .token.sealed-crate,
 .hand-cargo .basket-in-hand .token.sealed-crate,
 .division-stage .group-basket .token.sealed-crate{
