@@ -25,8 +25,16 @@ const write=(storage,key,value)=>{
   try{(storage??memoryStorage())?.setItem(key,JSON.stringify(value))}catch{}
 };
 const stageTemplate=stage=>({
-  completed:[],lastPlayed:stage.levels[0]?.id??null,bestMoves:{}
+  completed:[],lastPlayed:stage.levels[0]?.id??null,bestMoves:{},
+  completedRevisions:{},historical:{}
 });
+const contentRevision=slot=>slot.level?.contentRevision||1;
+const validMoveCount=value=>Number.isInteger(value)&&value>=1&&value<=100000;
+const archiveEntry=(revision,moves)=>{
+  const result={revision:Number.isInteger(revision)&&revision>=1?revision:1};
+  if(validMoveCount(moves))result.bestMoves=moves;
+  return result;
+};
 export function blankCampaignRecords(registry=CAMPAIGN_REGISTRY){
   return {version:2,worlds:Object.fromEntries(registry.map(world=>[
     world.id,{stages:Object.fromEntries(world.stages.map(stage=>[stage.id,stageTemplate(stage)]))}
@@ -39,13 +47,29 @@ export function normalizeCampaignRecords(value,registry=CAMPAIGN_REGISTRY){
     const dest=result.worlds[world.id].stages[stage.id];
     const validIds=new Set(stage.levels.map(x=>x.id));
     const completed=new Set(Array.isArray(source.completed)?source.completed:[]);
-    dest.completed=stage.levels.filter(s=>completed.has(s.id)).map(s=>s.id);
     dest.lastPlayed=validIds.has(source.lastPlayed)?source.lastPlayed:stage.levels[0]?.id??null;
     for(const slot of stage.levels){
-      const best=source.bestMoves?.[slot.id];
-      const optimal=stageOptimalMoves(stage,slot.id);
-      if(Number.isInteger(best)&&best>=Math.max(1,optimal||1)&&best<=100000)
-        dest.bestMoves[slot.id]=best;
+      const id=slot.id,revision=contentRevision(slot);
+      const previous=source.historical?.[id];
+      if(previous&&Number.isInteger(previous.revision)&&previous.revision>=1)
+        dest.historical[id]=archiveEntry(previous.revision,previous.bestMoves);
+      const savedRevision=source.completedRevisions?.[id];
+      const best=source.bestMoves?.[id];
+      // An old World 2 save has no revision stamp. Preserve its completed
+      // challenge and best score as historical, but do not award completion of
+      // a *different* equation under the same stable ID.
+      if(revision>1&&savedRevision!==revision){
+        if(completed.has(id)||validMoveCount(best))
+          dest.historical[id]=archiveEntry(savedRevision,best);
+        continue;
+      }
+      if(completed.has(id)){
+        dest.completed.push(id);
+        if(revision>1)dest.completedRevisions[id]=revision;
+      }
+      const optimal=stageOptimalMoves(stage,id);
+      if(validMoveCount(best)&&best>=Math.max(1,optimal||1))
+        dest.bestMoves[id]=best;
     }
   }
   return result;
@@ -119,6 +143,8 @@ export function withCampaignCompleted(value,worldId,stageId,levelId,moves,regist
   const entry=data.worlds[worldId].stages[stageId];
   const done=new Set([...entry.completed,levelId]);
   entry.completed=stage.levels.filter(slot=>done.has(slot.id)).map(slot=>slot.id);
+  const slot=findCampaignLevel(worldId,stageId,levelId,registry);
+  if(contentRevision(slot)>1)entry.completedRevisions[levelId]=contentRevision(slot);
   const next=nextCampaignLevel(worldId,stageId,levelId,registry);
   entry.lastPlayed=next?.id||levelId;
   const optimal=stageOptimalMoves(stage,levelId);
