@@ -208,6 +208,7 @@ for(const size of scaledLaptopViews){
     await inView(page,"#scene");
     await inView(page,".scale-base");
     await inView(page,"#do-both");
+    await expect(page.locator("#amount-value")).toHaveText("—");
     await inView(page,"#amount-up");
     await noDocumentScroll(page);
     // A button can have a viewport-bound rectangle while still being clipped
