@@ -37,9 +37,9 @@ test("only eleven or more loose weights receive one crate-style count plaque",()
   for(let n=0;n<=10;n++)assert.equal(weightCountPlaque(n),"",n);
   for(const n of [11,12,14,15,16,23,25,29,48]){
     const text=weightCountPlaque(n);
-    assert.match(text,/class="crate-stack-count weight-stack-count"/);
+    assert.match(text,/class="weight-stack-count"/);
     assert.match(text,new RegExp(">"+n+" weights<"));
-    assert.match(text,/crate-count-connector/);
+    assert.match(text,/weight-count-connector/);
     assert.match(text,/aria-hidden="true"/);
     assert.equal((text.match(/weight-stack-count/g)||[]).length,1);
   }
