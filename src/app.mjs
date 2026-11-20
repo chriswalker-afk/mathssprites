@@ -192,6 +192,26 @@ function renderRoom(side, r, groupCount) {
     resizeFloor(side);
     return;
   }
+  if(!multiplying&&basketCount&&crateCount(r)&&!crateOnlyDivision){
+    // Mixed division: retain a whole sealed group by discarding surplus
+    // original crates. ONLY the loose objects enter real wicker baskets.
+    // Neither the number of objects nor the engine transaction is invented
+    // by this temporary visual partition.
+    const loose={...r,crates:null};
+    const sealed={...r,posX:0,negX:0,posX2:0,posOne:0,negOne:0};
+    node.innerHTML='<div class="mixed-crate-division-stage">'+
+      '<div class="crate-division-stage" data-phase="waiting">'+
+      '<div class="floor-shell"><div class="items-grid floor-track" data-layout="floor"'+crateAttr+'>'+
+      crateMarkup(sealed)+'</div></div></div>'+
+      '<div class="division-stage" data-operation="divide" data-phase="waiting" '+
+      'style="--division-factor:'+basketCount+'">'+
+      '<div class="division-source floor-shell"><div class="items-grid floor-track" data-layout="floor">'+
+      allTokens(loose,false,side)+'</div></div>'+
+      '<div class="basket-row" aria-label="'+basketCount+' whole groups of loose objects">'+
+      divisionBasketMarkup(basketCount)+'</div></div></div>';
+    resizeFloor(side);
+    return;
+  }
   if (basketCount) {
     // Both inverse operations use the SAME solid wicker stage. Multiplication
     // keeps originals on the floor until the first basket lands and receives
@@ -220,11 +240,13 @@ function renderRoom(side, r, groupCount) {
 // Scale the entire horizontal row, never wrap it into multiple rows.
 function resizeFloor(side) {
   const room = $(side + "-items");
-  const track = room.querySelector(".floor-track");
-  if (!track) return;
-  const width = track.scrollWidth || track.getBoundingClientRect().width;
-  const fit = floorScaleToFit(room.clientWidth, width);
-  track.style.setProperty("--floor-scale", fit.toFixed(4));
+  for(const track of room.querySelectorAll(".floor-track")){
+    const width=track.scrollWidth||track.getBoundingClientRect().width;
+    const container=track.closest(".mixed-crate-division-stage")
+      ?track.closest(".floor-shell").clientWidth:room.clientWidth;
+    const fit=floorScaleToFit(container,width);
+    track.style.setProperty("--floor-scale",fit.toFixed(4));
+  }
 }
 window.addEventListener("resize", () => {
   for (const side of ["left", "right"]) resizeFloor(side);
@@ -351,7 +373,9 @@ function renderNotebookVisibility() {
   $("notebook-signed-operations").hidden=currentLevel().quantityMode!=="signed";
   $("notebook-operation-tip").textContent=currentLevel().quantityMode==="signed"
     ?"Use +(−x) for a pale sprite or −(−1) to remove a balloon. Whole objects only."
-    :"Choose an operation for both sides, not an answer. Use −x to remove a dark sprite.";
+    :currentLevel().groupedPrototype
+      ?"Choose a balanced operation on both sides, or expand ONE sealed expression. Neither choice is preselected."
+      :"Choose an operation for both sides, not an answer. Use −x to remove a dark sprite.";
   $("notebook-level-prompt").textContent=campaign
     ? currentLevel().prompt
     : "You already have the equation. Choose an operation for both sides. The maths editor calculates the new equation automatically; the sprites will replay your route.";
@@ -398,6 +422,12 @@ function renderNotebookMathEditor(){
   const text=input.value;
   const parsed=parseNotebookOperation(text);
   const preview=previewNotebookOperation(notebookSession,text);
+  for(const button of document.querySelectorAll("[data-notebook-expand]")){
+    const side=button.dataset.notebookExpand;
+    button.hidden=!notebookSession.level.groupedPrototype||
+      !crateCount(notebookSession.state[side]);
+    button.disabled=notebookPhase!=="writing"||busy;
+  }
   const current=$("notebook-current-math");
   current.innerHTML=notebookEquationMathML(notebookSession.state);
   current.setAttribute("aria-label",equation(notebookSession.state));
@@ -422,6 +452,8 @@ function renderNotebookMathEditor(){
     arrow.textContent="Operation on both sides";
   }
   $("notebook-apply").disabled=!preview.ok||notebookPhase!=="writing"||busy;
+  $("notebook-apply").textContent=parsed.ok&&parsed.action.op==="unpack"
+    ?"Expand selected expression →":"Apply to both sides →";
   input.setAttribute("aria-invalid",String(!!text.trim()&&!preview.ok&&
     preview.code!=="incomplete"));
   const sign=(parsed.ok?parsed.display[0]:text.trim().slice(0,1)).replace("-","−");
@@ -484,6 +516,8 @@ function render() {
   if(campaignWorldId)document.body.dataset.campaignWorld=campaignWorldId;
   else delete document.body.dataset.campaignWorld;
   $("level-prompt").textContent = lvl.groupedPrototype?"":lvl.prompt;
+  document.body.classList.toggle("grouped-physical-level",
+    !!lvl.groupedPrototype&&!notebookSession);
   $("chapter-status").hidden = campaignLevelNumber === null;
   // Existing World 1 teacher cues remain, but future mathematical worlds
   // get their own stage/chapter facts rather than World 1's fixed 20/16 map.
@@ -916,6 +950,13 @@ function animateClassFrame() {
 async function handAct(side, action, applyAtContact) {
   // Whole sealed crates do not need baskets: physically throw away the
   // unwanted original crates and retain the labelled sealed group.
+  if(action.op==="divide"&&!action.fractionAttempt&&
+     $(side+"-items").querySelector(".mixed-crate-division-stage")){
+    await playCrateDivision({side,factor:action.factor,reduced:reducedMotion,
+      applyAtContact:async()=>{},sleep,resetHand});
+    return playDivisionBaskets({side,factor:action.factor,reduced:reducedMotion,
+      applyAtContact,sleep});
+  }
   if(action.op==="divide"&&!action.fractionAttempt&&
      $(side+"-items").querySelector(".crate-division-stage"))
     return playCrateDivision({side,factor:action.factor,reduced:reducedMotion,
@@ -1492,18 +1533,16 @@ async function guidedMove() {
  * The hand physically unlatches the crates before the actors become loose.
  * This action is only available in the specifically authored Guided level.
  */
-async function unpackCrates(){
-  if(busy||notebookSession||!currentLevel().groupedPrototype||
-     campaignStage!=="guided"||isSolved(state)||state.pending)return;
-  const side=crateCount(state.left)?"left":crateCount(state.right)?"right":null;
-  if(!side)return;
-  const action={op:"unpack",side};
-  // Never start a visual beat unless the pure engine has already validated
-  // that the complete expansion preserves this room's mathematical value.
-  const result=perform(state,action,"auto");
-  if(!result.ok)return notify(result.reason);
+/**
+ * Sealed groups are one-room representations, never unequal algebra moves.
+ * The same in-scene crowbar and bouncing contents play in Guided, Independent
+ * and in the verified notebook replay. Commit AFTER every original token
+ * has physically emerged; Undo therefore restores a closed crate atomically.
+ */
+async function playUnpackChoreography(side,result){
   const plan=crateExpansionPlan(state[side]);
   const levelIdAtStart=currentLevel().id;
+  const wasBusy=busy;
   let view=null,committed=false;
   busy=true;
   crateExpansionRunning=true;
@@ -1516,33 +1555,42 @@ async function unpackCrates(){
       items:$(side+"-items"),plan,tokenMarkup:token,reducedMotion
     });
     activeCrateView=view;
-    render(); // Enable the in-animation pause button; no room rebuild.
+    render();
     for(const step of plan.physicalPhases.filter(step=>step.phase==="open")){
       view.announce("opening");
-      await handAct(side,{...action,crateIndex:step.crateIndex},async()=>{
+      await handAct(side,{op:"unpack",side,crateIndex:step.crateIndex},async()=>{
         view.openCrate(step.crateIndex);
         await view.hold(reducedMotion?130:340);
       });
     }
-    // All sprites bounce together onto the REAL room floor. Only then do the
-    // wooden fronts fall down to reveal the weights, which physically tumble
-    // out of their original crates. There is no instructional counting tray.
     await view.playReleaseSteps();
     if(currentLevel().id!==levelIdAtStart)
-      throw new Error("Crate animation was interrupted by a level change.");
-    state=result.state; // ONE undoable identity rewrite after final settling.
+      throw new Error("Crate animation interrupted by level change.");
+    state=result.state;
     committed=true;
-  }catch(error){
+  }catch{
     setFeedback("The crates are closed again.","warning");
   }finally{
     view?.destroy();
     activeCrateView=null;
     crateExpansionRunning=false;
-    busy=false;
+    busy=wasBusy;
     override=null;
     delete $(side+"-items").dataset.signature;
     render();
   }
+  return committed;
+}
+async function unpackCrates(){
+  // Opening is a value-preserving rewrite of ONE room. Unlike other actions
+  // it does not need a second hand visit, but cannot interrupt a pending pair.
+  if(busy||notebookSession||!currentLevel().groupedPrototype||
+     isSolved(state)||state.pending)return;
+  const side=crateCount(state.left)?"left":crateCount(state.right)?"right":null;
+  if(!side)return;
+  const result=perform(state,{op:"unpack",side},"auto");
+  if(!result.ok)return notify(result.reason);
+  const committed=await playUnpackChoreography(side,result);
   if(!committed)return;
   await finishTurn();
   if(!isSolved(state))setFeedback("");
@@ -1575,8 +1623,18 @@ async function replayNotebookWithSprites() {
       if(!result.ok)throw new Error("Checked notebook action became invalid");
       const next=result.state;
       const exact=["left","right"].every(side=>
-        TOKEN_KINDS.every(kind=>next[side][kind]===step.after[side][kind]));
+        TOKEN_KINDS.every(kind=>next[side][kind]===step.after[side][kind])&&
+        JSON.stringify(next[side].crates||null)===
+          JSON.stringify(step.after[side].crates||null));
       if(!exact)throw new Error("Notebook script disagrees with engine history");
+      if(action.op==="unpack"){
+        $("notebook-playback-message").textContent=
+          "Step "+(i+1)+" of "+script.length+": "+step.explanation;
+        if(!await playUnpackChoreography(action.side,result))
+          throw new Error("A checked group could not be opened in the scene");
+        if(i<script.length-1)await sleep(reducedMotion?120:450);
+        continue;
+      }
       const previews={
         left:previewRoomAction(previous.left,action,state.quantityMode,"left"),
         right:previewRoomAction(previous.right,action,state.quantityMode,"right")
@@ -2333,7 +2391,9 @@ function openNotebookLevel(level,number=null,context={}){
   $("notebook-operation").value="";
   notebookMessage(level.quantityMode==="signed"
     ?"Choose a signed operation for both sides: +2, +(−x), −(−1), or ÷2. The editor calculates the result."
-    :"Choose an operation for BOTH sides, such as −3, −x or ÷2. The editor calculates the next equation.");
+    :level.groupedPrototype
+      ?"Choose a balanced operation, or expand the grouped expression in one room. The editor calculates the result."
+      :"Choose an operation for BOTH sides, such as −3, −x or ÷2. The editor calculates the next equation.");
   renderNotebookPaper();
   render();
   $("notebook-operation").focus({preventScroll:true});
@@ -2362,6 +2422,18 @@ $("notebook-hint").addEventListener("click",()=>{
 });
 /** Operation editor: clicking a maths sign or keypad key edits only the
  * proposed operation; the original equation and engine history stay intact. */
+document.querySelectorAll("[data-notebook-expand]").forEach(button=>{
+  button.addEventListener("click",()=>{
+    if(!notebookSession||notebookPhase!=="writing"||busy)return;
+    const side=button.dataset.notebookExpand;
+    if(!notebookSession.level.groupedPrototype||
+      !crateCount(notebookSession.state[side]))return;
+    const input=$("notebook-operation");
+    input.value="expand "+side;
+    input.dispatchEvent(new Event("input",{bubbles:true}));
+    input.focus({preventScroll:true});
+  });
+});
 document.querySelectorAll("[data-notebook-insert]").forEach(button=>{
   button.addEventListener("click",()=>{
     if(!notebookSession||notebookSession.level.quantityMode!=="signed"||

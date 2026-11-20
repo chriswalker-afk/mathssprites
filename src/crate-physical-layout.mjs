@@ -5,20 +5,25 @@
  * demonstration tray. Returns bounded landing slots for REAL token artwork.
  * The calculation adapts to compact phones, tall desktops and 1/2/N crates.
  */
-export function crateFloorLandingPlan(width,floorY,spriteCount,weightCount){
+export function crateFloorLandingPlan(width,floorY,spriteCount,weightCount,
+  {leftInset=0,rightInset=0}={}){
   if(!Number.isFinite(width)||width<100||!Number.isFinite(floorY)||
       !Number.isInteger(spriteCount)||!Number.isInteger(weightCount)||
       spriteCount<0||weightCount<0||spriteCount+weightCount<1)
     throw new RangeError("Valid chamber geometry and whole object counts are required.");
+  if(!Number.isFinite(leftInset)||!Number.isFinite(rightInset)||
+     leftInset<0||rightInset<0||leftInset+rightInset>=width)
+    throw new RangeError("Landing space must be inside the original room.");
+  const available=width-leftInset-rightInset;
   const total=spriteCount+weightCount;
   const spriteWidth=46,weightWidth=29,space=4;
   const natural=spriteCount*spriteWidth+weightCount*weightWidth+(total-1)*space;
   // Never overflow a narrow chamber, even when a future puzzle contains
   // more crates than this initial two-crate prototype.
-  const scale=Math.min(1,(width-18)/natural);
+  const scale=Math.min(1,Math.max(2,available-12)/natural);
   const gap=space*scale;
   const occupied=natural*scale;
-  let x=(width-occupied)/2;
+  let x=leftInset+(available-occupied)/2;
   const slots=[];
   for(let i=0;i<total;i++){
     const sprite=i<spriteCount;

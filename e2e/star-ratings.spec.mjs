@@ -30,9 +30,9 @@ test.beforeEach(async({page})=>{
   await page.goto("/");
 });
 
-test("all 48 implemented levels open for a new student with empty progress @quick @smoke",async({page})=>{
+test("all 56 World 1 implemented levels open for a new student with empty progress @quick @smoke",async({page})=>{
   await stages(page);
-  for(const [stage,n] of [["guided",20],["independent",16],["notebook",12]]){
+  for(const [stage,n] of [["guided",20],["independent",20],["notebook",16]]){
     const number={guided:1,independent:2,notebook:3}[stage];
     await expect(page.locator('[data-stage="'+stage+'"] button')).toHaveCount(1);
     await page.getByRole("button",{name:"Choose Stage "+number+" levels"}).click();

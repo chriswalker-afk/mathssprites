@@ -31,7 +31,7 @@ test("stage guidance is data-first, then method-based for later worlds",()=>{
 });
 test("all 48 existing campaign levels remain registered and open",()=>{
   const world=CAMPAIGN_REGISTRY.find(w=>w.id==="workshop");
-  assert.deepEqual(world.stages.map(s=>s.levels.length),[20,16,12]);
+  assert.deepEqual(world.stages.map(s=>s.levels.length),[20,20,16]);
   assert.ok(world.stages.every(s=>s.available&&s.levels.every(l=>l.available)));
   assert.equal(CAMPAIGN_REGISTRY.filter(w=>!w.available).length,2);
 });

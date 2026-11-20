@@ -29,7 +29,7 @@ test("the prototype replaces exactly the existing Guided Level 19 without changi
   assert.equal(starsForMoves(3,optimalMoves("guided",19)),3);
   assert.equal(level.solution,4);
   assert.equal(validInitialLevel(level),true);
-  assert.deepEqual(CAMPAIGN_REGISTRY[0].stages.map(s=>s.count),[20,16,12]);
+  assert.deepEqual(CAMPAIGN_REGISTRY[0].stages.map(s=>s.count),[20,20,16]);
 });
 test("a sealed crate has exactly x+3 value, not three added loose weights",()=>{
   const state=initialState(level);

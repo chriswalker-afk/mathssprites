@@ -11,7 +11,7 @@ async function masterFirstTwo(page){
       completed:Array.from({length:20},(_,i)=>i+1),lastPlayed:20
     }));
     localStorage.setItem("mathssprites.independent-progress.v1",JSON.stringify({
-      completed:Array.from({length:16},(_,i)=>i+1),lastPlayed:16
+      completed:Array.from({length:20},(_,i)=>i+1),lastPlayed:20
     }));
   });
   await page.reload();
@@ -35,7 +35,7 @@ async function applyOperation(page,expression){
   await page.locator("#notebook-operation").press("Enter");
 }
 
-test("Stage 3 and all twelve notebook levels are open without prior mastery",async({page})=>{
+test("Stage 3 and all sixteen notebook levels are open without prior mastery",async({page})=>{
   await page.locator('[data-screen="worlds"]').first().click();
   await page.getByRole("button",{name:"Explore stages"}).click();
   await expect(page.locator('[data-stage="notebook"] button')).toHaveCount(1);
@@ -45,8 +45,8 @@ test("Stage 3 and all twelve notebook levels are open without prior mastery",asy
   await page.getByRole("button",{name:"Explore stages"}).click();
   await expect(page.locator('[data-stage="notebook"] button')).toHaveCount(1);
   await page.getByRole("button",{name:"Choose Stage 3 levels"}).click();
-  await expect(page.locator(".chapter-group")).toHaveCount(3);
-  await expect(page.locator(".level-tile")).toHaveCount(12);
+  await expect(page.locator(".chapter-group")).toHaveCount(4);
+  await expect(page.locator(".level-tile")).toHaveCount(16);
   await expect(page.locator('[data-level="1"]')).toBeEnabled();
   await expect(page.locator('[data-level="2"]')).toBeEnabled();
   await expect(page.locator('[data-level="12"]')).toBeEnabled();
@@ -128,21 +128,21 @@ test("wrong or skipped steps leave campaign progress untouched, and one-step hin
   await expect(page.locator('[data-level="4"]')).toBeEnabled();
 });
 
-test("a fully mastered Stage 3 shows its own 12/12 banner and completion route",async({page})=>{
+test("a fully mastered Stage 3 shows its own 16/16 banner and completion route",async({page})=>{
   await masterFirstTwo(page);
   await page.evaluate(()=>localStorage.setItem("mathssprites.apprentice-progress.v1",
-    JSON.stringify({completed:Array.from({length:12},(_,i)=>i+1),lastPlayed:12})));
+    JSON.stringify({completed:Array.from({length:16},(_,i)=>i+1),lastPlayed:16})));
   await page.reload();
-  await expect(page.locator("#home-play")).toContainText("Replay Stage 3 · Level 12");
+  await expect(page.locator("#home-play")).toContainText("Replay Stage 3 · Level 16");
   await page.locator('[data-screen="worlds"]').first().click();
   await page.getByRole("button",{name:"Explore stages"}).click();
   await expect(page.locator('[data-stage="notebook"]')).toContainText("Stage mastered");
   await page.getByRole("button",{name:"Choose Stage 3 levels"}).click();
   await expect(page.locator("#world1-finale")).toContainText("Algebra Apprentice mastered");
-  await expect(page.locator("#world1-progress-bar")).toHaveJSProperty("max",12);
-  await expect(page.locator("#world1-progress-bar")).toHaveJSProperty("value",12);
-  await expect(page.locator(".chapter-complete")).toHaveCount(3);
-  await expect(page.locator(".level-tile.status-complete")).toHaveCount(12);
+  await expect(page.locator("#world1-progress-bar")).toHaveJSProperty("max",16);
+  await expect(page.locator("#world1-progress-bar")).toHaveJSProperty("value",16);
+  await expect(page.locator(".chapter-complete")).toHaveCount(4);
+  await expect(page.locator(".level-tile.status-complete")).toHaveCount(16);
 });
 
 test("Stage 3 remains usable on a phone, with keyboard entry and no squared controls",async({page})=>{

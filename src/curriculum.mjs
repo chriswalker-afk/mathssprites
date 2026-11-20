@@ -98,7 +98,9 @@ export const CURRICULUM_CHAPTERS=Object.freeze({
       chapter("A Sequence of Moves","Sequence and match changes while avoiding incomplete groups",
         ["matched-hands","two-step","fraction-avoidance"]),
       chapter("The Independent Experimenter","Solve reversed and two-sided balances independently",
-        ["matched-hands","variables-both-sides","reverse-orientation","strategy-choice"])
+        ["matched-hands","variables-both-sides","reverse-orientation","strategy-choice"]),
+      chapter("Inside the Crates","Decide whether to keep sealed groups intact or open them while matching both hand visits",
+        ["sealed-groups","matched-hands","strategy-choice","fraction-avoidance"])
     ]),
     notebook:Object.freeze([
       chapter("Written with You","Use an editor to record equivalent algebraic operations",
@@ -106,7 +108,9 @@ export const CURRICULUM_CHAPTERS=Object.freeze({
       chapter("Choose the Route","Write a purposeful multi-step, whole-number route",
         ["written-operations","two-step","fraction-avoidance","strategy-choice"]),
       chapter("Apprentice Challenges","Write efficient transformations of reversed and two-sided equations",
-        ["written-operations","variables-both-sides","reverse-orientation","strategy-choice"])
+        ["written-operations","variables-both-sides","reverse-orientation","strategy-choice"]),
+      chapter("Writing with Groups","Show equivalent bracket expansions as one-room rewrites, then choose balanced operations",
+        ["written-operations","sealed-groups","strategy-choice","two-step"])
     ])
   }),
   opposites:Object.freeze({
@@ -151,8 +155,8 @@ export const CURRICULUM_CHAPTERS=Object.freeze({
 export const DIFFICULTY_TIERS=Object.freeze({
   workshop:Object.freeze({
     guided:Object.freeze([1,1,1,2,2,2,2,3,3,3,3,4,3,4,4,4,4,4,5,5]),
-    independent:Object.freeze([2,2,2,2,2,2,3,3,3,3,3,4,4,4,5,5]),
-    notebook:Object.freeze([2,2,3,3,3,3,4,4,4,4,5,5])
+    independent:Object.freeze([2,2,2,2,2,2,3,3,3,3,3,4,4,4,5,5,3,4,4,5]),
+    notebook:Object.freeze([2,2,3,3,3,3,4,4,4,4,5,5,3,4,4,5])
   }),
   opposites:Object.freeze({
     guided:Object.freeze([2,2,2,3,3,3,4,4,3,4,4,4,4,4,5,5,5,4,5,5]),
@@ -181,8 +185,11 @@ const freezeList=values=>Object.freeze([...values]);
 
 function flagsFor(level){
   const left=level.left,right=level.right;
-  const leftHasVariable=sum(left,"posX")+sum(left,"negX")>0;
-  const rightHasVariable=sum(right,"posX")+sum(right,"negX")>0;
+  const hasVariable=r=>sum(r,"posX")+sum(r,"negX")+
+    sum(r?.crates,"count")*(sum(r?.crates?.contents,"posX")+
+      sum(r?.crates?.contents,"negX"))>0;
+  const leftHasVariable=hasVariable(left);
+  const rightHasVariable=hasVariable(right);
   const hasNegativeUnits=sum(left,"negOne")+sum(right,"negOne")>0;
   const hasNegativeSprites=sum(left,"negX")+sum(right,"negX")>0;
   return Object.freeze({

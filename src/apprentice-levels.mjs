@@ -1,6 +1,6 @@
 /**
  * World 1, Stage 3 — Algebra Apprentice.
- * Twelve notebook-first, strictly whole-number, physically representable
+ * Sixteen notebook-first, strictly whole-number, physically representable
  * linear equations. Each accepted notebook line must map to ONE engine move.
  */
 import {WORLD1_OPERATIONS} from "./worlds.mjs";
@@ -8,7 +8,8 @@ import {WORLD1_OPERATIONS} from "./worlds.mjs";
 export const APPRENTICE_CHAPTERS=Object.freeze([
  {title:"Written with You",description:"Choose balancing operations and see each next equation calculated; gradually work without prompts."},
  {title:"Choose the Route",description:"Decide which written transformation to make, even when more than one method works."},
- {title:"Apprentice Challenges",description:"Work independently with sprites on both sides and reversed equations."}
+ {title:"Apprentice Challenges",description:"Work independently with sprites on both sides and reversed equations."},
+ {title:"Writing with Groups",description:"Choose between equivalent bracket expansions and balanced operations."}
 ]);
 
 const raw=[
@@ -79,17 +80,41 @@ const raw=[
   prompt:"A challenging equation, several possible routes and no prompts. Let the sprites follow YOUR working.",
   left:{posX:5,posOne:17},right:{posX:2,posOne:29},solution:4,
   scaffold:{kind:"none"},
-  suggested:"You can remove shared sprites first. Some valid routes may add weights to make new groups possible."}
+  suggested:"You can remove shared sprites first. Some valid routes may add weights to make new groups possible."},
+  // Chapter 4 — the written brackets correspond to actual sealed groups.
+  {id:"apprentice-13",title:"Two sealed expressions",
+    prompt:"Your algebra now has grouped terms. Keep every written line equivalent.",
+    left:{crates:{count:2,contents:{posX:1,posOne:1}}},right:{posOne:8},solution:3,
+    groupedPrototype:true,scaffold:{kind:"model",heading:"A different grouped example",
+      text:"A group like 2(x + 2) is two identical collections. Opening it is a rewrite, not a change to both sides. Decide which route suits your equation."},
+    suggested:"Choose whole groups or expand one bracketed expression before continuing."},
+  {id:"apprentice-14",title:"Three whole expressions",
+    prompt:"Three identical sealed groups lead to an unknown amount.",
+    left:{crates:{count:3,contents:{posX:1,posOne:2}}},right:{posOne:21},solution:5,
+    groupedPrototype:true,scaffold:{kind:"first",heading:"Choose the representation",
+      text:"You may keep the sealed groups together or expand them. Choose the representation that makes your next operation sensible."},
+    suggested:"Three equal groups are represented, but you can also expand the left expression."},
+  {id:"apprentice-15",title:"A pair outside the groups",
+    prompt:"The groups are accompanied by loose weights. Plan a route without cutting objects.",
+    left:{crates:{count:2,contents:{posX:1,posOne:3}},posOne:2},right:{posOne:16},solution:4,
+    groupedPrototype:true,scaffold:{kind:"last",heading:"Think about the last step",
+      text:"The final equation is one sprite opposite its weights. How will the grouped expression become a usable line?"},
+    suggested:"Expand one side or simplify complete groups when possible. Use one algebraic change per line."},
+  {id:"apprentice-16",title:"The grouped final challenge",
+    prompt:"There are loose sprites outside the crates and more sprites opposite them. Write a complete, justified route.",
+    left:{crates:{count:2,contents:{posX:1,posOne:4}},posX:3},right:{posX:1,posOne:24},solution:4,
+    groupedPrototype:true,scaffold:{kind:"none"},
+    suggested:"The crates hold complete groups. Expanding a group is a local rewrite; other operations must affect both sides."}
 ];
 
-if(raw.length!==12||new Set(raw.map(level=>level.id)).size!==12)
- throw new Error("Stage 3 must contain exactly twelve distinct puzzles");
+if(raw.length!==16||new Set(raw.map(level=>level.id)).size!==16)
+ throw new Error("Stage 3 must contain exactly sixteen distinct puzzles");
 
 export const APPRENTICE_LEVELS=Object.freeze(raw.map((item,i)=>{
  const chapterIndex=Math.floor(i/4),number=i+1;
  const level=Object.freeze({...item,number,chapter:String(chapterIndex+1).padStart(2,"0")+
   " · "+APPRENTICE_CHAPTERS[chapterIndex].title,
-  quantityMode:"positive",lockPositive:true,allowedOperations:WORLD1_OPERATIONS});
+  quantityMode:"positive",lockPositive:true,allowedOperations:item.groupedPrototype?[...WORLD1_OPERATIONS,"unpack"]:WORLD1_OPERATIONS});
  return Object.freeze({number,id:level.id,title:level.title,chapterIndex,
   level,available:true,legacyIndex:0});
 }));

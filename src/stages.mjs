@@ -20,7 +20,7 @@ export const WORLD1_STAGES = Object.freeze([
   Object.freeze({
     id:"independent",number:2,title:"Independent Balance",
     tagline:"You control each room.",
-    description:"Make a move in one room, watch the scale tip, then restore the balance with a matching move in the other. Sixteen puzzles across four chapters.",
+    description:"Make a move in one room, watch the scale tip, then restore the balance with a matching move in the other. Twenty puzzles across five chapters.",
     method:"manual",count:INDEPENDENT_LEVELS.length,available:true,unlockAfter:"guided",
     icon:"↔",status:"playable"
   }),

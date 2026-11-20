@@ -84,7 +84,7 @@ test("completing every workshop level reveals the mastery banner and themed chap
   await page.evaluate(value=>localStorage.setItem("mathssprites.progress.v1",value),data);
   await page.reload();
   await page.locator('[data-screen="worlds"]').first().click();
-  await expect(page.locator('[data-world-art="workshop"] .world-progress')).toContainText("20 / 48 complete");
+  await expect(page.locator('[data-world-art="workshop"] .world-progress')).toContainText("20 / 56 complete");
   await page.getByRole("button",{name:"Explore stages"}).click();
   await page.getByRole("button",{name:"Choose Stage 1 levels"}).click();
   await expect(page.locator("#world1-finale")).toBeVisible();

@@ -79,11 +79,11 @@ const WORLD1_CAMPAIGN_STAGES=WORLD1_STAGES.map((stage)=>{
       intro:"Choose the operation. The hand mirrors it in both rooms.",
       finale:"All guided experiments complete. Try controlling each room in Independent Balance."},
     independent:{
-      levels:INDEPENDENT_LEVELS,chapters:INDEPENDENT_CHAPTERS,emblems:["↔","÷","→","✦"],
+      levels:INDEPENDENT_LEVELS,chapters:INDEPENDENT_CHAPTERS,emblems:["↔","÷","→","✦","▣"],
       intro:"Balance the rooms yourself: match each move on the other side.",
       finale:"You've balanced both rooms. Try recording each operation in Algebra Apprentice."},
     notebook:{
-      levels:APPRENTICE_LEVELS,chapters:APPRENTICE_CHAPTERS,emblems:["✎","≡","✦"],
+      levels:APPRENTICE_LEVELS,chapters:APPRENTICE_CHAPTERS,emblems:["✎","≡","✦","▣"],
       intro:"Choose each algebra operation. The editor calculates the equation; sprites replay your work.",
       finale:"All apprentice notebooks complete. Make your own equation in the Workshop."}
   };

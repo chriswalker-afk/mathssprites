@@ -30,8 +30,8 @@ test("Stage 2 and Stage 3 are selectable before Stage 1 is completed",async({pag
   await expect(page.locator('[data-stage="notebook"] button')).toHaveCount(1);
   await expect(page.locator("#world1-workshop button")).toHaveCount(1);
   await page.getByRole("button",{name:"Choose Stage 2 levels"}).click();
-  await expect(page.locator(".chapter-group")).toHaveCount(4);
-  await expect(page.locator(".level-tile")).toHaveCount(16);
+  await expect(page.locator(".chapter-group")).toHaveCount(5);
+  await expect(page.locator(".level-tile")).toHaveCount(20);
   await expect(page.locator('[data-level="1"]')).toBeEnabled();
   await expect(page.locator('[data-level="2"]')).toBeEnabled();
   await expect(page.locator('[data-level="16"]')).toBeEnabled();
@@ -119,8 +119,8 @@ test("Stage 2 has its own saved progress and cannot switch into Guided Mirror",a
   const stage1=await page.evaluate(()=>localStorage.getItem("mathssprites.progress.v1"));
   await page.locator("#game-levels").click();
   await expect(page.locator("#levels-stage-title")).toHaveText("Independent Balance");
-  await expect(page.locator("#level-sections .level-tile")).toHaveCount(16);
-  await expect(page.locator("#world1-progress-bar")).toHaveJSProperty("max",16);
+  await expect(page.locator("#level-sections .level-tile")).toHaveCount(20);
+  await expect(page.locator("#world1-progress-bar")).toHaveJSProperty("max",20);
   expect(await page.evaluate(()=>localStorage.getItem("mathssprites.progress.v1"))).toBe(stage1);
 });
 
@@ -144,7 +144,7 @@ test("Stage 2 chapter handovers and independent final mastery stay separate from
     localStorage.setItem("mathssprites.progress.v1",JSON.stringify({
       completed:Array.from({length:20},(_,i)=>i+1),lastPlayed:20}));
     localStorage.setItem("mathssprites.independent-progress.v1",JSON.stringify({
-      completed:Array.from({length:16},(_,i)=>i+1),lastPlayed:16}));
+      completed:Array.from({length:20},(_,i)=>i+1),lastPlayed:20}));
   });
   await page.reload();
   await expect(page.locator("#home-play")).toContainText("Continue Stage 3 · Level 1");
@@ -154,12 +154,12 @@ test("Stage 2 chapter handovers and independent final mastery stay separate from
   await expect(page.locator('[data-stage="notebook"] button')).toHaveCount(1);
   await page.getByRole("button",{name:"Choose Stage 2 levels"}).click();
   await expect(page.locator("#world1-finale")).toContainText("Independent Balance mastered");
-  await expect(page.locator("#world1-progress-bar")).toHaveJSProperty("value",16);
-  await expect(page.locator(".chapter-complete")).toHaveCount(4);
-  await expect(page.locator(".level-tile.status-complete")).toHaveCount(16);
+  await expect(page.locator("#world1-progress-bar")).toHaveJSProperty("value",20);
+  await expect(page.locator(".chapter-complete")).toHaveCount(5);
+  await expect(page.locator(".level-tile.status-complete")).toHaveCount(20);
   await page.locator('[data-level="13"]').click();
   await expect(page.locator("#chapter-briefing")).toContainText("Dark sprites appear in both rooms");
-  await expect(page.locator("#chapter-status")).toContainText("LEVEL 13 / 16");
+  await expect(page.locator("#chapter-status")).toContainText("LEVEL 13 / 20");
   await expect(page.locator('[data-operation="square"]')).toBeHidden();
   await expect(page.locator('[data-kind="negX"]')).toBeHidden();
 });
