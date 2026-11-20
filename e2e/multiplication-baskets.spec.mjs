@@ -1,3 +1,4 @@
+import {clickWithReferenceMove} from "./reference-move-helper.mjs";
 import {test,expect} from "@playwright/test";
 
 test.beforeEach(async({page})=>{
@@ -10,8 +11,8 @@ async function multiplyBy(page,factor){
   // Read the ACTUAL control rather than assuming a fixed default of three.
   const starting=Number((await page.locator("#amount-value").textContent()).trim());
   expect(Number.isInteger(starting)).toBe(true);
-  for(let n=starting;n<factor;n++)await page.locator("#amount-up").click();
-  for(let n=starting;n>factor;n--)await page.locator("#amount-down").click();
+  for(let n=starting;n<factor;n++)await clickWithReferenceMove(page,"#amount-up");
+  for(let n=starting;n>factor;n--)await clickWithReferenceMove(page,"#amount-down");
   await expect(page.locator("#amount-value")).toHaveText(String(factor));
 }
 
@@ -53,7 +54,7 @@ test("physical multiplication groups the original objects and hand-delivers full
     });
     window.__multiplicationObserver=observer;
   });
-  await page.locator("#do-both").click();
+  await clickWithReferenceMove(page,"#do-both");
   // Query recorded transitions as data, not the current moving frame.
   await expect.poll(()=>page.evaluate(()=>
     window.__multiplicationMilestones.some(s=>s.phase==="dropping"&&s.floor===3)
@@ -103,7 +104,7 @@ test("five wicker baskets on a small phone stay within each chamber",async({page
   test.setTimeout(90000);
   await page.setViewportSize({width:390,height:844});
   await multiplyBy(page,5);
-  await page.locator("#do-both").click();
+  await clickWithReferenceMove(page,"#do-both");
   const west=page.locator("#left-items .multiplication-stage");
   await expect(west).toHaveAttribute("data-phase","ready",{timeout:16000});
   await expect(west.locator(".group-basket")).toHaveCount(5);
@@ -132,7 +133,7 @@ test("reduced motion retains understandable groups without flying props",async({
   await page.locator("#motion-toggle").click();
   await expect(page.locator("#motion-toggle")).toHaveText("Motion: reduced");
   await multiplyBy(page,3);
-  await page.locator("#do-both").click();
+  await clickWithReferenceMove(page,"#do-both");
   const west=page.locator("#left-items .multiplication-stage");
   await expect(west).toHaveAttribute("data-phase","ready",{timeout:10000});
   await expect(west.locator(".group-basket")).toHaveCount(3);
@@ -148,13 +149,13 @@ test("manual multiplication commits the first room only, then the matching secon
   test.setTimeout(95000);
   await multiplyBy(page,2);
   await page.locator("#mode-select").selectOption("manual");
-  await page.locator("#left-action").click();
+  await clickWithReferenceMove(page,"#left-action");
   await expect(page.locator("#left-items .floor-track > .sprite-black")).toHaveCount(2,{timeout:25000});
   await expect(page.locator("#left-items .floor-track > .weight")).toHaveCount(4);
   await expect(page.locator("#right-items .floor-track > .weight")).toHaveCount(5);
   await expect(page.locator("#right-action")).toContainText("Match the move");
   await expect(page.locator("#replay-backdrop")).toBeHidden();
-  await page.locator("#right-action").click();
+  await clickWithReferenceMove(page,"#right-action");
   await expect(page.locator("#right-items .floor-track > .weight")).toHaveCount(10,{timeout:26000});
   await expect(page.locator("#left-action")).toBeEnabled({timeout:14000});
   await expect(page.locator("#right-items .multiplication-stage")).toHaveCount(0);
@@ -164,7 +165,7 @@ test("overflow multiplication keeps actual contents and uses wicker rather than 
   test.setTimeout(35000);
   await page.goto("/?preview=root-then-share");
   await multiplyBy(page,2);
-  await page.locator("#do-both").click();
+  await clickWithReferenceMove(page,"#do-both");
   await expect(page.locator("#left-items .multiplication-stage")).toHaveCount(0);
   await expect(page.locator("#right-items .multiplication-stage")).toHaveCount(0);
   await expect(page.locator("#hand-cargo .group-basket.basket-in-hand")).toBeVisible({timeout:10000});
