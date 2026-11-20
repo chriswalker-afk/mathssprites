@@ -9,7 +9,7 @@ async function openBrackets(page){
   await page.locator('[data-map-world="workshop"]').click();
   await page.locator('[data-map-stage="guided"]').click();
   await page.locator('[data-level="19"]').click();
-  await expect(page.locator("#level-title")).toHaveText("The sealed brackets");
+  await expect(page.locator("#level-title")).toHaveText("Sealed Crates");
   await expect(page.locator("#chapter-status")).toContainText("WORLD 1 · STAGE 1 · LEVEL 19");
   await expect(page.locator("#crate-controls")).toBeVisible();
   await expect(page.locator("#left-items .sealed-crate")).toHaveCount(2);
@@ -32,13 +32,13 @@ test("brackets are true separate glass-fronted objects, not loose hidden sprites
   await expect(page.locator(".crate-picture-sign")).toHaveCount(1);
   await expect(page.locator(".crate-stack-count")).toHaveText("2 crates");
   await expect(page.locator(".crate-contents-note:visible")).toHaveCount(0);
-  await expect(page.locator("#unpack-crates")).toHaveText(/Expand brackets/);
+  await expect(page.locator("#unpack-crates")).toHaveText(/Open crates/);
   await expect(page.locator("#unpack-crates")).toBeEnabled();
   await expect(page.locator('[data-operation="square"]')).toBeHidden();
   await expect(page.locator('[data-kind="negOne"]')).toBeHidden();
   await page.screenshot({path:"artifacts/pr38-initial-sealed-brackets.png",fullPage:true});
   await page.locator("#game-levels").click();
-  await expect(page.locator('[data-level="19"]')).toContainText("The sealed brackets");
+  await expect(page.locator('[data-level="19"]')).toContainText("Sealed Crates");
 });
 test("divide-first uses real baskets, opens ONE group, and earns 3 stars @smoke",async({page})=>{
   test.setTimeout(85000);
@@ -60,7 +60,7 @@ test("divide-first uses real baskets, opens ONE group, and earns 3 stars @smoke"
   await page.locator("#do-both").click();
   await expect(page.locator("#replay-backdrop")).toBeVisible({timeout:35000});
   await expect(page.locator("#replay-star-summary")).toContainText("★★★ 3 stars");
-  // The comic intentionally reveals one panel at a time with the pencil.\n  // Show the complete checked history before inspecting the unpack panel.\n  await page.locator("#replay-skip").click();\n  await expect(page.locator("#comic-panels")).toContainText("Unpack");
+  // The comic intentionally reveals one panel at a time with the pencil.\n  // Show the complete checked history before inspecting the unpack panel.\n  await page.locator("#replay-skip").click();\n  await expect(page.locator(".comic-crate-story")).toHaveCount(1);
   const save=await page.evaluate(()=>JSON.parse(localStorage.getItem("mathssprites.campaign.v2")));
   expect(save.worlds.workshop.stages.guided.completed).toContain("master-19");
   expect(save.worlds.workshop.stages.guided.bestMoves["master-19"]).toBe(3);
