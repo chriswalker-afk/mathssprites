@@ -54,7 +54,9 @@ test("dividing sealed crates throws away the ORIGINAL unwanted crate, never a wi
   await expect(page.locator("#left-items .group-basket")).toHaveCount(0);
   await page.screenshot({path:"artifacts/pr43-02-one-surviving-crate.png",fullPage:true});
   const trace=await page.evaluate(()=>window.__crateDiscardTrace);
-  for(const name of ["waiting","taking","lifting","throwing","remaining"])
+  // "waiting" exists only during initial DOM insertion and is allowed to
+  // transition to "taking" before an asynchronous MutationObserver samples it.
+  for(const name of ["taking","lifting","throwing","remaining"])
     expect(trace.some(x=>x.phase===name),
       "Expected physical phase "+name+": "+JSON.stringify(trace)).toBe(true);
   expect(trace.some(x=>x.phase==="lifting"&&x.heldOriginal)).toBe(true);
