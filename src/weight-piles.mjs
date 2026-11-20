@@ -29,6 +29,6 @@ export function weightCountPlaque(count){
   if(count<=WEIGHT_COUNT_LABEL_THRESHOLD)return "";
   // The scene's existing room aria-label gives the complete inventory.
   // This decorative sign uses the same metalwork and connector as crates.
-  return '<span class="crate-stack-count weight-stack-count" aria-hidden="true">'+
-    count+' weights<span class="crate-count-connector"></span></span>';
+  return '<span class="weight-stack-count" aria-hidden="true">'+
+    count+' weights<span class="weight-count-connector"></span></span>';
 }
