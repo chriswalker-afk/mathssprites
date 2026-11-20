@@ -223,3 +223,26 @@
 }
 .reduce-motion .sealed-crate .crate-lid{transition:none!important}
 .reduce-motion .giant-hand[data-crowbar="true"].grasping .held-crowbar{animation:none!important}
+
+/* The comic distinguishes the two multiplication steps instead of displaying
+   a single generic "unpacked" after-image. */
+.comic-crate-sequence{
+  display:flex;flex-direction:column;gap:5px;
+  padding:8px 10px;margin:6px 3px;
+  border:1px solid #bd9b67;border-radius:9px;
+  background:linear-gradient(155deg,#233c37,#142c2e);
+  color:#f6e7c6;font-size:.77rem;line-height:1.28;
+}
+.comic-crate-beat{display:flex;gap:9px;align-items:center}
+.comic-crate-beat strong{font-family:Georgia,serif;color:#ffdc9e}
+.comic-crate-beat>span:first-child{
+  display:inline-flex;flex:0 0 25px;align-items:center;
+  justify-content:center;width:25px;height:25px;border-radius:6px;
+  background:#3c5a4e;border:1px solid #bfa57b;color:#ffdfa7;
+}
+.comic-crate-beat .comic-crowbar-mark{font-size:1.35rem;transform:none}
+.comic-crate-beat .comic-sprite-mark{color:#e1e5dc;font-size:1rem}
+.comic-crate-beat .comic-weight-mark{color:#eecb83;font-size:1.10rem}
+@media(max-width:600px){
+  .comic-crate-sequence{padding:6px;font-size:.70rem}
+}
