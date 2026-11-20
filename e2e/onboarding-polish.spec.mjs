@@ -91,7 +91,8 @@ test("completing every workshop level reveals the mastery banner and themed chap
   await expect(page.locator(".chapter-complete")).toHaveCount(5);
   await expect(page.locator(".chapter-illustration")).toHaveCount(5);
   await expect(page.locator(".level-tile.status-complete")).toHaveCount(20);
-  await expect(page.locator(".level-tile.level-next")).toHaveCount(0);
+  // A fully completed stage still highlights one replayable tile on the board.
+  await expect(page.locator(".level-tile.level-next.status-complete")).toHaveCount(1);
 });
 
 test("phone menus and replay keep touch actions in view",async({page})=>{
