@@ -38,6 +38,8 @@ export function createCrateExpansionView({
   const spriteActors=[],weightActors=[];
   let paused=false,destroyed=false,frame=null;
   const animations=new Set();
+  const pausedExternal=new Set();
+  const pendingHolds=new Set();
   const isStopped=()=>paused||document.hidden;
   const setPlayback=()=>{
     for(const animation of animations){
@@ -52,12 +54,15 @@ export function createCrateExpansionView({
   function hold(ms){
     return new Promise((resolve,reject)=>{
       let previous=null,elapsed=0;
+      const record={reject};
+      pendingHolds.add(record);
       const tick=time=>{
-        if(destroyed){reject(new Error("Crate scene was interrupted"));return;}
+        if(destroyed){pendingHolds.delete(record);
+          reject(new Error("Crate scene was interrupted"));return;}
         if(previous!==null&&!isStopped())
           elapsed+=Math.min(45,time-previous);
         previous=time;
-        if(elapsed>=ms){frame=null;resolve();return;}
+        if(elapsed>=ms){pendingHolds.delete(record);frame=null;resolve();return;}
         frame=requestAnimationFrame(tick);
       };
       frame=requestAnimationFrame(tick);
@@ -181,14 +186,42 @@ export function createCrateExpansionView({
     await weightsTumble();
     await settle();
   }
-  function pause(){paused=true;setPlayback();}
-  function resume(){paused=false;setPlayback();}
+  function pause(){
+    paused=true;
+    setPlayback();
+    // Freeze the real articulated hand and the wooden lid/panel CSS
+    // transitions as well, not just the airborne token animations.
+    const hand=document.getElementById("hand");
+    for(const element of [hand,...crates]){
+      if(!element)continue;
+      for(const animation of element.getAnimations({subtree:true})){
+        if(animation.playState!=="running")continue;
+        animation.pause();
+        pausedExternal.add(animation);
+      }
+    }
+  }
+  function resume(){
+    paused=false;
+    for(const animation of pausedExternal){
+      if(animation.playState==="paused")animation.play();
+    }
+    pausedExternal.clear();
+    setPlayback();
+  }
   function destroy(){
     if(destroyed)return;
     destroyed=true;
     paused=false;
     document.removeEventListener("visibilitychange",visibility);
     if(frame!==null)cancelAnimationFrame(frame);
+    for(const record of pendingHolds)
+      record.reject(new Error("Crate scene was interrupted"));
+    pendingHolds.clear();
+    for(const animation of pausedExternal){
+      if(animation.playState==="paused")animation.play();
+    }
+    pausedExternal.clear();
     for(const animation of animations)animation.cancel();
     animations.clear();
     stage.remove();
@@ -201,6 +234,6 @@ export function createCrateExpansionView({
   }
   return Object.freeze({
     stage,crateElements:crates,plan,announce,openCrate,playReleaseSteps,
-    pause,resume,destroy,get paused(){return paused;}
+    pause,resume,hold,destroy,get paused(){return paused;}
   });
 }
