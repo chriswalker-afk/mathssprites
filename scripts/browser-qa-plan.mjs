@@ -9,7 +9,7 @@
 import {readFileSync} from "node:fs";
 
 export const GROUP_SPECS=Object.freeze({
-  crates:Object.freeze(["e2e/crate-expansion.spec.mjs","e2e/crate-stack.spec.mjs","e2e/group-crates.spec.mjs"]),
+  crates:Object.freeze(["e2e/crate-expansion.spec.mjs","e2e/crate-stack.spec.mjs","e2e/crate-division.spec.mjs","e2e/group-crates.spec.mjs"]),
   navigation:Object.freeze(["e2e/experiment-board.spec.mjs","e2e/navigation-journey.spec.mjs","e2e/menu-polish.spec.mjs"]),
   notebook:Object.freeze(["e2e/notebook-operation-editor.spec.mjs","e2e/notebook-first.spec.mjs"]),
   signed:Object.freeze(["e2e/opposites-world.spec.mjs"]),

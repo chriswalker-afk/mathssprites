@@ -6,7 +6,7 @@ const TOKEN_KIND_CLASSES = Object.freeze([
 ]);
 const NAMES = Object.freeze({
   posX:"dark sprites", negX:"pale sprites",posX2:"square sprites",
-  posOne:"weights",negOne:"balloons",crate:"sealed bracket crates"
+  posOne:"weights",negOne:"balloons",crate:"sealed crates"
 });
 export function divisionBasketTiming(factor, reduced=false) {
   if (!Number.isInteger(factor) || factor < 2 || factor > 32)
