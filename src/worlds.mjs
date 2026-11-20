@@ -1,5 +1,5 @@
 /**
- * Public curriculum: 20 fully playable positive whole-number balances.
+ * Public curriculum: 24 fully playable positive whole-number balances.
  *
  * The original 13 advanced experiments live separately in engine.mjs. Keep
  * them intact for authoring previews, regression tests and later worlds.
@@ -19,11 +19,14 @@ export const WORLD1_CHAPTERS = Object.freeze([
   { title:"Across the Hall",
     description:"Resolve sprites living in both rooms." },
   { title:"Master of the Balance",
-    description:"Find efficient paths, reverse the rooms and try clever additions." }
+    description:"Find efficient paths, reverse the rooms and try clever additions." },
+  { title:"The Crate Workshop",
+    description:"Keep sealed groups whole or open them to make a new route." }
 ]);
 
-// The five shipped PR14 levels stay unchanged, including their saved IDs and
-// mathematical contents. Levels 6-20 add genuine new combinations and choices.
+// The first twenty Guided experiments stay unchanged, including their stable
+// IDs, equations, star benchmarks and numeric positions for legacy saves.
+// Levels 21–24 provide a focused sequence of physical grouped expressions.
 const firstFive = [
   { ...LEVELS[0], title:"One little resident" },
   { id:"clearing-02",title:"Three weights in the way",
@@ -125,12 +128,35 @@ const newLevels = [
     prompt:"The heaviest puzzle yet. You can remove at most twelve weights in a move. Sometimes adding something helps!",
     left:{posX:5,posOne:17},right:{posX:2,posOne:29},solution:4,
     startingOperation:"remove",startingKind:"posOne",startingAmount:1,
-    suggested:"Clear the two shared sprites. Could adding ONE weight to both rooms let you make three complete baskets?" }
+    suggested:"Clear the two shared sprites. Could adding ONE weight to both rooms let you make three complete baskets?" },
+  // Chapter 6: a deliberate crate learning arc, reusing the physical groups
+  // from Level 19. No symbolic expressions or suggested first moves appear
+  // in the rooms; the student chooses whether and when to open a sealed group.
+  { id:"crates-21",title:"Two little crates",
+    prompt:"Two sealed crates stand opposite a neat pile of weights.",
+    left:{crates:{count:2,contents:{posX:1,posOne:1}}},
+    right:{posOne:8},solution:3,groupedPrototype:true,
+    suggested:"Think about complete groups. Opening crates leaves their contents in the same room." },
+  { id:"crates-22",title:"Three sealed crates",
+    prompt:"This time three identical crates share the balance.",
+    left:{crates:{count:3,contents:{posX:1,posOne:2}}},
+    right:{posOne:21},solution:5,groupedPrototype:true,
+    suggested:"The crates are identical. You may keep them together or open them, without changing the balance." },
+  { id:"crates-23",title:"The visitor outside",
+    prompt:"There is a loose sprite opposite two crates. Find a way to work with both.",
+    left:{crates:{count:2,contents:{posX:1,posOne:4}}},
+    right:{posX:1,posOne:13},solution:5,groupedPrototype:true,
+    suggested:"An intact crate is a group. The loose sprite on the other side is not inside a group." },
+  { id:"crates-24",title:"The hall of crates",
+    prompt:"Loose sprites and weights are sharing the room with sealed crates. Make the balance reveal one sprite.",
+    left:{crates:{count:3,contents:{posX:1,posOne:2}},posX:2,posOne:1},
+    right:{posX:1,posOne:23},solution:4,groupedPrototype:true,
+    suggested:"Compare the loose things with the contents of the crates. Different valid orders may lead to the same final balance." }
 ];
 
 const campaign = [...firstFive, ...newLevels];
-if (campaign.length !== 20 || new Set(campaign.map(level => level.id)).size !== 20)
-  throw new Error("World 1 must define exactly 20 unique levels.");
+if (campaign.length !== 24 || new Set(campaign.map(level => level.id)).size !== 24)
+  throw new Error("World 1 must define exactly 24 unique levels.");
 export const WORLD1_LEVELS = Object.freeze(campaign.map((raw, i) => {
   const number = i + 1;
   const chapterIndex = Math.floor(i / 4);
@@ -138,7 +164,8 @@ export const WORLD1_LEVELS = Object.freeze(campaign.map((raw, i) => {
     ...raw, number, chapter: String(chapterIndex + 1).padStart(2,"0") +
       " · " + WORLD1_CHAPTERS[chapterIndex].title,
     quantityMode:"positive", lockPositive:true,
-    allowedOperations:raw.allowedOperations||WORLD1_OPERATIONS
+    allowedOperations:raw.allowedOperations||
+      (raw.groupedPrototype?[...WORLD1_OPERATIONS,"unpack"]:WORLD1_OPERATIONS)
   });
   return Object.freeze({
     number,id:level.id,title:level.title,chapterIndex,available:true,
