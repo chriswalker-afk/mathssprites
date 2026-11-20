@@ -88,6 +88,10 @@ test("the balance and every essential control remain visible together on a lapto
   await inView(page,"#scene");
   await inView(page,".experiment-controls");
   await inView(page,"#do-both");
+  // PR45: quantity controls appear only after the student chooses a tool and object.
+  await expect(page.locator("#amount-control")).toBeHidden();
+  await page.locator('[data-operation="remove"]').click();
+  await page.locator('[data-kind="posOne"]').click();
   await inView(page,"#amount-up");
   await inView(page,".scale-base");
   await noDocumentScroll(page);
