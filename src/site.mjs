@@ -302,7 +302,8 @@ function renderLevels() {
   $("stage-finale-title").textContent=stage.title+" mastered!";
   $("stage-finale-message").textContent=stage.finale||"You completed all experiments in this stage.";
   const sections=$("level-sections");
-  sections.style.setProperty("--map-cols",String(Math.min(chapters.length,5)));
+  // Six Guided chapters form two balanced rows of three rather than five plus one.
+  sections.style.setProperty("--map-cols",String(chapters.length===6?3:Math.min(chapters.length,5)));
   sections.innerHTML=chapters.map((chapter,index)=>{
     const slots=levels.filter(slot=>slot.chapterIndex===index);
     const finished=slots.filter(slot=>current.completed.includes(slot.id)).length;
