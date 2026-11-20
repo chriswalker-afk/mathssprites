@@ -52,8 +52,16 @@ export function crateLabel(contents){
     :String(n));
   return parts.join("")||"0";
 }
-/** A safe, predefined SVG-free representation; contents are visual examples
- * and NEVER counted by sprite collision or basket selectors. */
+/**
+ * A stack is an illustrated arrangement of SEPARATE, WHOLE crate tokens.
+ * Each direct child with class "token sealed-crate" remains assignable to a
+ * different wicker basket during division. No virtual stacked super-token.
+ *
+ * Only ONE crate wears the hanging contents picture, while the entire group
+ * has ONE count sign. Neither label nor picture represents loose objects.
+ * The hidden inventory supplies counts for PR39's staged release; it does
+ * not contribute any extra DOM tokens or actual physical weight.
+ */
 export function crateMarkup(value){
   const count=crateCount(value);
   if(!count)return "";
@@ -68,13 +76,50 @@ export function crateMarkup(value){
     contents.negX&&contents.negX+" white "+(contents.negX===1?"sprite":"sprites"),
     contents.negOne&&contents.negOne+" "+(contents.negOne===1?"balloon":"balloons")
   ].filter(Boolean).join(" and ");
-  const pieces=sprites+weights;
-  return Array.from({length:count},(_,index)=>
+  // The hanging picture is a SIGN of what one crate contains, not a window
+  // showing live objects. Its icons therefore stay visible until the empty
+  // crate disappears. Only one sign may exist regardless of stack height.
+  const pictureSprites=Array.from({length:Math.min(3,contents.posX||0)},()=>
+    '<span class="crate-sign-sprite" aria-hidden="true"><i></i><i></i></span>').join("");
+  const pictureWhite=Array.from({length:Math.min(3,contents.negX||0)},()=>
+    '<span class="crate-sign-sprite crate-sign-white" aria-hidden="true"><i></i><i></i></span>').join("");
+  const pictureWeights=Array.from({length:Math.min(5,contents.posOne||0)},()=>
+    '<span class="crate-sign-weight" aria-hidden="true"></span>').join("");
+  const pictureBalloons=Array.from({length:Math.min(5,contents.negOne||0)},()=>
+    '<span class="crate-sign-balloon" aria-hidden="true"></span>').join("");
+  const picture='<span class="crate-picture-sign" aria-hidden="true">'+
+    '<span class="crate-sign-hooks"><i></i><i></i></span>'+
+    '<span class="crate-sign-face"><span class="crate-sign-icons">'+
+      pictureSprites+pictureWhite+pictureWeights+pictureBalloons+
+    '</span></span>'+
+    '<i class="crate-sign-stud crate-stud-one"></i>'+
+    '<i class="crate-sign-stud crate-stud-two"></i>'+
+    '<i class="crate-sign-stud crate-stud-three"></i>'+
+    '<i class="crate-sign-stud crate-stud-four"></i></span>';
+  const pictureIndex=Math.floor(count/2);
+  const tokens=Array.from({length:count},(_,index)=>
     '<span class="token sealed-crate" data-crate-index="'+index+
     '" data-crate-state="sealed" role="img" aria-label="Sealed crate '+(index+1)+
-    ', containing '+description+'" title="Sealed wooden crate: '+description+'">'+
+    ' of '+count+', containing '+description+'" title="Sealed wooden crate: '+description+'">'+
+      '<span class="crate-wood-face" aria-hidden="true">'+
+        '<span class="crate-wood-grain"></span>'+
+        '<span class="crate-diagonal-brace"></span>'+
+        '<span class="crate-wood-rail crate-wood-rail-top"></span>'+
+        '<span class="crate-wood-rail crate-wood-rail-bottom"></span>'+
+        '<span class="crate-wood-rail crate-wood-rail-left"></span>'+
+        '<span class="crate-wood-rail crate-wood-rail-right"></span>'+
+        '<i class="crate-corner-stud stud-tl"></i>'+
+        '<i class="crate-corner-stud stud-tr"></i>'+
+        '<i class="crate-corner-stud stud-bl"></i>'+
+        '<i class="crate-corner-stud stud-br"></i>'+
+      '</span>'+
       '<span class="crate-lid" aria-hidden="true"></span>'+
-      '<span class="crate-window" aria-hidden="true">'+pieces+'</span>'+
-      '<span class="crate-hinge" aria-hidden="true"></span>'+
+      (index===pictureIndex?picture:"")+
+      '<span class="crate-hidden-contents" aria-hidden="true">'+sprites+weights+'</span>'+
     '</span>').join("");
+  const label='<span class="crate-stack-count" role="text" aria-label="'+count+
+    ' sealed '+(count===1?'crate':'crates')+'">'+count+
+    ' '+(count===1?'crate':'crates')+
+    '<span class="crate-count-connector" aria-hidden="true"></span></span>';
+  return tokens+label;
 }
