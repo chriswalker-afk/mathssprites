@@ -1,3 +1,4 @@
+import {clickWithReferenceMove} from "./reference-move-helper.mjs";
 import { test, expect } from "@playwright/test";
 
 test.beforeEach(async ({ page }) => {
@@ -77,7 +78,7 @@ test("sprites in the same room do not hop in lockstep and do not reset on tool c
 test("hand pauses the target room but not the untouched room", async ({ page }) => {
   await page.locator("#level-select").selectOption("3");
   await page.locator('[data-kind="posX"]').click();
-  await page.locator("#do-both").click();
+  await clickWithReferenceMove(page,"#do-both");
   await expect(page.locator("#left-chamber")).toHaveClass(/hand-target/);
   await expect(page.locator("#left-items .sprite-motion").first()).toHaveCSS("animation-play-state", "paused");
   await expect(page.locator("#left-items .sprite-body").first()).toHaveCSS("animation-play-state", "paused");
@@ -108,7 +109,7 @@ test("reduced motion has no fast flickering and Motion: on restores active wiggl
 test("grouped sprites gently bob inside baskets while counting remains legible on a phone", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.locator("#level-select").selectOption("1");
-  await page.locator("#do-both").click();
+  await clickWithReferenceMove(page,"#do-both");
   // First the originals must visibly travel into the EMPTY baskets.
   await expect(page.locator("#left-items .division-stage")).toHaveAttribute("data-phase","ready",{timeout:12000});
   const groups = page.locator("#left-items .basket-row > .group-basket");
