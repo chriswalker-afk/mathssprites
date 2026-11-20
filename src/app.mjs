@@ -247,6 +247,20 @@ function renderRoom(side, r, groupCount) {
     node.innerHTML = '<div class="room-empty" aria-hidden="true">a quiet moment...</div>';
     return;
   }
+  if(crateCount(r)&&TOKEN_KINDS.some(kind=>r[kind]>0)){
+    // A stack of intact crates and loose objects are separate physical
+    // floor groups. The crates remain directly manipulable in their own
+    // track; loose weights form their own 3+2 piles, not a column below crates.
+    const sealed={...r,posX:0,negX:0,posX2:0,posOne:0,negOne:0};
+    const loose={...r,crates:null};
+    node.innerHTML='<div class="mixed-crate-floor-stage">'+
+      '<div class="floor-shell crate-floor-shell"><div class="items-grid floor-track" data-layout="floor"'+crateAttr+'>'+
+      crateMarkup(sealed)+'</div></div>'+
+      '<div class="floor-shell loose-floor-shell"><div class="items-grid floor-track" data-layout="floor">'+
+      allTokens(loose,false,side)+'</div></div></div>';
+    resizeFloor(side);
+    return;
+  }
   node.innerHTML = '<div class="floor-shell"><div class="items-grid floor-track" data-layout="floor"'+crateAttr+'>' +
     allTokens(r, false, side) + '</div></div>';
   resizeFloor(side);
@@ -256,8 +270,9 @@ function resizeFloor(side) {
   const room = $(side + "-items");
   for(const track of room.querySelectorAll(".floor-track")){
     const width=track.scrollWidth||track.getBoundingClientRect().width;
-    const container=track.closest(".mixed-crate-division-stage")
-      ?track.closest(".floor-shell").clientWidth:room.clientWidth;
+    // Each floor track fits into its OWN room-side zone. In ordinary rooms
+    // the shell fills the chamber; mixed crate/loose rooms have two shells.
+    const container=track.closest(".floor-shell")?.clientWidth||room.clientWidth;
     const fit=floorScaleToFit(container,width);
     track.style.setProperty("--floor-scale",fit.toFixed(4));
   }
