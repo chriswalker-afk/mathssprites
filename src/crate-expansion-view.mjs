@@ -33,8 +33,15 @@ export function createCrateExpansionView({
 
   const bounds=stage.getBoundingClientRect();
   const floorY=floor.getBoundingClientRect().top-bounds.top;
+  // Other sprites/weights already loose in this room must not be covered by
+  // the newly released actors. Leave their existing floor zone untouched.
+  const loose=[...items.querySelectorAll(".floor-track > .token:not(.sealed-crate)")];
+  const leftmost=loose.length?Math.min(...loose.map(node=>
+    node.getBoundingClientRect().left-bounds.left)):bounds.width;
+  const rightInset=loose.length?Math.max(0,Math.min(bounds.width-18,
+    bounds.width-leftmost+5)):0;
   const destinations=crateFloorLandingPlan(bounds.width,floorY,
-    plan.totalSprites,plan.totalWeights);
+    plan.totalSprites,plan.totalWeights,{rightInset});
   const spriteActors=[],weightActors=[];
   let paused=false,destroyed=false,frame=null;
   const animations=new Set();
