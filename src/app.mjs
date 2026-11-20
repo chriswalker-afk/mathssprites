@@ -286,8 +286,8 @@ function currentGuideCue() {
 }
 function guideTarget(name) {
   if (name === "scene") return $("scene");
-  if (name === "remove") return document.querySelector('[data-operation="remove"]');
-  if (name === "amount") return $("amount-control");
+  if (name === "remove" || name==="actions") return document.querySelector(".operation-picker");
+  if (name === "amount" || name==="tools") return document.querySelector(".control-top");
   if (name === "do-both") return $("do-both");
   if (name === "left-action") return $("left-action");
   if (name === "right-action") return $("right-action");
