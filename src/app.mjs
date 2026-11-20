@@ -430,6 +430,8 @@ function renderNotebookMathEditor(){
     arrow.textContent="Operation on both sides";
   }
   $("notebook-apply").disabled=!preview.ok||notebookPhase!=="writing"||busy;
+  $("notebook-apply").textContent=parsed.ok&&parsed.action.op==="unpack"
+    ?"Expand selected expression →":"Apply to both sides →";
   input.setAttribute("aria-invalid",String(!!text.trim()&&!preview.ok&&
     preview.code!=="incomplete"));
   const sign=(parsed.ok?parsed.display[0]:text.trim().slice(0,1)).replace("-","−");
