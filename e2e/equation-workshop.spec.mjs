@@ -59,8 +59,9 @@ test("validated user equation becomes real rooms; guided hand solves and comic r
   await expect(page.locator('[data-kind="negX"]')).toBeHidden();
   await expect(page.locator('[data-kind="posX2"]')).toBeHidden();
   await page.locator("#motion-toggle").click();
-  await clickWithReferenceMove(page,"#amount-up");
-  await clickWithReferenceMove(page,"#amount-up");
+  await page.locator('[data-operation="remove"]').click();
+  await page.locator('[data-kind="posOne"]').click();
+  for(let i=0;i<3;i++)await page.locator("#amount-up").click();
   await clickWithReferenceMove(page,"#do-both");
   await expect(page.locator("#replay-backdrop")).toBeVisible({timeout:28000});
   await expect(page.locator("#replay-level-stamp")).toContainText("FREE PLAY");
@@ -83,7 +84,10 @@ test("manual hand mode requires two separate room visits and keeps its own contr
   await expect(page.locator("#left-action")).toBeVisible();
   await expect(page.locator("#right-action")).toBeVisible();
   await page.locator("#motion-toggle").click();
-  await clickWithReferenceMove(page,"#amount-up");
+  await page.locator('[data-operation="remove"]').click();
+  await page.locator('[data-kind="posOne"]').click();
+  await page.locator("#amount-up").click();
+  await page.locator("#amount-up").click();
   await clickWithReferenceMove(page,"#left-action");
   await expect(page.locator("#balance-caption")).toContainText("waiting");
   await expect(page.locator("#rooms-row")).not.toHaveAttribute("style", /rotate\(0deg\)/);
@@ -127,7 +131,9 @@ test("free-play hand mode may be changed; reset restores the custom equation and
   await expect(page.locator("#do-both")).toBeHidden();
   await expect(page.locator("#left-action")).toBeVisible();
   await page.locator("#motion-toggle").click();
+  await page.locator('[data-operation="remove"]').click();
   await page.locator('[data-kind="posX"]').click();
+  await page.locator("#amount-up").click();
   await clickWithReferenceMove(page,"#left-action");
   await expect(page.locator("#balance-caption")).toContainText("waiting");
   await expect(page.locator("#rooms-row")).not.toHaveAttribute("style", /rotate\(0deg\)/);
