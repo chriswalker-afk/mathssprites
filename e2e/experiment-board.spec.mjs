@@ -10,7 +10,7 @@ test("new student enters any guided level in two clicks, not four @quick @smoke"
   await expect(page.locator("#site-levels")).toBeVisible();
   await expect(page.locator(".map-world-button")).toHaveCount(4);
   await expect(page.locator(".map-stage-button")).toHaveCount(3);
-  await expect(page.locator(".level-tile")).toHaveCount(20);
+  await expect(page.locator(".level-tile")).toHaveCount(24);
   await expect(page.locator(".level-tile:disabled")).toHaveCount(0);
   await expect(page.locator('[data-map-world="opposites"]')).toBeEnabled();
   await expect(page.locator('[data-map-world="fractions"]')).toBeDisabled();
