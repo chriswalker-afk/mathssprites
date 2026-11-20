@@ -37,3 +37,14 @@ test("deduplicated matrix emits only static, approved Playwright file paths",()=
     for(const spec of specs)assert.match(spec,/^e2e\/[a-z-]+\.spec\.mjs$/);
   assert.deepEqual(featureMatrix([]),{include:[]});
 });
+
+
+test("focused suites include site navigation, workshop, and motion regression",()=>{
+  assert.ok(GROUP_SPECS.navigation.includes("e2e/site-navigation.spec.mjs"));
+  assert.ok(GROUP_SPECS.navigation.includes("e2e/onboarding-polish.spec.mjs"));
+  assert.ok(GROUP_SPECS.notebook.includes("e2e/equation-workshop.spec.mjs"));
+  assert.ok(GROUP_SPECS.layout.includes("e2e/motion-notice.spec.mjs"));
+  assert.deepEqual(selectBrowserGroups(["e2e/onboarding-polish.spec.mjs"]),["navigation"]);
+  assert.deepEqual(selectBrowserGroups(["e2e/equation-workshop.spec.mjs"]),["notebook"]);
+  assert.deepEqual(selectBrowserGroups(["e2e/motion-notice.spec.mjs"]),["layout"]);
+});
