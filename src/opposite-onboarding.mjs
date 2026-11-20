@@ -1,10 +1,10 @@
 /** World 2 first-lesson cues; never share World 1's tutorial save keys. */
 const key=stage=>"mathssprites.opposites-guide-"+stage+".v1";
-export function readOppositesGuideSeen(stage,storage=globalThis.localStorage){
-  try{return storage?.getItem(key(stage))==="true"}catch{return false}
+export function readOppositesGuideSeen(stage,storage){
+  try{return (storage??globalThis.localStorage)?.getItem(key(stage))==="true"}catch{return false}
 }
-export function writeOppositesGuideSeen(stage,seen,storage=globalThis.localStorage){
-  try{storage?.setItem(key(stage),String(!!seen))}catch{}
+export function writeOppositesGuideSeen(stage,seen,storage){
+  try{(storage??globalThis.localStorage)?.setItem(key(stage),String(!!seen))}catch{}
   return !!seen;
 }
 /** Three skippable steps before a student's first signed move. */
