@@ -74,7 +74,7 @@ if(asJSON){
       const section=rows.filter(row=>row.worldId===worldId&&row.stage===stage);
       lines.push("## "+worldId+" / "+stage,"",
         "| # | ID | Equation | Tier | Proven minimum | Authored route | Objective / skills | Difficulty features |",
-        "|---:|---|---|---:|---:|---|---|");
+        "|---:|---|---|---|---:|---:|---|---|");
       for(const row of section){
         const record=[
           row.number,row.id,row.equation,
