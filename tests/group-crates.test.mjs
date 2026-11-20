@@ -16,7 +16,7 @@ const divide={op:"divide",factor:2};
 const weights=n=>({op:"remove",kind:"posOne",count:n});
 
 test("the prototype replaces exactly the existing Guided Level 19 without changing its identity",()=>{
-  assert.equal(WORLD1_LEVELS.length,20);
+  assert.equal(WORLD1_LEVELS.length,24);
   assert.equal(slot.number,19);
   assert.equal(slot.id,"master-19");
   assert.equal(findCampaignLevel("workshop","guided",19).id,"master-19");
@@ -29,7 +29,7 @@ test("the prototype replaces exactly the existing Guided Level 19 without changi
   assert.equal(starsForMoves(3,optimalMoves("guided",19)),3);
   assert.equal(level.solution,4);
   assert.equal(validInitialLevel(level),true);
-  assert.deepEqual(CAMPAIGN_REGISTRY[0].stages.map(s=>s.count),[20,20,16]);
+  assert.deepEqual(CAMPAIGN_REGISTRY[0].stages.map(s=>s.count),[24,20,16]);
 });
 test("a sealed crate has exactly x+3 value, not three added loose weights",()=>{
   const state=initialState(level);
@@ -116,8 +116,8 @@ test("sealed contents cannot be removed until unpacked",()=>{
   assert.equal(previewRoomAction(initial.left,unpack,"positive","left").after.posOne,6);
   assert.equal(previewRoomAction(initial.right,unpack,"positive","right").after.posOne,14);
 });
-test("regular worlds and other World 1 levels reject unpack actions",()=>{
-  for(const slot of [...WORLD1_LEVELS.slice(0,18),WORLD1_LEVELS[19]]){
+test("all non-grouped World 1 levels and signed worlds reject crate opening",()=>{
+  for(const slot of WORLD1_LEVELS.filter(slot=>!slot.level.groupedPrototype)){
     const result=perform(initialState(slot.level),{op:"unpack",side:"left"});
     assert.equal(result.ok,false,slot.id);
     assert.equal(result.code,"locked-operation",slot.id);
