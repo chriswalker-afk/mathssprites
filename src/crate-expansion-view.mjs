@@ -1,182 +1,206 @@
+import {
+  crateFloorLandingPlan,spriteEscapeKeyframes,weightEscapeKeyframes
+} from "./crate-physical-layout.mjs";
+
 /**
- * PR39 — On-scene counting stage for the distributive law.
+ * PR41: one continuous physical event INSIDE the existing chamber.
+ * No cards, equation captions, multiplication tray or unrelated stage.
  *
- * This is VISUAL ONLY. It never mutates a room, creates a history entry, or
- * changes the balance. The caller commits the engine's prevalidated 'unpack'
- * identity once every crate has been opened and both term groups released.
- *
- * Loose actors live outside #left-items/#right-items until final commit.
- * Ordinary sprite, basket and zero-pair selectors therefore never mistake a
- * partially demonstrated term for a physical, committed game object.
+ * Every moving actor uses the game's real sprite/weight art. These temporary
+ * actors are visual-only, outside #left-items/#right-items, until the engine
+ * commits a single value-preserving rewrite at the end. Thus a failed or
+ * interrupted sequence never leaves half-open maths in saved state.
  */
-const waitUntilVisible=()=>new Promise(resolve=>{
-  if(!document.hidden)return resolve();
-  document.addEventListener("visibilitychange",function resumed(){
-    if(document.hidden)return;
-    document.removeEventListener("visibilitychange",resumed);
-    resolve();
-  });
-});
 export function createCrateExpansionView({
-  side,chamber,items,plan,tokenMarkup,sleep,reducedMotion=false
+  side,chamber,items,plan,tokenMarkup,reducedMotion=false
 }){
   if(!chamber||!items||!plan||typeof tokenMarkup!=="function")
-    throw new TypeError("The crate counting stage requires a room, plan and token artwork.");
-  const crateElements=[...items.querySelectorAll(".sealed-crate")];
-  if(crateElements.length!==plan.count)
-    throw new RangeError("The visible crates must match the authored algebraic groups.");
+    throw new TypeError("Opening crates requires a chamber, objects and a valid group plan.");
+  const crates=[...items.querySelectorAll(".sealed-crate")];
+  if(crates.length!==plan.count)
+    throw new RangeError("The displayed crates do not match the room's contents.");
   const minimal=!!reducedMotion||
     (typeof matchMedia==="function"&&matchMedia("(prefers-reduced-motion: reduce)").matches);
+  const floor=chamber.querySelector(".room-floor");
+  if(!floor)throw new TypeError("Crates must open onto the actual chamber floor.");
   const stage=document.createElement("div");
   stage.id=side+"-crate-expansion";
-  stage.className="crate-expansion-stage";
+  stage.className="crate-expansion-stage crate-physical-scene";
   stage.dataset.phase="opening";
   stage.setAttribute("role","group");
-  stage.setAttribute("aria-label","Physical expansion of the sealed brackets");
-  stage.innerHTML='<div class="crate-expansion-step" role="status" aria-live="polite">'+
-    '<div class="crate-expansion-message"></div><strong class="crate-expansion-math"></strong></div>'+
-    '<div class="crate-expansion-collection" aria-label="Objects released from the crates"></div>';
-  const status=stage.querySelector(".crate-expansion-step");
-  const message=status.querySelector(".crate-expansion-message");
-  const maths=status.querySelector(".crate-expansion-math");
-  const collection=stage.querySelector(".crate-expansion-collection");
-  const groups=[];
-  for(let i=0;i<plan.count;i++){
-    const group=document.createElement("div");
-    group.className="crate-release-group";
-    group.dataset.sourceCrate=String(i);
-    group.setAttribute("aria-label","Contents released from crate "+(i+1));
-    group.innerHTML='<div class="crate-release-source">Crate '+(i+1)+'</div>'+
-      '<div class="crate-release-sprites"></div><div class="crate-release-weights"></div>';
-    const sprites=group.querySelector(".crate-release-sprites");
-    const weights=group.querySelector(".crate-release-weights");
-    for(let n=0;n<plan.spritesPerCrate;n++){
-      const wrapper=document.createElement("span");
-      wrapper.className="crate-release-actor crate-release-sprite";
-      wrapper.dataset.kind="sprite";
-      wrapper.innerHTML=tokenMarkup("posX",n,false,side);
-      sprites.append(wrapper);
-    }
-    for(let n=0;n<plan.weightsPerCrate;n++){
-      const wrapper=document.createElement("span");
-      wrapper.className="crate-release-actor crate-release-weight";
-      wrapper.dataset.kind="weight";
-      wrapper.innerHTML=tokenMarkup("posOne",n,false,side);
-      weights.append(wrapper);
-    }
-    collection.append(group);
-    groups.push(group);
-  }
+  stage.setAttribute("aria-label","Crates opening in the chamber");
   chamber.append(stage);
-  const nextBeat=async(ms)=>{
-    await waitUntilVisible();
-    await sleep(ms);
-    await waitUntilVisible();
+
+  const bounds=stage.getBoundingClientRect();
+  const floorY=floor.getBoundingClientRect().top-bounds.top;
+  const destinations=crateFloorLandingPlan(bounds.width,floorY,
+    plan.totalSprites,plan.totalWeights);
+  const spriteActors=[],weightActors=[];
+  let paused=false,destroyed=false,frame=null;
+  const animations=new Set();
+  const isStopped=()=>paused||document.hidden;
+  const setPlayback=()=>{
+    for(const animation of animations){
+      if(isStopped())animation.pause();
+      else animation.play();
+    }
+    stage.dataset.paused=String(isStopped());
   };
-  const announce=(phase,description,math="")=>{
+  const visibility=()=>setPlayback();
+  document.addEventListener("visibilitychange",visibility);
+
+  function hold(ms){
+    return new Promise((resolve,reject)=>{
+      let previous=null,elapsed=0;
+      const tick=time=>{
+        if(destroyed){reject(new Error("Crate scene was interrupted"));return;}
+        if(previous!==null&&!isStopped())
+          elapsed+=Math.min(45,time-previous);
+        previous=time;
+        if(elapsed>=ms){frame=null;resolve();return;}
+        frame=requestAnimationFrame(tick);
+      };
+      frame=requestAnimationFrame(tick);
+    });
+  }
+  function announce(phase){
     stage.dataset.phase=phase;
-    message.textContent=description;
-    maths.textContent=math;
-    maths.hidden=!math;
-    stage.dataset.math=math;
-  };
+  }
+
+  function addActor(kind,sourceCrate,index,landing){
+    const actor=document.createElement("span");
+    actor.className="crate-escaped-actor crate-escaped-"+kind;
+    actor.dataset.sourceCrate=String(sourceCrate);
+    actor.dataset.kind=kind;
+    actor.dataset.landed="false";
+    actor.style.left=landing.left+"px";
+    actor.style.top=landing.top+"px";
+    actor.style.width=landing.width+"px";
+    actor.style.height=landing.height+"px";
+    actor.style.setProperty("--escape-scale",String(landing.scale));
+    actor.innerHTML=tokenMarkup(kind==="sprite"?"posX":"posOne",index,false,side);
+    stage.append(actor);
+    return actor;
+  }
+  for(let i=0;i<plan.totalSprites;i++){
+    const sourceCrate=Math.floor(i/plan.spritesPerCrate);
+    spriteActors.push({sourceCrate,
+      element:addActor("sprite",sourceCrate,i,destinations.sprites[i])});
+  }
+  for(let i=0;i<plan.totalWeights;i++){
+    const sourceCrate=Math.floor(i/plan.weightsPerCrate);
+    weightActors.push({sourceCrate,
+      indexInCrate:i%plan.weightsPerCrate,
+      element:addActor("weight",sourceCrate,i,destinations.weights[i])});
+  }
 
   function openCrate(index){
-    const crate=crateElements[index];
-    if(!crate)throw new RangeError("Crate index out of range.");
+    if(destroyed||!crates[index])throw new RangeError("Invalid crate lid.");
+    const crate=crates[index];
     crate.dataset.crateState="opened";
     crate.classList.add("crate-opened");
-    announce("opening","Crowbar: crate "+(index+1)+" of "+plan.count+" is open.");
+    stage.dataset.phase="opening";
+    stage.dataset.crateIndex=String(index);
   }
 
-  async function flyActor(source,target,delay=0){
-    const ownerIndex=Number(target.closest("[data-source-crate]")?.dataset.sourceCrate)||0;
-    const sourceRect=source?.getBoundingClientRect();
-    // PR40: the only visible contents are a printed picture on ONE crate.
-    // The real sprite and weight counts remain in a hidden inventory. Fly
-    // each physical actor from its OWN opened crate lid, not from the
-    // picture-sign crate and never from a hidden 0x0 DOM element.
-    const openedLid=crateElements[ownerIndex].querySelector(".crate-lid");
-    const lidRect=openedLid?.getBoundingClientRect();
-    const from=sourceRect?.width>0&&sourceRect?.height>0
-      ?sourceRect:lidRect?.width>0?lidRect
-      :crateElements[ownerIndex].getBoundingClientRect();
-    // The destination exists in a temporary counting tray, not in the
-    // authoritative token row. All objects still count as sealed in the engine.
-    target.classList.add("released");
-    const to=target.getBoundingClientRect();
-    if(source)source.classList.add("crate-content-extracted");
-    if(!minimal&&target.animate){
-      const x=from.left+from.width/2-to.left-to.width/2;
-      const y=from.top+from.height/2-to.top-to.height/2;
-      const animation=target.animate([
-        {transform:`translate(${x}px,${y}px) scale(.62)`,opacity:.85,offset:0},
-        {transform:`translate(${x*.44}px,${y*.44-31}px) scale(1.07)`,opacity:1,offset:.55},
-        {transform:"translate(0,0) scale(1)",opacity:1,offset:1}
-      ],{duration:660,delay,easing:"cubic-bezier(.24,.76,.32,1)",fill:"both"});
-      try{await animation.finished;}catch{}
+  async function animateOut(record,index,kind,delay=0){
+    const crate=crates[record.sourceCrate];
+    const source=kind==="sprite"
+      ?crate.querySelector(".crate-lid")
+      :crate.querySelector('.crate-bay-weight[data-weight-index="'+record.indexInCrate+'"]');
+    const from=source?.getBoundingClientRect()||crate.getBoundingClientRect();
+    const actor=record.element;
+    actor.classList.add("released");
+    // Source and target are measured in the same physical chamber coordinate
+    // space. No intermediate 2D "counting tray" is ever rendered.
+    const to=actor.getBoundingClientRect();
+    const dx=from.left+from.width/2-to.left-to.width/2;
+    const dy=from.top+from.height/2-to.top-to.height/2;
+    const keyframes=kind==="sprite"
+      ?spriteEscapeKeyframes(dx,dy,index,minimal)
+      :weightEscapeKeyframes(dx,dy,index,minimal);
+    const duration=minimal?(kind==="sprite"?250:190):
+      kind==="sprite"?940:670;
+    const animation=actor.animate(keyframes,{
+      duration,delay,easing:"cubic-bezier(.22,.69,.29,1)",fill:"both"
+    });
+    animations.add(animation);
+    if(isStopped())animation.pause();
+    try{await animation.finished;}finally{
       animation.cancel();
-    }else await nextBeat(180+delay);
-  }
-
-  async function release(step){
-    const kind=step.phase==="sprites"?"sprite":"weight";
-    const crate=crateElements[step.crateIndex];
-    const group=groups[step.crateIndex];
-    const sourceSelector=kind==="sprite"?".crate-mini-sprite":".crate-mini-weight";
-    const targetSelector=kind==="sprite"?".crate-release-sprite":".crate-release-weight";
-    const sources=[...crate.querySelectorAll(sourceSelector)];
-    const targets=[...group.querySelectorAll(targetSelector)];
-    if(targets.length!==step.count)
-      throw new RangeError("The visual objects must equal the contents of one crate.");
-    group.classList.add("active");
-    announce(kind==="sprite"?"sprites":"weights",step.description);
-    if(kind==="sprite"){
-      // First show one whole sprite per crate, then interpret the multiplier.
-      for(let i=0;i<targets.length;i++)
-        await flyActor(sources[i]||null,targets[i]);
-    }else{
-      // Three weights form ONE visible packet from each source crate.
-      // The packets are released from crate 1, then crate 2.
-      await Promise.all(targets.map((target,i)=>
-        flyActor(sources[i]||null,target,minimal?i*35:i*95)));
+      animations.delete(animation);
     }
-    await nextBeat(minimal?270:450);
+    if(destroyed)return;
+    actor.classList.add("landed");
+    actor.dataset.landed="true";
+    if(kind==="weight")source?.classList.add("crate-weight-taken");
   }
-  async function showTotal(step){
-    const sprites=step.phase==="sprite-total";
-    announce(sprites?"sprite-total":"weight-total",
-      sprites?"All sprites have come out.":"Now count the groups of weights.",
-      step.math);
-    await nextBeat(minimal?640:1250);
+  async function spritesBounceTogether(){
+    announce("sprites-bouncing");
+    // Crucially, every sprite starts at once. They do not appear one per
+    // explanatory line or wait for another sprite's movement to finish.
+    await Promise.all(spriteActors.map((record,index)=>
+      animateOut(record,index,"sprite",minimal?0:index*45)));
+    announce("sprites-landed");
+    await hold(minimal?280:590);
+  }
+  async function panelsFall(){
+    announce("panels-falling");
+    for(const crate of crates){
+      crate.classList.add("crate-panels-down");
+      crate.dataset.crateState="panels-down";
+    }
+    await hold(minimal?330:760);
+    announce("weights-revealed");
+    // The individual three-weight groups are NOW visible behind the fallen
+    // wooden fronts; keep the room still long enough to recognize them.
+    await hold(minimal?520:970);
+  }
+  async function weightsTumble(){
+    for(let crateIndex=0;crateIndex<plan.count;crateIndex++){
+      announce("weights-tumbling");
+      stage.dataset.crateIndex=String(crateIndex);
+      const packet=weightActors.filter(r=>r.sourceCrate===crateIndex);
+      await Promise.all(packet.map((record,index)=>
+        animateOut(record,index,"weight",minimal?index*25:index*75)));
+      await hold(minimal?90:230);
+    }
+    announce("weights-landed");
+    await hold(minimal?230:450);
   }
   async function settle(){
-    announce("settle","The crates are empty. The loose objects are ready.");
-    for(const crate of crateElements)crate.classList.add("crate-empty");
-    await nextBeat(minimal?340:650);
+    announce("settle");
+    for(const crate of crates)crate.classList.add("crate-empty");
+    await hold(minimal?230:610);
   }
-
   async function playReleaseSteps(){
-    // Called after the hand has opened every crate, and NOT before.
-    for(const step of plan.steps){
-      if(step.phase==="open")continue;
-      if(step.phase==="sprites"||step.phase==="weights")await release(step);
-      else if(step.phase==="sprite-total"||step.phase==="weight-total")
-        await showTotal(step);
-      else if(step.phase==="settle")await settle();
-    }
+    if(crates.some(crate=>!crate.classList.contains("crate-opened")))
+      throw new Error("All lids must open before sprites can escape.");
+    await spritesBounceTogether();
+    await panelsFall();
+    await weightsTumble();
+    await settle();
   }
+  function pause(){paused=true;setPlayback();}
+  function resume(){paused=false;setPlayback();}
   function destroy(){
+    if(destroyed)return;
+    destroyed=true;
+    paused=false;
+    document.removeEventListener("visibilitychange",visibility);
+    if(frame!==null)cancelAnimationFrame(frame);
+    for(const animation of animations)animation.cancel();
+    animations.clear();
     stage.remove();
-    // The DOM model might still be the original sealed model following
-    // an interrupted animation, so restore every miniature actor too.
-    for(const crate of crateElements){
+    for(const crate of crates){
       delete crate.dataset.crateState;
-      crate.classList.remove("crate-opened","crate-empty");
-      for(const actor of crate.querySelectorAll(".crate-content-extracted"))
-        actor.classList.remove("crate-content-extracted");
+      crate.classList.remove("crate-opened","crate-panels-down","crate-empty");
+      for(const weight of crate.querySelectorAll(".crate-weight-taken"))
+        weight.classList.remove("crate-weight-taken");
     }
   }
-  return Object.freeze({stage,openCrate,playReleaseSteps,announce,destroy,
-    crateElements,plan});
+  return Object.freeze({
+    stage,crateElements:crates,plan,announce,openCrate,playReleaseSteps,
+    pause,resume,destroy,get paused(){return paused;}
+  });
 }
