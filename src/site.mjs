@@ -330,8 +330,9 @@ function renderLevels() {
         '<span class="tile-number">'+String(slot.number).padStart(2,"0")+'</span>'+
         '<span class="tile-name">'+clean(slot.title)+'</span>'+
         '<span class="tile-stars" data-stars="'+rating+'" aria-hidden="true">'+starGlyphs(rating)+'</span>'+
-        '<span class="tile-status">'+(done?"✓ ":open?"✦ ":"◇ ")+
-          (done&&!rating?"Completed · replay for stars":done?"Completed":open?"Play":"Locked")+'</span></button>';
+        '<span class="tile-status">'+(done?"✓ ":historical?"↻ ":open?"✦ ":"◇ ")+
+          (done&&!rating?"Completed · replay for stars":done?"Completed":
+            historical?"Revised · replay":open?"Play":"Locked")+'</span></button>';
     }).join("");
     return '<section class="chapter-group chapter-theme-'+(index+1)+
       (slots.length>0&&finished===slots.length?' chapter-complete':'')+
