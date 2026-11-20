@@ -61,12 +61,14 @@ jobs:
       - name: Select browser feature groups from changed paths
         id: pick
         env:
-          BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         shell: bash
         run: |
           set -euo pipefail
-          MATRIX="$(git diff --name-only "$BASE_SHA" "$HEAD_SHA" | node scripts/browser-qa-plan.mjs --matrix)"
+          # Use the CURRENT base branch's merge-base, not a potentially stale
+          # webhook base SHA after another PR merges to main.
+          MERGE_BASE="$(git merge-base origin/main "$HEAD_SHA")"
+          MATRIX="$(git diff --name-only "$MERGE_BASE" "$HEAD_SHA" | node scripts/browser-qa-plan.mjs --matrix)"
           echo "matrix=$MATRIX" >> "$GITHUB_OUTPUT"
           if [[ "$MATRIX" == '{"include":[]}' ]]; then
             echo "run=false" >> "$GITHUB_OUTPUT"
