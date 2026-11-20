@@ -9,7 +9,7 @@ test("new player starts at Level 1 in one click and can return to the same exper
   await expect(page.locator("#home-play")).toContainText("Start Stage 1");
   await page.locator("#home-choose-level").click();
   await expect(page.locator("#board-continue")).toHaveText("Play Level 1 →");
-  await expect(page.locator(".level-tile")).toHaveCount(20);
+  await expect(page.locator(".level-tile")).toHaveCount(24);
   await page.locator("#board-continue").click();
   await expect(page.locator("#level-title")).toHaveText("One little resident");
   await page.locator("#game-levels").click();
@@ -50,7 +50,7 @@ test("keyboard can change stages without losing focus, announce selection @quick
   await expect(page.locator(".level-tile")).toHaveCount(16);
   await page.keyboard.press("Home");
   await expect(page.locator('[data-map-stage="guided"]')).toBeFocused();
-  await expect(page.locator(".level-tile")).toHaveCount(20);
+  await expect(page.locator(".level-tile")).toHaveCount(24);
   await page.keyboard.press("ArrowLeft");
   await expect(page.locator('[data-map-stage="guided"]')).toBeFocused();
   // Arrow keys can now select the signed world; only unbuilt worlds stay locked.
@@ -72,9 +72,9 @@ test("desktop arrow keys follow the visual chapter columns, and Enter launches @
   await page.keyboard.press("Home");
   await expect(page.locator('[data-level="1"]')).toBeFocused();
   await page.keyboard.press("End");
-  await expect(page.locator('[data-level="20"]')).toBeFocused();
+  await expect(page.locator('[data-level="24"]')).toBeFocused();
   await page.keyboard.press("Enter");
-  await expect(page.locator("#level-title")).toHaveText("The master experiment");
+  await expect(page.locator("#level-title")).toHaveText("The hall of crates");
 });
 test("Help and Settings return to the actual prior screen, not always Home @smoke",async({page})=>{
   await page.locator("#home-choose-level").click();
@@ -138,7 +138,10 @@ for(const size of [{width:1024,height:720},{width:1092,height:540}]){
     await page.setViewportSize(size);
     await page.locator("#home-choose-level").click();
     await expect(page.locator("#board-continue")).toBeInViewport();
-    await expect(page.locator('[data-level="20"]')).toBeInViewport();
+    // Six chapters now occupy two visually balanced rows; the last tile
+    // remains reachable using the board’s own scrolling container.
+    await page.locator('[data-level="24"]').scrollIntoViewIfNeeded();
+    await expect(page.locator('[data-level="24"]')).toBeInViewport();
     await page.locator('[data-map-stage="notebook"]').click();
     await expect(page.locator("#board-continue")).toBeInViewport();
     const measure=await page.evaluate(()=>({
