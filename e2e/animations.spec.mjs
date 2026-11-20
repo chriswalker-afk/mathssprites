@@ -1,3 +1,4 @@
+import {clickWithReferenceMove} from "./reference-move-helper.mjs";
 import { test, expect } from "@playwright/test";
 
 test.beforeEach(async ({ page }) => {
@@ -42,7 +43,7 @@ test("hand changes objects while touching EACH room, then waits before algebra r
   await expect(right).toHaveCount(5);
   await replay.evaluate(el => { if (!el.hidden) throw new Error("Replay appeared before solving"); });
 
-  await page.locator("#do-both").click();
+  await clickWithReferenceMove(page,"#do-both");
 
   // This exact intermediate state would never exist if the app just re-rendered
   // the answer instantly and played a cosmetic hand animation afterwards.
@@ -72,13 +73,13 @@ test("hand changes objects while touching EACH room, then waits before algebra r
 
 test("manual mode does not complete the puzzle after only one room is changed", async ({ page }) => {
   await page.locator("#mode-select").selectOption("manual");
-  await page.locator("#left-action").click();
+  await clickWithReferenceMove(page,"#left-action");
   await expect(page.locator("#left-items .weight")).toHaveCount(0);
   await expect(page.locator("#right-items .weight")).toHaveCount(5);
   await expect(page.locator("#right-action")).toContainText("Match the move here");
   await expect(page.locator("#replay-backdrop")).toBeHidden();
 
-  await page.locator("#right-action").click();
+  await clickWithReferenceMove(page,"#right-action");
   await expect(page.locator("#right-items .weight")).toHaveCount(3);
   await expect(page.locator("#replay-backdrop")).toBeVisible();
 });
@@ -101,7 +102,7 @@ test("Motion: on overrides the system's reduced-motion preference", async ({ pag
 test("on a narrow viewport the hand actually enters the chamber", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.reload();
-  await page.locator("#do-both").click();
+  await clickWithReferenceMove(page,"#do-both");
   await expect(page.locator("#left-items .weight")).toHaveCount(0);
   const overlap = await page.evaluate(() => {
     const hand = document.querySelector("#hand").getBoundingClientRect();
