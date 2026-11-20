@@ -90,7 +90,7 @@ export const CURRICULUM_CHAPTERS=Object.freeze({
       chapter("Master of the Balance","Compare routes, manage physical constraints and intact groups",
         ["strategy-choice","fraction-avoidance","sealed-groups"]),
       chapter("The Crate Workshop","Choose when identical sealed groups should stay together and when opening them reveals a useful balance route",
-        ["sealed-groups","two-step","strategy-choice","fraction-avoidance","variables-both-sides"])
+        ["sealed-groups","two-step","strategy-choice"])
     ]),
     independent:Object.freeze([
       chapter("Your First Moves","Repeat one identical mathematical action in two separate hand visits",
