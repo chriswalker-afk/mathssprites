@@ -5,7 +5,7 @@ test.beforeEach(async({page})=>{
   await page.goto("/");
 });
 
-test("new player starts at Level 1 in one click and can return to the same experiment @smoke",async({page})=>{
+test("new player starts at Level 1 in one click and can return to the same experiment @quick @smoke",async({page})=>{
   await expect(page.locator("#home-play")).toContainText("Start Stage 1");
   await page.locator("#home-choose-level").click();
   await expect(page.locator("#board-continue")).toHaveText("Play Level 1 →");
@@ -36,7 +36,7 @@ test("returning Stage 3 student gets a single board action without changing prog
   await page.reload();
   await expect(page.locator("#home-play")).toContainText("Continue Stage 3 · Level 6");
 });
-test("keyboard can change stages without losing focus, announce selection @smoke",async({page})=>{
+test("keyboard can change stages without losing focus, announce selection @quick @smoke",async({page})=>{
   await page.locator("#home-choose-level").click();
   await page.locator('[data-map-stage="guided"]').focus();
   await page.keyboard.press("ArrowRight");
