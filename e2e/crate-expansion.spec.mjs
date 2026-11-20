@@ -15,10 +15,23 @@ async function phase(page,name){
 async function recordPhysicalPhases(page){
   await page.evaluate(()=>{
     window.__cratePhaseTrace=[];
+    window.__cratePhaseEvidence=[];
     const observer=new MutationObserver(()=>{
-      const phase=document.querySelector("#left-crate-expansion")?.dataset.phase;
-      if(phase&&window.__cratePhaseTrace.at(-1)!==phase)
+      const stage=document.querySelector("#left-crate-expansion");
+      const phase=stage?.dataset.phase;
+      if(phase&&window.__cratePhaseTrace.at(-1)!==phase){
         window.__cratePhaseTrace.push(phase);
+        window.__cratePhaseEvidence.push({
+          phase,
+          releasedSprites:stage.querySelectorAll(".crate-escaped-sprite.released").length,
+          landedSprites:stage.querySelectorAll(".crate-escaped-sprite.landed").length,
+          releasedWeights:stage.querySelectorAll(".crate-escaped-weight.released").length,
+          landedWeights:stage.querySelectorAll(".crate-escaped-weight.landed").length,
+          panelsDown:document.querySelectorAll("#left-items .crate-panels-down").length,
+          weightBayCount:document.querySelectorAll("#left-items .crate-bay-weight").length,
+          text:stage.textContent.trim()
+        });
+      }
     });
     observer.observe(document.body,{attributes:true,attributeFilter:["data-phase"],
       childList:true,subtree:true});
@@ -50,25 +63,10 @@ test("crowbar, simultaneous sprite bounce, falling wooden panels and physical we
   await expect(page.locator("#left-crate-expansion .crate-escaped-actor.released")).toHaveCount(0);
   await page.screenshot({path:"artifacts/pr41-03-both-lids-open.png",fullPage:true});
 
-  await phase(page,"sprites-bouncing");
-  await expect(page.locator("#left-crate-expansion .crate-escaped-sprite.released")).toHaveCount(2);
-  await expect(page.locator("#left-crate-expansion .crate-escaped-weight.released")).toHaveCount(0);
-  await page.screenshot({path:"artifacts/pr41-04-sprites-bounce-together.png",fullPage:true});
-  await phase(page,"sprites-landed");
-  await expect(page.locator("#left-crate-expansion .crate-escaped-sprite.landed")).toHaveCount(2);
-  await expect(page.locator("#left-items .sealed-crate.crate-panels-down")).toHaveCount(0);
-  await page.screenshot({path:"artifacts/pr41-05-sprites-landed.png",fullPage:true});
-
-  await phase(page,"panels-falling");
-  await expect(page.locator("#left-items .sealed-crate.crate-panels-down")).toHaveCount(2);
-  await page.screenshot({path:"artifacts/pr41-06-wood-panels-fall.png",fullPage:true});
-  await phase(page,"weights-revealed");
-  await expect(page.locator("#left-items .crate-bay-weight:not(.crate-weight-taken)")).toHaveCount(6);
-  await expect(page.locator("#left-crate-expansion .crate-escaped-weight.released")).toHaveCount(0);
-  await page.screenshot({path:"artifacts/pr41-07-weights-visible-inside.png",fullPage:true});
-
-  // Transient tumble/landing states are captured via MutationObserver.
-  // Avoid racing a full-page screenshot against a subsecond animation.
+  // Every physical phase is captured at the instant it occurs, before the
+  // temporary actors are removed. This prevents screenshot overhead from
+  // racing a subsecond hinge / bounce phase. Assertions below verify both
+  // the order AND the real physical objects visible at each milestone.
   await expect(page.locator("#left-crate-expansion")).toHaveCount(0,{timeout:30000});
   const trace=await page.evaluate(()=>window.__cratePhaseTrace);
   let last=-1;
@@ -79,6 +77,17 @@ test("crowbar, simultaneous sprite bounce, falling wooden panels and physical we
     expect(next, "Expected ordered physical phase "+name+": "+trace.join(" > ")).toBeGreaterThan(last);
     last=next;
   }
+  const evidence=await page.evaluate(()=>window.__cratePhaseEvidence);
+  const at=name=>evidence.find(frame=>frame.phase===name);
+  expect(at("sprites-bouncing").releasedSprites).toBe(2);
+  expect(at("sprites-bouncing").releasedWeights).toBe(0);
+  expect(at("sprites-landed").landedSprites).toBe(2);
+  expect(at("sprites-landed").panelsDown).toBe(0);
+  expect(at("panels-falling").panelsDown).toBe(2);
+  expect(at("weights-revealed").weightBayCount).toBe(6);
+  expect(at("weights-revealed").releasedWeights).toBe(0);
+  expect(at("weights-landed").landedWeights).toBe(6);
+  for(const frame of evidence)expect(frame.text).toBe("");
   await page.screenshot({path:"artifacts/pr41-09-loose-sprites-and-weights.png",fullPage:true});
   await expect(page.locator("#left-items .sealed-crate")).toHaveCount(0);
   await expect(page.locator("#left-items .sprite-black")).toHaveCount(2);
