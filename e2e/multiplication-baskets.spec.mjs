@@ -7,12 +7,9 @@ test.beforeEach(async({page})=>{
 });
 async function multiplyBy(page,factor){
   await page.locator('[data-operation="multiply"]').click();
-  // Every level may have its own starting factor (resident starts at 2).
-  // Read the ACTUAL control rather than assuming a fixed default of three.
-  const starting=Number((await page.locator("#amount-value").textContent()).trim());
-  expect(Number.isInteger(starting)).toBe(true);
-  for(let n=starting;n<factor;n++)await clickWithReferenceMove(page,"#amount-up");
-  for(let n=starting;n>factor;n--)await clickWithReferenceMove(page,"#amount-down");
+  // PR45 intentionally has no starting group count. Choose two first.
+  await page.locator("#amount-up").click();
+  for(let n=2;n<factor;n++)await page.locator("#amount-up").click();
   await expect(page.locator("#amount-value")).toHaveText(String(factor));
 }
 
