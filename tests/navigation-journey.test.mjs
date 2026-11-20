@@ -81,5 +81,5 @@ test("journey controls and accessible status exist with no extra menu screen",()
   assert.match(site,/function announceBoardSelection/);
   assert.match(css,/focus-visible/);
   assert.match(css,/@media\(max-width:600px\)/);
-  assert.deepEqual(world.stages.map(s=>s.levels.length),[20,20,16]);
+  assert.deepEqual(world.stages.map(s=>s.levels.length),[24,20,16]);
 });
