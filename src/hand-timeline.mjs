@@ -17,11 +17,20 @@ export const HAND_BEATS_REDUCED=Object.freeze({
   close:90,contact:380,lift:115,withdraw:150
 });
 
+export const CROWBAR_BEATS=Object.freeze({
+  hover:270,descend:355,aim:150,close:220,contact:390,lift:260,withdraw:330
+});
+export const CROWBAR_BEATS_REDUCED=Object.freeze({
+  hover:95,descend:125,aim:95,close:105,contact:230,lift:95,withdraw:120
+});
+
 export function handMotionPlan(action,reducedMotion=false,area=null){
   if (!["add","remove","multiply","divide","square","sqrt","unpack"].includes(action?.op))
     throw new TypeError("Unknown laboratory hand action");
   const placing=["add","multiply","square"].includes(action.op);
-  const timing=reducedMotion?HAND_BEATS_REDUCED:HAND_BEATS;
+  const timing=action.op==="unpack"
+    ?(reducedMotion?CROWBAR_BEATS_REDUCED:CROWBAR_BEATS)
+    :(reducedMotion?HAND_BEATS_REDUCED:HAND_BEATS);
   const geom=action.op==="square"||action.op==="sqrt";
   const hasArea=geom&&area&&area.side>0;
   const a=area?.kind==="mixed"?area.spriteSide:area?.symbolic?area.side:0;

@@ -15,6 +15,8 @@ import { itemWord, attemptMessage, mismatchedMoveMessage } from "./attempt-feedb
 import { fractionCutPlan } from "./fraction-theatre.mjs";
 import {neutralPairSequence, neutralPairSummary} from "./neutral-pairs.mjs";
 import {crateCount,crateMarkup} from "./group-crates.mjs";
+import {crateContentsDescription,crateExpansionPlan,crateExpansionReplayNotes} from "./crate-expansion.mjs";
+import {createCrateExpansionView} from "./crate-expansion-view.mjs";
 import { WORLD1_LEVELS } from "./worlds.mjs";
 import {INDEPENDENT_LEVELS} from "./independent-levels.mjs";
 import {
@@ -87,6 +89,7 @@ let guideDismissed = false;
 let guideWasActive = false;
 function currentLevel() { return activeLevel; }
 let busy = false;
+let crateExpansionRunning=false; // Visual demonstration only: no partial model commits.
 let override = null;
 let groups = { left: 0, right: 0 };
 let failureTilt = 0; // transient presentation only; no effect on the math engine
@@ -557,6 +560,12 @@ function render() {
   $("motion-notice").hidden = !reducedMotion;
 
   const crateSide=crateCount(shown.left)?"left":crateCount(shown.right)?"right":null;
+  for(const side of ["left","right"]){
+    const label=$(side+"-crate-contents");
+    const hasCrates=lvl.groupedPrototype&&crateCount(shown[side])>0;
+    label.hidden=!hasCrates||crateExpansionRunning||!!notebookSession;
+    if(hasCrates)label.textContent=crateContentsDescription(shown[side]);
+  }
   $("crate-controls").hidden=!lvl.groupedPrototype||!crateSide||!!notebookSession;
   $("unpack-crates").disabled=busy||awaiting||isSolved(state)||!crateSide;
   $("unpack-crates").dataset.crateSide=crateSide||"";
@@ -606,7 +615,16 @@ function render() {
  * corresponding visual transformation. Only then does it leave the screen.
  */
 function handProp(action, side) {
-  if(action.op==="unpack")return "";
+  if(action.op==="unpack")return '<svg class="held-crowbar" viewBox="0 0 82 128" aria-hidden="true">'+
+    '<defs><linearGradient id="crowbar-metal" x1="0" y1="0" x2="1" y2="1">'+
+    '<stop offset="0" stop-color="#edf4e8"/><stop offset=".35" stop-color="#87989c"/>'+
+    '<stop offset=".7" stop-color="#36494f"/><stop offset="1" stop-color="#ced7d1"/>'+
+    '</linearGradient></defs>'+
+    '<path d="M46 6 Q61 10 63 21 L68 30 Q56 39 45 31 L54 23 Q54 20 47 19 '+ 
+    'L19 104 Q16 113 10 118 L24 121 L27 109 L55 25" fill="url(#crowbar-metal)" '+
+    'stroke="#1d2c33" stroke-width="3.5" stroke-linejoin="round"/>'+
+    '<path d="M21 104 L45 34" stroke="#e7f1e9" stroke-opacity=".55" stroke-width="3" '+
+    'stroke-linecap="round"/><path d="M9 117 L19 106" stroke="#17282d" stroke-width="2"/></svg>';
   if (action.op === "square") {
     const area = areaArrangement(visible()[side], "square");
     if (area?.symbolic)
@@ -637,8 +655,9 @@ function handProp(action, side) {
 }
 function roomOperationText(action, side) {
   const roomName=side==="left"?"west":"east";
-  if(action.op==="unpack")return "The hand unlatches the "+roomName+
-    " crate. Each sprite and weight becomes loose — the value stays the same...";
+  if(action.op==="unpack")return "The hand uses a crowbar to open crate "+
+    (Number.isInteger(action.crateIndex)?action.crateIndex+1:"")+
+    " in the "+roomName+" chamber. The contents stay inside until both lids are open.";
   if (action.op==="square"||action.op==="sqrt") {
     const area=areaArrangement(visible()[side],action.op);
     if (!area||area.kind==="zero") return "The hand checks the empty box...";
@@ -897,14 +916,20 @@ async function handAct(side, action, applyAtContact) {
         ".floor-track > "+fractionTokenSelector(action.fractionAttempt.kind))].at(-1)
     : null;
   const fractionBox=fractionTarget?.getBoundingClientRect();
-  const centreX = (fractionBox
-    ? fractionBox.left+fractionBox.width/2
+  const crateTarget=action.op==="unpack"&&Number.isInteger(action.crateIndex)
+    ?$(side+"-items").querySelector(
+      '.sealed-crate[data-crate-index="'+action.crateIndex+'"]'):null;
+  const crateBox=crateTarget?.getBoundingClientRect();
+  const centreX = (crateBox?crateBox.left+crateBox.width/2
+    :fractionBox?fractionBox.left+fractionBox.width/2
     : items.left + items.width *
       (action.op === "square" || action.op === "sqrt" ? .68 : .5)) - scene.left;
   hand.style.left = centreX + "px";
   if (action.fractionAttempt) hand.dataset.fractionAttempt="true";
   const restingTip = hand.offsetTop + hand.offsetHeight * 0.95;
-  const targetTip = items.bottom - scene.top - Math.min(32, items.height * 0.20);
+  const targetTip = crateBox
+    ?crateBox.top-scene.top+Math.min(18,crateBox.height*.22)
+    :items.bottom - scene.top - Math.min(32, items.height * 0.20);
   const reach = Math.max(160, targetTip - restingTip);
   hand.style.setProperty("--hand-reach", reach + "px");
 
@@ -932,7 +957,9 @@ async function handAct(side, action, applyAtContact) {
   caption.hidden = false;
   cargo.innerHTML = handProp(action, side);
   cargo.classList.remove("sprite-captured");
-  cargo.hidden = !motion.cargoOnApproach && !action.fractionAttempt;
+  if(action.op==="unpack")hand.dataset.crowbar="true";
+  cargo.hidden = !motion.cargoOnApproach && !action.fractionAttempt &&
+    action.op!=="unpack";
   hand.classList.remove("approaching", "reaching", "grasping", "lifting");
   hand.classList.add("acting");
   hand.dataset.phase = motion.placing ? "carry" : "open";
@@ -1024,6 +1051,7 @@ async function handAct(side, action, applyAtContact) {
     delete hand.dataset.boxStep;
     delete hand.dataset.boxOperation;
     delete hand.dataset.fractionAttempt;
+    delete hand.dataset.crowbar;
     clearAreaPreview(side);
     clearNeutralEffect(side);
     cargo.classList.remove("sprite-captured");
@@ -1434,30 +1462,52 @@ async function unpackCrates(){
   const side=crateCount(state.left)?"left":crateCount(state.right)?"right":null;
   if(!side)return;
   const action={op:"unpack",side};
+  // Never start a visual beat unless the pure engine has already validated
+  // that the complete expansion preserves this room's mathematical value.
   const result=perform(state,action,"auto");
   if(!result.ok)return notify(result.reason);
-  busy=true;clearSpeech();
-  setFeedback("The latch is opening. The contents are still worth exactly the same.","working");
+  const plan=crateExpansionPlan(state[side]);
+  let view=null,committed=false;
+  busy=true;
+  crateExpansionRunning=true;
+  clearSpeech();
+  setFeedback("Watch the crowbar open every crate, then count the sprites and weights separately.","working");
   render();
   try{
-    await handAct(side,action,async()=>{
-      const crates=[...$(side+"-items").querySelectorAll(".sealed-crate")];
-      for(const crate of crates)crate.classList.add("crate-opening");
-      // Hold the visual identity long enough for students to observe the
-      // distribution, even in reduced-motion mode.
-      await sleep(reducedMotion?350:1050);
-      state=result.state;
-      override=null;
-      render();
+    view=createCrateExpansionView({
+      side,chamber:$(side+"-chamber").querySelector(".room-interior"),
+      items:$(side+"-items"),plan,tokenMarkup:token,sleep,reducedMotion
     });
+    for(const step of plan.steps.filter(step=>step.phase==="open")){
+      view.announce("opening",step.description);
+      await handAct(side,{...action,crateIndex:step.crateIndex},async()=>{
+        view.openCrate(step.crateIndex);
+        // The crowbar visibly prises each lid before the hand moves to
+        // the next crate; contents are not released at this contact.
+        await sleep(reducedMotion?210:420);
+      });
+    }
+    // All lids have opened. Show ALL sprites from all crates first, then
+    // weights in source-crate groups, with an equation for each product.
+    await view.playReleaseSteps();
+    state=result.state; // ONE undoable identity rewrite, after all visuals.
+    committed=true;
+  }catch(error){
+    setFeedback("The crates are still sealed. Try expanding brackets again.","error");
   }finally{
+    view?.destroy();
+    crateExpansionRunning=false;
     busy=false;
     override=null;
+    // In an interruption, do not leave staged miniature actors, open lids,
+    // or stale floor signatures behind.
+    delete $(side+"-items").dataset.signature;
     render();
   }
+  if(!committed)return;
   await finishTurn();
   if(!isSolved(state))
-    setSpeech("The same value, but now the brackets are open. You can move the individual sprites and weights.",5800);
+    setSpeech("Two multiplications! We counted the sprites, then the weights. The room's value never changed.",5800);
 }
 /** Replay a CHECKED algebra notebook as consecutive real hand movements.
  * The pure engine's committed history, never user text, provides the actions.
@@ -1675,6 +1725,9 @@ function startLevel(index, quantityMode, levelOverride=null, campaignNumber=null
   $("scene").classList.remove("scene-failed-balance", "scene-rewinding");
   delete $("scene").dataset.balanceOutcome;
   busy = false;
+  crateExpansionRunning=false;
+  for(const leftover of document.querySelectorAll(".crate-expansion-stage"))
+    leftover.remove();
   // Clear any half-finished visual state when changing levels.
   $("hand").classList.remove("approaching", "reaching", "grasping", "lifting", "acting", "tracking-sprite", "arranging");
   $("hand").style.removeProperty("--hand-chase");
@@ -1708,7 +1761,7 @@ function startLevel(index, quantityMode, levelOverride=null, campaignNumber=null
 }
 function miniItems(r) {
   let out = crateCount(r)
-    ?Array.from({length:crateCount(r)},()=>'<span class="mini-token mini-crate" aria-label="sealed bracket crate">('+ (r.crates.contents.posX?"x":"")+" + "+r.crates.contents.posOne+')</span>').join("")
+    ?Array.from({length:crateCount(r)},()=>'<span class="mini-token mini-crate" aria-label="sealed wooden crate">▣</span>').join("")
     :"";
   for (const type of TOKEN_KINDS) for (let i = 0; i < r[type]; i++) out += token(type, i, true);
   return out || '<span class="mini-empty">empty</span>';
@@ -1735,16 +1788,26 @@ function panelHTML(entry, index, active) {
   const zeroPairs=recordedZeroEvents(entry);
   const title = index === 0 ? "Before the hand began" : "Move " + index;
   const subtitle = index === 0 ? "Every object has a hidden value..." : operationDescription(entry.action);
+  const expanded=entry.action?.op==="unpack"
+    ?crateExpansionReplayNotes(entry.before[entry.action.side]):null;
+  const sequence=expanded
+    ?'<div class="comic-crate-sequence" aria-label="Expansion: open crates, take all sprites, then weights">'+
+      '<div class="comic-crate-beat"><span class="comic-crowbar-mark" aria-hidden="true">⌁</span>'+
+        '<span>'+expanded.opening+'</span></div>'+
+      '<div class="comic-crate-beat"><span class="comic-sprite-mark" aria-hidden="true">●</span>'+
+        '<span>Sprites: <strong>'+expanded.sprites+'</strong></span></div>'+
+      '<div class="comic-crate-beat"><span class="comic-weight-mark" aria-hidden="true">◆</span>'+
+        '<span>Weights: <strong>'+expanded.weights+'</strong></span></div></div>'
+    :"";
   return '<article class="comic-panel ' + (active ? "current-panel" : "old-panel") + '" data-panel="' + index + '">' +
     '<header><strong>' + title + '</strong><small>' + subtitle + '</small></header>' +
     '<div class="mini-stage" id="mini-stage-' + index + '">' +
-    miniRooms(index === 0 ? entry.after : entry.after) +
-    '</div><div class="panel-footnote">' + (index === 0 ? "The two little rooms start in balance." :
+    miniRooms(entry.after) + '</div>'+sequence+
+    '<div class="panel-footnote">' + (index === 0 ? "The two little rooms start in balance." :
       zeroPairs.length ? "The same operation on both sides; "+neutralPairSummary(zeroPairs)+
         " cancelled inside their rooms (each pair has value zero)." :
-      entry.action?.op==="unpack"
-        ?"Opening brackets changes the arrangement, not the value of the room."
-        :"The same mathematical change happened on both sides.") + '</div></article>';
+      expanded ?expanded.summary+" Opening brackets changes the arrangement, not the value.":
+      "The same mathematical change happened on both sides.") + '</div></article>';
 }
 /**
  * Comic replay is deliberately paced by the pencil, not by a slideshow timer.
@@ -1758,6 +1821,15 @@ function escapeInk(value) {
 }
 function notebookLines(entry, index) {
   if (index === 0) return [{ type: "equation", text: equation(entry.after) }];
+  if(entry.action?.op==="unpack"){
+    const notes=crateExpansionReplayNotes(entry.before[entry.action.side]);
+    return [
+      {type:"operation",text:notes.opening},
+      {type:"operation",text:"All sprites: "+notes.sprites},
+      {type:"operation",text:"All weights: "+notes.weights},
+      {type:"equation",text:equation(entry.after)}
+    ];
+  }
   return [
     { type: "operation", text: algebraOperation(entry.action) },
     ...replayZeroPairNotes(entry),

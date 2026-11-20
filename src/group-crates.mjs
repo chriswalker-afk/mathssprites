@@ -62,15 +62,19 @@ export function crateMarkup(value){
     '<span class="crate-mini-sprite" aria-hidden="true"><i></i><i></i></span>').join("");
   const weights=Array.from({length:Math.min(5,contents.posOne)},()=>
     '<span class="crate-mini-weight" aria-hidden="true"></span>').join("");
-  const label=crateLabel(contents);
+  const description=[
+    contents.posX&&contents.posX+" dark "+(contents.posX===1?"sprite":"sprites"),
+    contents.posOne&&contents.posOne+" brass "+(contents.posOne===1?"weight":"weights"),
+    contents.negX&&contents.negX+" white "+(contents.negX===1?"sprite":"sprites"),
+    contents.negOne&&contents.negOne+" "+(contents.negOne===1?"balloon":"balloons")
+  ].filter(Boolean).join(" and ");
   const pieces=sprites+weights;
   return Array.from({length:count},(_,index)=>
     '<span class="token sealed-crate" data-crate-index="'+index+
-    '" role="img" aria-label="Sealed crate '+(index+1)+
-    ': one sprite and three weights" title="Sealed bracket group ('+label+')">'+
+    '" data-crate-state="sealed" role="img" aria-label="Sealed crate '+(index+1)+
+    ', containing '+description+'" title="Sealed wooden crate: '+description+'">'+
       '<span class="crate-lid" aria-hidden="true"></span>'+
       '<span class="crate-window" aria-hidden="true">'+pieces+'</span>'+
-      '<span class="crate-name" aria-hidden="true">'+label+'</span>'+
       '<span class="crate-hinge" aria-hidden="true"></span>'+
     '</span>').join("");
 }
