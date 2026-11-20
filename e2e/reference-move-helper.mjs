@@ -11,7 +11,7 @@ import {OPPOSITE_LEVELS} from "../src/opposite-levels.mjs";
 const all=[...LEVELS,...WORLD1_LEVELS.map(x=>x.level),
   ...INDEPENDENT_LEVELS.map(x=>x.level),
   ...Object.values(OPPOSITE_LEVELS).flat().map(x=>x.level)];
-const parsedNumber=text=>Number((text||"").match(/LEVEL\\s+(\\d+)/)?.[1]||0);
+const parsedNumber=text=>Number((text||"").match(/LEVEL\s+(\d+)/)?.[1]||0);
 async function referenceLevel(page){
   const location=await page.evaluate(()=>({
     title:document.querySelector("#level-title")?.textContent||"",
@@ -66,6 +66,7 @@ export async function chooseReferenceMoveIfBlank(page){
 }
 export async function clickWithReferenceMove(page,selector){
   const button=page.locator(selector);
-  if(await button.isDisabled())await chooseReferenceMoveIfBlank(page);
+  if(await button.isDisabled()||!(await button.isVisible()))
+    await chooseReferenceMoveIfBlank(page);
   await button.click();
 }
