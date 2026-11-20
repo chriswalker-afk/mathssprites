@@ -12,6 +12,7 @@ import {
 import { spriteMotionProfile, spriteMotionStyle } from "./sprite-motion.mjs";
 import { pickSpriteHandReaction, dodgeOffsetPx } from "./sprite-reactions.mjs";
 import { floorScaleToFit, inRoomBoxPlan, areaMathLabel } from "./area-layout.mjs";
+import {weightPilePosition,weightCountPlaque} from "./weight-piles.mjs";
 import { itemWord, attemptMessage, mismatchedMoveMessage } from "./attempt-feedback.mjs";
 import { fractionCutPlan } from "./fraction-theatre.mjs";
 import {neutralPairSequence, neutralPairSummary} from "./neutral-pairs.mjs";
@@ -135,7 +136,7 @@ function roomSummary(r) {
   ].filter(Boolean);
   return parts.length ? parts.join(", ") : "no objects";
 }
-function token(kind, i, mini = false, side = "left") {
+function token(kind, i, mini = false, side = "left", weightTotal = 0) {
   if (mini) {
     return '<span class="mini-token ' + kind + '" aria-hidden="true"></span>';
   }
@@ -153,14 +154,28 @@ function token(kind, i, mini = false, side = "left") {
       (square ? '<span class="square-symbol">✦</span>' : "") + '</span>' +
       '</span></span></span>';
   }
-  if (kind === "posOne")
-    return '<span class="token weight" title="A brass weight"><i class="weight-handle"></i><i class="weight-shine"></i></span>';
+  if (kind === "posOne") {
+    // Only the full-size floor tokens participate in a physical stack.
+    // Miniatures used in the hand and artwork stay unchanged.
+    const pile=weightTotal?weightPilePosition(i,weightTotal):null;
+    const placement=pile
+      ? ' data-weight-pile="'+pile.pile+'" data-weight-slot="'+pile.slot+
+        '" data-weight-pile-size="'+pile.pileSize+'"'+
+        (pile.last?' data-weight-pile-end="'+pile.last+'"':"")
+      : "";
+    return '<span class="token weight"'+placement+
+      ' title="A brass weight"><i class="weight-handle"></i><i class="weight-shine"></i></span>';
+  }
   return '<span class="token balloon" title="A little floating balloon"><i class="balloon-body"></i><i class="balloon-knot"></i><i class="balloon-string"></i></span>';
 }
 function allTokens(r, mini = false, side = "left") {
   let html = mini?"":crateMarkup(r);
   for (const kind of TOKEN_KINDS) {
-    for (let i = 0; i < r[kind]; i++) html += token(kind, i, mini, side);
+    // One crate-style plaque per physical GROUP of >10 loose weights,
+    // never a label for all objects or for individual piles.
+    if(kind==="posOne"&&!mini)html+=weightCountPlaque(r.posOne);
+    for (let i = 0; i < r[kind]; i++)
+      html += token(kind, i, mini, side,kind==="posOne"&&!mini?r.posOne:0);
   }
   return html;
 }
@@ -233,8 +248,7 @@ function renderRoom(side, r, groupCount) {
     return;
   }
   node.innerHTML = '<div class="floor-shell"><div class="items-grid floor-track" data-layout="floor"'+crateAttr+'>' +
-    allTokens(r, false, side) + '</div></div>' +
-    (total > 14 ? '<span class="floor-count" aria-hidden="true">' + total + ' objects in a row</span>' : "");
+    allTokens(r, false, side) + '</div></div>';
   resizeFloor(side);
 }
 // Scale the entire horizontal row, never wrap it into multiple rows.
