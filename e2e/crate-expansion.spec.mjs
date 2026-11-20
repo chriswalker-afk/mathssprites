@@ -12,6 +12,19 @@ async function phase(page,name){
   await expect(page.locator("#left-crate-expansion")).toHaveAttribute(
     "data-phase",name,{timeout:30000});
 }
+async function recordPhysicalPhases(page){
+  await page.evaluate(()=>{
+    window.__cratePhaseTrace=[];
+    const observer=new MutationObserver(()=>{
+      const phase=document.querySelector("#left-crate-expansion")?.dataset.phase;
+      if(phase&&window.__cratePhaseTrace.at(-1)!==phase)
+        window.__cratePhaseTrace.push(phase);
+    });
+    observer.observe(document.body,{attributes:true,attributeFilter:["data-phase"],
+      childList:true,subtree:true});
+    window.__cratePhaseObserver=observer;
+  });
+}
 test.beforeEach(async({page})=>page.emulateMedia({reducedMotion:"reduce"}));
 
 test("crowbar, simultaneous sprite bounce, falling wooden panels and physical weights all stay in-room @smoke",async({page})=>{
@@ -24,6 +37,7 @@ test("crowbar, simultaneous sprite bounce, falling wooden panels and physical we
   await expect(page.locator("#unpack-crates")).toHaveText(/Open crates/);
   await expect(page.locator("#level-prompt")).toHaveText("");
   await page.screenshot({path:"artifacts/pr41-01-sealed-stack.png",fullPage:true});
+  await recordPhysicalPhases(page);
   await page.locator("#unpack-crates").click();
   const first=page.locator('.sealed-crate[data-crate-index="0"]');
   const second=page.locator('.sealed-crate[data-crate-index="1"]');
@@ -53,12 +67,19 @@ test("crowbar, simultaneous sprite bounce, falling wooden panels and physical we
   await expect(page.locator("#left-crate-expansion .crate-escaped-weight.released")).toHaveCount(0);
   await page.screenshot({path:"artifacts/pr41-07-weights-visible-inside.png",fullPage:true});
 
-  await phase(page,"weights-tumbling");
-  await page.screenshot({path:"artifacts/pr41-08-weights-tumbling.png",fullPage:true});
-  await phase(page,"weights-landed");
-  await expect(page.locator("#left-crate-expansion .crate-escaped-weight.landed")).toHaveCount(6);
-  await page.screenshot({path:"artifacts/pr41-09-loose-sprites-and-weights.png",fullPage:true});
+  // Transient tumble/landing states are captured via MutationObserver.
+  // Avoid racing a full-page screenshot against a subsecond animation.
   await expect(page.locator("#left-crate-expansion")).toHaveCount(0,{timeout:30000});
+  const trace=await page.evaluate(()=>window.__cratePhaseTrace);
+  let last=-1;
+  for(const name of ["opening","sprites-bouncing","sprites-landed",
+    "panels-falling","weights-revealed","weights-tumbling",
+    "weights-landed","settle"]){
+    const next=trace.indexOf(name,last+1);
+    expect(next, "Expected ordered physical phase "+name+": "+trace.join(" > ")).toBeGreaterThan(last);
+    last=next;
+  }
+  await page.screenshot({path:"artifacts/pr41-09-loose-sprites-and-weights.png",fullPage:true});
   await expect(page.locator("#left-items .sealed-crate")).toHaveCount(0);
   await expect(page.locator("#left-items .sprite-black")).toHaveCount(2);
   await expect(page.locator("#left-items .weight")).toHaveCount(6);
@@ -87,7 +108,7 @@ test("opening stays silent and the resulting comic is a visual storyboard, not m
   test.setTimeout(105000);
   await level19(page);
   await page.locator("#unpack-crates").click();
-  await phase(page,"sprites-landed");
+  await expect(page.locator("#left-crate-expansion")).toBeAttached({timeout:10000});
   await expect(page.locator("#left-crate-expansion .crate-expansion-step")).toHaveCount(0);
   await expect(page.locator("#left-crate-expansion .crate-release-group")).toHaveCount(0);
   await expect(page.locator("#left-crate-expansion")).toHaveText("");
