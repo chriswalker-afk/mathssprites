@@ -26,7 +26,7 @@ export function parseNotebookSide(input) {
   if(/[−–-]/.test(compact))
     return error("negative","Stage 3 of World 1 cannot use negative terms or subtract inside a room.");
   if(/[./÷^²()]/.test(compact))
-    return error("fraction","Use whole sprites and weights only; fractions, powers and brackets belong to later worlds.");
+    return error("fraction","Whole sprites and weights only. Sealed groups are expanded in the operation editor, not this legacy line parser.");
   if(!/^[0-9x+]+$/.test(compact))
     return error("syntax","Use terms such as x, 2x, 3, or 2x + 3.");
   const terms=compact.split("+");
@@ -93,7 +93,8 @@ export function startNotebook(level) {
   if((!positive&&!signed) ||
      level.goal&&level.goal!=="isolate" ||
      !Array.isArray(level.allowedOperations) ||
-     level.allowedOperations.some(op=>!["remove","add","divide","multiply"].includes(op)) ||
+     level.allowedOperations.some(op=>!["remove","add","divide","multiply",
+        ...(level.groupedPrototype?["unpack"]:[])].includes(op)) ||
      ["left","right"].some(side=>level[side]?.posX2) ||
      !validInitialLevel(level) ||
      !Number.isInteger(level.solution)||level.solution<=0)
