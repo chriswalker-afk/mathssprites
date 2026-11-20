@@ -56,8 +56,10 @@ test("World 2 mixed signed rooms keep the same hand action while cancelling diff
   await page.locator("#right-action").click();
   await expect(page.locator("#left-items .weight")).toHaveCount(0,{timeout:25000});
   await expect(page.locator("#left-items .balloon")).toHaveCount(0);
-  await expect(page.locator("#right-items .weight")).toHaveCount(8);
-  await expect(page.locator("#right-items .balloon")).toHaveCount(0);
+  // The east room has five genuine weight/balloon pairs. The visual
+  // sequence animates them individually before exposing the committed room.
+  await expect(page.locator("#right-items .weight")).toHaveCount(8,{timeout:48000});
+  await expect(page.locator("#right-items .balloon")).toHaveCount(0,{timeout:48000});
   await expect(page.locator("#undo")).toBeEnabled();
   await page.locator("#undo").click();
   await expect(page.locator("#left-items .weight")).toHaveCount(3);
