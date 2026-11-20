@@ -109,7 +109,8 @@ test("board scrolling is keyboard accessible, stage-specific and preserves posit
   await expect(page.locator(".level-tile")).toHaveCount(20);
   await page.locator('[data-map-stage="guided"]').click();
   await expect(board).toHaveAttribute("data-chapter-layout","multi-row");
-  expect(await board.evaluate(el=>el.scrollTop)).toBe(0);
+  expect(await board.evaluate(el=>el.scrollTop)).toBeGreaterThan(0);
+  // Returning to the same learning stage keeps the place you last visited.
 });
 
 test("phone layout continues natural document scrolling instead of nested truncated chapters @smoke",async({page})=>{
