@@ -544,13 +544,17 @@ function render() {
   const grouped = operation === "divide" || operation === "multiply";
   const objectOperation=operation==="add"||operation==="remove";
   const quantity=grouped?factor:amount;
-  $("object-picker").hidden=!objectOperation;
-  $("amount-control").hidden=!(grouped||(objectOperation&&kind!==null));
+  // Keep all tool families visible in the neutral state.  Nothing is
+  // preselected, but students can see what is available before deciding.
+  $("object-picker").hidden=grouped||operation==="square"||operation==="sqrt";
+  $("amount-control").hidden=operation==="square"||operation==="sqrt";
   $("amount-label").textContent=grouped?"3 · How many groups?":"3 · How many?";
   $("amount-value").textContent=quantity===null?"—":String(quantity);
-  $("amount-down").disabled=busy||isSolved(state)||quantity===null||
+  $("amount-down").disabled=busy||isSolved(state)||!operation||
+    (objectOperation&&!kind)||quantity===null||
     (grouped?quantity<=2:quantity<=1);
-  $("amount-up").disabled=busy||isSolved(state)||
+  $("amount-up").disabled=busy||isSolved(state)||!operation||
+    (objectOperation&&!kind)||
     (grouped?quantity>=5:quantity>=12);
   $("amount-control").setAttribute("aria-label",quantity===null?
     "No quantity selected. Use plus to choose a number.":"Chosen quantity: "+quantity);
