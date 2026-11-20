@@ -1,3 +1,4 @@
+import {clickWithReferenceMove} from "./reference-move-helper.mjs";
 import { test, expect } from "@playwright/test";
 
 test.beforeEach(async ({page}) => {
@@ -63,7 +64,7 @@ test("World 1 uses only positive whole numbers; square/root and signed tools are
 test("solving Level 1 persists progress and earns three stars for the optimal move", async ({page}) => {
   test.setTimeout(55000);
   await startFirstLevel(page);
-  await page.locator("#do-both").click();
+  await clickWithReferenceMove(page,"#do-both");
   await expect(page.locator("#replay-backdrop")).toBeVisible({timeout:25000});
   await page.locator("#replay-skip").click();
   await expect(page.locator("#pencil-lines")).toContainText("x = 3");
@@ -141,11 +142,11 @@ test("a reversed, two-sided World 1 level completes and reveals correct algebra"
   await page.getByRole("button",{name:"Choose Stage 1 levels"}).click();
   await page.locator('[data-level="18"]').click();
   await expect(page.locator("#level-title")).toHaveText("The other way round");
-  await page.locator("#amount-up").click(); // remove two sprites on both sides
-  await page.locator("#do-both").click();
+  await clickWithReferenceMove(page,"#amount-up"); // remove two sprites on both sides
+  await clickWithReferenceMove(page,"#do-both");
   await expect(page.locator("#undo")).toBeEnabled();
   await page.locator('[data-kind="posOne"]').click();
-  await page.locator("#do-both").click(); // remove two weights
+  await clickWithReferenceMove(page,"#do-both"); // remove two weights
   await expect(page.locator("#replay-backdrop")).toBeVisible({timeout:30000});
   await page.locator("#replay-skip").click();
   await expect(page.locator("#pencil-lines")).toContainText("5 = x");
@@ -182,7 +183,7 @@ test("Stage 1 ignores a synthetic switch to manual and mirrors moves automatical
   await expect(page.locator("#left-action")).toBeHidden();
   await expect(page.locator("#right-action")).toBeHidden();
   await page.locator("#motion-toggle").click();
-  await page.locator("#do-both").click();
+  await clickWithReferenceMove(page,"#do-both");
   await expect(page.locator("#replay-backdrop")).toBeVisible({timeout:24000});
   await page.locator("#replay-skip").click();
   await expect(page.locator("#pencil-lines")).toContainText("x = 3");
