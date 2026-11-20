@@ -1,3 +1,4 @@
+import {clickWithReferenceMove} from "./reference-move-helper.mjs";
 import {test,expect} from "@playwright/test";
 
 async function stages(page){
@@ -11,13 +12,13 @@ async function openLevel(page,stage,number){
   await page.locator('[data-level="'+number+'"]').click();
 }
 async function doOneGuidedMove(page){
-  await page.locator("#do-both").click();
+  await clickWithReferenceMove(page,"#do-both");
   await expect(page.locator("#do-both")).toBeEnabled({timeout:15000});
 }
 async function doOneManualMove(page){
-  await page.locator("#left-action").click();
+  await clickWithReferenceMove(page,"#left-action");
   await expect(page.locator("#right-action")).toContainText("Match the move",{timeout:14000});
-  await page.locator("#right-action").click();
+  await clickWithReferenceMove(page,"#right-action");
 }
 async function write(page,text){
   await page.locator("#notebook-operation").fill(text);
@@ -51,9 +52,9 @@ test("two-step solution earns two stars; replaying optimally upgrades the best r
   test.setTimeout(95000);
   await openLevel(page,"guided",1);
   await page.locator("#motion-toggle").click(); // short accessible snapshots
-  await page.locator("#amount-down").click(); // remove one, twice (optimal = one move)
+  await clickWithReferenceMove(page,"#amount-down"); // remove one, twice (optimal = one move)
   await doOneGuidedMove(page);
-  await page.locator("#do-both").click();
+  await clickWithReferenceMove(page,"#do-both");
   await expect(page.locator("#replay-backdrop")).toBeVisible({timeout:20000});
   await expect(page.locator("#replay-star-summary")).toContainText("★★☆ 2 stars");
   await page.locator("#replay-close").click();
@@ -62,7 +63,7 @@ test("two-step solution earns two stars; replaying optimally upgrades the best r
   let saved=await page.evaluate(()=>JSON.parse(localStorage.getItem("mathssprites.stars.v1")));
   expect(saved.guided["1"]).toBe(2);
   await page.locator('[data-level="1"]').click();
-  await page.locator("#do-both").click(); // initial remove two
+  await clickWithReferenceMove(page,"#do-both"); // initial remove two
   await expect(page.locator("#replay-star-summary")).toContainText("★★★ 3 stars",{timeout:16000});
   saved=await page.evaluate(()=>JSON.parse(localStorage.getItem("mathssprites.stars.v1")));
   expect(saved.guided["1"]).toBe(1);
@@ -77,10 +78,10 @@ test("two manual hand visits count as one optimal move, not two @smoke",async({p
   test.setTimeout(65000);
   await openLevel(page,"independent",1);
   await page.locator("#motion-toggle").click();
-  await page.locator("#left-action").click();
+  await clickWithReferenceMove(page,"#left-action");
   expect(await page.evaluate(()=>localStorage.getItem("mathssprites.stars.v1"))).toBeNull();
   await expect(page.locator("#right-action")).toContainText("Match the move",{timeout:14000});
-  await page.locator("#right-action").click();
+  await clickWithReferenceMove(page,"#right-action");
   await expect(page.locator("#replay-backdrop")).toBeVisible({timeout:20000});
   await expect(page.locator("#replay-star-summary")).toContainText("★★★ 3 stars");
   const saved=await page.evaluate(()=>JSON.parse(localStorage.getItem("mathssprites.stars.v1")));
