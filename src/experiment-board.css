@@ -122,3 +122,48 @@
 @media(prefers-reduced-motion:reduce){
   .map-world-button,.map-stage-button,.home-stage-quick{transition:none!important}
 }
+
+/*
+ * PR51 — six Guided chapters (added with crates) are TWO rows of three.
+ * The old viewport-first sizing gave both rows 50% of the board, shrinking
+ * every level tile below the height needed for its name, stars and status.
+ *
+ * Keep the page chrome fixed, but let the chapter GRID scroll vertically.
+ * Do not clip or scale learning content to make 24 buttons fit one screen.
+ * Single-row boards and the natural mobile scrolling layout are unchanged.
+ */
+@media (min-width:900px) and (min-height:500px){
+  #site-levels #level-sections[data-chapter-layout="multi-row"]{
+    grid-template-rows:repeat(2,minmax(330px,max-content));
+    grid-auto-rows:minmax(330px,max-content);
+    align-content:start;
+    overflow-x:hidden;
+    overflow-y:auto;
+    overscroll-behavior-y:contain;
+    scrollbar-width:thin;
+    scrollbar-gutter:stable;
+  }
+  #site-levels #level-sections[data-chapter-layout="multi-row"] .chapter-group{
+    height:auto;min-height:330px;
+  }
+}
+@media (min-width:900px) and (min-height:790px){
+  /* PR37 uses larger titles and tile padding on taller desktops. */
+  #site-levels #level-sections[data-chapter-layout="multi-row"]{
+    grid-template-rows:repeat(2,minmax(435px,max-content));
+    grid-auto-rows:minmax(435px,max-content);
+  }
+  #site-levels #level-sections[data-chapter-layout="multi-row"] .chapter-group{
+    min-height:435px;
+  }
+}
+@media (min-width:900px) and (min-height:500px) and (max-height:649px){
+  /* PR28's compact font/padding needs less height, not zero height. */
+  #site-levels #level-sections[data-chapter-layout="multi-row"]{
+    grid-template-rows:repeat(2,minmax(275px,max-content));
+    grid-auto-rows:minmax(275px,max-content);
+  }
+  #site-levels #level-sections[data-chapter-layout="multi-row"] .chapter-group{
+    min-height:275px;
+  }
+}
