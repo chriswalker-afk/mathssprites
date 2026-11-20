@@ -5,7 +5,7 @@ test.beforeEach(async({page})=>{
   await page.goto("/");
 });
 
-test("the foyer retains direct play and all three shortcuts @smoke",async({page})=>{
+test("the foyer retains direct play and all three shortcuts @quick @smoke",async({page})=>{
   await expect(page.getByRole("heading",{name:"How much does the sprite weigh?"})).toBeVisible();
   await expect(page.locator("#home-stage-shortcuts .home-stage-quick")).toHaveCount(3);
   await expect(page.locator("#site-home .landing-copy p")).toHaveText("Balance the rooms. Discover the algebra.");
@@ -13,7 +13,7 @@ test("the foyer retains direct play and all three shortcuts @smoke",async({page}
   await expect(page.locator("#notebook-workspace")).toBeVisible();
 });
 
-test("world cards show only essential information, and future doors stay locked @smoke",async({page})=>{
+test("world cards show only essential information, and future doors stay locked @quick @smoke",async({page})=>{
   await page.locator('[data-screen="worlds"]').first().click();
   await expect(page.locator("#site-worlds h1")).toHaveText("Choose a world");
   await expect(page.locator(".world-card")).toHaveCount(4);
@@ -60,7 +60,7 @@ test("settings are scannable, keyboard-operable, and motion state is announced @
   await expect(page.locator("#site-motion")).toHaveAttribute("aria-pressed","false");
 });
 
-test("Inventor's Desk opens with the editor focused and optional rules @smoke",async({page})=>{
+test("Inventor's Desk opens with the editor focused and optional rules @quick @smoke",async({page})=>{
   await page.locator('[data-screen="worlds"]').first().click();
   await page.getByRole("button",{name:"Explore stages"}).click();
   await page.getByRole("button",{name:"Create your own equation"}).click();
@@ -104,7 +104,7 @@ for(const size of [{width:1024,height:720},{width:1092,height:540}]){
   });
 }
 
-test("phone menus remain usable without sideways clipping @smoke",async({page})=>{
+test("phone menus remain usable without sideways clipping @quick @smoke",async({page})=>{
   await page.setViewportSize({width:375,height:812});
   for(const screen of ["worlds","help","settings"]){
     await page.locator('.site-nav-links [data-screen="'+screen+'"]').click();

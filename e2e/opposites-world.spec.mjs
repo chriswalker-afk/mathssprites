@@ -10,7 +10,7 @@ async function board(page,stage="guided"){
   if(stage!=="guided")await page.locator('[data-map-stage="'+stage+'"]').click();
   await expect(page.locator("#site-levels")).toHaveAttribute("data-active-world","opposites");
 }
-test("World 2 has its own moonlit doorway, discovery stages and all 48 experiments @smoke",async({page})=>{
+test("World 2 has its own moonlit doorway, discovery stages and all 48 experiments @quick @smoke",async({page})=>{
   await page.locator('.site-nav-links [data-screen="worlds"]').click();
   await expect(page.locator(".world-ready")).toHaveCount(2);
   await expect(page.locator(".world-planned")).toHaveCount(2);
@@ -120,7 +120,7 @@ test("World 2 reset retains its signed world, separate guide and physics @smoke"
   await page.reload();
   await expect(page.locator("#home-play")).toContainText("Guided Opposites");
 });
-test("World 1 remains positive only after changing worlds @smoke",async({page})=>{
+test("World 1 remains positive only after changing worlds @quick @smoke",async({page})=>{
   await board(page);
   await page.locator('[data-map-world="workshop"]').click();
   await expect(page.locator("#site-levels")).toHaveAttribute("data-active-world","workshop");
