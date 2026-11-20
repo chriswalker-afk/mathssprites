@@ -1,5 +1,5 @@
 /**
- * Curriculum planning catalogue for the 96 SHIPPED campaign levels.
+ * Curriculum planning catalogue for the 108 SHIPPED campaign levels.
  *
  * This module is for curriculum authors, reviewers and diagnostics. It is NOT
  * imported by the student game or menus: a difficulty or reference route must
@@ -88,7 +88,9 @@ export const CURRICULUM_CHAPTERS=Object.freeze({
       chapter("Across the Hall","Simplify equations with unknowns on both sides",
         ["variables-both-sides","reverse-orientation","two-step"]),
       chapter("Master of the Balance","Compare routes, manage physical constraints and intact groups",
-        ["strategy-choice","fraction-avoidance","sealed-groups"])
+        ["strategy-choice","fraction-avoidance","sealed-groups"]),
+      chapter("The Crate Workshop","Choose when identical sealed groups should stay together and when opening them reveals a useful balance route",
+        ["sealed-groups","two-step","strategy-choice","fraction-avoidance","variables-both-sides"])
     ]),
     independent:Object.freeze([
       chapter("Your First Moves","Repeat one identical mathematical action in two separate hand visits",
@@ -154,7 +156,7 @@ export const CURRICULUM_CHAPTERS=Object.freeze({
  */
 export const DIFFICULTY_TIERS=Object.freeze({
   workshop:Object.freeze({
-    guided:Object.freeze([1,1,1,2,2,2,2,3,3,3,3,4,3,4,4,4,4,4,5,5]),
+    guided:Object.freeze([1,1,1,2,2,2,2,3,3,3,3,4,3,4,4,4,4,4,5,5,3,3,4,5]),
     independent:Object.freeze([2,2,2,2,2,2,3,3,3,3,3,4,4,4,5,5,3,4,4,5]),
     notebook:Object.freeze([2,2,3,3,3,3,4,4,4,4,5,5,3,4,4,5])
   }),
@@ -172,11 +174,13 @@ const SOURCES=Object.freeze({
   opposites:OPPOSITE_LEVELS
 });
 const FRACTION_TRAPS=new Set([
-  "two-step-12","independent-12","apprentice-06","apprentice-08"
+  "two-step-12","independent-12","apprentice-06","apprentice-08",
+  "crates-23","crates-24"
 ]);
 const ALTERNATIVE_ROUTES=new Set([
   "two-step-10","two-step-11","master-17","master-20",
-  "apprentice-04","apprentice-05","apprentice-12"
+  "apprentice-04","apprentice-05","apprentice-12",
+  "crates-21","crates-22","crates-24"
 ]);
 const sum=(r,key)=>Number(r?.[key]||0);
 const variableCount=r=>sum(r,"posX")-sum(r,"negX")+
