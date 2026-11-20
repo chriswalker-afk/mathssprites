@@ -15,6 +15,9 @@
   flex-wrap:nowrap;
   align-items:flex-end;
   justify-content:flex-end;
+  /* The label column sits BESIDE the crate width. The global
+     border-box reset must not subtract it from the actual crate column. */
+  box-sizing:content-box;
   width:var(--crate-w);
   padding-left:var(--crate-label-column);
   gap:2px;
