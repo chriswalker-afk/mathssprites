@@ -161,8 +161,8 @@ export const DIFFICULTY_TIERS=Object.freeze({
     notebook:Object.freeze([2,2,3,3,3,3,4,4,4,4,5,5,3,4,4,5])
   }),
   opposites:Object.freeze({
-    guided:Object.freeze([2,2,2,3,3,3,4,4,3,4,4,4,4,4,5,5,5,4,5,5]),
-    independent:Object.freeze([2,2,3,3,3,3,4,4,3,4,4,4,5,5,4,5]),
+    guided:Object.freeze([2,2,2,3,3,4,4,4,3,4,4,4,4,4,5,5,5,5,5,5]),
+    independent:Object.freeze([2,2,3,3,3,3,4,4,3,4,4,4,5,5,5,5]),
     notebook:Object.freeze([2,2,3,3,4,4,4,4,5,5,5,5])
   })
 });
@@ -175,12 +175,13 @@ const SOURCES=Object.freeze({
 });
 const FRACTION_TRAPS=new Set([
   "two-step-12","independent-12","apprentice-06","apprentice-08",
-  "crates-23","crates-24"
+  "crates-23","crates-24","op-g-06","op-g-09","op-i-06","op-a-08"
 ]);
 const ALTERNATIVE_ROUTES=new Set([
   "two-step-10","two-step-11","master-17","master-20",
   "apprentice-04","apprentice-05","apprentice-12",
-  "crates-21","crates-22","crates-24"
+  "crates-21","crates-22","crates-24",
+  "op-g-18","op-i-06","op-a-08"
 ]);
 const sum=(r,key)=>Number(r?.[key]||0);
 const variableCount=r=>sum(r,"posX")-sum(r,"negX")+
@@ -236,6 +237,11 @@ function makeEntry(worldId,stage,slot){
   const benchmarkType=worldId==="workshop"?"proven-minimum":"authored-valid-route";
   const referenceOperations=worldId==="opposites"
     ?freezeList(new Set(level.referenceRoute.map(step=>step.op))):freezeList([]);
+  const initialZeroPairs=["left","right"].reduce((total,side)=>{
+    const r=level[side]||{};
+    return total+Math.min(sum(r,"posX"),sum(r,"negX"))+
+      Math.min(sum(r,"posOne"),sum(r,"negOne"));
+  },0);
   const complexitySignals=Object.freeze({
     benchmarkMoves,
     benchmarkType,
@@ -247,7 +253,8 @@ function makeEntry(worldId,stage,slot){
     scaffoldKind:level.scaffold?.kind||"none",
     fractionTrap:flags.fractionTrap,
     multipleSolutionRoutes:flags.alternativeRoutes,
-    sealedGroupReasoning:flags.sealedCrates
+    sealedGroupReasoning:flags.sealedCrates,
+    initialZeroPairs
   });
   const difficulty=Object.freeze({
     tier,label:DIFFICULTY_BANDS[tier],withinChapter:Number(number-1)%4+1,
@@ -255,6 +262,7 @@ function makeEntry(worldId,stage,slot){
   });
   return Object.freeze({
     id:level.id,worldId,stage,number,title:level.title,chapterIndex,
+    contentRevision:level.contentRevision||1,
     chapterTitle:definition.title,learningObjective:definition.objective,
     strand:"Algebra: solving equations",skillIds,prerequisiteSkillIds,
     difficulty,flags
