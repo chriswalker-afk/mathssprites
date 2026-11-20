@@ -141,8 +141,8 @@ test("a fully mastered Stage 3 shows its own 16/16 banner and completion route",
   await expect(page.locator("#world1-finale")).toContainText("Algebra Apprentice mastered");
   await expect(page.locator("#world1-progress-bar")).toHaveJSProperty("max",16);
   await expect(page.locator("#world1-progress-bar")).toHaveJSProperty("value",16);
-  await expect(page.locator(".chapter-complete")).toHaveCount(3);
-  await expect(page.locator(".level-tile.status-complete")).toHaveCount(12);
+  await expect(page.locator(".chapter-complete")).toHaveCount(4);
+  await expect(page.locator(".level-tile.status-complete")).toHaveCount(16);
 });
 
 test("Stage 3 remains usable on a phone, with keyboard entry and no squared controls",async({page})=>{
