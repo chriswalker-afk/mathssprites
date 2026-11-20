@@ -1,3 +1,4 @@
+import {clickWithReferenceMove} from "./reference-move-helper.mjs";
 import {test,expect} from "@playwright/test";
 
 test.beforeEach(async({page})=>{
@@ -51,7 +52,7 @@ test("the hand visits each chamber and shows a real temporary scale tilt",async(
   await page.locator("#guide-next").click();
   await expect(page.locator("#left-action")).toHaveClass(/coach-focus/);
   await page.locator("#motion-toggle").click(); // use short physical motion
-  await page.locator("#left-action").click();
+  await clickWithReferenceMove(page,"#left-action");
   await expect(page.locator("#balance-caption")).toContainText("waiting");
   await expect(page.locator("#rooms-row")).not.toHaveAttribute("style", /rotate\(0deg\)/);
   await expect(page.locator("#balance-caption")).toContainText("waiting");
@@ -59,7 +60,7 @@ test("the hand visits each chamber and shows a real temporary scale tilt",async(
   await expect(page.locator("#guide-message")).toContainText("SAME removal");
   await expect(page.locator("#left-items .weight")).toHaveCount(0);
   await expect(page.locator("#right-items .weight")).toHaveCount(7);
-  await page.locator("#right-action").click();
+  await clickWithReferenceMove(page,"#right-action");
   await expect(page.locator("#replay-backdrop")).toBeVisible({timeout:28000});
   await expect(page.locator("#replay-level-stamp")).toContainText("STAGE 2");
   await page.locator("#replay-skip").click();
@@ -76,7 +77,7 @@ test("the student may begin in the east; one-sided Undo cancels an unmatched mov
   test.setTimeout(50000);
   await openStage2(page);
   await page.locator("#motion-toggle").click();
-  await page.locator("#right-action").click();
+  await clickWithReferenceMove(page,"#right-action");
   await expect(page.locator("#balance-caption")).toContainText("waiting");
   await expect(page.locator("#rooms-row")).not.toHaveAttribute("style", /rotate\(0deg\)/);
   await expect(page.locator("#left-action")).toContainText("Match the move here");
@@ -94,10 +95,10 @@ test("a different second operation is demonstrated and then both rooms are resto
   test.setTimeout(65000);
   await openStage2(page,{level:2});
   await page.locator("#motion-toggle").click();
-  await page.locator("#left-action").click();
+  await clickWithReferenceMove(page,"#left-action");
   await expect(page.locator("#left-items .weight")).toHaveCount(0);
-  await page.locator("#amount-down").click(); // second room receives THREE instead of FOUR
-  await page.locator("#right-action").click();
+  await clickWithReferenceMove(page,"#amount-down"); // second room receives THREE instead of FOUR
+  await clickWithReferenceMove(page,"#right-action");
   await expect(page.locator("#speech")).toBeVisible({timeout:20000});
   await expect(page.locator("#scene")).not.toHaveClass(/scene-failed-balance/,{timeout:20000});
   await expect(page.locator("#left-items .weight")).toHaveCount(4);
@@ -177,6 +178,6 @@ test("Stage 2 manual buttons stay touchable on narrow phone screens",async({page
     expect(b.x+b.width).toBeLessThanOrEqual(377);
   }
   await page.locator("#motion-toggle").click();
-  await page.locator("#left-action").click();
+  await clickWithReferenceMove(page,"#left-action");
   await expect(page.locator("#right-action")).toContainText("Match the move here");
 });
