@@ -142,8 +142,8 @@ jobs:
         run: npm install --no-save --ignore-scripts --no-audit --no-fund --prefer-offline @playwright/test@1.65.1
       - name: Complete unabridged browser regression (shard ${{ matrix.shard }})
         run: npx playwright test --shard=${{ matrix.shard }}/3 --workers=1
-      - name: Retain full-regression diagnostics
-        if: always()
+      - name: Retain full-regression diagnostics on failure or requested review
+        if: failure() || github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'visual-review'))
         uses: actions/upload-artifact@v4
         with:
           name: maths-sprites-full-browser-${{ matrix.shard }}

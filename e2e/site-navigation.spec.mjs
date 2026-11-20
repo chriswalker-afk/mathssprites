@@ -151,7 +151,7 @@ test("a reversed, two-sided World 1 level completes and reveals correct algebra"
   await expect(page.locator("#pencil-lines")).toContainText("5 = x");
   await expect(page.locator("#next-level")).toContainText("Next level");
   await page.locator("#next-level").click();
-  await expect(page.locator("#level-title")).toHaveText("The quicker route");
+  await expect(page.locator("#level-title")).toHaveText("Sealed Crates");
 });
 
 test("World 1 offers 3 stage cards and a playable, independent Equation Workshop", async ({page}) => {

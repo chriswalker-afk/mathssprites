@@ -83,23 +83,24 @@ test("completing every workshop level reveals the mastery banner and themed chap
   await page.evaluate(value=>localStorage.setItem("mathssprites.progress.v1",value),data);
   await page.reload();
   await page.locator('[data-screen="worlds"]').first().click();
-  await expect(page.locator(".world-ready")).toContainText("STAGE 1 MASTERED");
-  await page.locator('[data-screen="stages"]').first().click();
-  await page.locator('[data-screen="levels"]').first().click();
+  await expect(page.locator('[data-world-art="workshop"] .world-progress')).toContainText("20 / 48 complete");
+  await page.getByRole("button",{name:"Explore stages"}).click();
+  await page.getByRole("button",{name:"Choose Stage 1 levels"}).click();
   await expect(page.locator("#world1-finale")).toBeVisible();
   await expect(page.locator("#world1-progress-bar")).toHaveJSProperty("value",20);
   await expect(page.locator(".chapter-complete")).toHaveCount(5);
   await expect(page.locator(".chapter-illustration")).toHaveCount(5);
   await expect(page.locator(".level-tile.status-complete")).toHaveCount(20);
-  await expect(page.locator(".level-tile.level-next")).toHaveCount(0);
+  // A fully completed stage still highlights one replayable tile on the board.
+  await expect(page.locator(".level-tile.level-next.status-complete")).toHaveCount(1);
 });
 
 test("phone menus and replay keep touch actions in view",async({page})=>{
   test.setTimeout(60000);
   await page.setViewportSize({width:375,height:725});
   await page.locator('[data-screen="worlds"]').first().click();
-  await page.locator('[data-screen="stages"]').first().click();
-  await page.locator('[data-screen="levels"]').first().click();
+  await page.getByRole("button",{name:"Explore stages"}).click();
+  await page.getByRole("button",{name:"Choose Stage 1 levels"}).click();
   await expect(page.locator(".chapter-illustration").first()).toBeVisible();
   await expect(page.locator(".level-tile")).toHaveCount(20);
   await page.locator('[data-level="1"]').click();
@@ -122,8 +123,8 @@ test("chapter-opening levels show new ideas without exposing the hidden equation
   await page.locator('[data-screen="settings"]').first().click();
   await page.locator("#teacher-unlock").check();
   await page.locator('[data-screen="worlds"]').first().click();
-  await page.locator('[data-screen="stages"]').first().click();
-  await page.locator('[data-screen="levels"]').first().click();
+  await page.getByRole("button",{name:"Explore stages"}).click();
+  await page.getByRole("button",{name:"Choose Stage 1 levels"}).click();
   for (const [number,skill,theme] of [
     [5,"Equal baskets","2"],
     [9,"Two-step experiments","3"],

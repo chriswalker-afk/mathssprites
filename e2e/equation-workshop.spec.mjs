@@ -27,7 +27,8 @@ async function saved(page){
 test("free-play builder opens for new students without campaign unlock or teacher access",async({page})=>{
   await openBuilder(page);
   await expect(page.locator("#workshop-hand-mode")).toHaveValue("auto");
-  await expect(page.locator("#workshop-feedback")).toContainText("campaign progress will not change");
+  await expect(page.locator(".workshop-storage-note")).toContainText("levels and stars are not changed");
+  await expect(page.locator("#workshop-feedback")).toHaveText("Enter an equation to check it.");
   await expect(page.locator("#site-workshop")).toContainText("48 objects");
   await page.locator('[data-workshop-example="3x + 5 = 20"]').click();
   await expect(page.locator("#workshop-equation")).toHaveValue("3x + 5 = 20");
