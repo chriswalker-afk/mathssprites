@@ -29,9 +29,9 @@ test("brackets are true separate glass-fronted objects, not loose hidden sprites
   await expect(page.locator(".sealed-crate .crate-mini-sprite")).toHaveCount(2);
   await expect(page.locator(".sealed-crate .crate-mini-weight")).toHaveCount(6);
   await expect(page.locator(".sealed-crate .crate-name")).toHaveCount(0);
-  await expect(page.locator(".crate-contents-note:visible")).toHaveCount(1);
-  await expect(page.locator("#left-crate-contents")).toHaveText("Each crate: 1 sprite + 3 weights");
-  await expect(page.locator("#right-crate-contents")).toBeHidden();
+  await expect(page.locator(".crate-picture-sign")).toHaveCount(1);
+  await expect(page.locator(".crate-stack-count")).toHaveText("2 crates");
+  await expect(page.locator(".crate-contents-note:visible")).toHaveCount(0);
   await expect(page.locator("#unpack-crates")).toHaveText(/Expand brackets/);
   await expect(page.locator("#unpack-crates")).toBeEnabled();
   await expect(page.locator('[data-operation="square"]')).toBeHidden();
