@@ -48,7 +48,7 @@ test("the Hall of Doors contains four distinct locally loaded artworks, with fut
   await imagesLoaded(page,"#world1-stage-cards .portal-stage-medallion",3);
   await expect(page.locator("#world1-workshop button")).toBeEnabled();
 });
-test("Experiment Board displays its engraved surface, all 48 levels and retains stage-specific artwork @smoke",async({page})=>{
+test("Experiment Board displays its engraved surface, all 56 World 1 levels and retains stage-specific artwork @smoke",async({page})=>{
   await page.locator("#home-choose-level").click();
   await expect(page.locator("#site-levels")).toBeVisible();
   const bg=await page.locator("#site-levels").evaluate(el=>getComputedStyle(el).backgroundImage);
@@ -57,10 +57,10 @@ test("Experiment Board displays its engraved surface, all 48 levels and retains 
   await expect(page.locator(".level-tile:disabled")).toHaveCount(0);
   await page.locator('[data-map-stage="independent"]').click();
   await expect(page.locator("#site-levels")).toHaveAttribute("data-active-stage","independent");
-  await expect(page.locator(".level-tile")).toHaveCount(16);
+  await expect(page.locator(".level-tile")).toHaveCount(20);
   await page.locator('[data-map-stage="notebook"]').click();
   await expect(page.locator("#site-levels")).toHaveAttribute("data-active-stage","notebook");
-  await expect(page.locator(".level-tile")).toHaveCount(12);
+  await expect(page.locator(".level-tile")).toHaveCount(16);
   await expect(page.locator('.map-world-button:disabled')).toHaveCount(2);
   await page.screenshot({path:"artifacts/pr33-experiment-board-1280.png"});
 });
