@@ -56,7 +56,7 @@ test("divide-first uses real baskets, opens ONE group, and earns 3 stars @smoke"
   await page.locator("#do-both").click();
   await expect(page.locator("#replay-backdrop")).toBeVisible({timeout:35000});
   await expect(page.locator("#replay-star-summary")).toContainText("★★★ 3 stars");
-  await expect(page.locator("#comic-panels")).toContainText("Unpack");
+  // The comic intentionally reveals one panel at a time with the pencil.\n  // Show the complete checked history before inspecting the unpack panel.\n  await page.locator("#replay-skip").click();\n  await expect(page.locator("#comic-panels")).toContainText("Unpack");
   const save=await page.evaluate(()=>JSON.parse(localStorage.getItem("mathssprites.campaign.v2")));
   expect(save.worlds.workshop.stages.guided.completed).toContain("master-19");
   expect(save.worlds.workshop.stages.guided.bestMoves["master-19"]).toBe(3);
