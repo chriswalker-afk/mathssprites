@@ -2,9 +2,10 @@
 
 ## Purpose and scope
 
-This is a **teacher/developer planning layer** for the **96 playable campaign levels**:
-20 Guided, 16 Independent and 12 Algebra Apprentice in each of World 1
-(The Balance Workshop) and World 2 (The Opposite Chambers).
+This is a **teacher/developer planning layer** for the **104 playable campaign levels**:
+20 Guided, 20 Independent and 16 Algebra Apprentice in World 1
+(The Balance Workshop), plus 20 Guided, 16 Independent and 12 Algebra Apprentice
+in World 2 (The Opposite Chambers).
 
 The 13 legacy experiments in src/engine.mjs remain preview and mathematical
 test fixtures, not additional campaign entries. The future fractions and
@@ -20,7 +21,7 @@ operation or number of objects.
 - src/curriculum.mjs: authored skill definitions and prerequisites, learning
   objectives for every four-level chapter, explicit 1–5 difficulty bands,
   per-level mathematical/physical features and lookup functions
-- tests/curriculum.test.mjs: coverage and consistency tests for **all 96
+- tests/curriculum.test.mjs: coverage and consistency tests for **all 104
   IDs**, chapters, skill IDs, difficulty bands, move benchmarks and no
   accidental imports by the student application
 - scripts/curriculum-report.mjs: author-only Markdown or JSON report,
