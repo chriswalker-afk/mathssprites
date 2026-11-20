@@ -146,6 +146,8 @@ test("a reversed, two-sided World 1 level completes and reveals correct algebra"
   await clickWithReferenceMove(page,"#do-both");
   await expect(page.locator("#undo")).toBeEnabled();
   await page.locator('[data-kind="posOne"]').click();
+  await page.locator("#amount-up").click();
+  await page.locator("#amount-up").click();
   await clickWithReferenceMove(page,"#do-both"); // remove two weights
   await expect(page.locator("#replay-backdrop")).toBeVisible({timeout:30000});
   await page.locator("#replay-skip").click();
