@@ -192,6 +192,26 @@ function renderRoom(side, r, groupCount) {
     resizeFloor(side);
     return;
   }
+  if(!multiplying&&basketCount&&crateCount(r)&&!crateOnlyDivision){
+    // Mixed division: retain a whole sealed group by discarding surplus
+    // original crates. ONLY the loose objects enter real wicker baskets.
+    // Neither the number of objects nor the engine transaction is invented
+    // by this temporary visual partition.
+    const loose={...r,crates:null};
+    const sealed={...r,posX:0,negX:0,posX2:0,posOne:0,negOne:0};
+    node.innerHTML='<div class="mixed-crate-division-stage">'+
+      '<div class="crate-division-stage" data-phase="waiting">'+
+      '<div class="floor-shell"><div class="items-grid floor-track" data-layout="floor"'+crateAttr+'>'+
+      crateMarkup(sealed)+'</div></div></div>'+
+      '<div class="division-stage" data-operation="divide" data-phase="waiting" '+
+      'style="--division-factor:'+basketCount+'">'+
+      '<div class="division-source floor-shell"><div class="items-grid floor-track" data-layout="floor">'+
+      allTokens(loose,false,side)+'</div></div>'+
+      '<div class="basket-row" aria-label="'+basketCount+' whole groups of loose objects">'+
+      divisionBasketMarkup(basketCount)+'</div></div></div>';
+    resizeFloor(side);
+    return;
+  }
   if (basketCount) {
     // Both inverse operations use the SAME solid wicker stage. Multiplication
     // keeps originals on the floor until the first basket lands and receives
@@ -220,11 +240,13 @@ function renderRoom(side, r, groupCount) {
 // Scale the entire horizontal row, never wrap it into multiple rows.
 function resizeFloor(side) {
   const room = $(side + "-items");
-  const track = room.querySelector(".floor-track");
-  if (!track) return;
-  const width = track.scrollWidth || track.getBoundingClientRect().width;
-  const fit = floorScaleToFit(room.clientWidth, width);
-  track.style.setProperty("--floor-scale", fit.toFixed(4));
+  for(const track of room.querySelectorAll(".floor-track")){
+    const width=track.scrollWidth||track.getBoundingClientRect().width;
+    const container=track.closest(".mixed-crate-division-stage")
+      ?track.closest(".floor-shell").clientWidth:room.clientWidth;
+    const fit=floorScaleToFit(container,width);
+    track.style.setProperty("--floor-scale",fit.toFixed(4));
+  }
 }
 window.addEventListener("resize", () => {
   for (const side of ["left", "right"]) resizeFloor(side);
@@ -494,6 +516,8 @@ function render() {
   if(campaignWorldId)document.body.dataset.campaignWorld=campaignWorldId;
   else delete document.body.dataset.campaignWorld;
   $("level-prompt").textContent = lvl.groupedPrototype?"":lvl.prompt;
+  document.body.classList.toggle("grouped-physical-level",
+    !!lvl.groupedPrototype&&!notebookSession);
   $("chapter-status").hidden = campaignLevelNumber === null;
   // Existing World 1 teacher cues remain, but future mathematical worlds
   // get their own stage/chapter facts rather than World 1's fixed 20/16 map.
@@ -926,6 +950,13 @@ function animateClassFrame() {
 async function handAct(side, action, applyAtContact) {
   // Whole sealed crates do not need baskets: physically throw away the
   // unwanted original crates and retain the labelled sealed group.
+  if(action.op==="divide"&&!action.fractionAttempt&&
+     $(side+"-items").querySelector(".mixed-crate-division-stage")){
+    await playCrateDivision({side,factor:action.factor,reduced:reducedMotion,
+      applyAtContact:async()=>{},sleep,resetHand});
+    return playDivisionBaskets({side,factor:action.factor,reduced:reducedMotion,
+      applyAtContact,sleep});
+  }
   if(action.op==="divide"&&!action.fractionAttempt&&
      $(side+"-items").querySelector(".crate-division-stage"))
     return playCrateDivision({side,factor:action.factor,reduced:reducedMotion,
