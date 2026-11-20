@@ -1035,7 +1035,9 @@ async function handAct(side, action, applyAtContact) {
           target.classList.remove("hand-target");
           break;
       }
-      await sleep(beat.delay);
+      if(action.op==="unpack"&&activeCrateView)
+        await activeCrateView.hold(beat.delay);
+      else await sleep(beat.delay);
     }
   } finally {
     // No animation state should leak into the next room or next level.
@@ -1486,7 +1488,7 @@ async function unpackCrates(){
       view.announce("opening");
       await handAct(side,{...action,crateIndex:step.crateIndex},async()=>{
         view.openCrate(step.crateIndex);
-        await sleep(reducedMotion?130:340);
+        await view.hold(reducedMotion?130:340);
       });
     }
     // All sprites bounce together onto the REAL room floor. Only then do the
