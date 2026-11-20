@@ -141,6 +141,7 @@ export async function playCrateDivision({
     await applyAtContact();
     applied=true;
   } finally {
+    hand.classList.remove("crate-throwing");
     if(typeof resetHand==="function")resetHand(hand,cargo,chamber,caption);
     else {
       hand.classList.remove("approaching","reaching","grasping","lifting","acting","crate-throwing");
