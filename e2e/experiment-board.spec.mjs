@@ -26,12 +26,12 @@ test("switch between all three learning modes without leaving Experiment Board @
   await page.getByRole("button",{name:"Choose a level"}).click();
   await page.locator('[data-map-stage="independent"]').click();
   await expect(page.locator('[data-map-stage="independent"]')).toHaveAttribute("aria-pressed","true");
-  await expect(page.locator(".level-tile")).toHaveCount(16);
-  await expect(page.locator(".chapter-group")).toHaveCount(4);
+  await expect(page.locator(".level-tile")).toHaveCount(20);
+  await expect(page.locator(".chapter-group")).toHaveCount(5);
   await expect(page.locator("#levels-stage-title")).toHaveText("Independent Balance");
   await page.locator('[data-map-stage="notebook"]').click();
-  await expect(page.locator(".level-tile")).toHaveCount(12);
-  await expect(page.locator(".chapter-group")).toHaveCount(3);
+  await expect(page.locator(".level-tile")).toHaveCount(16);
+  await expect(page.locator(".chapter-group")).toHaveCount(4);
   await page.locator('[data-level="6"]').click();
   await expect(page.locator("#notebook-workspace")).toBeVisible();
   await page.locator("#game-levels").click();
