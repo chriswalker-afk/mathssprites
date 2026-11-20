@@ -96,8 +96,11 @@ export function createCrateExpansionView({
     // The real sprite and weight counts remain in a hidden inventory. Fly
     // each physical actor from its OWN opened crate lid, not from the
     // picture-sign crate and never from a hidden 0x0 DOM element.
+    const openedLid=crateElements[ownerIndex].querySelector(".crate-lid");
+    const lidRect=openedLid?.getBoundingClientRect();
     const from=sourceRect?.width>0&&sourceRect?.height>0
-      ?sourceRect:crateElements[ownerIndex].getBoundingClientRect();
+      ?sourceRect:lidRect?.width>0?lidRect
+      :crateElements[ownerIndex].getBoundingClientRect();
     // The destination exists in a temporary counting tray, not in the
     // authoritative token row. All objects still count as sealed in the engine.
     target.classList.add("released");
