@@ -96,6 +96,8 @@ body:not(.reduce-motion) .level-clear:not([hidden]){
 .level-tile{position:relative;transition:background .15s,border-color .15s,transform .15s}
 .level-tile.status-ready{border-color:var(--chapter-ink)}
 .level-tile.status-ready .tile-status{color:#e6d29e}
+.level-tile.status-revised{border-color:#c3a97b;background:linear-gradient(#3b413a,#303931)}
+.level-tile.status-revised .tile-status{color:#eed2a4}
 .level-tile.status-complete{background:linear-gradient(#304640,#263b35)}
 .level-tile.status-complete .tile-status{color:#a5dab9}
 .level-tile.level-next{box-shadow:inset 0 0 0 2px var(--chapter-ink),0 4px 16px #0005}
