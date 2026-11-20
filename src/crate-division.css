@@ -87,3 +87,27 @@
   opacity:.30;
   transform:translate(15px,-18px) scale(.59);
 }
+
+/* PR47: a room may hold both sealed groups and loose objects.
+   Original crates remain outside the baskets: throw unwanted whole crates,
+   then share only the loose tokens using the normal wicker baskets. */
+.mixed-crate-division-stage{
+  position:absolute;inset:0;display:flex;align-items:stretch;
+  width:100%;height:100%;pointer-events:none;
+}
+.mixed-crate-division-stage>.crate-division-stage{
+  position:relative;inset:auto;width:58%;min-width:0;flex:0 0 58%;
+  height:100%;align-self:stretch;
+}
+.mixed-crate-division-stage>.division-stage{
+  position:relative;inset:auto;width:42%;min-width:0;flex:1 1 0;
+  height:100%;align-self:stretch;
+}
+.mixed-crate-division-stage .floor-shell{inset:0}
+.mixed-crate-division-stage .division-stage .basket-row{inset:0;gap:2px}
+.mixed-crate-division-stage .division-stage .group-basket{min-width:0;max-width:none}
+.grouped-physical-level #action-caption{display:none!important}
+@media(max-width:699px){
+  .mixed-crate-division-stage>.crate-division-stage{width:55%;flex-basis:55%}
+  .mixed-crate-division-stage>.division-stage{width:45%}
+}
