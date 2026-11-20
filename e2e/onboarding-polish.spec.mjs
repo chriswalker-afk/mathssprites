@@ -80,18 +80,18 @@ test("solving the first level celebrates physical balance then reveals earned ne
 });
 
 test("completing every workshop level reveals the mastery banner and themed chapters",async({page})=>{
-  const data=JSON.stringify({completed:Array.from({length:20},(_,i)=>i+1),lastPlayed:20});
+  const data=JSON.stringify({completed:Array.from({length:24},(_,i)=>i+1),lastPlayed:24});
   await page.evaluate(value=>localStorage.setItem("mathssprites.progress.v1",value),data);
   await page.reload();
   await page.locator('[data-screen="worlds"]').first().click();
-  await expect(page.locator('[data-world-art="workshop"] .world-progress')).toContainText("20 / 56 complete");
+  await expect(page.locator('[data-world-art="workshop"] .world-progress')).toContainText("24 / 60 complete");
   await page.getByRole("button",{name:"Explore stages"}).click();
   await page.getByRole("button",{name:"Choose Stage 1 levels"}).click();
   await expect(page.locator("#world1-finale")).toBeVisible();
-  await expect(page.locator("#world1-progress-bar")).toHaveJSProperty("value",20);
-  await expect(page.locator(".chapter-complete")).toHaveCount(5);
-  await expect(page.locator(".chapter-illustration")).toHaveCount(5);
-  await expect(page.locator(".level-tile.status-complete")).toHaveCount(20);
+  await expect(page.locator("#world1-progress-bar")).toHaveJSProperty("value",24);
+  await expect(page.locator(".chapter-complete")).toHaveCount(6);
+  await expect(page.locator(".chapter-illustration")).toHaveCount(6);
+  await expect(page.locator(".level-tile.status-complete")).toHaveCount(24);
   // A fully completed stage still highlights one replayable tile on the board.
   await expect(page.locator(".level-tile.level-next.status-complete")).toHaveCount(1);
 });
@@ -103,7 +103,7 @@ test("phone menus and replay keep touch actions in view",async({page})=>{
   await page.getByRole("button",{name:"Explore stages"}).click();
   await page.getByRole("button",{name:"Choose Stage 1 levels"}).click();
   await expect(page.locator(".chapter-illustration").first()).toBeVisible();
-  await expect(page.locator(".level-tile")).toHaveCount(20);
+  await expect(page.locator(".level-tile")).toHaveCount(24);
   await page.locator('[data-level="1"]').click();
   await expect(page.locator("#game-home")).toBeVisible();
   await expect(page.locator("#game-levels")).toBeVisible();
