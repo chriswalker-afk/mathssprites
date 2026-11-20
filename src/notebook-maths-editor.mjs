@@ -16,6 +16,14 @@ export function parseNotebookOperation(expression){
     return failure("syntax","Write an operation such as −3, +(−x), ×2 or ÷3.");
   const compact=expression.replace(/\s+/g,"")
     .replace(/[−–—]/g,"-").replace(/[⋅·*]/g,"×").replace(/\//g,"÷");
+  // Opening one sealed expression is an identity rewrite, not an
+  // operation on both sides. An editor selection never executes by itself.
+  const opened=/^(?:expand|open)(left|right|west|east)$/i.exec(compact);
+  if(opened){
+    const side=["left","west"].includes(opened[1].toLowerCase())?"left":"right";
+    return {ok:true,action:{op:"unpack",side},
+      display:"Expand "+(side==="left"?"west":"east")};
+  }
   if(!compact||/^[+\-×÷]$/.test(compact))
     return failure("incomplete","Choose +, −, × or ÷, then an object or a factor.");
   // Explicit brackets preserve the physical difference between subtracting
@@ -47,6 +55,16 @@ export function parseNotebookOperation(expression){
     display:sign+factor};
 }
 function expressionMarkup(room){
+  // Keep actual crates grouped on the paper: canonical() alone would
+  // visually expand the brackets *before* the learner chooses to do so.
+  if(room.crates?.count){
+    const n=room.crates.count;
+    const group=(n===1?"":"<mn>"+n+"</mn>")+
+      "<mo>(</mo>"+expressionMarkup(room.crates.contents)+"<mo>)</mo>";
+    const hasLoose=["posX","negX","posX2","posOne","negOne"]
+      .some(kind=>(room[kind]||0)!==0);
+    return group+(hasLoose?"<mo>+</mo>"+expressionMarkup({...room,crates:null}):"");
+  }
   const c=canonical(room),terms=[];
   const push=(amount,body)=>{
     if(!amount)return;
@@ -66,6 +84,13 @@ export function notebookEquationMathML(state){
     expressionMarkup(state.right)+"</mrow></math>";
 }
 export function notebookOperationMathML(action){
+  if(action?.op==="unpack"){
+    if(!["left","right"].includes(action.side))
+      throw new RangeError("Choose which side contains the sealed groups.");
+    return '<math xmlns="http://www.w3.org/1998/Math/MathML" display="inline">'+
+      '<mrow><mtext>Expand '+(action.side==="left"?"west":"east")+
+      ' expression</mtext></mrow></math>';
+  }
   if(!action||!Object.hasOwn(OP_SYMBOLS,action.op))
     throw new TypeError("Only one of the four World 1 operations can be typeset");
   const symbol=OP_SYMBOLS[action.op];
