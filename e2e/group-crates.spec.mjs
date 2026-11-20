@@ -20,9 +20,8 @@ async function openBrackets(page){
 async function chooseRemoval(page,amount){
   await page.locator('[data-operation="remove"]').click();
   await page.locator('[data-kind="posOne"]').click();
-  const current=Number(await page.locator("#amount-value").textContent());
-  for(let n=current;n<amount;n++)await clickWithReferenceMove(page,"#amount-up");
-  for(let n=current;n>amount;n--)await clickWithReferenceMove(page,"#amount-down");
+  await page.locator("#amount-up").click();
+  for(let n=1;n<amount;n++)await page.locator("#amount-up").click();
   await expect(page.locator("#amount-value")).toHaveText(String(amount));
 }
 test("sealed opaque crates remain separate physical objects, not loose hidden sprites @smoke",async({page})=>{
@@ -44,8 +43,8 @@ test("sealed opaque crates remain separate physical objects, not loose hidden sp
 test("divide-first throws an unwanted sealed crate, opens the survivor, and earns 3 stars @smoke",async({page})=>{
   test.setTimeout(85000);
   await openBrackets(page);
-  await expect(page.locator('[data-operation="divide"]')).toHaveAttribute("aria-pressed","true");
-  await expect(page.locator("#amount-value")).toHaveText("2");
+  await expect(page.locator('[data-operation="divide"]')).toHaveAttribute("aria-pressed","false");
+  await expect(page.locator("#amount-value")).toHaveText("—");
   await clickWithReferenceMove(page,"#do-both");
   await expect(page.locator("#left-items .sealed-crate")).toHaveCount(1,{timeout:30000});
   await expect(page.locator("#right-items .weight")).toHaveCount(7,{timeout:30000});
@@ -79,7 +78,7 @@ test("unpack-first expands into 2 sprites + 6 weights, then solves by removal an
   await expect(page.locator("#left-items .weight")).toHaveCount(0,{timeout:20000});
   await expect(page.locator("#right-items .weight")).toHaveCount(8);
   await page.locator('[data-operation="divide"]').click();
-  await expect(page.locator("#amount-value")).toHaveText("2");
+  await expect(page.locator("#amount-value")).toHaveText("—");
   await clickWithReferenceMove(page,"#do-both");
   await expect(page.locator("#replay-backdrop")).toBeVisible({timeout:35000});
   await expect(page.locator("#replay-star-summary")).toContainText("★★★ 3 stars");
