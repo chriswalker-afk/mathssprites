@@ -188,14 +188,14 @@ test("Chapter 2 requires equal whole groups; Chapter 3 requires at least two act
 });
 
 test("Chapters 4/5 include two-sided sprites, reverse orientation and a strategic addition",() => {
-  for (const slot of WORLD1_LEVELS.slice(12))
+  for (const slot of WORLD1_LEVELS.slice(12,20))
     if(slot.number!==19)
       assert.ok(slot.level.left.posX > 0 && slot.level.right.posX > 0);
   assert.equal(WORLD1_LEVELS[18].level.left.crates.count,2,
     "Guided Level 19 contains two identical complete crates");
   assert.ok(WORLD1_LEVELS[13].level.right.posX > WORLD1_LEVELS[13].level.left.posX);
   assert.ok(WORLD1_LEVELS[17].level.right.posX > WORLD1_LEVELS[17].level.left.posX);
-  assert.ok(solutions[19].some(x=>x.op==="add"),"Final puzzle must allow a positive addition shortcut");
+  assert.ok(solutions[19].some(x=>x.op==="add"),"Original Level 20 must retain its positive addition shortcut");
   assert.ok(alternateRoutes.get(20).every(x=>x.op!=="add"),"A subtraction-only alternative remains valid");
 });
 
