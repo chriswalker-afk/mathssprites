@@ -9,18 +9,18 @@ import {
 } from "../src/progress.mjs";
 import { initialState, perform, validInitialLevel, isSolved, LEVELS } from "../src/engine.mjs";
 
-test("four visible worlds, five four-level chapters and twenty implemented puzzles", () => {
+test("four visible worlds, six four-level chapters and twenty-four implemented puzzles", () => {
   assert.equal(WORLDS.length, 4);
   assert.deepEqual(WORLDS.map(w => w.available), [true,true,false,false]);
-  assert.equal(WORLD1_CHAPTERS.length, 5);
-  assert.equal(WORLD1_LEVELS.length, 20);
+  assert.equal(WORLD1_CHAPTERS.length, 6);
+  assert.equal(WORLD1_LEVELS.length, 24);
   assert.deepEqual(WORLD1_LEVELS.filter(x => x.available).map(x => x.number),
-    Array.from({length:20},(_,i)=>i+1));
+    Array.from({length:24},(_,i)=>i+1));
   assert.equal(LEVELS.length, 13, "Original advanced experiments remain intact");
   for (const slot of WORLD1_LEVELS.filter(s => s.available)) {
     assert.ok(validInitialLevel(slot.level), "Level " + slot.number + " has a valid balance");
     assert.deepEqual(slot.level.allowedOperations,
-      slot.number===19?[...WORLD1_OPERATIONS,"unpack"]:WORLD1_OPERATIONS);
+      slot.level.groupedPrototype?[...WORLD1_OPERATIONS,"unpack"]:WORLD1_OPERATIONS);
     assert.equal(slot.level.lockPositive, true);
     assert.ok(Number.isInteger(slot.level.solution) && slot.level.solution > 0);
   }
@@ -56,14 +56,15 @@ test("campaign restrictions are enforced by the engine, not only by hiding butto
     "Advanced preview experiments still support squares");
 });
 
-test("all twenty implemented levels are open to students without teacher overrides", () => {
+test("all twenty-four implemented levels are open to students without teacher overrides", () => {
   for(const slot of WORLD1_LEVELS)
     assert.equal(isWorld1Unlocked(slot.number,[],false),true);
-  assert.equal(isWorld1Unlocked(21,[],true),false);
+  assert.equal(isWorld1Unlocked(25,[],true),false);
   assert.equal(isWorld1Unlocked(0,[],true),false);
   assert.equal(nextWorld1Level(1,[]),WORLD1_LEVELS[1]);
   assert.equal(nextWorld1Level(5,[]),WORLD1_LEVELS[5]);
-  assert.equal(nextWorld1Level(20,[]),null);
+  assert.equal(nextWorld1Level(20,[])?.number,21);
+  assert.equal(nextWorld1Level(24,[]),null);
 });
 
 test("progress survives reloads, ignores invalid data and works without localStorage", () => {
@@ -82,7 +83,7 @@ test("progress survives reloads, ignores invalid data and works without localSto
   const allButFinal = Array.from({length:19},(_,i)=>i+1);
   const completedCampaign = markWorld1Complete({completed:allButFinal,lastPlayed:20},20);
   assert.equal(completedCampaign.completed.length,20);
-  assert.equal(completedCampaign.lastPlayed,20);
+  assert.equal(completedCampaign.lastPlayed,21);
   assert.deepEqual(normalizeProgress(completedCampaign),completedCampaign);
   assert.deepEqual(loadProgress({getItem:()=>{throw Error("blocked")}}),
     {completed:[],lastPlayed:1});
