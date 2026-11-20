@@ -33,11 +33,16 @@ async function referenceLevel(page){
 /** Only fill choices when the test has not already made them itself. */
 export async function chooseReferenceMoveIfBlank(page){
   const level=await referenceLevel(page);
-  const action=level?.startingOperation||
+  const previewRoutes={
+    "baskets":{op:"divide",factor:3},
+    "five-baskets":{op:"divide",factor:5}
+  };
+  const previewRoute=previewRoutes[level?.id]||null;
+  const action=level?.startingOperation||previewRoute?.op||
     ((level?.left?.posX||0)>1 && !(level?.left?.posOne||0)?"divide":"remove");
   const kind=level?.startingKind||"posOne";
   const left=level?.left||{},right=level?.right||{};
-  const factor=level?.startingFactor||
+  const factor=level?.startingFactor||previewRoute?.factor||
     Math.min(5,Math.max(2, left.posX||right.posX||2));
   const count=level?.startingAmount||
     (kind==="posX"?Math.min(left.posX||right.posX||1,12):
