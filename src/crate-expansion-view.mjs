@@ -17,9 +17,6 @@ const waitUntilVisible=()=>new Promise(resolve=>{
     resolve();
   });
 });
-const escapeAttr=text=>String(text).replace(/[&<>"']/g,char=>({
-  "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
-}[char]));
 export function createCrateExpansionView({
   side,chamber,items,plan,tokenMarkup,sleep,reducedMotion=false
 }){
@@ -36,9 +33,12 @@ export function createCrateExpansionView({
   stage.dataset.phase="opening";
   stage.setAttribute("role","group");
   stage.setAttribute("aria-label","Physical expansion of the sealed brackets");
-  stage.innerHTML='<div class="crate-expansion-step" role="status" aria-live="polite"></div>'+
+  stage.innerHTML='<div class="crate-expansion-step" role="status" aria-live="polite">'+
+    '<div class="crate-expansion-message"></div><strong class="crate-expansion-math"></strong></div>'+
     '<div class="crate-expansion-collection" aria-label="Objects released from the crates"></div>';
   const status=stage.querySelector(".crate-expansion-step");
+  const message=status.querySelector(".crate-expansion-message");
+  const maths=status.querySelector(".crate-expansion-math");
   const collection=stage.querySelector(".crate-expansion-collection");
   const groups=[];
   for(let i=0;i<plan.count;i++){
@@ -75,8 +75,9 @@ export function createCrateExpansionView({
   };
   const announce=(phase,description,math="")=>{
     stage.dataset.phase=phase;
-    status.textContent=description;
-    status.dataset.math=math;
+    message.textContent=description;
+    maths.textContent=math;
+    maths.hidden=!math;
     stage.dataset.math=math;
   };
 
