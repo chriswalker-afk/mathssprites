@@ -7,6 +7,7 @@ import {WORLD1_LEVELS} from "../src/worlds.mjs";
 import {INDEPENDENT_LEVELS} from "../src/independent-levels.mjs";
 import {APPRENTICE_LEVELS} from "../src/apprentice-levels.mjs";
 import {OPPOSITE_LEVELS} from "../src/opposite-levels.mjs";
+import {OPPOSITE_OPTIMAL_MOVES} from "../src/opposite-star-benchmarks.mjs";
 import {OPTIMAL_MOVES} from "../src/star-ratings.mjs";
 import {
   CURRICULUM_SKILLS,CURRICULUM_CHAPTERS,CURRICULUM_LEVELS,
@@ -90,8 +91,10 @@ test("difficulty has five deliberate planning bands, a benchmark and physical ev
           assert.equal(signals.benchmarkMoves,OPTIMAL_MOVES[stage][index]);
           assert.equal(signals.benchmarkType,"proven-minimum");
         }else{
-          assert.equal(signals.benchmarkMoves,slot.level.referenceRoute.length);
-          assert.equal(signals.benchmarkType,"authored-valid-route");
+          assert.equal(signals.benchmarkMoves,OPPOSITE_OPTIMAL_MOVES[stage][index]);
+          assert.equal(signals.benchmarkType,"proven-minimum");
+          assert.equal(signals.authoredRouteMoves,slot.level.referenceRoute.length);
+          assert.ok(signals.authoredRouteMoves>=signals.benchmarkMoves);
           assert.deepEqual(signals.referenceOperations,
             [...new Set(slot.level.referenceRoute.map(step=>step.op))]);
         }
