@@ -97,12 +97,17 @@ test("World 2 signed editor typesets +(−x), previews and replays real steps @s
   expect(save.worlds.opposites.stages.notebook.completed).toContain("op-a-05");
   expect(save.worlds.workshop.stages.notebook.completed).toEqual([]);
 });
-test("signed notebook can remove NEGATIVE units as −(−4) @smoke",async({page})=>{
+test("signed notebook subtracts NEGATIVE units, then completes a multistep solution @smoke",async({page})=>{
   await board(page,"notebook");
   await page.locator('[data-level="8"]').click();
   await page.locator("#notebook-operation").fill("−(−4)");
   await expect(page.locator("#notebook-apply")).toBeEnabled();
-  await expect(page.locator("#notebook-result-math")).toContainText("9");
+  await page.locator("#notebook-apply").click();
+  await expect(page.locator("#notebook-replay")).toBeDisabled();
+  await page.locator("#notebook-operation").fill("+(−x)");
+  await page.locator("#notebook-apply").click();
+  await expect(page.locator("#notebook-replay")).toBeDisabled();
+  await page.locator("#notebook-operation").fill("÷2");
   await page.locator("#notebook-apply").click();
   await expect(page.locator("#notebook-replay")).toBeEnabled();
 });
