@@ -13,7 +13,7 @@ export function oppositeIntroductionCue(step,{manual=false}={}){
     {title:"Two rooms, signed objects",text:"The balloon represents a negative unit. Look at the balance before moving the hand.",
       action:"Show the controls",target:"scene"},
     {title:"Choose a matching change",text:"Choose a mathematical change, then select the objects and amount yourself. You will visit the rooms separately.",
-      action:"Show the rooms",target:"amount"},
+      action:"Show the rooms",target:"tools"},
     {title:"Visit one chamber",text:"Use the hand in either room. The scale will tip until you repeat exactly that move in the other.",
       action:"Ready to balance",target:"left-action"},
     {title:"You are in control",text:"Match every signed move. A weight and a balloon can make zero in only one room, and equality still holds after both visits.",
