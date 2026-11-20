@@ -43,7 +43,7 @@ test("deduplicated matrix emits only static, approved Playwright file paths",()=
   assert.ok(matrix.include[0].specs.includes("e2e/crate-expansion.spec.mjs"));
   assert.ok(matrix.include[0].specs.includes("e2e/crate-division.spec.mjs"));
   for(const specs of Object.values(GROUP_SPECS))
-    for(const spec of specs)assert.match(spec,/^e2e\/[a-z-]+\.spec\.mjs$/);
+    for(const spec of specs)assert.match(spec,/^e2e\/[a-z0-9-]+\.spec\.mjs$/);
   assert.deepEqual(featureMatrix([]),{include:[]});
 });
 
