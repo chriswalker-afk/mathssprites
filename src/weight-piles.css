@@ -52,7 +52,7 @@
 /* Matching the existing crate label: brass edging, dark enamel, cream text
    and one short brass pointer, but in the natural flex flow before weights.
    The crate plaque stays absolutely positioned beside the crate stack. */
- .room-items .items-grid.floor-track > .weight-stack-count{
+.room-items .items-grid.floor-track > .weight-stack-count{
   position:relative;
   top:auto;left:auto;
   transform:translateY(-18px);
@@ -116,6 +116,21 @@
 }
 /* The outer chamber always speaks the full inventory to screen readers.
    Individual weights and plaque remain decorative at the group level. */
+@media(min-width:900px) and (max-height:790px){
+  .room-items .items-grid.floor-track > .weight-stack-count{
+    font-size:10px;min-height:24px;padding:4px 3px;
+  }
+}
+@media(min-width:900px) and (min-height:1050px){
+  .room-items .items-grid.floor-track > .weight-stack-count{
+    font-size:14px;
+  }
+}
+@media(max-width:899px){
+  .room-items .items-grid.floor-track > .weight-stack-count{
+    font-size:9px;min-height:23px;padding:3px;
+  }
+}
 @media(max-width:600px){
   .room-items .items-grid.floor-track:not(:has(> .sealed-crate)),
   .room-items .mixed-crate-floor-stage .loose-floor-shell .floor-track{
