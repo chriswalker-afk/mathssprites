@@ -43,10 +43,10 @@ export function selectBrowserGroups(paths){
     }
     // A newly added shared source file cannot bypass focused QA simply
     // because nobody has added a rule for its filename yet.
-    if(!matched&&/^src\/.test(path)&&/\.(mjs|js|css)$/.test(path))
+    if(!matched&&/^src\//.test(path)&&/\.(mjs|js|css)$/.test(path))
       for(const group of ALL)selected.add(group);
     // Unrecognised browser test changes should be exercised before merge.
-    if(!matched&&/^e2e\/.test(path)&&/\.spec\.mjs$/.test(path))
+    if(!matched&&/^e2e\//.test(path)&&/\.spec\.mjs$/.test(path))
       for(const group of ALL)selected.add(group);
   }
   return ALL.filter(group=>selected.has(group));
