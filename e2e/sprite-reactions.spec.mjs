@@ -1,3 +1,4 @@
+import {clickWithReferenceMove} from "./reference-move-helper.mjs";
 import { test, expect } from "@playwright/test";
 
 test.beforeEach(async ({ page }) => {
@@ -36,7 +37,7 @@ async function recordReactions(page) {
 test("sometimes the sprite ducks before being picked up, then the hand carries it away", async ({ page }) => {
   await prepareSpritePickup(page, 0.12);
   await recordReactions(page);
-  await page.locator("#do-both").click();
+  await clickWithReferenceMove(page,"#do-both");
 
   const actor = page.locator("#left-items .sprite-reacting");
   await expect(actor).toHaveAttribute("data-reaction", "duck");
@@ -71,7 +72,7 @@ test("sometimes the sprite ducks before being picked up, then the hand carries i
 test("sometimes the sprite dodges sideways, hand tracks it, but still picks it up", async ({ page }) => {
   await prepareSpritePickup(page, 0.42);
   await recordReactions(page);
-  await page.locator("#do-both").click();
+  await clickWithReferenceMove(page,"#do-both");
   const actor = page.locator("#left-items .sprite-reacting");
   await expect(actor).toHaveAttribute("data-reaction", "dodge");
   const dodge = await actor.evaluate(el => {
@@ -102,7 +103,7 @@ test("sometimes the sprite dodges sideways, hand tracks it, but still picks it u
 test("on other pickups the hand acts normally, with no comedy reaction", async ({ page }) => {
   await prepareSpritePickup(page, 0.93);
   await recordReactions(page);
-  await page.locator("#do-both").click();
+  await clickWithReferenceMove(page,"#do-both");
   await expect(page.locator("#left-items .sprite-black")).toHaveCount(1);
   await expect(page.locator("#right-items .sprite-black")).toHaveCount(0);
   const events = await page.evaluate(() => window.__spriteReactionEvents);
@@ -111,12 +112,12 @@ test("on other pickups the hand acts normally, with no comedy reaction", async (
 
 test("manual matching still requires both sides, even if a sprite dodges", async ({ page }) => {
   await prepareSpritePickup(page, 0.41, true);
-  await page.locator("#left-action").click();
+  await clickWithReferenceMove(page,"#left-action");
   await expect(page.locator("#left-items .sprite-black")).toHaveCount(1);
   await expect(page.locator("#right-items .sprite-black")).toHaveCount(1);
   await expect(page.locator("#right-action")).toContainText("Match the move here");
   await expect(page.locator("#replay-backdrop")).toBeHidden();
-  await page.locator("#right-action").click();
+  await clickWithReferenceMove(page,"#right-action");
   await expect(page.locator("#right-items .sprite-black")).toHaveCount(0);
   await expect(page.locator("#replay-backdrop")).toBeHidden();
   await expect(page.locator("#undo")).toBeEnabled();
@@ -128,7 +129,7 @@ test("reduced motion and weight removal are reaction-free", async ({ page }) => 
   await page.locator("#motion-toggle").click();
   await prepareSpritePickup(page, 0.02);
   await recordReactions(page);
-  await page.locator("#do-both").click();
+  await clickWithReferenceMove(page,"#do-both");
   await expect(page.locator("#left-items .sprite-black")).toHaveCount(1);
   await expect(page.locator("#right-items .sprite-black")).toHaveCount(0);
   expect(await page.evaluate(() => window.__spriteReactionEvents)).toEqual([]);
@@ -136,7 +137,7 @@ test("reduced motion and weight removal are reaction-free", async ({ page }) => 
   await page.locator("#level-select").selectOption("0");
   await page.locator("#motion-toggle").click();
   await recordReactions(page);
-  await page.locator("#do-both").click();
+  await clickWithReferenceMove(page,"#do-both");
   await expect(page.locator("#replay-backdrop")).toBeVisible();
   expect(await page.evaluate(() => window.__spriteReactionEvents)).toEqual([]);
 });
