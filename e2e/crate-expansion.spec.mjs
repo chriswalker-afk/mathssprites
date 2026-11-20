@@ -103,13 +103,20 @@ test("divide-first opens just one crate and produces one sprite and three weight
   await expect(page.locator("#left-items .sealed-crate")).toHaveCount(1,{timeout:30000});
   await expect(page.locator("#right-items .weight")).toHaveCount(7);
   await expect(page.locator(".crate-stack-count")).toHaveText("1 crate");
+  await recordPhysicalPhases(page);
   await page.locator("#unpack-crates").click();
-  await phase(page,"sprites-landed");
-  await expect(page.locator("#left-crate-expansion .crate-escaped-sprite.landed")).toHaveCount(1);
-  await phase(page,"weights-revealed");
-  await expect(page.locator("#left-items .crate-bay-weight")).toHaveCount(3);
-  await page.screenshot({path:"artifacts/pr41-11-one-crate-revealed.png",fullPage:true});
+  // This one-crate sequence runs quickly in reduced-motion mode. Record the
+  // actual ordered states rather than trying to sample a transient DOM phase.
   await expect(page.locator("#left-items .sealed-crate")).toHaveCount(0,{timeout:30000});
+  const evidence=await page.evaluate(()=>window.__cratePhaseEvidence);
+  const phases=evidence.map(frame=>frame.phase);
+  expect(phases).toContain("sprites-landed");
+  expect(phases).toContain("weights-revealed");
+  expect(phases.indexOf("sprites-landed")).toBeLessThan(phases.indexOf("weights-revealed"));
+  expect(evidence.find(frame=>frame.phase==="sprites-landed").landedSprites).toBe(1);
+  expect(evidence.find(frame=>frame.phase==="sprites-landed").panelsDown).toBe(0);
+  expect(evidence.find(frame=>frame.phase==="weights-revealed").weightBayCount).toBe(3);
+  await page.screenshot({path:"artifacts/pr41-11-one-crate-revealed.png",fullPage:true});
   await expect(page.locator("#left-items .sprite-black")).toHaveCount(1);
   await expect(page.locator("#left-items .weight")).toHaveCount(3);
 });
