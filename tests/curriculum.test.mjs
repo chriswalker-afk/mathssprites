@@ -1,6 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {readFileSync} from "node:fs";
+import {execFileSync} from "node:child_process";
+import {fileURLToPath} from "node:url";
 import {WORLD1_LEVELS} from "../src/worlds.mjs";
 import {INDEPENDENT_LEVELS} from "../src/independent-levels.mjs";
 import {APPRENTICE_LEVELS} from "../src/apprentice-levels.mjs";
@@ -141,4 +143,21 @@ test("new teacher-side curriculum data is not imported by the student game",()=>
     const content=readFileSync(new URL("../"+path,import.meta.url),"utf8");
     assert.doesNotMatch(content, /(?:import|from)\s*(?:[^;]*?)curriculum\.mjs/);
   }
+});
+
+test("teacher report actually renders every canonical equation and supports filtered JSON",()=>{
+  const script=fileURLToPath(new URL("../scripts/curriculum-report.mjs",import.meta.url));
+  const output=execFileSync(process.execPath,[script,"--json"],{encoding:"utf8"});
+  const report=JSON.parse(output);
+  assert.equal(report.count,96);
+  assert.equal(report.levels.find(x=>x.id==="master-19").equation,"2x + 6 = 14");
+  assert.equal(report.levels.find(x=>x.id==="op-g-01").equation,"x − 1 = 3");
+  const filtered=JSON.parse(execFileSync(process.execPath,
+    [script,"--world","opposites","--stage","guided","--json"],{encoding:"utf8"}));
+  assert.equal(filtered.count,20);
+  assert.ok(filtered.levels.every(x=>x.worldId==="opposites"&&x.stage==="guided"));
+  const markdown=execFileSync(process.execPath,[script,"--world","workshop","--stage","guided"],
+    {encoding:"utf8"});
+  assert.match(markdown,/20 playable campaign levels/);
+  assert.match(markdown,/Master of the Balance/);
 });
