@@ -57,7 +57,7 @@ test("the hand visits each chamber and shows a real temporary scale tilt",async(
   await expect(page.locator("#rooms-row")).not.toHaveAttribute("style", /rotate\(0deg\)/);
   await expect(page.locator("#balance-caption")).toContainText("waiting");
   await expect(page.locator("#right-action")).toContainText("Match the move here");
-  await expect(page.locator("#guide-message")).toContainText("SAME removal");
+  await expect(page.locator("#guide-message")).toContainText("SAME action");
   await expect(page.locator("#left-items .weight")).toHaveCount(0);
   await expect(page.locator("#right-items .weight")).toHaveCount(7);
   await clickWithReferenceMove(page,"#right-action");
