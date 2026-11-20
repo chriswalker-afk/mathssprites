@@ -30,6 +30,8 @@ const RULES=Object.freeze([
   [/^src\/opposite-star-benchmarks\.mjs$/,["navigation","signed","physics"]],
   [/^src\/campaign-records\.mjs$/,["navigation","signed","physics"]],
   [/^src\/polish\.css$/,["navigation","layout"]],
+  [/^src\/weight-piles\.(?:css|mjs)$/,["crates","signed","layout","physics"]],
+  [/^e2e\/weight-piles\.spec\.mjs$/,["crates","signed","layout","physics"]],
   [/^src\/experiment-board\.css$/,["navigation","layout"]],
   [/^e2e\/six-chapter-layout\.spec\.mjs$/,["layout"]],
   [/^src\/engine\.mjs$/,["crates","notebook","signed","physics"]],
