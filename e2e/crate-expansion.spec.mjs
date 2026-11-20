@@ -83,7 +83,10 @@ test("comic shows crowbar and the distinct multiplications with the correct curr
   await expect(page.locator("#left-items .sealed-crate")).toHaveCount(0,{timeout:30000});
   await page.locator('[data-operation="remove"]').click();
   await page.locator('[data-kind="posOne"]').click();
-  for(let i=1;i<6;i++)await page.locator("#amount-up").click();
+  const amount=Number(await page.locator("#amount-value").textContent());
+  for(let i=amount;i<6;i++)await page.locator("#amount-up").click();
+  for(let i=amount;i>6;i--)await page.locator("#amount-down").click();
+  await expect(page.locator("#amount-value")).toHaveText("6");
   await page.locator("#do-both").click();
   await expect(page.locator("#right-items .weight")).toHaveCount(8,{timeout:30000});
   await page.locator('[data-operation="divide"]').click();
