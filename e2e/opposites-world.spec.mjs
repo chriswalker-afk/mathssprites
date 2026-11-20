@@ -1,3 +1,4 @@
+import {clickWithReferenceMove} from "./reference-move-helper.mjs";
 import {test,expect} from "@playwright/test";
 
 test.beforeEach(async({page})=>{
@@ -50,7 +51,7 @@ test("signed Guided level makes the balloon-weight zero pair, saves World 2 star
   await expect(page.locator('#game-guide-restart')).toBeVisible();
   await expect(page.locator("#guide-message")).toContainText("Balloons");
   await page.locator("#guide-skip").click();
-  await page.locator("#do-both").click();
+  await clickWithReferenceMove(page,"#do-both");
   await expect(page.locator("#replay-backdrop")).toBeVisible({timeout:30000});
   const save=await page.evaluate(()=>JSON.parse(localStorage.getItem("mathssprites.campaign.v2")));
   expect(save.worlds.opposites.stages.guided.completed).toContain("op-g-01");
@@ -65,10 +66,10 @@ test("signed Independent requires two separate matched room actions @smoke",asyn
   await expect(page.locator("#guide-message")).toContainText("negative unit");
   await page.locator("#guide-skip").click();
   await expect(page.locator("#do-both")).toBeHidden();
-  await page.locator("#left-action").click();
+  await clickWithReferenceMove(page,"#left-action");
   await expect(page.locator("#balance-caption")).toContainText("matching move");
   await expect(page.locator("#right-action")).toBeEnabled();
-  await page.locator("#right-action").click();
+  await clickWithReferenceMove(page,"#right-action");
   await expect(page.locator("#replay-backdrop")).toBeVisible({timeout:30000});
   const save=await page.evaluate(()=>JSON.parse(localStorage.getItem("mathssprites.campaign.v2")));
   expect(save.worlds.opposites.stages.independent.completed).toContain("op-i-01");
