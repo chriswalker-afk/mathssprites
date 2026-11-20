@@ -15,7 +15,7 @@ import { itemWord, attemptMessage, mismatchedMoveMessage } from "./attempt-feedb
 import { fractionCutPlan } from "./fraction-theatre.mjs";
 import {neutralPairSequence, neutralPairSummary} from "./neutral-pairs.mjs";
 import {crateCount,crateMarkup} from "./group-crates.mjs";
-import {crateExpansionPlan,crateExpansionReplayNotes} from "./crate-expansion.mjs";
+import {crateExpansionPlan} from "./crate-expansion.mjs";
 import {createCrateExpansionView} from "./crate-expansion-view.mjs";
 import { WORLD1_LEVELS } from "./worlds.mjs";
 import {INDEPENDENT_LEVELS} from "./independent-levels.mjs";
@@ -90,6 +90,7 @@ let guideWasActive = false;
 function currentLevel() { return activeLevel; }
 let busy = false;
 let crateExpansionRunning=false; // Visual demonstration only: no partial model commits.
+let activeCrateView=null; // Only the in-room crate choreography can be paused.
 let override = null;
 let groups = { left: 0, right: 0 };
 let failureTilt = 0; // transient presentation only; no effect on the math engine
@@ -119,7 +120,7 @@ function possessiveCount(number, singular, plural) {
 }
 function roomSummary(r) {
   const parts = [
-    crateCount(r) && possessiveCount(crateCount(r),"sealed bracket crate","sealed bracket crates"),
+    crateCount(r) && possessiveCount(crateCount(r),"sealed crate","sealed crates"),
     r.posX && possessiveCount(r.posX, "dark sprite", "dark sprites"),
     r.negX && possessiveCount(r.negX, "pale sprite", "pale sprites"),
     r.posX2 && possessiveCount(r.posX2, "square sprite", "square sprites"),
@@ -562,6 +563,13 @@ function render() {
 
   const crateSide=crateCount(shown.left)?"left":crateCount(shown.right)?"right":null;
   $("crate-controls").hidden=!lvl.groupedPrototype||!crateSide||!!notebookSession;
+  const cratePause=$("crate-animation-pause");
+  cratePause.hidden=!crateExpansionRunning;
+  cratePause.disabled=!activeCrateView;
+  cratePause.textContent=activeCrateView?.paused?"▶":"Ⅱ";
+  cratePause.setAttribute("aria-pressed",String(!!activeCrateView?.paused));
+  cratePause.setAttribute("aria-label",activeCrateView?.paused?
+    "Resume crate animation":"Pause crate animation");
   $("unpack-crates").disabled=busy||awaiting||isSolved(state)||!crateSide;
   $("unpack-crates").dataset.crateSide=crateSide||"";
   $("do-both").hidden = mode !== "auto";
@@ -650,9 +658,7 @@ function handProp(action, side) {
 }
 function roomOperationText(action, side) {
   const roomName=side==="left"?"west":"east";
-  if(action.op==="unpack")return "The hand uses a crowbar to open crate "+
-    (Number.isInteger(action.crateIndex)?action.crateIndex+1:"")+
-    " in the "+roomName+" chamber. The contents stay inside until both lids are open.";
+  if(action.op==="unpack")return "";
   if (action.op==="square"||action.op==="sqrt") {
     const area=areaArrangement(visible()[side],action.op);
     if (!area||area.kind==="zero") return "The hand checks the empty box...";
@@ -949,7 +955,7 @@ async function handAct(side, action, applyAtContact) {
 
   const caption = $("action-caption");
   caption.textContent = roomOperationText(action, side);
-  caption.hidden = false;
+  caption.hidden = action.op==="unpack";
   cargo.innerHTML = handProp(action, side);
   cargo.classList.remove("sprite-captured");
   if(action.op==="unpack")hand.dataset.crowbar="true";
@@ -1462,47 +1468,49 @@ async function unpackCrates(){
   const result=perform(state,action,"auto");
   if(!result.ok)return notify(result.reason);
   const plan=crateExpansionPlan(state[side]);
+  const levelIdAtStart=currentLevel().id;
   let view=null,committed=false;
   busy=true;
   crateExpansionRunning=true;
   clearSpeech();
-  setFeedback("Watch the crowbar open every crate, then count the sprites and weights separately.","working");
+  setFeedback("");
   render();
   try{
     view=createCrateExpansionView({
       side,chamber:$(side+"-chamber").querySelector(".room-interior"),
-      items:$(side+"-items"),plan,tokenMarkup:token,sleep,reducedMotion
+      items:$(side+"-items"),plan,tokenMarkup:token,reducedMotion
     });
-    for(const step of plan.steps.filter(step=>step.phase==="open")){
-      view.announce("opening",step.description);
+    activeCrateView=view;
+    render(); // Enable the in-animation pause button; no room rebuild.
+    for(const step of plan.physicalPhases.filter(step=>step.phase==="open")){
+      view.announce("opening");
       await handAct(side,{...action,crateIndex:step.crateIndex},async()=>{
         view.openCrate(step.crateIndex);
-        // The crowbar visibly prises each lid before the hand moves to
-        // the next crate; contents are not released at this contact.
-        await sleep(reducedMotion?210:420);
+        await sleep(reducedMotion?130:340);
       });
     }
-    // All lids have opened. Show ALL sprites from all crates first, then
-    // weights in source-crate groups, with an equation for each product.
+    // All sprites bounce together onto the REAL room floor. Only then do the
+    // wooden fronts fall down to reveal the weights, which physically tumble
+    // out of their original crates. There is no instructional counting tray.
     await view.playReleaseSteps();
-    state=result.state; // ONE undoable identity rewrite, after all visuals.
+    if(currentLevel().id!==levelIdAtStart)
+      throw new Error("Crate animation was interrupted by a level change.");
+    state=result.state; // ONE undoable identity rewrite after final settling.
     committed=true;
   }catch(error){
-    setFeedback("The crates are still sealed. Try expanding brackets again.","error");
+    setFeedback("The crates are closed again.","warning");
   }finally{
     view?.destroy();
+    activeCrateView=null;
     crateExpansionRunning=false;
     busy=false;
     override=null;
-    // In an interruption, do not leave staged miniature actors, open lids,
-    // or stale floor signatures behind.
     delete $(side+"-items").dataset.signature;
     render();
   }
   if(!committed)return;
   await finishTurn();
-  if(!isSolved(state))
-    setSpeech("Two multiplications! We counted the sprites, then the weights. The room's value never changed.",5800);
+  if(!isSolved(state))setFeedback("");
 }
 /** Replay a CHECKED algebra notebook as consecutive real hand movements.
  * The pure engine's committed history, never user text, provides the actions.
@@ -1720,6 +1728,8 @@ function startLevel(index, quantityMode, levelOverride=null, campaignNumber=null
   $("scene").classList.remove("scene-failed-balance", "scene-rewinding");
   delete $("scene").dataset.balanceOutcome;
   busy = false;
+  activeCrateView?.destroy();
+  activeCrateView=null;
   crateExpansionRunning=false;
   for(const leftover of document.querySelectorAll(".crate-expansion-stage"))
     leftover.remove();
@@ -2117,6 +2127,12 @@ $("amount-up").addEventListener("click", () => {
   render();
 });
 $("unpack-crates").addEventListener("click",unpackCrates);
+$("crate-animation-pause").addEventListener("click",()=>{
+  if(!activeCrateView||!crateExpansionRunning)return;
+  if(activeCrateView.paused)activeCrateView.resume();
+  else activeCrateView.pause();
+  render();
+});
 $("do-both").addEventListener("click", guidedMove);
 $("left-action").addEventListener("click", () => manualMove("left"));
 $("right-action").addEventListener("click", () => manualMove("right"));
