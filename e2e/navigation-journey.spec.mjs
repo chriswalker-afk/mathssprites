@@ -43,11 +43,11 @@ test("keyboard can change stages without losing focus, announce selection @quick
   await expect(page.locator('[data-map-stage="independent"]')).toHaveAttribute("aria-pressed","true");
   await expect(page.locator('[data-map-stage="independent"]')).toBeFocused();
   await expect(page.locator("#board-selection-status")).toContainText("Independent Balance");
-  await expect(page.locator(".level-tile")).toHaveCount(16);
+  await expect(page.locator(".level-tile")).toHaveCount(20);
   await page.keyboard.press("End");
   await expect(page.locator('[data-map-stage="notebook"]')).toBeFocused();
   await expect(page.locator('[data-map-stage="notebook"]')).toHaveAttribute("aria-pressed","true");
-  await expect(page.locator(".level-tile")).toHaveCount(12);
+  await expect(page.locator(".level-tile")).toHaveCount(16);
   await page.keyboard.press("Home");
   await expect(page.locator('[data-map-stage="guided"]')).toBeFocused();
   await expect(page.locator(".level-tile")).toHaveCount(20);
