@@ -11,7 +11,9 @@ async function prepareSpritePickup(page, roll, manual = false) {
   // decide how many mathematical objects are removed.
   await page.evaluate(value => { Math.random = () => value; }, roll);
   await page.locator("#level-select").selectOption("3");
+  await page.locator('[data-operation="remove"]').click();
   await page.locator('[data-kind="posX"]').click();
+  await page.locator("#amount-up").click();
   if (manual) await page.locator("#mode-select").selectOption("manual");
 }
 async function recordReactions(page) {
