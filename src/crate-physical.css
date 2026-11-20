@@ -114,12 +114,14 @@
 
 /* Tiny, optional pause button exists ONLY WHILE the crates are being opened.
    The initial panel remains just "SEALED CRATES" and "Open crates". */
+#crate-controls{position:relative}
 #crate-animation-pause[hidden]{display:none!important}
 #crate-animation-pause{
-  min-height:29px;width:100%;
+  position:absolute;top:5px;right:6px;
+  min-height:23px;width:28px;padding:0;
   border:1px solid #c4ab77;border-radius:6px;
   color:#f1debc;background:#344941;
-  font-size:.75rem;
+  font-size:.75rem;line-height:21px;
 }
 #crate-animation-pause:focus-visible{outline:3px solid #f4d89a;outline-offset:2px}
 #crate-controls .eyebrow{font-weight:800}
