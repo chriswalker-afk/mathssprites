@@ -29,7 +29,7 @@ export function extraWorldFixture(){
 test("production exposes four worlds, but only implemented levels are playable",()=>{
   assert.equal(CAMPAIGN_REGISTRY.length,4);
   assert.deepEqual(CAMPAIGN_REGISTRY.map(w=>w.available),[true,true,false,false]);
-  assert.deepEqual(CAMPAIGN_REGISTRY[0].stages.map(s=>s.levels.length),[20,16,12]);
+  assert.deepEqual(CAMPAIGN_REGISTRY[0].stages.map(s=>s.levels.length),[20,20,16]);
   assert.equal(findCampaignWorld("opposites").stages.length,3);
   assert.equal(isCampaignPlayable("opposites","guided",1),true);
   assert.equal(findCampaignLevel("workshop","guided",1).id,"resident");
