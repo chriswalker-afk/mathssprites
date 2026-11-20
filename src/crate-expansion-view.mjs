@@ -147,7 +147,7 @@ export function createCrateExpansionView({
     await Promise.all(spriteActors.map((record,index)=>
       animateOut(record,index,"sprite",minimal?0:index*45)));
     announce("sprites-landed");
-    await hold(minimal?280:590);
+    await hold(minimal?470:840);
   }
   async function panelsFall(){
     announce("panels-falling");
@@ -155,11 +155,11 @@ export function createCrateExpansionView({
       crate.classList.add("crate-panels-down");
       crate.dataset.crateState="panels-down";
     }
-    await hold(minimal?330:760);
+    await hold(minimal?390:780);
     announce("weights-revealed");
     // The individual three-weight groups are NOW visible behind the fallen
     // wooden fronts; keep the room still long enough to recognize them.
-    await hold(minimal?520:970);
+    await hold(minimal?680:1090);
   }
   async function weightsTumble(){
     for(let crateIndex=0;crateIndex<plan.count;crateIndex++){
@@ -168,10 +168,13 @@ export function createCrateExpansionView({
       const packet=weightActors.filter(r=>r.sourceCrate===crateIndex);
       await Promise.all(packet.map((record,index)=>
         animateOut(record,index,"weight",minimal?index*25:index*75)));
-      await hold(minimal?90:230);
+      await hold(minimal?190:340);
     }
+    // Leave the last tumbling packet visible in motion before all objects
+    // settle. This pause also makes the physical group origins observable.
+    await hold(minimal?420:570);
     announce("weights-landed");
-    await hold(minimal?230:450);
+    await hold(minimal?380:570);
   }
   async function settle(){
     announce("settle");
