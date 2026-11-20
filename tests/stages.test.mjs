@@ -12,7 +12,7 @@ test("World 1 has three teaching stages and a separate, playable free-play tool"
   assert.equal(WORLD1_STAGES.length,3);
   assert.deepEqual(WORLD1_STAGES.map(x=>x.id),["guided","independent","notebook"]);
   assert.deepEqual(WORLD1_STAGES.map(x=>x.method),["auto","manual","notebook"]);
-  assert.deepEqual(WORLD1_STAGES.map(x=>x.count),[20,16,12]);
+  assert.deepEqual(WORLD1_STAGES.map(x=>x.count),[20,20,16]);
   assert.deepEqual(WORLD1_STAGES.map(x=>x.available),[true,true,true]);
   assert.equal(WORLD1_STAGES[0].count,WORLD1_LEVELS.length);
   assert.equal(EQUATION_WORKSHOP.available,true);
@@ -26,7 +26,7 @@ test("all three implemented stages are available to students; unbuilt stages are
   assert.equal(canOpenWorld1Stage("notebook",{stage1Completed:false,stage2Completed:false}),true);
   assert.equal(canOpenWorld1Stage("equation-workshop",{teacher:true,stage1Completed:true}),false);
   assert.equal(canOpenWorld1Stage("bogus"),false);
-  assert.equal(stageThreeComplete(Array.from({length:12},(_,i)=>i+1)),true);
+  assert.equal(stageThreeComplete(Array.from({length:20},(_,i)=>i+1)),true);
   assert.equal(stageTwoComplete([]),false);
   assert.equal(stageTwoComplete(Array.from({length:16},(_,i)=>i+1)),true);
 });
