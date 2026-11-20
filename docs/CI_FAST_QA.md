@@ -20,7 +20,9 @@ coverage for risky edits.
 - **Source-aware focused checks** run after classifying changed paths. Crate
   changes trigger the crate opening, counting, divide-first and basket tests.
   Notebook, navigation, signed-world, layout and physical maths each have
-  their own groups. Multiple affected groups run in separate runners.
+  their own groups. Navigation also runs legacy site navigation and onboarding;
+  notebook runs the free-play Equation Workshop; layout includes blocked-storage
+  motion coverage. Multiple affected groups run in separate runners.
 - **Shared-core changes are deliberately conservative.** Changes to
   `src/app.mjs` run all feature groups. An unknown `src/*.mjs`,
   `src/*.js`, `src/*.css` or unclassified new `e2e/*.spec.mjs` file
@@ -33,7 +35,9 @@ coverage for risky edits.
 ### Screenshots
 
 By default, passing quick/feature jobs do not upload huge screenshot bundles.
-A failed browser check retains its failure trace/screenshots.
+A failed browser check retains its failure trace/screenshots. Full regression
+artifacts are saved on failure, manual dispatch, or when visual review is
+explicitly requested, not for ordinary successful merges.
 
 When visual review of a PR is needed, add the `visual-review` label. The
 focused feature jobs will upload their `artifacts/` screenshots and
