@@ -30,9 +30,9 @@ test.beforeEach(async({page})=>{
   await page.goto("/");
 });
 
-test("all 56 World 1 implemented levels open for a new student with empty progress @quick @smoke",async({page})=>{
+test("all 60 World 1 implemented levels open for a new student with empty progress @quick @smoke",async({page})=>{
   await stages(page);
-  for(const [stage,n] of [["guided",20],["independent",20],["notebook",16]]){
+  for(const [stage,n] of [["guided",24],["independent",20],["notebook",16]]){
     const number={guided:1,independent:2,notebook:3}[stage];
     await expect(page.locator('[data-stage="'+stage+'"] button')).toHaveCount(1);
     await page.getByRole("button",{name:"Choose Stage "+number+" levels"}).click();
@@ -71,7 +71,7 @@ test("two-step solution earns two stars; replaying optimally upgrades the best r
   await stages(page);
   await page.getByRole("button",{name:"Choose Stage 1 levels"}).click();
   await expect(page.locator('[data-level="1"] .tile-stars')).toHaveText("★★★");
-  await expect(page.locator("#level-progress")).toContainText("3 / 60 stars");
+  await expect(page.locator("#level-progress")).toContainText("3 / 72 stars");
 });
 
 test("two manual hand visits count as one optimal move, not two @smoke",async({page})=>{
