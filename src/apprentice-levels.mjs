@@ -107,7 +107,7 @@ const raw=[
     suggested:"The crates hold complete groups. Expanding a group is a local rewrite; other operations must affect both sides."}
 ];
 
-if(raw.length!==16||new Set(raw.map(level=>level.id)).size!==12)
+if(raw.length!==16||new Set(raw.map(level=>level.id)).size!==16)
  throw new Error("Stage 3 must contain exactly sixteen distinct puzzles");
 
 export const APPRENTICE_LEVELS=Object.freeze(raw.map((item,i)=>{
