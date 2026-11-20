@@ -20,7 +20,7 @@ test("the prototype replaces exactly the existing Guided Level 19 without changi
   assert.equal(slot.number,19);
   assert.equal(slot.id,"master-19");
   assert.equal(findCampaignLevel("workshop","guided",19).id,"master-19");
-  assert.equal(level.title,"The sealed brackets");
+  assert.equal(level.title,"Sealed Crates");
   assert.equal(level.groupedPrototype,true);
   assert.equal(level.lockPositive,true);
   assert.equal(level.quantityMode,"positive");
