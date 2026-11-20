@@ -7,8 +7,9 @@ async function expectNeutral(page){
   for(const selector of ["[data-operation][aria-pressed=true]","[data-kind][aria-pressed=true]"])
     await expect(page.locator(selector)).toHaveCount(0);
   await expect(page.locator("#amount-value")).toHaveText("—");
-  await expect(page.locator("#object-picker")).toBeHidden();
-  await expect(page.locator("#amount-control")).toBeHidden();
+  await expect(page.locator("#object-picker")).toBeVisible();
+  await expect(page.locator("#amount-control")).toBeVisible();
+  await expect(page.locator("#amount-up")).toBeDisabled();
   await expect(page.locator("#do-both")).toBeDisabled();
 }
 test.beforeEach(async({page})=>{
@@ -19,7 +20,8 @@ test("new Guided level, reset and revisiting never reveal the authored move @qui
   await expectNeutral(page);
   await page.locator('[data-operation="remove"]').click();
   await expect(page.locator("#object-picker")).toBeVisible();
-  await expect(page.locator("#amount-control")).toBeHidden();
+  await expect(page.locator("#amount-control")).toBeVisible();
+  await expect(page.locator("#amount-up")).toBeDisabled();
   await page.locator('[data-kind="posOne"]').click();
   await expect(page.locator("#amount-value")).toHaveText("—");
   await expect(page.locator("#do-both")).toBeDisabled();
