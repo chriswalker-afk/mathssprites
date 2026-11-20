@@ -1,3 +1,4 @@
+import {clickWithReferenceMove} from "./reference-move-helper.mjs";
 import {test,expect} from "@playwright/test";
 
 async function level19(page){
@@ -99,7 +100,7 @@ test("crowbar, simultaneous sprite bounce, falling wooden panels and physical we
 test("divide-first opens just one crate and produces one sprite and three weights @smoke",async({page})=>{
   test.setTimeout(90000);
   await level19(page);
-  await page.locator("#do-both").click();
+  await clickWithReferenceMove(page,"#do-both");
   await expect(page.locator("#left-items .sealed-crate")).toHaveCount(1,{timeout:30000});
   await expect(page.locator("#right-items .weight")).toHaveCount(7);
   await expect(page.locator(".crate-stack-count")).toHaveText("1 crate");
@@ -134,12 +135,12 @@ test("opening stays silent and the resulting comic is a visual storyboard, not m
   await page.locator('[data-operation="remove"]').click();
   await page.locator('[data-kind="posOne"]').click();
   const old=Number(await page.locator("#amount-value").textContent());
-  for(let i=old;i<6;i++)await page.locator("#amount-up").click();
-  for(let i=old;i>6;i--)await page.locator("#amount-down").click();
-  await page.locator("#do-both").click();
+  for(let i=old;i<6;i++)await clickWithReferenceMove(page,"#amount-up");
+  for(let i=old;i>6;i--)await clickWithReferenceMove(page,"#amount-down");
+  await clickWithReferenceMove(page,"#do-both");
   await expect(page.locator("#right-items .weight")).toHaveCount(8,{timeout:30000});
   await page.locator('[data-operation="divide"]').click();
-  await page.locator("#do-both").click();
+  await clickWithReferenceMove(page,"#do-both");
   await expect(page.locator("#replay-backdrop")).toBeVisible({timeout:35000});
   await page.locator("#replay-skip").click();
   await expect(page.locator(".comic-crate-story")).toHaveCount(1);
