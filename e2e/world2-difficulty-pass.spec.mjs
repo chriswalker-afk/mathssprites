@@ -51,15 +51,19 @@ test("World 2 mixed signed rooms keep the same hand action while cancelling diff
   await expect(page.locator("#right-items .balloon")).toHaveCount(2);
   await chooseSigned(page,"add","negOne",3);
   await page.locator("#left-action").click();
+  // A Playwright click returns before async hand choreography finishes.
+  // Wait for the completed first visit before attempting the second;
+  // the game correctly ignores all clicks while the hand is busy.
+  await expect(page.locator("#left-items .weight")).toHaveCount(0,{timeout:28000});
+  await expect(page.locator("#left-items .balloon")).toHaveCount(0);
+  await expect(page.locator("#balance-caption")).toContainText("matching move",{timeout:15000});
   await expect(page.locator("#right-items .balloon")).toHaveCount(2);
   await expect(page.locator("#right-action")).toBeEnabled();
   await page.locator("#right-action").click();
-  await expect(page.locator("#left-items .weight")).toHaveCount(0,{timeout:25000});
-  await expect(page.locator("#left-items .balloon")).toHaveCount(0);
-  // The east room has five genuine weight/balloon pairs. The visual
-  // sequence animates them individually before exposing the committed room.
-  await expect(page.locator("#right-items .weight")).toHaveCount(8,{timeout:48000});
-  await expect(page.locator("#right-items .balloon")).toHaveCount(0,{timeout:48000});
+  // The east room has five genuine weight/balloon pairs. They neutralise
+  // physically before the committed state contains eight loose weights.
+  await expect(page.locator("#right-items .weight")).toHaveCount(8,{timeout:30000});
+  await expect(page.locator("#right-items .balloon")).toHaveCount(0,{timeout:30000});
   await expect(page.locator("#undo")).toBeEnabled();
   await page.locator("#undo").click();
   await expect(page.locator("#left-items .weight")).toHaveCount(3);
