@@ -1,3 +1,4 @@
+import {clickWithReferenceMove} from "./reference-move-helper.mjs";
 import {test,expect} from "@playwright/test";
 
 async function openLevel19(page){
@@ -50,7 +51,7 @@ test("divide-first keeps the picture sign and updates 2 crates to 1 crate @smoke
   test.setTimeout(95000);
   await openLevel19(page);
   await expect(page.locator('[data-operation="divide"]')).toHaveAttribute("aria-pressed","true");
-  await page.locator("#do-both").click();
+  await clickWithReferenceMove(page,"#do-both");
   await expect(page.locator("#left-items .sealed-crate")).toHaveCount(1,{timeout:40000});
   await expect(page.locator("#left-items .crate-stack-count")).toHaveText("1 crate");
   await expect(page.locator("#left-items .crate-picture-sign")).toHaveCount(1);
