@@ -15,6 +15,8 @@ import { itemWord, attemptMessage, mismatchedMoveMessage } from "./attempt-feedb
 import { fractionCutPlan } from "./fraction-theatre.mjs";
 import {neutralPairSequence, neutralPairSummary} from "./neutral-pairs.mjs";
 import {crateCount,crateMarkup} from "./group-crates.mjs";
+import {isCrateOnlyDivisionRoom,playCrateDivision} from "./crate-division.mjs";
+import {resetHand} from "./division-baskets.mjs";
 import {crateExpansionPlan} from "./crate-expansion.mjs";
 import {createCrateExpansionView} from "./crate-expansion-view.mjs";
 import { WORLD1_LEVELS } from "./worlds.mjs";
@@ -165,16 +167,27 @@ function renderRoom(side, r, groupCount) {
   const signature = currentLevel().id + "|" + side + "|" +
     TOKEN_KINDS.map(key => r[key]).join(":") +
     "|crates:" + JSON.stringify(r.crates||null) + "|groups:" + groupCount;
-  // Positive groups are division baskets; negative groups are multiplication.
+  // Loose-object division uses baskets; whole sealed crates go straight to the hand.
   // The mathematical room values never change merely because a stage exists.
   const multiplying=groupCount<0;
   const basketCount=Math.abs(groupCount);
+  const crateOnlyDivision=!multiplying&&basketCount>0&&isCrateOnlyDivisionRoom(r);
   if (node.dataset.signature === signature) { resizeFloor(side); return; }
   node.dataset.signature = signature;
   node.setAttribute("aria-label", (side === "left" ? "West chamber: " : "East chamber: ") + roomSummary(r));
   const total = crateCount(r)+TOKEN_KINDS.reduce((a, field) => a + r[field], 0);
   const crateAttr=crateCount(r)?' data-crate-count="'+crateCount(r)+'"':"";
   node.classList.toggle("crowded", total > 16);
+  if(crateOnlyDivision){
+    // A sealed crate is already a whole object. Do not create division
+    // baskets for it; the hand physically removes unwanted whole crates.
+    // The opposite room still uses ordinary baskets for loose weights.
+    node.innerHTML='<div class="crate-division-stage" data-phase="waiting">'+
+      '<div class="floor-shell"><div class="items-grid floor-track" data-layout="floor"'+crateAttr+'>'+
+      allTokens(r,false,side)+'</div></div></div>';
+    resizeFloor(side);
+    return;
+  }
   if (basketCount) {
     // Both inverse operations use the SAME solid wicker stage. Multiplication
     // keeps originals on the floor until the first basket lands and receives
@@ -887,8 +900,13 @@ function animateClassFrame() {
   });
 }
 async function handAct(side, action, applyAtContact) {
-  // PR25: division has its own series of real basket pickups and ONE algebraic
-  // contact. Failed fractional cuts still use the original precision cutter.
+  // Whole sealed crates do not need baskets: physically throw away the
+  // unwanted original crates and retain the labelled sealed group.
+  if(action.op==="divide"&&!action.fractionAttempt&&
+     $(side+"-items").querySelector(".crate-division-stage"))
+    return playCrateDivision({side,factor:action.factor,reduced:reducedMotion,
+      applyAtContact,sleep,resetHand});
+  // Loose objects still require the established equal-basket animation.
   if (action.op === "divide" && !action.fractionAttempt)
     return playDivisionBaskets({side,factor:action.factor,reduced:reducedMotion,
       applyAtContact,sleep});
