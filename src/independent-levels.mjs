@@ -127,7 +127,7 @@ const rawLevels = [
     suggested:"Some sprites are loose. The sealed groups may need opening before they can meet the others."}
 ];
 
-if (rawLevels.length !== 20 || new Set(rawLevels.map(x=>x.id)).size !== 16)
+if (rawLevels.length !== 20 || new Set(rawLevels.map(x=>x.id)).size !== 20)
   throw new Error("Stage 2 requires exactly twenty distinct puzzles.");
 
 export const INDEPENDENT_LEVELS = Object.freeze(rawLevels.map((raw, i)=>{
