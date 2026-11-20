@@ -26,6 +26,9 @@ const RULES=Object.freeze([
   [/^(?:src\/(?:division-baskets|multiplication-baskets|sprite-[^/]+|hand-[^/]+|star-ratings)\.mjs|e2e\/(?:division-baskets|multiplication-baskets|star-ratings|failed-attempts|animations|sprite-[^/]+|independent-balance|squares)\.spec\.mjs)$/,["physics"]],
   [/^src\/engine\.mjs$/,["crates","notebook","signed","physics"]],
   [/^src\/worlds\.mjs$/,["crates","navigation","signed","physics"]],
+  // Teacher-only curriculum planning data; unit tests verify it is not
+  // imported by the student runtime. No expensive animation suite needed.
+  [/^src\/curriculum\.mjs$/,[]],
   [/^src\/app\.mjs$/,ALL],
   [/^index\.html$/,["crates","navigation","notebook","signed","layout"]],
   [/^src\/styles\.css$/,["navigation","layout","physics"]]

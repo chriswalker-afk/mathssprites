@@ -49,3 +49,11 @@ test("focused suites include site navigation, workshop, and motion regression",(
   assert.deepEqual(selectBrowserGroups(["e2e/equation-workshop.spec.mjs"]),["notebook"]);
   assert.deepEqual(selectBrowserGroups(["e2e/motion-notice.spec.mjs"]),["layout"]);
 });
+
+test("teacher-only curriculum metadata uses unit tests, not six browser suites",()=>{
+  assert.deepEqual(selectBrowserGroups([
+    "src/curriculum.mjs","tests/curriculum.test.mjs",
+    "scripts/curriculum-report.mjs","docs/CURRICULUM_AND_DIFFICULTY.md"
+  ]),[]);
+  assert.deepEqual(featureMatrix(["src/curriculum.mjs"]),{include:[]});
+});
