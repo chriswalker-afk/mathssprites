@@ -10,16 +10,16 @@ import {readFileSync} from "node:fs";
 
 export const GROUP_SPECS=Object.freeze({
   crates:Object.freeze(["e2e/crate-expansion.spec.mjs","e2e/crate-stack.spec.mjs","e2e/group-crates.spec.mjs"]),
-  navigation:Object.freeze(["e2e/experiment-board.spec.mjs","e2e/navigation-journey.spec.mjs","e2e/menu-polish.spec.mjs"]),
-  notebook:Object.freeze(["e2e/notebook-operation-editor.spec.mjs","e2e/notebook-first.spec.mjs"]),
+  navigation:Object.freeze(["e2e/experiment-board.spec.mjs","e2e/navigation-journey.spec.mjs","e2e/menu-polish.spec.mjs","e2e/site-navigation.spec.mjs","e2e/onboarding-polish.spec.mjs"]),
+  notebook:Object.freeze(["e2e/notebook-operation-editor.spec.mjs","e2e/notebook-first.spec.mjs","e2e/equation-workshop.spec.mjs"]),
   signed:Object.freeze(["e2e/opposites-world.spec.mjs"]),
-  layout:Object.freeze(["e2e/adaptive-viewport.spec.mjs","e2e/viewport-fit.spec.mjs"]),
+  layout:Object.freeze(["e2e/adaptive-viewport.spec.mjs","e2e/viewport-fit.spec.mjs","e2e/motion-notice.spec.mjs"]),
   physics:Object.freeze(["e2e/division-baskets.spec.mjs","e2e/multiplication-baskets.spec.mjs","e2e/star-ratings.spec.mjs"])
 });
 const ALL=Object.freeze(Object.keys(GROUP_SPECS));
 const RULES=Object.freeze([
   [/^(?:src\/(?:group-crates|crate-[^/]+|hand-timeline|division-baskets)\.mjs|src\/(?:crate-[^/]+|group-crates)\.css|e2e\/(?:crate-[^/]+|group-crates)\.spec\.mjs|tests\/(?:crate-[^/]+|group-crates)\.test\.mjs)$/,["crates"]],
-  [/^(?:src\/(?:site|stages|menu-[^/]+|navigation-[^/]+|portal-[^/]+|home-[^/]+|onboarding)\.mjs|src\/(?:site|portal|menu|home)[^/]*\.css|e2e\/(?:experiment-board|navigation-journey|menu-polish|menu-polish-visual|site-navigation|home-hero|portal-art)\.spec\.mjs)$/,["navigation"]],
+  [/^(?:src\/(?:site|stages|menu-[^/]+|navigation-[^/]+|portal-[^/]+|home-[^/]+|onboarding)\.mjs|src\/(?:site|portal|menu|home)[^/]*\.css|e2e\/(?:experiment-board|navigation-journey|menu-polish|menu-polish-visual|site-navigation|onboarding-polish|home-hero|portal-art)\.spec\.mjs)$/,["navigation"]],
   [/^(?:src\/(?:notebook-[^/]+|equation-workshop|apprentice-levels)\.mjs|e2e\/(?:notebook-[^/]+|apprentice-campaign|equation-workshop|replay-writing)\.spec\.mjs)$/,["notebook"]],
   [/^(?:src\/(?:opposite-[^/]+|signed-[^/]+)\.mjs|e2e\/(?:opposites-world|signed-objects)\.spec\.mjs)$/,["signed"]],
   [/^(?:src\/(?:viewport-[^/]+|scene-[^/]+|stages|adaptive-[^/]+)\.css|e2e\/(?:adaptive-viewport|viewport-fit|scene-polish|hand-art|motion-notice)\.spec\.mjs)$/,["layout"]],
