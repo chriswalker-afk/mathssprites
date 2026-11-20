@@ -4,7 +4,7 @@ test.beforeEach(async({page})=>{
   await page.emulateMedia({reducedMotion:"no-preference"});
   await page.goto("/");
 });
-test("new student enters any guided level in two clicks, not four @smoke",async({page})=>{
+test("new student enters any guided level in two clicks, not four @quick @smoke",async({page})=>{
   await expect(page.locator("#home-stage-shortcuts .home-stage-quick")).toHaveCount(3);
   await page.getByRole("button",{name:"Choose a level"}).click();
   await expect(page.locator("#site-levels")).toBeVisible();
@@ -22,7 +22,7 @@ test("new student enters any guided level in two clicks, not four @smoke",async(
   await expect(page.locator('[data-level="18"]')).toBeEnabled();
   await expect(page.locator('[data-map-stage="guided"]')).toHaveAttribute("aria-pressed","true");
 });
-test("switch between all three learning modes without leaving Experiment Board @smoke",async({page})=>{
+test("switch between all three learning modes without leaving Experiment Board @quick @smoke",async({page})=>{
   await page.getByRole("button",{name:"Choose a level"}).click();
   await page.locator('[data-map-stage="independent"]').click();
   await expect(page.locator('[data-map-stage="independent"]')).toHaveAttribute("aria-pressed","true");
