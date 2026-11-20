@@ -138,7 +138,7 @@ test("Stage 2 storage preserves Stage 1 bytes and handles denied storage",()=>{
 
 test("Stage 2 guided introduction tells students when the other room is waiting",()=>{
   assert.deepEqual([0,1,2,3].map(step=>independentIntroductionCue(step).target),
-    ["scene","remove","amount","left-action"]);
+    ["scene","actions","tools","left-action"]);
   assert.equal(independentIntroductionCue(3,{pending:"left"}).target,"right-action");
   assert.equal(independentIntroductionCue(1,{pending:"right"}).target,"left-action",
     "real unmatched move takes priority over guide steps");
