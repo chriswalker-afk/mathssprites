@@ -1,0 +1,294 @@
+/* PR40 — Stacked sealed crates. Inspired by the approved concept drawing:
+   heavy planked cases, diagonal wooden bracing, brass studs, ONE illustrated
+   contents sign, and ONE count plaque pointing at the entire stack.
+
+   IMPORTANT: every crate remains a DIRECT .token child of .floor-track.
+   The division-basket code moves real individual crates into real baskets.
+   The count plaque and pictogram are decoration, never algebraic tokens.
+*/
+.room-items .items-grid.floor-track:has(> .sealed-crate){
+  --crate-w:100px;
+  --crate-h:75px;
+  --crate-label-column:108px;
+  display:flex;
+  flex-direction:column;
+  flex-wrap:nowrap;
+  align-items:flex-end;
+  justify-content:flex-end;
+  /* The label column sits BESIDE the crate width. The global
+     border-box reset must not subtract it from the actual crate column. */
+  box-sizing:content-box;
+  width:var(--crate-w);
+  padding-left:var(--crate-label-column);
+  gap:2px;
+  max-width:none;
+  white-space:normal;
+  overflow:visible;
+}
+.room-items .items-grid.floor-track:has(> .sealed-crate)[data-crate-count="3"]{
+  --crate-h:60px;
+}
+.room-items .items-grid.floor-track:has(> .sealed-crate)[data-crate-count="4"],
+.room-items .items-grid.floor-track:has(> .sealed-crate)[data-crate-count="5"]{
+  --crate-h:43px;
+}
+.room-items .items-grid.floor-track:has(> .sealed-crate)[data-crate-count="6"],
+.room-items .items-grid.floor-track:has(> .sealed-crate)[data-crate-count="7"],
+.room-items .items-grid.floor-track:has(> .sealed-crate)[data-crate-count="8"]{
+  --crate-h:25px;
+}
+.room-items .items-grid.floor-track:has(> .sealed-crate)[data-crate-count="9"],
+.room-items .items-grid.floor-track:has(> .sealed-crate)[data-crate-count="10"],
+.room-items .items-grid.floor-track:has(> .sealed-crate)[data-crate-count="11"],
+.room-items .items-grid.floor-track:has(> .sealed-crate)[data-crate-count="12"]{
+  --crate-h:17px;
+}
+
+/* Replace the glass cabinet with sturdy, visibly closed packing crates.
+   Wood, frame, brace and studs are designed in independent layers so the
+   crowbar can still lever an actual top lid on EACH separate crate. */
+.items-grid.floor-track>.token.sealed-crate,
+.room-items .items-grid.floor-track>.token.sealed-crate{
+  display:block;
+  position:relative;
+  box-sizing:border-box;
+  flex:none;
+  width:var(--crate-w)!important;
+  min-width:var(--crate-w)!important;
+  height:var(--crate-h)!important;
+  padding:0;
+  margin:0;
+  border:0;
+  border-radius:4px;
+  transform:none;
+  overflow:visible;
+  background:linear-gradient(90deg,#51321d,#c58b4a 12%,#b3783c 57%,#784a29 98%);
+  box-shadow:0 4px 5px #0c1413a6,0 0 0 1px #251b13,inset 0 2px #efd09a9c;
+  isolation:isolate;
+}
+.sealed-crate::after{
+  content:none!important;
+}
+.sealed-crate .crate-wood-face{
+  position:absolute;inset:0;
+  overflow:hidden;border-radius:3px;
+  background:linear-gradient(100deg,#674020 0%,#b77c3f 11%,#c38a4f 36%,
+    #a36732 66%,#754420 100%);
+  box-shadow:inset 0 0 0 2px #53321e,inset 3px 3px 5px #301b118c;
+  z-index:1;
+}
+.sealed-crate .crate-wood-grain{
+  position:absolute;inset:7px;
+  background:
+    repeating-linear-gradient(93deg,transparent 0 9px,
+      #55331a55 10px 11px,#f3b56a33 12px 14px,transparent 15px 22px),
+    repeating-linear-gradient(177deg,transparent 0 11px,
+      #e6ac6920 13px 14px,transparent 15px 30px);
+  box-shadow:inset 0 0 10px #4d2c19a0;
+}
+.sealed-crate .crate-diagonal-brace{
+  position:absolute;
+  left:48%;top:-32%;height:168%;width:19%;
+  transform:rotate(-41deg);
+  border-left:2px solid #ecb77a;
+  border-right:3px solid #4b2a18;
+  background:linear-gradient(90deg,#6c3e20 0%,#c98e4c 18%,#dfab65 51%,#9e622f 90%);
+  box-shadow:3px 2px 2px #2d1b128c, inset 1px 1px #ffcf8c89;
+  z-index:2;
+}
+.sealed-crate .crate-wood-rail{
+  position:absolute;display:block;z-index:3;
+  background:linear-gradient(155deg,#e0a664,#b47439 48%,#754421 100%);
+  box-shadow:inset 1px 1px #efd6a173,2px 2px 2px #321b128f;
+}
+.sealed-crate .crate-wood-rail-top{
+  top:0;left:0;right:0;height:12%;
+  border-bottom:2px solid #683a1f;
+}
+.sealed-crate .crate-wood-rail-bottom{
+  bottom:0;left:0;right:0;height:12%;
+  border-top:2px solid #e8b16caa;
+}
+.sealed-crate .crate-wood-rail-left{
+  top:0;bottom:0;left:0;width:10%;
+  border-right:2px solid #6f4220;
+}
+.sealed-crate .crate-wood-rail-right{
+  top:0;bottom:0;right:0;width:10%;
+  border-left:2px solid #e7af6999;
+}
+.sealed-crate .crate-corner-stud,
+.sealed-crate .crate-sign-stud{
+  position:absolute;
+  width:9px;height:9px;border-radius:50%;z-index:5;
+  border:1px solid #72421e;
+  background:radial-gradient(circle at 28% 25%,#fff3b6 0 13%,#e9be65 19%,
+    #af782b 62%,#6b451e 100%);
+  box-shadow:0 1px 2px #1d130fa8,inset 0 1px #fff0be75;
+}
+.sealed-crate .stud-tl{top:4%;left:4%}
+.sealed-crate .stud-tr{top:4%;right:4%}
+.sealed-crate .stud-bl{bottom:4%;left:4%}
+.sealed-crate .stud-br{bottom:4%;right:4%}
+.sealed-crate .crate-lid{
+  position:absolute;z-index:10;top:-3px;left:1px;right:1px;height:8px;
+  border:1px solid #e0ae6c;border-radius:3px 3px 1px 1px;
+  background:linear-gradient(180deg,#e2ac6a,#a96d39 54%,#6a401f);
+  box-shadow:0 1px 2px #281b15a0;
+  transform-origin:5px 100%;
+}
+/* A hanging brass-edged pictogram belongs to exactly ONE crate and describes
+   what EVERY sealed crate contains. No word labels or algebra on the wood. */
+.sealed-crate .crate-picture-sign{
+  position:absolute;
+  z-index:7;left:13%;right:13%;
+  top:17%;bottom:12%;
+  display:flex;align-items:center;justify-content:center;
+  padding:4px 5px;
+  border:3px solid #d6a455;border-radius:5px;
+  background:linear-gradient(139deg,#234c46,#15352f 78%);
+  box-shadow:0 2px 4px #170e0ac2,inset 0 0 0 2px #69502d,
+    inset 1px 1px #a8d9c036;
+}
+.crate-picture-sign .crate-sign-hooks{
+  position:absolute;left:24%;right:24%;top:-10px;z-index:-1;
+  display:flex;justify-content:space-between;
+}
+.crate-sign-hooks i{
+  width:8px;height:12px;border:3px solid #e2b76b;
+  border-radius:45% 45% 38% 38%;
+  box-shadow:1px 1px #4c321c;
+}
+.sealed-crate .crate-sign-face{
+  width:100%;height:100%;
+  display:flex;align-items:center;justify-content:center;
+  overflow:hidden;
+  background:linear-gradient(125deg,#c6edda13 0 26%,transparent 27% 82%,#f5e7be09 85%);
+}
+.crate-sign-icons{
+  display:flex;align-items:flex-end;justify-content:center;gap:2px;
+  max-width:100%;max-height:100%;
+}
+.crate-sign-sprite{
+  display:flex;justify-content:center;align-items:center;
+  flex:none;width:19px;height:24px;
+  border-radius:44% 48% 38% 42%;
+  border:2px solid #73857d;
+  background:radial-gradient(circle at 36% 20%,#63706b,#1d2c2b 71%);
+  box-shadow:0 1px 2px #081412,inset 0 2px #a3b1a544;
+}
+.crate-sign-sprite i{
+  flex:none;width:4px;height:5px;background:#e9f6e3;
+  border-radius:50%;margin:0 1px;
+}
+.crate-sign-white{background:linear-gradient(#d9e0d5,#a6b6b0)}
+.crate-sign-white i{background:#203d3b}
+.crate-sign-weight{
+  flex:none;width:10px;height:15px;
+  background:linear-gradient(100deg,#f0d68d,#be8c45 64%,#81572e);
+  border:1px solid #f3d290;
+  clip-path:polygon(25% 0,75% 0,100% 100%,0 100%);
+  box-shadow:0 2px 2px #111b;
+}
+.crate-sign-balloon{
+  flex:none;width:10px;height:14px;border-radius:50%;
+  background:linear-gradient(#efc9b9,#a97577);
+}
+.crate-picture-sign .crate-sign-stud{width:5px;height:5px;z-index:9}
+.crate-picture-sign .crate-stud-one{top:0;left:0}
+.crate-picture-sign .crate-stud-two{top:0;right:0}
+.crate-picture-sign .crate-stud-three{bottom:0;left:0}
+.crate-picture-sign .crate-stud-four{bottom:0;right:0}
+.sealed-crate .crate-hidden-contents{display:none!important}
+/* One count plaque, NOT one label for each box. It points at the stack. */
+.crate-stack-count{
+  position:absolute;
+  z-index:6;
+  left:2px;top:50%;
+  transform:translateY(-50%);
+  width:calc(var(--crate-label-column) - 20px);
+  min-height:28px;
+  box-sizing:border-box;
+  display:flex;align-items:center;justify-content:center;
+  padding:5px 4px;
+  border:2px solid #bf9b5d;border-radius:25px;
+  background:linear-gradient(155deg,#21473f,#172f2d);
+  box-shadow:inset 0 0 0 1px #d9c58a5e,0 3px 7px #030b0a92;
+  color:#fff0c6;white-space:nowrap;
+  font:700 12px/1.2 Georgia,serif;text-shadow:0 1px 2px #091a19;
+  pointer-events:none;
+}
+.crate-count-connector{
+  position:absolute;left:100%;top:50%;width:14px;
+  border-top:2px solid #c8a36a;
+}
+.crate-count-connector:after{
+  position:absolute;content:"";right:-2px;top:-4px;
+  width:6px;height:6px;background:#e6be77;
+  border:1px solid #805e2d;border-radius:50%;
+}
+.division-stage[data-phase="sharing"] .crate-stack-count,
+.division-stage[data-phase="taking"] .crate-stack-count{
+  opacity:0;visibility:hidden;
+}
+
+/* Separate crate objects still travel one-per-basket. The sign is attached
+   to only the designated marked crate, not duplicated into each basket. */
+.group-basket .token.sealed-crate,
+.hand-cargo .basket-in-hand .token.sealed-crate,
+.division-stage .group-basket .token.sealed-crate{
+  width:100px!important;height:75px!important;min-width:100px!important;
+  flex:none;margin:-25px -23px -11px!important;
+  transform:scale(.42)!important;transform-origin:50% 92%;
+}
+.group-basket .token.sealed-crate .crate-lid,
+.hand-cargo .basket-in-hand .token.sealed-crate .crate-lid{
+  top:-3px;
+}
+
+/* At short heights, a 2-crate stack must sit on the chamber floor without
+   obstructing the window, heading, hand, or the Expanding Brackets button. */
+@media(min-width:900px) and (max-height:790px){
+  .room-items .items-grid.floor-track:has(> .sealed-crate){
+    --crate-w:78px;--crate-h:56px;--crate-label-column:85px;gap:1px;
+  }
+  .room-items .items-grid.floor-track:has(> .sealed-crate)[data-crate-count="3"]{
+    --crate-h:38px;
+  }
+  .room-items .items-grid.floor-track:has(> .sealed-crate)[data-crate-count="4"],
+  .room-items .items-grid.floor-track:has(> .sealed-crate)[data-crate-count="5"]{
+    --crate-h:23px;
+  }
+  .crate-stack-count{font-size:10px;padding:4px 3px;min-height:24px}
+  .sealed-crate .crate-picture-sign{left:9%;right:9%;top:14%;bottom:11%;padding:2px 3px}
+  .crate-sign-sprite{width:15px;height:18px;border-width:1px}
+  .crate-sign-sprite i{width:3px;height:4px}
+  .crate-sign-weight{width:8px;height:11px}
+  .sealed-crate .crate-corner-stud{width:7px;height:7px}
+}
+@media(max-width:899px){
+  .room-items .items-grid.floor-track:has(> .sealed-crate){
+    --crate-w:77px;--crate-h:54px;--crate-label-column:81px;gap:1px;
+  }
+  .room-items .items-grid.floor-track:has(> .sealed-crate)[data-crate-count="3"]{
+    --crate-h:37px;
+  }
+  .crate-stack-count{font-size:9px;min-height:23px;padding:3px}
+  .sealed-crate .crate-picture-sign{left:8%;right:8%;top:13%;bottom:11%;padding:1px 2px}
+  .crate-sign-sprite{width:14px;height:17px;border-width:1px}
+  .crate-sign-sprite i{width:3px;height:3px}
+  .crate-sign-weight{width:7px;height:10px}
+  .sealed-crate .crate-corner-stud{width:6px;height:6px}
+}
+@media(min-width:900px) and (min-height:1050px){
+  .room-items .items-grid.floor-track:has(> .sealed-crate){
+    --crate-w:112px;--crate-h:91px;--crate-label-column:121px;gap:3px;
+  }
+  .crate-stack-count{font-size:14px}
+  .crate-sign-sprite{width:22px;height:27px}
+  .crate-sign-weight{width:12px;height:17px}
+}
+@media(prefers-reduced-motion:reduce){
+  .sealed-crate .crate-wood-face,
+  .sealed-crate .crate-picture-sign{transition:none}
+}

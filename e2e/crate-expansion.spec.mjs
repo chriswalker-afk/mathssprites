@@ -18,8 +18,8 @@ test("two crates open with a crowbar, distribute all sprites first, then two wei
   test.setTimeout(90000);
   await level19(page);
   await expect(page.locator(".sealed-crate")).toHaveCount(2);
-  await expect(page.locator(".crate-contents-note:visible")).toHaveCount(1);
-  await expect(page.locator(".crate-contents-note:visible")).toContainText("1 sprite + 3 weights");
+  await expect(page.locator(".crate-picture-sign")).toHaveCount(1);
+  await expect(page.locator(".crate-stack-count")).toHaveText("2 crates");
   await page.screenshot({path:"artifacts/pr39-01-two-sealed-crates.png",fullPage:true});
   await page.locator("#unpack-crates").click();
   const first=page.locator('.sealed-crate[data-crate-index="0"]');
@@ -30,7 +30,7 @@ test("two crates open with a crowbar, distribute all sprites first, then two wei
   await expect(page.locator("#hand-cargo .held-crowbar")).toBeAttached();
   await page.screenshot({path:"artifacts/pr39-02-crowbar-first-crate.png",fullPage:true});
   await expect(second).toHaveAttribute("data-crate-state","opened",{timeout:15000});
-  await expect(page.locator("#left-crate-contents")).toBeHidden();
+  await expect(page.locator(".crate-stack-count")).toHaveText("2 crates");
   await page.screenshot({path:"artifacts/pr39-03-crowbar-both-crates.png",fullPage:true});
 
   await awaitPhase(page,"sprite-total");
@@ -62,7 +62,8 @@ test("divide-first crowbar opens only one crate and shows 1×x and 1×3 @smoke",
   await expect(page.locator("#left-items .sealed-crate")).toHaveCount(1,{timeout:30000});
   await expect(page.locator("#right-items .weight")).toHaveCount(7);
   await page.screenshot({path:"artifacts/pr39-07-divide-first-one-crate.png",fullPage:true});
-  await expect(page.locator("#left-crate-contents")).toHaveText("Each crate: 1 sprite + 3 weights");
+  await expect(page.locator(".crate-stack-count")).toHaveText("1 crate");
+  await expect(page.locator(".crate-picture-sign")).toHaveCount(1);
   await page.locator("#unpack-crates").click();
   await awaitPhase(page,"sprite-total");
   await expect(page.locator("#left-crate-expansion .crate-expansion-math")).toHaveText("1 × x = x");
@@ -104,7 +105,7 @@ test("reduced motion still shows each multiplication and compact control remains
   test.setTimeout(65000);
   await page.setViewportSize({width:1092,height:540});
   await level19(page);
-  await expect(page.locator("#left-crate-contents")).toBeInViewport();
+  await expect(page.locator(".crate-stack-count")).toBeInViewport();
   await expect(page.locator("#unpack-crates")).toBeInViewport();
   const width=await page.evaluate(()=>document.documentElement.scrollWidth);
   expect(width).toBeLessThanOrEqual(1095);

@@ -15,7 +15,7 @@ import { itemWord, attemptMessage, mismatchedMoveMessage } from "./attempt-feedb
 import { fractionCutPlan } from "./fraction-theatre.mjs";
 import {neutralPairSequence, neutralPairSummary} from "./neutral-pairs.mjs";
 import {crateCount,crateMarkup} from "./group-crates.mjs";
-import {crateContentsDescription,crateExpansionPlan,crateExpansionReplayNotes} from "./crate-expansion.mjs";
+import {crateExpansionPlan,crateExpansionReplayNotes} from "./crate-expansion.mjs";
 import {createCrateExpansionView} from "./crate-expansion-view.mjs";
 import { WORLD1_LEVELS } from "./worlds.mjs";
 import {INDEPENDENT_LEVELS} from "./independent-levels.mjs";
@@ -172,6 +172,7 @@ function renderRoom(side, r, groupCount) {
   node.dataset.signature = signature;
   node.setAttribute("aria-label", (side === "left" ? "West chamber: " : "East chamber: ") + roomSummary(r));
   const total = crateCount(r)+TOKEN_KINDS.reduce((a, field) => a + r[field], 0);
+  const crateAttr=crateCount(r)?' data-crate-count="'+crateCount(r)+'"':"";
   node.classList.toggle("crowded", total > 16);
   if (basketCount) {
     // Both inverse operations use the SAME solid wicker stage. Multiplication
@@ -181,7 +182,7 @@ function renderRoom(side, r, groupCount) {
       (multiplying?' multiplication-stage':'')+'" data-operation="'+
       (multiplying?'multiply':'divide')+'" data-phase="waiting" '+
       'style="--division-factor:'+basketCount+'">' +
-      '<div class="division-source floor-shell"><div class="items-grid floor-track" data-layout="floor">' +
+      '<div class="division-source floor-shell"><div class="items-grid floor-track" data-layout="floor"'+crateAttr+'>' +
       allTokens(r,false,side)+'</div></div>'+
       '<div class="basket-row" aria-label="'+basketCount+' equal groups">'+
       (multiplying?multiplicationBasketMarkup(basketCount):divisionBasketMarkup(basketCount))+
@@ -193,7 +194,7 @@ function renderRoom(side, r, groupCount) {
     node.innerHTML = '<div class="room-empty" aria-hidden="true">a quiet moment...</div>';
     return;
   }
-  node.innerHTML = '<div class="floor-shell"><div class="items-grid floor-track" data-layout="floor">' +
+  node.innerHTML = '<div class="floor-shell"><div class="items-grid floor-track" data-layout="floor"'+crateAttr+'>' +
     allTokens(r, false, side) + '</div></div>' +
     (total > 14 ? '<span class="floor-count" aria-hidden="true">' + total + ' objects in a row</span>' : "");
   resizeFloor(side);
@@ -560,12 +561,6 @@ function render() {
   $("motion-notice").hidden = !reducedMotion;
 
   const crateSide=crateCount(shown.left)?"left":crateCount(shown.right)?"right":null;
-  for(const side of ["left","right"]){
-    const label=$(side+"-crate-contents");
-    const hasCrates=lvl.groupedPrototype&&crateCount(shown[side])>0;
-    label.hidden=!hasCrates||crateExpansionRunning||!!notebookSession;
-    if(hasCrates)label.textContent=crateContentsDescription(shown[side]);
-  }
   $("crate-controls").hidden=!lvl.groupedPrototype||!crateSide||!!notebookSession;
   $("unpack-crates").disabled=busy||awaiting||isSolved(state)||!crateSide;
   $("unpack-crates").dataset.crateSide=crateSide||"";
