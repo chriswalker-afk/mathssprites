@@ -47,13 +47,13 @@ export function introductionCue(step, { mode = "auto", pending = false, busy = f
   };
   if (step === 1) return {
     title: "1 · Choose an action",
-    text: "Removing objects from BOTH rooms keeps the scale balanced. The Remove tool is already selected for your first puzzle.",
-    target: "remove", action: "Choose the objects", progress: "2 of 4"
+    text: "Choose a tool to change both rooms equally. Nothing is selected for you: you decide what should happen.",
+    target: "actions", action: "Choose the objects", progress: "2 of 4"
   };
   if (step === 2) return {
-    title: "2 · Choose two weights",
-    text: "Choose the Weight object and make the number TWO. We want to remove two brass weights from each room.",
-    target: "amount", action: "Ready to try", progress: "3 of 4"
+    title: "2 · Choose the objects and amount",
+    text: "After choosing a tool, choose the object and set a quantity with the plus button. Look at the rooms to decide what to change.",
+    target: "tools", action: "Ready to try", progress: "3 of 4"
   };
   if (pending && mode === "manual") return {
     title: "3 · Now match the other room",
@@ -100,7 +100,7 @@ export function writeIndependentGuideSeen(seen,storage){
 export function independentIntroductionCue(step,{pending=null,busy=false}={}){
   if(pending)return{
     title:"3 · The other room is still waiting!",
-    text:"Look at the tilted scale. Now use the SAME removal of two weights in the other chamber. The balance will settle after your second hand visit.",
+    text:"Look at the tilted scale. Now make the SAME action in the other chamber. The balance will settle after your second hand visit.",
     target:pending==="left"?"right-action":"left-action",
     action:null,progress:"4 of 4"
   };
@@ -115,18 +115,18 @@ export function independentIntroductionCue(step,{pending=null,busy=false}={}){
     target:"scene",action:"Choose an action",progress:"1 of 4"
   };
   if(step===1)return{
-    title:"1 · Choose Remove",
-    text:"Removing objects from one chamber will tip the scale until you make the same change in the other. Start with the Remove tool.",
-    target:"remove",action:"Choose the amount",progress:"2 of 4"
+    title:"1 · Choose an action",
+    text:"Choose the operation yourself. The same change is needed in both chambers, but you will move each hand separately.",
+    target:"actions",action:"Choose the amount",progress:"2 of 4"
   };
   if(step===2)return{
-    title:"2 · Choose two weights",
-    text:"Choose Weight, and make the number TWO. The first room contains two loose weights to remove.",
-    target:"amount",action:"Try your first hand move",progress:"3 of 4"
+    title:"2 · Choose what and how many",
+    text:"Use the object buttons and the plus control to select a quantity. Work out what needs to change from the balance.",
+    target:"tools",action:"Try your first hand move",progress:"3 of 4"
   };
   return{
     title:"3 · Make the west move",
-    text:"Press Use hand here in the west chamber. Watch the scale tilt; then perform the matching removal in the east.",
+    text:"Use either hand first, then perform the same action in the other chamber to level the balance.",
     target:"left-action",action:null,progress:"4 of 4"
   };
 }

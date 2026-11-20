@@ -1,3 +1,4 @@
+import {clickWithReferenceMove} from "./reference-move-helper.mjs";
 import { test, expect } from "@playwright/test";
 
 test.beforeEach(async ({ page }) => {
@@ -6,7 +7,7 @@ test.beforeEach(async ({ page }) => {
 });
 
 async function solveFirstLevel(page) {
-  await page.locator("#do-both").click();
+  await clickWithReferenceMove(page,"#do-both");
   await expect(page.locator("#replay-backdrop")).toBeVisible();
 }
 

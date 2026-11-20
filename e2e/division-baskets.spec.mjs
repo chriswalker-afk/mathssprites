@@ -1,3 +1,4 @@
+import {clickWithReferenceMove} from "./reference-move-helper.mjs";
 import {test,expect} from "@playwright/test";
 
 test.beforeEach(async({page})=>{
@@ -6,7 +7,7 @@ test.beforeEach(async({page})=>{
 });
 test("real baskets fall EMPTY, receive the original tokens, and are carried away individually @smoke",async({page})=>{
   test.setTimeout(65000);
-  await page.locator("#do-both").click();
+  await clickWithReferenceMove(page,"#do-both");
   const west=page.locator("#left-items .division-stage");
   const row=west.locator(".basket-row");
   await expect(west).toHaveAttribute("data-phase","dropping",{timeout:8000});
@@ -47,7 +48,7 @@ test("five-basket division on a phone keeps every basket inside its moving chamb
   test.setTimeout(75000);
   await page.setViewportSize({width:390,height:844});
   await page.goto("/?preview=five-baskets");
-  await page.locator("#do-both").click();
+  await clickWithReferenceMove(page,"#do-both");
   const west=page.locator("#left-items .division-stage");
   await expect(west).toHaveAttribute("data-phase","ready",{timeout:12000});
   await expect(west.locator(".group-basket")).toHaveCount(5);
@@ -74,7 +75,7 @@ test("reduced motion provides readable basket snapshots without flying animation
   test.setTimeout(45000);
   await page.locator("#motion-toggle").click();
   await expect(page.locator("#motion-toggle")).toHaveText("Motion: reduced");
-  await page.locator("#do-both").click();
+  await clickWithReferenceMove(page,"#do-both");
   const west=page.locator("#left-items .division-stage");
   await expect(west).toHaveAttribute("data-phase","ready",{timeout:10000});
   await expect(west.locator(".group-basket")).toHaveCount(3);
@@ -86,12 +87,12 @@ test("reduced motion provides readable basket snapshots without flying animation
 test("manual division only commits its paired operation after separate room visits",async({page})=>{
   test.setTimeout(80000);
   await page.locator("#mode-select").selectOption("manual");
-  await page.locator("#left-action").click();
+  await clickWithReferenceMove(page,"#left-action");
   await expect(page.locator("#left-items .floor-track > .sprite-black")).toHaveCount(1,{timeout:22000});
   await expect(page.locator("#right-items .floor-track > .weight")).toHaveCount(9);
   await expect(page.locator("#replay-backdrop")).toBeHidden();
   await expect(page.locator("#right-action")).toContainText("Match the move");
-  await page.locator("#right-action").click();
+  await clickWithReferenceMove(page,"#right-action");
   await expect(page.locator("#right-items .floor-track > .weight")).toHaveCount(3,{timeout:22000});
   await expect(page.locator("#replay-backdrop")).toBeVisible({timeout:16000});
 });

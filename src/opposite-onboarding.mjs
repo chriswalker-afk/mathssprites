@@ -12,8 +12,8 @@ export function oppositeIntroductionCue(step,{manual=false}={}){
   const cues=manual?[
     {title:"Two rooms, signed objects",text:"The balloon represents a negative unit. Look at the balance before moving the hand.",
       action:"Show the controls",target:"scene"},
-    {title:"Choose a matching change",text:"Select Add, Weight and the amount. You will visit the rooms separately.",
-      action:"Show the rooms",target:"amount"},
+    {title:"Choose a matching change",text:"Choose a mathematical change, then select the objects and amount yourself. You will visit the rooms separately.",
+      action:"Show the rooms",target:"tools"},
     {title:"Visit one chamber",text:"Use the hand in either room. The scale will tip until you repeat exactly that move in the other.",
       action:"Ready to balance",target:"left-action"},
     {title:"You are in control",text:"Match every signed move. A weight and a balloon can make zero in only one room, and equality still holds after both visits.",
@@ -23,7 +23,7 @@ export function oppositeIntroductionCue(step,{manual=false}={}){
       action:"Find a zero pair",target:"scene"},
     {title:"Watch opposites meet",text:"When a weight meets a balloon they float away together. That is zero — no value has been lost.",
       action:"Choose the weights",target:"amount"},
-    {title:"Keep both rooms balanced",text:"Choose Add and a weight. The hand will repeat your action in both rooms.",
+    {title:"Keep both rooms balanced",text:"Look at the balloons and weights, then choose a matching change. The hand will perform it in both rooms.",
       action:"Find the hand",target:"do-both"},
     {title:"Your first signed experiment",text:"Try the move. Later, pale sprites will cancel dark sprites in the same way. The notebook will show the maths.",
       action:null,target:"do-both"}

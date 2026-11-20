@@ -1,3 +1,4 @@
+import {neutralToolSelection,actionFromToolSelection,stepToolQuantity} from "./action-selection.mjs";
 import {
   LEVELS, TOKEN_KINDS, initialState, visibleRooms, evaluate, levelQuantityMode, normalize, room,
   perform, previewRoomAction, undo, isSolved, equation, operationDescription, algebraOperation, areaArrangement
@@ -60,10 +61,7 @@ function chooseMotion(reduced) {
 
 let levelIndex = 0;
 let mode = "auto";
-let operation = "remove";
-let kind = "posOne";
-let amount = 2;
-let factor = 3;
+let {operation,kind,amount,factor} = neutralToolSelection();
 let state = initialState(LEVELS[0]);
 let activeLevel = LEVELS[0];
 let campaignLevelNumber = null;
@@ -113,9 +111,15 @@ let replaySpeed = 1;
 let replayPanelFinished = false;
 
 function currentAction() {
-  if (operation === "square" || operation === "sqrt") return { op: operation };
-  if (operation === "multiply" || operation === "divide") return { op: operation, factor };
-  return { op: operation, kind, count: amount };
+  return actionFromToolSelection({operation,kind,amount,factor});
+}
+function resetToolSelection() {
+  ({operation,kind,amount,factor}=neutralToolSelection());
+}
+function hasCompleteToolSelection() {
+  const action=currentAction();
+  return !!action && (!currentLevel().allowedOperations ||
+    currentLevel().allowedOperations.includes(action.op));
 }
 function possessiveCount(number, singular, plural) {
   return number + " " + (number === 1 ? singular : plural);
@@ -282,8 +286,8 @@ function currentGuideCue() {
 }
 function guideTarget(name) {
   if (name === "scene") return $("scene");
-  if (name === "remove") return document.querySelector('[data-operation="remove"]');
-  if (name === "amount") return $("amount-control");
+  if (name === "remove" || name==="actions") return document.querySelector(".operation-picker");
+  if (name === "amount" || name==="tools") return document.querySelector(".control-top");
   if (name === "do-both") return $("do-both");
   if (name === "left-action") return $("left-action");
   if (name === "right-action") return $("right-action");
@@ -523,28 +527,37 @@ function render() {
   for (const button of document.querySelectorAll("[data-operation]")) {
     const available = !lvl.allowedOperations || lvl.allowedOperations.includes(button.dataset.operation);
     button.hidden = !available;
-    button.classList.toggle("selected", button.dataset.operation === operation);
+    button.classList.toggle("selected", operation!==null && button.dataset.operation === operation);
     button.disabled = !available || busy || isSolved(state);
-    button.setAttribute("aria-pressed", String(button.dataset.operation === operation));
+    button.setAttribute("aria-pressed", String(operation!==null && button.dataset.operation === operation));
   }
   for (const button of document.querySelectorAll("[data-kind]")) {
-    button.classList.toggle("selected", button.dataset.kind === kind);
+    button.classList.toggle("selected", kind!==null && button.dataset.kind === kind);
     const signedObject=button.dataset.kind==="negX"||button.dataset.kind==="negOne";
     const unavailable = (signedObject && state.quantityMode!=="signed") ||
       (lvl.allowedKinds && !lvl.allowedKinds.includes(button.dataset.kind)) ||
       (lvl.lockPositive && button.dataset.kind === "posX2");
     button.hidden=unavailable;
     button.disabled = busy || isSolved(state) || unavailable;
-    button.setAttribute("aria-pressed", String(button.dataset.kind === kind));
+    button.setAttribute("aria-pressed", String(kind!==null && button.dataset.kind === kind));
   }
   const grouped = operation === "divide" || operation === "multiply";
-  const geometric = operation === "square" || operation === "sqrt";
-  $("object-picker").hidden = grouped || geometric;
-  $("amount-control").hidden = geometric;
-  $("amount-label").textContent = grouped ? "3 · How many groups?" : "3 · How many?";
-  $("amount-value").textContent = grouped ? factor : amount;
-  $("amount-down").disabled = busy || isSolved(state) || (grouped ? factor <= 2 : amount <= 1);
-  $("amount-up").disabled = busy || isSolved(state) || (grouped ? factor >= 5 : amount >= 12);
+  const objectOperation=operation==="add"||operation==="remove";
+  const quantity=grouped?factor:amount;
+  // Keep all tool families visible in the neutral state.  Nothing is
+  // preselected, but students can see what is available before deciding.
+  $("object-picker").hidden=grouped||operation==="square"||operation==="sqrt";
+  $("amount-control").hidden=operation==="square"||operation==="sqrt";
+  $("amount-label").textContent=grouped?"3 · How many groups?":"3 · How many?";
+  $("amount-value").textContent=quantity===null?"—":String(quantity);
+  $("amount-down").disabled=busy||isSolved(state)||!operation||
+    (objectOperation&&!kind)||quantity===null||
+    (grouped?quantity<=2:quantity<=1);
+  $("amount-up").disabled=busy||isSolved(state)||!operation||
+    (objectOperation&&!kind)||
+    (grouped?quantity>=5:quantity>=12);
+  $("amount-control").setAttribute("aria-label",quantity===null?
+    "No quantity selected. Use plus to choose a number.":"Chosen quantity: "+quantity);
   const inCampaign=campaignLevelNumber!==null;
   $("mode-wrapper").hidden=inCampaign;
   $("campaign-hand-mode").hidden=!inCampaign;
@@ -586,7 +599,7 @@ function render() {
   $("unpack-crates").disabled=busy||awaiting||isSolved(state)||!crateSide;
   $("unpack-crates").dataset.crateSide=crateSide||"";
   $("do-both").hidden = mode !== "auto";
-  $("do-both").disabled = busy || awaiting || isSolved(state);
+  $("do-both").disabled=busy||awaiting||isSolved(state)||!hasCompleteToolSelection();
   $("manual-explanation").hidden = mode !== "manual";
   $("manual-explanation").textContent=campaignStage==="independent"
     ? (awaiting
@@ -598,10 +611,11 @@ function render() {
   for (const side of ["left", "right"]) {
     const button = $(side + "-action");
     button.hidden = mode !== "manual";
-    button.disabled = busy || isSolved(state) || (awaiting && state.pending.first === side);
+    button.disabled=busy||isSolved(state)||!hasCompleteToolSelection()||
+      (awaiting && state.pending.first === side);
     const selected = currentAction();
     const expected = awaiting ? state.pending.action : null;
-    const same = awaiting && selected.op === expected.op &&
+    const same = awaiting && !!selected && selected.op === expected.op &&
       ((selected.op === "add" || selected.op === "remove")
         ? selected.kind === expected.kind && selected.count === expected.count
         : (selected.op === "multiply" || selected.op === "divide")
@@ -1416,6 +1430,7 @@ async function guidedMove() {
   if (notebookSession || campaignStage==="independent" ||
       (workshopActive&&mode!=="auto") || busy || isSolved(state)) return;
   const action=currentAction();
+  if(!hasCompleteToolSelection())return;
   const outcome=perform(state,action,"auto");
   if(!outcome.ok) {
     if(["locked-negative","locked-operation","locked-world","locked-kind"].includes(outcome.code))
@@ -1643,6 +1658,7 @@ async function manualMove(side) {
   if(notebookSession || campaignStage==="guided" ||
      (workshopActive&&mode!=="manual") || busy || isSolved(state))return;
   const wasPending=!!state.pending,action=currentAction();
+  if(!hasCompleteToolSelection())return;
   const outcome=perform(state,action,"manual",side);
   if(!outcome.ok){
     if(["locked-negative","locked-operation","locked-world","locked-kind"].includes(outcome.code))
@@ -1737,12 +1753,8 @@ function startLevel(index, quantityMode, levelOverride=null, campaignNumber=null
   guideDismissed=false;
   guideWasActive=activeCampaignGuide();
   state=initialState(level,quantityMode||levelQuantityMode(level));
-  operation = level.startingOperation ||
-    ((levelIndex === 1 || levelIndex === 4) ? "divide" : "remove");
-  kind=level.startingKind||"posOne";
-  amount=level.startingAmount||
-    (levelIndex===0?2:levelIndex===2?4:levelIndex===4?2:1);
-  factor = level.startingFactor || (levelIndex === 1 ? 3 : levelIndex === 4 ? 5 : 2);
+  // Teacher reference routes are never copied into the student controls.
+  resetToolSelection();
   override = null; groups = { left: 0, right: 0 };
   failureTilt = 0;
   $("scene").classList.remove("scene-failed-balance", "scene-rewinding");
@@ -2141,25 +2153,32 @@ $("level-select").innerHTML = LEVELS.map((lvl, i) =>
 for (const button of document.querySelectorAll("[data-operation]")) {
   button.addEventListener("click", () => {
     if (busy) return;
-    operation = button.dataset.operation;
-    if (operation === "divide" && levelIndex === 1) factor = 3;
-    if (operation === "divide" && levelIndex === 4) factor = 5;
+    if(operation!==button.dataset.operation){
+      operation=button.dataset.operation;
+      kind=null;amount=null;factor=null;
+    }
     render();
   });
 }
 for (const button of document.querySelectorAll("[data-kind]")) {
-  button.addEventListener("click", () => { if (!busy) { kind = button.dataset.kind; render(); } });
+  button.addEventListener("click", () => {
+    if(busy)return;
+    if(kind!==button.dataset.kind){kind=button.dataset.kind;amount=null;}
+    render();
+  });
 }
 $("amount-down").addEventListener("click", () => {
   if (busy) return;
-  if (operation === "multiply" || operation === "divide") factor = Math.max(2, factor - 1);
-  else amount = Math.max(1, amount - 1);
+  if(operation==="multiply"||operation==="divide")
+    factor=stepToolQuantity(operation,factor,-1);
+  else amount=stepToolQuantity(operation,amount,-1);
   render();
 });
 $("amount-up").addEventListener("click", () => {
   if (busy) return;
-  if (operation === "multiply" || operation === "divide") factor = Math.min(5, factor + 1);
-  else amount = Math.min(12, amount + 1);
+  if(operation==="multiply"||operation==="divide")
+    factor=stepToolQuantity(operation,factor,1);
+  else amount=stepToolQuantity(operation,amount,1);
   render();
 });
 $("unpack-crates").addEventListener("click",unpackCrates);

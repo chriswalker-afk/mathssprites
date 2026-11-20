@@ -1,3 +1,4 @@
+import {clickWithReferenceMove} from "./reference-move-helper.mjs";
 import {test,expect} from "@playwright/test";
 
 async function level19(page){
@@ -46,7 +47,7 @@ test("dividing sealed crates throws away the ORIGINAL unwanted crate, never a wi
   await expect(page.locator("#left-items .crate-picture-sign")).toHaveCount(1);
   await page.screenshot({path:"artifacts/pr43-01-two-sealed-crates.png",fullPage:true});
   await recordCrateDiscard(page);
-  await page.locator("#do-both").click();
+  await clickWithReferenceMove(page,"#do-both");
   await expect(page.locator("#left-items .sealed-crate")).toHaveCount(1,{timeout:35000});
   await expect(page.locator("#right-items .weight")).toHaveCount(7,{timeout:35000});
   await expect(page.locator("#left-items .crate-picture-sign")).toHaveCount(1);
@@ -80,7 +81,7 @@ test("reduced-motion discard still keeps one signed crate on compact laptop and 
     await page.setViewportSize(size);
     await level19(page);
     await recordCrateDiscard(page);
-    await page.locator("#do-both").click();
+    await clickWithReferenceMove(page,"#do-both");
     await expect(page.locator("#left-items .sealed-crate")).toHaveCount(1,{timeout:35000});
     await expect(page.locator("#left-items .crate-stack-count")).toHaveText("1 crate");
     await expect(page.locator("#left-items .crate-picture-sign")).toHaveCount(1);

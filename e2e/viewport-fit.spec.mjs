@@ -88,6 +88,11 @@ test("the balance and every essential control remain visible together on a lapto
   await inView(page,"#scene");
   await inView(page,".experiment-controls");
   await inView(page,"#do-both");
+  // PR45 shows the control but leaves its quantity blank until the student chooses.
+  await expect(page.locator("#amount-control")).toBeVisible();
+  await expect(page.locator("#amount-value")).toHaveText("—");
+  await page.locator('[data-operation="remove"]').click();
+  await page.locator('[data-kind="posOne"]').click();
   await inView(page,"#amount-up");
   await inView(page,".scale-base");
   await noDocumentScroll(page);
@@ -204,6 +209,7 @@ for(const size of scaledLaptopViews){
     await inView(page,"#scene");
     await inView(page,".scale-base");
     await inView(page,"#do-both");
+    await expect(page.locator("#amount-value")).toHaveText("—");
     await inView(page,"#amount-up");
     await noDocumentScroll(page);
     // A button can have a viewport-bound rectangle while still being clipped

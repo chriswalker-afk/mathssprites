@@ -1,3 +1,4 @@
+import {clickWithReferenceMove} from "./reference-move-helper.mjs";
 import { test, expect } from "@playwright/test";
 
 test.beforeEach(async ({ page }) => {
@@ -9,7 +10,7 @@ test("a rejected division actually CHOPS the floor sprite in half, pauses, then 
   test.setTimeout(45000);
   const stage=page.locator("#left-attempt-stage");
   await page.locator('[data-operation="divide"]').click();
-  await page.locator("#do-both").click();
+  await clickWithReferenceMove(page,"#do-both");
   await expect(stage).toBeVisible({timeout:12000});
   await expect(stage).toHaveAttribute("data-issue","fraction");
   await expect(stage).toHaveClass(/fraction-floor-stage/);
@@ -48,7 +49,7 @@ test("manual division really chips the remaining WEIGHT on the east floor",async
   test.setTimeout(45000);
   await page.locator("#mode-select").selectOption("manual");
   await page.locator('[data-operation="divide"]').click();
-  await page.locator("#right-action").click();
+  await clickWithReferenceMove(page,"#right-action");
   const stage=page.locator("#right-attempt-stage");
   await expect(stage).toHaveAttribute("data-issue","fraction",{timeout:12000});
   await expect(stage.locator(".fraction-cut-source[data-kind='posOne']")).toHaveCount(1);
@@ -71,9 +72,9 @@ test("the hand splits one REAL square sprite into three shaped fragments",async(
   test.setTimeout(45000);
   await page.locator("#level-select").selectOption("7"); // 4 square x² sprites facing 36 weights
   await page.locator('[data-operation="divide"]').click();
-  await page.locator("#amount-up").click();
+  await clickWithReferenceMove(page,"#amount-up");
   await expect(page.locator("#amount-value")).toHaveText("3");
-  await page.locator("#do-both").click();
+  await clickWithReferenceMove(page,"#do-both");
   const stage=page.locator("#left-attempt-stage");
   await expect(stage).toHaveAttribute("data-issue","fraction",{timeout:12000});
   await expect(stage).toHaveAttribute("data-cut-factor","3");
@@ -94,7 +95,7 @@ test("the fractional creature stays in the real chamber on a small phone",async(
   test.setTimeout(35000);
   await page.setViewportSize({width:390,height:844});
   await page.locator('[data-operation="divide"]').click();
-  await page.locator("#do-both").click();
+  await clickWithReferenceMove(page,"#do-both");
   const stage=page.locator("#left-attempt-stage");
   await expect(stage).toHaveAttribute("data-cut-phase","chopped",{timeout:15000});
   const bounds=await stage.locator(".fraction-cut-source").evaluate(actor=>{
@@ -116,7 +117,7 @@ test("the fractional creature stays in the real chamber on a small phone",async(
 test("an overfull room spills weights out, then the hand undoes the attempted duplication",async ({page})=>{
   await page.locator("#level-select").selectOption("7");
   await page.locator('[data-operation="multiply"]').click();
-  await page.locator("#do-both").click();
+  await clickWithReferenceMove(page,"#do-both");
   const stage=page.locator("#right-attempt-stage");
   await expect(stage).toHaveAttribute("data-issue","overflow",{timeout:14000});
   await expect(stage.locator(".overflow-piece")).toHaveCount(12);
@@ -134,12 +135,12 @@ test("an overfull room spills weights out, then the hand undoes the attempted du
 
 test("Your Turn allows a different action on the second side, tips dramatically, explains, then rewinds BOTH",async ({page})=>{
   await page.locator("#mode-select").selectOption("manual");
-  await page.locator("#left-action").click();
+  await clickWithReferenceMove(page,"#left-action");
   await expect(page.locator("#left-items .weight")).toHaveCount(0);
   await expect(page.locator("#right-items .weight")).toHaveCount(5);
   await page.locator('[data-operation="add"]').click();
   await expect(page.locator("#right-action")).toHaveText("Try different move here");
-  await page.locator("#right-action").click();
+  await clickWithReferenceMove(page,"#right-action");
   const scene=page.locator("#scene");
   await expect(scene).toHaveAttribute("data-balance-outcome","tipped",{timeout:12000});
   await expect(page.locator("#right-items .weight")).toHaveCount(7);
@@ -166,10 +167,10 @@ test("Your Turn allows a different action on the second side, tips dramatically,
 
 test("a different impossible move after one manual move also restores both sides",async ({page})=>{
   await page.locator("#mode-select").selectOption("manual");
-  await page.locator("#left-action").click();
+  await clickWithReferenceMove(page,"#left-action");
   await expect(page.locator("#left-items .weight")).toHaveCount(0);
   await page.locator('[data-kind="posX"]').click();
-  await page.locator("#right-action").click();
+  await clickWithReferenceMove(page,"#right-action");
   await expect(page.locator("#right-attempt-stage")).toHaveAttribute("data-issue","missing",{timeout:12000});
   await expect(page.locator("#speech")).toContainText("can't pick up",{timeout:12000});
   await expect(page.locator("#right-attempt-stage")).toBeHidden({timeout:12000});
@@ -180,7 +181,7 @@ test("a different impossible move after one manual move also restores both sides
 
 test("a failed root shows why x+2 cannot form the square area, then undoes the attempt",async ({page})=>{
   await page.locator('[data-operation="sqrt"]').click();
-  await page.locator("#do-both").click();
+  await clickWithReferenceMove(page,"#do-both");
   await expect(page.locator("#left-attempt-stage")).toHaveAttribute("data-issue","unsupported-area",{timeout:14000});
   await expect(page.locator("#speech")).toContainText("complete square",{timeout:15000});
   await expect(page.locator("#speech")).toContainText("undo");
@@ -194,7 +195,7 @@ test("reducing motion still gives an understandable fractional preview and rever
   await page.locator("#motion-toggle").click();
   await expect(page.locator("#motion-toggle")).toHaveText("Motion: reduced");
   await page.locator('[data-operation="divide"]').click();
-  await page.locator("#do-both").click();
+  await clickWithReferenceMove(page,"#do-both");
   const stage=page.locator("#left-attempt-stage");
   await expect(stage).toHaveAttribute("data-issue","fraction",{timeout:10000});
   await expect(stage.locator(".fraction-cut-piece")).toHaveCount(2);
@@ -208,12 +209,12 @@ test("reducing motion still gives an understandable fractional preview and rever
 
 test("rejected attempts don't interrupt later valid moves or pollute the comic replay",async ({page})=>{
   await page.locator('[data-operation="divide"]').click();
-  await page.locator("#do-both").click();
+  await clickWithReferenceMove(page,"#do-both");
   await expect(page.locator("#left-attempt-stage")).toHaveAttribute("data-issue","fraction",{timeout:12000});
   await expect(page.locator("#do-both")).toBeDisabled();
   await expect(page.locator("#left-attempt-stage")).toBeHidden({timeout:15000});
   await page.locator('[data-operation="remove"]').click();
-  await page.locator("#do-both").click();
+  await clickWithReferenceMove(page,"#do-both");
   await expect(page.locator("#replay-backdrop")).toBeVisible({timeout:15000});
   await expect(page.locator("#replay-progress")).toContainText("of 2");
 });
@@ -222,13 +223,13 @@ test("rejected attempts don't interrupt later valid moves or pollute the comic r
 test("Your Turn can remove an object found ONLY on the first side, then learns from a different second move",async ({page})=>{
   await page.locator("#mode-select").selectOption("manual");
   await page.locator('[data-kind="posX"]').click();
-  await page.locator("#amount-down").click(); // one sprite, not two
-  await page.locator("#left-action").click();
+  await clickWithReferenceMove(page,"#amount-down"); // one sprite, not two
+  await clickWithReferenceMove(page,"#left-action");
   await expect(page.locator("#left-items .sprite-black")).toHaveCount(0);
   await expect(page.locator("#right-items .sprite-black")).toHaveCount(0);
   await expect(page.locator("#replay-backdrop")).toBeHidden();
   await page.locator('[data-operation="add"]').click();
-  await page.locator("#right-action").click();
+  await clickWithReferenceMove(page,"#right-action");
   await expect(page.locator("#scene")).toHaveAttribute("data-balance-outcome","tipped",{timeout:12000});
   await expect(page.locator("#speech")).toContainText("scale tips",{timeout:12000});
   await expect(page.locator("#scene")).not.toHaveAttribute("data-balance-outcome","tipped",{timeout:13000});

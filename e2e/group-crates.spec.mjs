@@ -1,3 +1,4 @@
+import {clickWithReferenceMove} from "./reference-move-helper.mjs";
 import {test,expect} from "@playwright/test";
 
 test.beforeEach(async({page})=>{
@@ -19,9 +20,8 @@ async function openBrackets(page){
 async function chooseRemoval(page,amount){
   await page.locator('[data-operation="remove"]').click();
   await page.locator('[data-kind="posOne"]').click();
-  const current=Number(await page.locator("#amount-value").textContent());
-  for(let n=current;n<amount;n++)await page.locator("#amount-up").click();
-  for(let n=current;n>amount;n--)await page.locator("#amount-down").click();
+  await page.locator("#amount-up").click();
+  for(let n=1;n<amount;n++)await page.locator("#amount-up").click();
   await expect(page.locator("#amount-value")).toHaveText(String(amount));
 }
 test("sealed opaque crates remain separate physical objects, not loose hidden sprites @smoke",async({page})=>{
@@ -43,9 +43,9 @@ test("sealed opaque crates remain separate physical objects, not loose hidden sp
 test("divide-first throws an unwanted sealed crate, opens the survivor, and earns 3 stars @smoke",async({page})=>{
   test.setTimeout(85000);
   await openBrackets(page);
-  await expect(page.locator('[data-operation="divide"]')).toHaveAttribute("aria-pressed","true");
-  await expect(page.locator("#amount-value")).toHaveText("2");
-  await page.locator("#do-both").click();
+  await expect(page.locator('[data-operation="divide"]')).toHaveAttribute("aria-pressed","false");
+  await expect(page.locator("#amount-value")).toHaveText("—");
+  await clickWithReferenceMove(page,"#do-both");
   await expect(page.locator("#left-items .sealed-crate")).toHaveCount(1,{timeout:30000});
   await expect(page.locator("#right-items .weight")).toHaveCount(7,{timeout:30000});
   await expect(page.locator("#unpack-crates")).toBeEnabled();
@@ -57,7 +57,7 @@ test("divide-first throws an unwanted sealed crate, opens the survivor, and earn
   await expect(page.locator("#crate-controls")).toBeHidden();
   await page.screenshot({path:"artifacts/pr38-opened-one-crate.png",fullPage:true});
   await chooseRemoval(page,3);
-  await page.locator("#do-both").click();
+  await clickWithReferenceMove(page,"#do-both");
   await expect(page.locator("#replay-backdrop")).toBeVisible({timeout:35000});
   await expect(page.locator("#replay-star-summary")).toContainText("★★★ 3 stars");
   // The comic intentionally reveals one panel at a time with the pencil.\n  // Show the complete checked history before inspecting the unpack panel.\n  await page.locator("#replay-skip").click();\n  await expect(page.locator(".comic-crate-story")).toHaveCount(1);
@@ -74,12 +74,12 @@ test("unpack-first expands into 2 sprites + 6 weights, then solves by removal an
   await expect(page.locator("#left-items .weight")).toHaveCount(6);
   await page.screenshot({path:"artifacts/pr38-unpack-before-division.png",fullPage:true});
   await chooseRemoval(page,6);
-  await page.locator("#do-both").click();
+  await clickWithReferenceMove(page,"#do-both");
   await expect(page.locator("#left-items .weight")).toHaveCount(0,{timeout:20000});
   await expect(page.locator("#right-items .weight")).toHaveCount(8);
   await page.locator('[data-operation="divide"]').click();
-  await expect(page.locator("#amount-value")).toHaveText("2");
-  await page.locator("#do-both").click();
+  await expect(page.locator("#amount-value")).toHaveText("—");
+  await clickWithReferenceMove(page,"#do-both");
   await expect(page.locator("#replay-backdrop")).toBeVisible({timeout:35000});
   await expect(page.locator("#replay-star-summary")).toContainText("★★★ 3 stars");
 });
@@ -87,7 +87,7 @@ test("locked crate refuses a weight pickup, but Undo and Reset retain the groups
   test.setTimeout(75000);
   await openBrackets(page);
   await chooseRemoval(page,3);
-  await page.locator("#do-both").click();
+  await clickWithReferenceMove(page,"#do-both");
   await expect(page.locator("#feedback")).toContainText("sealed",{timeout:20000});
   await expect(page.locator("#left-items .sealed-crate")).toHaveCount(2);
   await expect(page.locator("#undo")).toBeDisabled();

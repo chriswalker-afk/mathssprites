@@ -1,3 +1,4 @@
+import {clickWithReferenceMove} from "./reference-move-helper.mjs";
 import {test,expect} from "@playwright/test";
 
 test.beforeEach(async({page})=>{
@@ -36,7 +37,7 @@ test("outside the box, every sprite and weight rests on ONE floor row",async({pa
 test("the existing simple square is built INSIDE the room, not in a detached inset",async({page})=>{
   await page.locator("#level-select").selectOption("5");
   await expect(page.locator('[data-operation="square"]')).toHaveClass(/selected/);
-  await page.locator("#do-both").click();
+  await clickWithReferenceMove(page,"#do-both");
   const left=page.locator("#left-area-box");
   await expect(left).toBeVisible();
   await expect(left).toHaveAttribute("data-layout","in-room");
@@ -66,7 +67,7 @@ test("principal root unbuilds the real in-room square and keeps one side",async(
   await page.locator("#level-select").selectOption("6");
   await expect(page.locator('[data-operation="sqrt"]')).toHaveClass(/selected/);
   await expect(page.locator("#left-items .sprite-square")).toHaveCount(1);
-  await page.locator("#do-both").click();
+  await clickWithReferenceMove(page,"#do-both");
   const left=page.locator("#left-area-box");
   await expect(left).toBeVisible();
   await expect(left).toHaveAttribute("data-operation","sqrt");
@@ -91,7 +92,7 @@ test("root 4x²=36 still gives 2x=6 then ÷2, without a separate overlay",async(
   const floor=await floorMetrics(page,"right");
   expect(floor.count).toBe(36);
   expect(floor.wrap).toBe("nowrap");
-  await page.locator("#do-both").click();
+  await clickWithReferenceMove(page,"#do-both");
   await expect(page.locator("#left-area-box .box-cell")).toHaveCount(4);
   await expect(page.locator("#left-items .sprite-black")).toHaveCount(2,{timeout:12000});
   const right=page.locator("#right-area-box");
@@ -105,7 +106,7 @@ test("root 4x²=36 still gives 2x=6 then ÷2, without a separate overlay",async(
   await page.screenshot({path:"artifacts/in-room-six-by-six-unbuild.png"});
   await expect(page.locator("#right-items .weight")).toHaveCount(6);
   await page.locator('[data-operation="divide"]').click();
-  await page.locator("#do-both").click();
+  await clickWithReferenceMove(page,"#do-both");
   await expect(page.locator("#left-items .sprite-black")).toHaveCount(1);
   await expect(page.locator("#right-items .weight")).toHaveCount(3);
   await expect(page.locator("#replay-backdrop")).toBeVisible({timeout:20000});
@@ -117,7 +118,7 @@ test("the hand completes all FOUR regions of the 2x+3 illustrated square",async(
   await expect(page.locator('[data-operation="square"]')).toHaveClass(/selected/);
   await expect(page.locator("#left-items .sprite-black")).toHaveCount(2);
   await expect(page.locator("#left-items .weight")).toHaveCount(3);
-  await page.locator("#do-both").click();
+  await clickWithReferenceMove(page,"#do-both");
   const box=page.locator("#left-area-box");
   await expect(box).toBeVisible();
   await expect(box).toHaveAttribute("data-sprite-side","2");
@@ -154,7 +155,7 @@ test("reverse 4x²+12x+9 square into exactly two sprites and three weights",asyn
   await expect(page.locator("#left-items .sprite-square")).toHaveCount(4);
   await expect(page.locator("#left-items .sprite-black")).toHaveCount(12);
   await expect(page.locator("#left-items .weight")).toHaveCount(9);
-  await page.locator("#do-both").click();
+  await clickWithReferenceMove(page,"#do-both");
   const box=page.locator("#left-area-box");
   await expect(box).toBeVisible();
   await expect(box.locator(".box-cell.placed")).toHaveCount(25);
@@ -178,7 +179,7 @@ test("the in-room frame fits inside the chamber on small mobile screens",async({
   test.setTimeout(45000);
   await page.setViewportSize({width:390,height:844});
   await page.locator("#level-select").selectOption("8");
-  await page.locator("#do-both").click();
+  await clickWithReferenceMove(page,"#do-both");
   const dimensions=await page.locator("#left-area-box .box-grid").evaluate(box=>{
     const a=box.getBoundingClientRect();
     const c=box.closest(".room-interior").getBoundingClientRect();
@@ -198,12 +199,12 @@ test("Your Turn can build the box in one room and must match in the other",async
   test.setTimeout(50000);
   await page.locator("#level-select").selectOption("8");
   await page.locator("#mode-select").selectOption("manual");
-  await page.locator("#left-action").click();
+  await clickWithReferenceMove(page,"#left-action");
   await expect(page.locator("#left-area-box .box-cell")).toHaveCount(25);
   await expect(page.locator("#left-items .sprite-square")).toHaveCount(4);
   await expect(page.locator("#right-items .weight")).toHaveCount(5);
   await expect(page.locator("#replay-backdrop")).toBeHidden();
-  await page.locator("#right-action").click();
+  await clickWithReferenceMove(page,"#right-action");
   await expect(page.locator("#right-items .weight")).toHaveCount(25);
   await expect(page.locator("#replay-backdrop")).toBeVisible({timeout:20000});
 });
@@ -213,7 +214,7 @@ test("no active bouncing is required to understand the six physical stages",asyn
   await page.locator("#motion-toggle").click();
   await expect(page.locator("#motion-toggle")).toHaveText("Motion: reduced");
   await page.locator("#level-select").selectOption("8");
-  await page.locator("#do-both").click();
+  await clickWithReferenceMove(page,"#do-both");
   const box=page.locator("#left-area-box");
   await expect(box).toBeVisible();
   await expect(box.locator(".box-cell")).toHaveCount(25);

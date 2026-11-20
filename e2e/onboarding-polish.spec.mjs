@@ -1,3 +1,4 @@
+import {clickWithReferenceMove} from "./reference-move-helper.mjs";
 import {test,expect} from "@playwright/test";
 
 test.beforeEach(async ({page})=>{
@@ -16,9 +17,9 @@ test("Level 1 gives four sequential cues pointing at the real controls", async({
   await expect(page.locator("#scene")).toHaveClass(/coach-focus/);
   await page.locator("#guide-next").click();
   await expect(page.locator("#guide-progress")).toHaveText("2 of 4");
-  await expect(page.locator('[data-operation="remove"]')).toHaveClass(/coach-focus/);
+  await expect(page.locator(".operation-picker")).toHaveClass(/coach-focus/);
   await page.locator("#guide-next").click();
-  await expect(page.locator("#amount-control")).toHaveClass(/coach-focus/);
+  await expect(page.locator(".control-top")).toHaveClass(/coach-focus/);
   await page.locator("#guide-next").click();
   await expect(page.locator("#guide-progress")).toHaveText("4 of 4");
   await expect(page.locator("#do-both")).toHaveClass(/coach-focus/);
@@ -65,7 +66,7 @@ test("solving the first level celebrates physical balance then reveals earned ne
   await openFirst(page);
   await page.locator("#motion-toggle").click();
   await expect(page.locator("#level-clear")).toBeHidden();
-  await page.locator("#do-both").click();
+  await clickWithReferenceMove(page,"#do-both");
   await expect(page.locator("#level-clear")).toBeVisible({timeout:20000});
   await expect(page.locator("#level-clear-title")).toHaveText("Balance restored!");
   await expect(page.locator("#replay-backdrop")).toBeVisible({timeout:20000});
@@ -108,7 +109,7 @@ test("phone menus and replay keep touch actions in view",async({page})=>{
   await expect(page.locator("#game-levels")).toBeVisible();
   await expect(page.locator("#game-guide-restart")).toBeVisible();
   await page.locator("#motion-toggle").click();
-  await page.locator("#do-both").click();
+  await clickWithReferenceMove(page,"#do-both");
   await expect(page.locator("#replay-backdrop")).toBeVisible({timeout:25000});
   await expect(page.locator("#replay-skip")).toBeVisible();
   const bounds=await page.locator("#replay-skip").boundingBox();

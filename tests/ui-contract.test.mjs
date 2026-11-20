@@ -47,7 +47,8 @@ test("fifth level really exercises a divide-by-five followed by subtraction", ()
   assert.equal(LEVELS[4].left.posX, 5);
   assert.equal(LEVELS[4].left.posOne, 10);
   assert.equal(LEVELS[4].right.posOne, 20);
-  assert.match(app, /levelIndex === 4 \? 5/);
+  assert.match(app, /resetToolSelection\(\)/);
+  assert.doesNotMatch(app, /levelIndex === 4 \? 5/);
   for (const id of ["left-area-box", "right-area-box", "amount-control"]) assert.match(html, new RegExp('id="' + id + '"'));
   assert.match(html, /data-kind="posX2"/);
 });
