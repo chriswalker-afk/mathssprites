@@ -24,7 +24,7 @@ async function chooseRemoval(page,amount){
   for(let n=current;n>amount;n--)await page.locator("#amount-down").click();
   await expect(page.locator("#amount-value")).toHaveText(String(amount));
 }
-test("brackets are true separate glass-fronted objects, not loose hidden sprites @smoke",async({page})=>{
+test("sealed opaque crates remain separate physical objects, not loose hidden sprites @smoke",async({page})=>{
   await openBrackets(page);
   await expect(page.locator(".sealed-crate .crate-mini-sprite")).toHaveCount(2);
   await expect(page.locator(".sealed-crate .crate-mini-weight")).toHaveCount(6);
@@ -40,7 +40,7 @@ test("brackets are true separate glass-fronted objects, not loose hidden sprites
   await page.locator("#game-levels").click();
   await expect(page.locator('[data-level="19"]')).toContainText("Sealed Crates");
 });
-test("divide-first uses real baskets, opens ONE group, and earns 3 stars @smoke",async({page})=>{
+test("divide-first throws an unwanted sealed crate, opens the survivor, and earns 3 stars @smoke",async({page})=>{
   test.setTimeout(85000);
   await openBrackets(page);
   await expect(page.locator('[data-operation="divide"]')).toHaveAttribute("aria-pressed","true");
