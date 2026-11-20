@@ -29,7 +29,6 @@ async function measureWeights(page,side,loose=false){
     };
     return {
       total:weights.length,
-      piles:Object.groupBy(weights,w=>w.dataset.weightPile),
       positions:weights.map(w=>({
         pile:Number(w.dataset.weightPile),slot:Number(w.dataset.weightSlot),
         pileSize:Number(w.dataset.weightPileSize),
