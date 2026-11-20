@@ -1,5 +1,5 @@
 /**
- * World 1 · Stage 2: sixteen Independent Balance experiments.
+ * World 1 · Stage 2: twenty Independent Balance experiments.
  * Students perform the SAME operation separately in each physical chamber.
  * The existing engine's pending transaction prevents one-sided commits.
  *
@@ -12,7 +12,8 @@ export const INDEPENDENT_CHAPTERS = Object.freeze([
   {title:"Your First Moves",description:"Make one change, watch the balance tip, and restore it in the opposite chamber."},
   {title:"Sharing Fairly",description:"Divide the contents of each room into the same number of complete baskets."},
   {title:"A Sequence of Moves",description:"Choose a sequence and match every step in both rooms."},
-  {title:"The Independent Experimenter",description:"Handle sprites on both sides and find routes that avoid unnecessary moves."}
+  {title:"The Independent Experimenter",description:"Handle sprites on both sides and find routes that avoid unnecessary moves."},
+  {title:"Inside the Crates",description:"Choose when to divide sealed groups, open them and use loose objects."}
 ]);
 
 const rawLevels = [
@@ -102,17 +103,38 @@ const rawLevels = [
     prompt:"The difference in weights is too big for one handful. Which change makes a simpler experiment first?",
     left:{posX:4,posOne:14},right:{posX:2,posOne:24},solution:5,
     startingOperation:"divide",startingFactor:2,
-    suggested:"All four counts can be split into two baskets. Share first, then remove shared sprites and loose weights."}
+    suggested:"All four counts can be split into two baskets. Share first, then remove shared sprites and loose weights."},
+  // Chapter 5 — sealed groups become a general choice, not a one-off puzzle.
+  {id:"independent-17",title:"Two sealed families",
+    prompt:"Two identical sealed groups are waiting. Choose whether to open or share them.",
+    left:{crates:{count:2,contents:{posX:1,posOne:1}}},right:{posOne:8},solution:3,
+    groupedPrototype:true,
+    suggested:"Both arrangements must keep the same value. You can work with whole groups or open them."},
+  {id:"independent-18",title:"Three sealed families",
+    prompt:"There are three identical groups. Can you find the weight of one sprite?",
+    left:{crates:{count:3,contents:{posX:1,posOne:2}}},right:{posOne:21},solution:5,
+    groupedPrototype:true,
+    suggested:"Look for complete equal groups or let the sprites out first."},
+  {id:"independent-19",title:"The extra pair",
+    prompt:"Two groups have some weights standing outside. Decide what should stay together.",
+    left:{crates:{count:2,contents:{posX:1,posOne:3}},posOne:2},right:{posOne:16},solution:4,
+    groupedPrototype:true,
+    suggested:"Loose weights and sealed crates are different things. Keep every change balanced."},
+  {id:"independent-20",title:"A sprite outside",
+    prompt:"One sprite is not in either crate, and there are sprites in the opposite room.",
+    left:{crates:{count:2,contents:{posX:1,posOne:3}},posX:1},right:{posX:2,posOne:10},solution:4,
+    groupedPrototype:true,
+    suggested:"Some sprites are loose. The sealed groups may need opening before they can meet the others."}
 ];
 
-if (rawLevels.length !== 16 || new Set(rawLevels.map(x=>x.id)).size !== 16)
-  throw new Error("Stage 2 requires exactly sixteen distinct puzzles.");
+if (rawLevels.length !== 20 || new Set(rawLevels.map(x=>x.id)).size !== 16)
+  throw new Error("Stage 2 requires exactly twenty distinct puzzles.");
 
 export const INDEPENDENT_LEVELS = Object.freeze(rawLevels.map((raw, i)=>{
   const number=i+1,chapterIndex=Math.floor(i/4);
   const level=Object.freeze({...raw,number,
     chapter:String(chapterIndex+1).padStart(2,"0")+" · "+INDEPENDENT_CHAPTERS[chapterIndex].title,
-    quantityMode:"positive",lockPositive:true,allowedOperations:WORLD1_OPERATIONS});
+    quantityMode:"positive",lockPositive:true,allowedOperations:raw.groupedPrototype?[...WORLD1_OPERATIONS,"unpack"]:WORLD1_OPERATIONS});
   return Object.freeze({number,id:level.id,title:level.title,
     chapterIndex,available:true,level,legacyIndex:0});
 }));
