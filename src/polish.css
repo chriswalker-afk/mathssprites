@@ -76,6 +76,7 @@ body:not(.reduce-motion) .level-clear:not([hidden]){
 .chapter-theme-3{--chapter-ink:#d7ad92;--chapter-border:#805f54;--chapter-wash:#41362f}
 .chapter-theme-4{--chapter-ink:#92b5d6;--chapter-border:#4a647b;--chapter-wash:#2c3943}
 .chapter-theme-5{--chapter-ink:#d6c18e;--chapter-border:#917951;--chapter-wash:#454032}
+.chapter-theme-6{--chapter-ink:#e6b78d;--chapter-border:#976a4b;--chapter-wash:#40382f}
 .chapter-group-heading{position:relative;display:flex;justify-content:space-between;gap:14px;align-items:center}
 .chapter-intro{display:flex;gap:13px;align-items:center;min-width:0;flex:1}
 .chapter-illustration{display:grid;place-items:center;position:relative;flex:none;
