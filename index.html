@@ -25,6 +25,7 @@
   <link rel="stylesheet" href="./src/group-crates.css?v=38" />
   <link rel="stylesheet" href="./src/crate-expansion.css?v=39" />
   <link rel="stylesheet" href="./src/crate-stack.css?v=40" />
+  <link rel="stylesheet" href="./src/crate-physical.css?v=41" />
   <script type="module" src="./src/app.mjs"></script>
   <script type="module" src="./src/site.mjs"></script>
 </head>
@@ -589,12 +590,13 @@
             </div>
           </div>
           <div class="crate-controls" id="crate-controls" hidden>
-            <div class="eyebrow">THE SEALED BRACKETS</div>
-            <p>Use the crowbar to open each crate and release what is inside. Or divide complete crates first.</p>
+            <div class="eyebrow">SEALED CRATES</div>
             <button type="button" id="unpack-crates" class="secondary-btn"
-              aria-label="Expand brackets by opening every sealed crate with a crowbar">
-              <span aria-hidden="true">⌁</span> Expand brackets
+              aria-label="Open the sealed crates">
+              <span aria-hidden="true">⌁</span> Open crates
             </button>
+            <button type="button" id="crate-animation-pause" hidden
+              aria-label="Pause crate animation" aria-pressed="false">Ⅱ</button>
           </div>
           <div class="control-bottom">
             <div class="small-actions">
