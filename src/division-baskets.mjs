@@ -1,11 +1,12 @@
 /** PR25: physical division baskets. Presentation only: the engine owns all maths. */
 const TOKEN_KIND_CLASSES = Object.freeze([
   ["sprite-black", "posX"], ["sprite-white", "negX"],
-  ["sprite-square", "posX2"], ["weight", "posOne"], ["balloon", "negOne"]
+  ["sprite-square", "posX2"], ["weight", "posOne"], ["balloon", "negOne"],
+  ["sealed-crate","crate"]
 ]);
 const NAMES = Object.freeze({
   posX:"dark sprites", negX:"pale sprites",posX2:"square sprites",
-  posOne:"weights",negOne:"balloons"
+  posOne:"weights",negOne:"balloons",crate:"sealed bracket crates"
 });
 export function divisionBasketTiming(factor, reduced=false) {
   if (!Number.isInteger(factor) || factor < 2 || factor > 32)
