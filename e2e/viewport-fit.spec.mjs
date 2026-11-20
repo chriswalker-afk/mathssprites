@@ -80,7 +80,7 @@ for(const size of laptopViews){
   });
 }
 
-test("the balance and every essential control remain visible together on a laptop @smoke",async({page})=>{
+test("the balance and every essential control remain visible together on a laptop @quick @smoke",async({page})=>{
   await page.setViewportSize({width:1024,height:720});
   await page.goto("/");
   await page.locator("#home-play").click();
