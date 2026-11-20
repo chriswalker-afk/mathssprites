@@ -22,7 +22,7 @@ for(const size of [
 
     await page.locator('.site-nav-links [data-screen="home"]').click();
     await page.locator("#home-choose-level").click();
-    await expect(page.locator(".level-tile")).toHaveCount(20);
+    await expect(page.locator(".level-tile")).toHaveCount(24);
     await page.screenshot({path:"artifacts/pr34-"+name+"-board.png",fullPage:true});
 
     await page.locator('.site-nav-links [data-screen="worlds"]').click();

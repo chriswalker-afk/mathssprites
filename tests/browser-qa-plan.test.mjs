@@ -34,6 +34,12 @@ test("certified World 2 par data and registry changes cannot skip star/navigatio
     "tests/world2-optimal-routes.test.mjs"
   ]),[],"teacher audit and test-only changes do not launch animations");
 });
+test("six-chapter board CSS changes route to navigation and layout without game physics",()=>{
+  assert.deepEqual(selectBrowserGroups(["src/experiment-board.css"]),
+    ["navigation","layout"]);
+  assert.deepEqual(selectBrowserGroups(["e2e/six-chapter-layout.spec.mjs"]),
+    ["layout"]);
+});
 test("shared maths and entrypoint changes trigger multiple independent safety checks",()=>{
   assert.deepEqual(selectBrowserGroups(["src/engine.mjs"]),["crates","notebook","signed","physics"]);
   assert.equal(selectBrowserGroups(["src/app.mjs"]).length,Object.keys(GROUP_SPECS).length);

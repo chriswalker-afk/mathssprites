@@ -92,6 +92,9 @@ test("single-screen level board stays reachable at 1024×720 and 1092×540 @smok
     await page.getByRole("button",{name:"Choose a level"}).click();
     await expect(page.locator("#map-stage-tabs")).toBeVisible();
     await expect(page.locator("#map-world-tabs")).toBeVisible();
+    // Six Guided chapters need internal chapter scrolling, not 24
+    // unreadably short tiles in one fixed-height viewport.
+    await page.locator('[data-level="20"]').scrollIntoViewIfNeeded();
     await expect(page.locator('[data-level="20"]')).toBeInViewport();
     await expect(page.locator('[data-map-stage="notebook"]')).toBeInViewport();
     const scroll=await page.evaluate(()=>({
