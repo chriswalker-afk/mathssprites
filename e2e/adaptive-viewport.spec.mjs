@@ -1,3 +1,4 @@
+import {clickWithReferenceMove} from "./reference-move-helper.mjs";
 import {test,expect} from "@playwright/test";
 
 /**
@@ -150,7 +151,7 @@ test("signed zero-pair hand actions still commit in both tall desktop hand modes
   await page.locator('[data-level="1"]').click();
   if(await page.locator("#guide-skip").isVisible())await page.locator("#guide-skip").click();
   await expect(page.locator("#left-items .balloon")).toHaveCount(1);
-  await page.locator("#do-both").click();
+  await clickWithReferenceMove(page,"#do-both");
   await expect(page.locator("#left-items .balloon")).toHaveCount(0,{timeout:35000});
   await expect(page.locator("#replay-backdrop")).toBeVisible({timeout:35000});
   await page.locator("#replay-close").click();
@@ -163,10 +164,10 @@ test("signed zero-pair hand actions still commit in both tall desktop hand modes
   await page.locator('[data-level="1"]').click();
   if(await page.locator("#guide-skip").isVisible())await page.locator("#guide-skip").click();
   await expect(page.locator("#left-items .balloon")).toHaveCount(2);
-  await page.locator("#left-action").click();
+  await clickWithReferenceMove(page,"#left-action");
   await expect(page.locator("#balance-caption")).toContainText("matching move");
   await page.screenshot({path:"artifacts/pr37-independent-pending-tall.png",fullPage:true});
-  await page.locator("#right-action").click();
+  await clickWithReferenceMove(page,"#right-action");
   await expect(page.locator("#left-items .balloon")).toHaveCount(0,{timeout:35000});
   await expect(page.locator("#replay-backdrop")).toBeVisible({timeout:35000});
 });
