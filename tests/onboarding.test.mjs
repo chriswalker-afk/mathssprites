@@ -8,7 +8,7 @@ import {
 import { readFileSync } from "node:fs";
 
 test("first lesson has four specific physical, spoiler-free cues", () => {
-  const expected = ["scene","remove","amount","do-both"];
+  const expected = ["scene","actions","tools","do-both"];
   for (let step = 0; step < 4; step++) {
     const cue = introductionCue(step);
     assert.equal(cue.target,expected[step]);
