@@ -1,0 +1,128 @@
+/*
+ * PR52 — Five physical brass weights per visible floor pile.
+ *
+ *       [4] [5]
+ *    [1] [2] [3]
+ *
+ * The two top weights overlap the shoulders of the bottom three. Each
+ * weight stays a DIRECT physical .token child of .floor-track, so hand
+ * pickup, fractional attempts, zero-pair animation and wicker distribution
+ * still operate on the original, separate objects. This is a rearrangement,
+ * not a new algebraic "five weight" object.
+ *
+ * Negative flex margins collapse the five tokens to the footprint of three
+ * lower weights. Compensation on the final upper token restores the correct
+ * footprint before the next pile / balloon. Avoid transform on tokens:
+ * that transform belongs to the existing neutral-pair animations.
+ */
+.room-items .items-grid.floor-track:not(:has(> .sealed-crate)){
+  --weight-gap:6px;
+  --weight-step:calc(41px + var(--weight-gap));
+  gap:var(--weight-gap);
+}
+.room-items .items-grid.floor-track:has(> .sealed-crate){
+  --weight-gap:2px;
+  --weight-step:calc(41px + var(--weight-gap));
+}
+.room-items .items-grid.floor-track > .token.weight[data-weight-slot]{
+  position:relative;
+  flex:none;
+  margin:0;
+}
+/* From the fourth weight's normal flex position (3 steps), move back
+   two-and-a-half steps to place it halfway above the first and second. */
+.room-items .items-grid.floor-track > .token.weight[data-weight-slot="4"]{
+  margin-left:calc(var(--weight-step) * -2.5);
+  top:-33px;
+  z-index:5;
+}
+.room-items .items-grid.floor-track > .token.weight[data-weight-slot="5"]{
+  top:-33px;
+  z-index:5;
+}
+/* A 4-weight pile ends under the third bottom weight, not after weight 4.
+   Similarly a 5-weight pile must reserve the base's full three-weight width.
+   This prevents the next pile or a balloon from overlapping the base. */
+.room-items .items-grid.floor-track > .token.weight[data-weight-pile-end="4"]{
+  margin-right:calc(var(--weight-step) * 1.5);
+}
+.room-items .items-grid.floor-track > .token.weight[data-weight-pile-end="5"]{
+  margin-right:calc(var(--weight-step) * .5);
+}
+/* Matching the existing crate label: brass edging, dark enamel, cream text
+   and one short brass pointer, but in the natural flex flow before weights.
+   The crate plaque stays absolutely positioned beside the crate stack. */
+.room-items .items-grid.floor-track > .crate-stack-count.weight-stack-count{
+  position:relative;
+  inset:auto;
+  left:auto;top:auto;
+  transform:translateY(-18px);
+  flex:none;
+  align-self:center;
+  width:max-content;
+  min-width:0;
+  min-height:27px;
+  margin:0 11px 0 0;
+  padding:5px 8px;
+  z-index:6;
+  font-size:12px;
+  text-align:center;
+  overflow:visible;
+}
+.room-items .items-grid.floor-track > .weight-stack-count .crate-count-connector{
+  width:12px;
+}
+/* Wicker baskets temporarily take the original tokens out of this track.
+   Do not leave a loose count sign floating after the objects depart. */
+.division-stage[data-phase="sharing"] .weight-stack-count,
+.division-stage[data-phase="grouping"] .weight-stack-count,
+.division-stage[data-phase="copying"] .weight-stack-count,
+.division-stage[data-phase="ready"] .weight-stack-count,
+.division-stage[data-phase="discarding"] .weight-stack-count{
+  visibility:hidden;
+}
+/* A mixed crate chamber keeps its intact crate stack in one floor zone
+   and loose sprites/weights in a separate neighbouring floor zone. */
+.room-items .mixed-crate-floor-stage{
+  position:absolute;
+  inset:0;
+  width:100%;
+  display:flex;
+  justify-content:center;
+  align-items:flex-end;
+  pointer-events:none;
+}
+.room-items .mixed-crate-floor-stage > .floor-shell{
+  position:relative;inset:auto;height:100%;
+  min-width:0;
+}
+.room-items .mixed-crate-floor-stage > .crate-floor-shell{
+  flex:0 0 54%;width:54%;
+}
+.room-items .mixed-crate-floor-stage > .loose-floor-shell{
+  flex:1 1 46%;width:46%;
+}
+.room-items .mixed-crate-floor-stage .loose-floor-shell .floor-track{
+  --weight-gap:6px;
+  gap:var(--weight-gap);
+}
+/* The outer chamber always speaks the full inventory to screen readers.
+   Individual weights and plaque remain decorative at the group level. */
+@media(max-width:600px){
+  .room-items .items-grid.floor-track:not(:has(> .sealed-crate)),
+  .room-items .mixed-crate-floor-stage .loose-floor-shell .floor-track{
+    --weight-gap:4px;
+    gap:var(--weight-gap);
+  }
+  .room-items .items-grid.floor-track > .weight-stack-count{
+    padding:4px 6px;
+    margin-right:8px;
+    font-size:10px;
+    min-height:23px;
+  }
+}
+@media(min-width:900px) and (max-height:790px){
+  .room-items .items-grid.floor-track:has(> .sealed-crate){
+    --weight-gap:1px;
+  }
+}
