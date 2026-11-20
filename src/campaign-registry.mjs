@@ -75,7 +75,7 @@ export function createCampaignRegistry(definitions){
 const WORLD1_CAMPAIGN_STAGES=WORLD1_STAGES.map((stage)=>{
   const configs={
     guided:{
-      levels:WORLD1_LEVELS,chapters:WORLD1_CHAPTERS,emblems:["−","÷","→","⇄","✦"],
+      levels:WORLD1_LEVELS,chapters:WORLD1_CHAPTERS,emblems:["−","÷","→","⇄","✦","▣"],
       intro:"Choose the operation. The hand mirrors it in both rooms.",
       finale:"All guided experiments complete. Try controlling each room in Independent Balance."},
     independent:{
