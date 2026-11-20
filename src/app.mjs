@@ -1788,16 +1788,26 @@ function panelHTML(entry, index, active) {
   const zeroPairs=recordedZeroEvents(entry);
   const title = index === 0 ? "Before the hand began" : "Move " + index;
   const subtitle = index === 0 ? "Every object has a hidden value..." : operationDescription(entry.action);
+  const expanded=entry.action?.op==="unpack"
+    ?crateExpansionReplayNotes(entry.before[entry.action.side]):null;
+  const sequence=expanded
+    ?'<div class="comic-crate-sequence" aria-label="Expansion: open crates, take all sprites, then weights">'+
+      '<div class="comic-crate-beat"><span class="comic-crowbar-mark" aria-hidden="true">⌁</span>'+
+        '<span>'+expanded.opening+'</span></div>'+
+      '<div class="comic-crate-beat"><span class="comic-sprite-mark" aria-hidden="true">●</span>'+
+        '<span>Sprites: <strong>'+expanded.sprites+'</strong></span></div>'+
+      '<div class="comic-crate-beat"><span class="comic-weight-mark" aria-hidden="true">◆</span>'+
+        '<span>Weights: <strong>'+expanded.weights+'</strong></span></div></div>'
+    :"";
   return '<article class="comic-panel ' + (active ? "current-panel" : "old-panel") + '" data-panel="' + index + '">' +
     '<header><strong>' + title + '</strong><small>' + subtitle + '</small></header>' +
     '<div class="mini-stage" id="mini-stage-' + index + '">' +
-    miniRooms(index === 0 ? entry.after : entry.after) +
-    '</div><div class="panel-footnote">' + (index === 0 ? "The two little rooms start in balance." :
+    miniRooms(entry.after) + '</div>'+sequence+
+    '<div class="panel-footnote">' + (index === 0 ? "The two little rooms start in balance." :
       zeroPairs.length ? "The same operation on both sides; "+neutralPairSummary(zeroPairs)+
         " cancelled inside their rooms (each pair has value zero)." :
-      entry.action?.op==="unpack"
-        ?"Opening brackets changes the arrangement, not the value of the room."
-        :"The same mathematical change happened on both sides.") + '</div></article>';
+      expanded ?expanded.summary+" Opening brackets changes the arrangement, not the value.":
+      "The same mathematical change happened on both sides.") + '</div></article>';
 }
 /**
  * Comic replay is deliberately paced by the pencil, not by a slideshow timer.
@@ -1811,6 +1821,15 @@ function escapeInk(value) {
 }
 function notebookLines(entry, index) {
   if (index === 0) return [{ type: "equation", text: equation(entry.after) }];
+  if(entry.action?.op==="unpack"){
+    const notes=crateExpansionReplayNotes(entry.before[entry.action.side]);
+    return [
+      {type:"operation",text:notes.opening},
+      {type:"operation",text:"All sprites: "+notes.sprites},
+      {type:"operation",text:"All weights: "+notes.weights},
+      {type:"equation",text:equation(entry.after)}
+    ];
+  }
   return [
     { type: "operation", text: algebraOperation(entry.action) },
     ...replayZeroPairNotes(entry),
