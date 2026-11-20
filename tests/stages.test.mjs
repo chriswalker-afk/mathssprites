@@ -26,9 +26,9 @@ test("all three implemented stages are available to students; unbuilt stages are
   assert.equal(canOpenWorld1Stage("notebook",{stage1Completed:false,stage2Completed:false}),true);
   assert.equal(canOpenWorld1Stage("equation-workshop",{teacher:true,stage1Completed:true}),false);
   assert.equal(canOpenWorld1Stage("bogus"),false);
-  assert.equal(stageThreeComplete(Array.from({length:20},(_,i)=>i+1)),true);
+  assert.equal(stageThreeComplete(Array.from({length:16},(_,i)=>i+1)),true);
   assert.equal(stageTwoComplete([]),false);
-  assert.equal(stageTwoComplete(Array.from({length:16},(_,i)=>i+1)),true);
+  assert.equal(stageTwoComplete(Array.from({length:20},(_,i)=>i+1)),true);
 });
 test("the existing twenty records are still Stage 1; no progress reset",()=>{
   const saved={completed:[1,2,3,9],lastPlayed:10};
