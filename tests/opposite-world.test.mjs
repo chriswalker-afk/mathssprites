@@ -14,6 +14,7 @@ import {
  evaluate,levelActionPermission,levelQuantityMode,equation
 } from "../src/engine.mjs";
 import {startNotebook,notebookReplayScript} from "../src/notebook-engine.mjs";
+import {OPPOSITE_OPTIMAL_MOVES} from "../src/opposite-star-benchmarks.mjs";
 import {
  parseNotebookOperation,previewNotebookOperation,tryNotebookOperation,
  notebookEquationMathML,notebookOperationMathML
@@ -43,7 +44,10 @@ test("World 2 mirrors the three World 1 stage sizes and chapter shapes",()=>{
      assert.equal(slot.chapterId,stage.chapters[Math.floor(i/4)].id);
      assert.equal(isCampaignPlayable("opposites",id,slot.id),true);
      assert.equal(slot.level.allowedKinds.includes("posX2"),false);
-     assert.equal(stage.optimalMoves[slot.id],slot.level.referenceRoute.length);
+     assert.equal(stage.optimalMoves[slot.id],OPPOSITE_OPTIMAL_MOVES[id][i],
+        slot.id+" stars use certified minimum moves");
+      assert.ok(slot.level.referenceRoute.length>=stage.optimalMoves[slot.id],
+        slot.id+" authored example may not undercut certified minimum");
    }
    assert.equal(nextCampaignLevel("opposites",id,sizes[id]),null);
  }
