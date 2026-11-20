@@ -1390,7 +1390,7 @@ async function finishTurn() {
     busy = false; render();
     showReplay();
   } else {
-    setFeedback("Still balanced. What should the hand try next?");
+    setFeedback(currentLevel().groupedPrototype?"":"Still balanced. What should the hand try next?");
   }
 }
 async function guidedMove() {
@@ -1410,7 +1410,7 @@ async function guidedMove() {
     right:previewRoomAction(previous.right,action,state.quantityMode,"right")
   };
   busy=true;clearSpeech();
-  setFeedback(operationDescription(action)+"...","working");
+  setFeedback(currentLevel().groupedPrototype?"":operationDescription(action)+"...","working");
   try {
     if(action.op==="divide"){
       await neutraliseBeforeDivision(action,previews);
