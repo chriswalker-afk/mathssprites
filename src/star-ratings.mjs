@@ -1,5 +1,5 @@
 /**
- * PR26 — move-efficient stars for the 56 IMPLEMENTED World 1 campaign levels.
+ * PR26 — move-efficient stars for the 60 IMPLEMENTED World 1 campaign levels.
  *
  * One move is one committed two-room equation operation. In Independent
  * Balance, two visits make ONE move. In Algebra Apprentice, one accepted and
@@ -16,7 +16,7 @@
  */
 export const STAR_RATINGS_KEY="mathssprites.stars.v1";
 export const OPTIMAL_MOVES=Object.freeze({
-  guided:Object.freeze([1,1,1,1,1,1,1,1,2,2,2,2,2,3,3,3,3,2,3,4]),
+  guided:Object.freeze([1,1,1,1,1,1,1,1,2,2,2,2,2,3,3,3,3,2,3,4,3,3,3,4]),
   independent:Object.freeze([1,1,1,1,1,1,1,1,2,2,2,2,2,3,3,3,3,3,3,3]),
   notebook:Object.freeze([1,1,2,2,2,2,2,2,2,3,3,4,3,3,3,4])
 });

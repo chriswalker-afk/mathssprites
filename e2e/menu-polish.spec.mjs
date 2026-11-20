@@ -19,11 +19,11 @@ test("world cards show only essential information, and future doors stay locked 
   await expect(page.locator(".world-card")).toHaveCount(4);
   await expect(page.locator(".world-card-body .world-subtitle")).toHaveCount(4);
   await expect(page.locator(".world-card-body p:not(.world-subtitle)")).toHaveCount(0);
-  await expect(page.locator(".world-card-footer")).toContainText(["0 / 56 complete","0 / 48 complete","COMING SOON","COMING SOON"]);
+  await expect(page.locator(".world-card-footer")).toContainText(["0 / 60 complete","0 / 48 complete","COMING SOON","COMING SOON"]);
   await expect(page.locator(".world-planned button")).toHaveCount(0);
   await page.getByRole("button",{name:"Explore stages"}).click();
   await expect(page.locator(".stage-card")).toHaveCount(3);
-  await expect(page.locator('.stage-card[data-stage="guided"]')).toContainText("0 of 20 complete");
+  await expect(page.locator('.stage-card[data-stage="guided"]')).toContainText("0 of 24 complete");
   await expect(page.locator('.stage-card[data-stage="notebook"]')).toContainText("0 of 16 complete");
   await expect(page.locator(".stage-card > p")).toHaveCount(3);
 });
@@ -74,10 +74,10 @@ test("Inventor's Desk opens with the editor focused and optional rules @quick @s
   await expect(page.locator("#workshop-feedback")).not.toHaveAttribute("data-status","error");
 });
 
-test("Experiment Board retains 20/20/16 levels and optional star help @smoke",async({page})=>{
+test("Experiment Board retains 24/20/16 levels and optional star help @smoke",async({page})=>{
   await page.locator("#home-choose-level").click();
-  await expect(page.locator(".level-tile")).toHaveCount(20);
-  await expect(page.locator("#level-progress")).toContainText("0 / 60 stars earned");
+  await expect(page.locator(".level-tile")).toHaveCount(24);
+  await expect(page.locator("#level-progress")).toContainText("0 / 72 stars earned");
   await page.locator("#level-star-legend summary").click();
   await expect(page.locator("#level-star-legend")).toHaveAttribute("open","");
   await expect(page.locator("#level-star-legend")).toContainText("shortest route");

@@ -10,7 +10,7 @@ test("new student enters any guided level in two clicks, not four @quick @smoke"
   await expect(page.locator("#site-levels")).toBeVisible();
   await expect(page.locator(".map-world-button")).toHaveCount(4);
   await expect(page.locator(".map-stage-button")).toHaveCount(3);
-  await expect(page.locator(".level-tile")).toHaveCount(20);
+  await expect(page.locator(".level-tile")).toHaveCount(24);
   await expect(page.locator(".level-tile:disabled")).toHaveCount(0);
   await expect(page.locator('[data-map-world="opposites"]')).toBeEnabled();
   await expect(page.locator('[data-map-world="fractions"]')).toBeDisabled();
@@ -77,7 +77,7 @@ test("legacy progress and best stars migrate, remain on map, and legacy keys sta
   await expect(page.locator('[data-level="1"] .tile-stars')).toHaveText("★★★");
   await expect(page.locator('[data-level="2"] .tile-stars')).toHaveText("★★☆");
   await expect(page.locator('[data-level="3"]')).toBeEnabled();
-  await expect(page.locator("#level-progress")).toContainText("5 / 60 stars earned");
+  await expect(page.locator("#level-progress")).toContainText("5 / 72 stars earned");
   await page.locator('[data-level="3"]').click();
   const v2=await page.evaluate(()=>JSON.parse(localStorage.getItem("mathssprites.campaign.v2")));
   expect(v2.worlds.workshop.stages.guided.completed).toEqual(["resident","clearing-02"]);

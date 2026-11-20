@@ -45,7 +45,7 @@ test.beforeEach(async({page})=>{
 });
 
 for(const size of laptopViews){
-  test("single-screen menus and full 20-level selection at "+size.width+"×"+size.height+" @smoke",async({page})=>{
+  test("single-screen menus and full 24-level selection at "+size.width+"×"+size.height+" @smoke",async({page})=>{
     test.setTimeout(60000);
     await page.setViewportSize(size);
     await page.goto("/");
@@ -68,14 +68,18 @@ for(const size of laptopViews){
     await page.screenshot({path:"artifacts/pr27-stages-"+size.width+"x"+size.height+".png"});
 
     await page.getByRole("button",{name:"Choose Stage 1 levels"}).click();
-    await expect(page.locator(".level-tile")).toHaveCount(20);
-    await expect(page.locator(".chapter-group")).toHaveCount(5);
+    await expect(page.locator(".level-tile")).toHaveCount(24);
+    await expect(page.locator(".chapter-group")).toHaveCount(6);
+    // Six chapters form two rows. Their map may scroll internally while
+    // the whole document remains one screen and both ends stay reachable.
+    await page.locator("#level-sections .chapter-group:last-child .level-tile:last-child").scrollIntoViewIfNeeded();
     await inView(page,"#level-sections .chapter-group:last-child .level-tile:last-child");
+    await page.locator("#level-sections .chapter-group:first-child .level-tile:first-child").scrollIntoViewIfNeeded();
     await inView(page,"#level-sections .chapter-group:first-child .level-tile:first-child");
     await noDocumentScroll(page);
     const columns=await page.locator("#level-sections").evaluate(el=>
       getComputedStyle(el).gridTemplateColumns.trim().split(/\s+/).length);
-    expect(columns).toBe(5);
+    expect(columns).toBe(3);
     await page.screenshot({path:"artifacts/pr27-levels-"+size.width+"x"+size.height+".png"});
   });
 }
@@ -195,14 +199,18 @@ for(const size of scaledLaptopViews){
     await page.screenshot({path:"artifacts/pr28-stages-"+size.width+"x"+size.height+".png"});
 
     await page.getByRole("button",{name:"Choose Stage 1 levels"}).click();
-    await expect(page.locator(".level-tile")).toHaveCount(20);
+    await expect(page.locator(".level-tile")).toHaveCount(24);
     await expect(page.locator(".level-tile:disabled")).toHaveCount(0);
+    // Six chapters form two rows. Their map may scroll internally while
+    // the whole document remains one screen and both ends stay reachable.
+    await page.locator("#level-sections .chapter-group:last-child .level-tile:last-child").scrollIntoViewIfNeeded();
     await inView(page,"#level-sections .chapter-group:last-child .level-tile:last-child");
+    await page.locator("#level-sections .chapter-group:first-child .level-tile:first-child").scrollIntoViewIfNeeded();
     await inView(page,"#level-sections .chapter-group:first-child .level-tile:first-child");
     await noDocumentScroll(page);
     const columnCount=await page.locator("#level-sections").evaluate(el=>
       getComputedStyle(el).gridTemplateColumns.trim().split(/\s+/).length);
-    expect(columnCount).toBe(5);
+    expect(columnCount).toBe(3);
     await page.screenshot({path:"artifacts/pr28-levels-"+size.width+"x"+size.height+".png"});
 
     await page.locator('[data-level="1"]').click();

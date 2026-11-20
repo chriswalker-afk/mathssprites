@@ -12,7 +12,7 @@ test("World 1 has three teaching stages and a separate, playable free-play tool"
   assert.equal(WORLD1_STAGES.length,3);
   assert.deepEqual(WORLD1_STAGES.map(x=>x.id),["guided","independent","notebook"]);
   assert.deepEqual(WORLD1_STAGES.map(x=>x.method),["auto","manual","notebook"]);
-  assert.deepEqual(WORLD1_STAGES.map(x=>x.count),[20,20,16]);
+  assert.deepEqual(WORLD1_STAGES.map(x=>x.count),[24,20,16]);
   assert.deepEqual(WORLD1_STAGES.map(x=>x.available),[true,true,true]);
   assert.equal(WORLD1_STAGES[0].count,WORLD1_LEVELS.length);
   assert.equal(EQUATION_WORKSHOP.available,true);
@@ -39,8 +39,9 @@ test("the existing twenty records are still Stage 1; no progress reset",()=>{
   assert.deepEqual(saveProgress(saved,storage),saved);
   assert.deepEqual(JSON.parse(store.get(PROGRESS_KEY)),saved);
   assert.equal(stageOneComplete(saved.completed),false);
-  assert.equal(stageOneComplete(Array.from({length:20},(_,i)=>i+1)),true);
-  assert.equal(stageOneComplete([...Array.from({length:20},(_,i)=>i+1),20]),true);
+  assert.equal(stageOneComplete(Array.from({length:20},(_,i)=>i+1)),false);
+  assert.equal(stageOneComplete(Array.from({length:24},(_,i)=>i+1)),true);
+  assert.equal(stageOneComplete([...Array.from({length:24},(_,i)=>i+1),24]),true);
 });
 test("campaign locks each stage mode and QA previews retain both methods",()=>{
   const source=readFileSync(new URL("../src/app.mjs",import.meta.url),"utf8");

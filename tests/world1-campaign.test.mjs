@@ -35,7 +35,13 @@ const solutions = [
   [split(2),removeSprites(1),removeWeights(3)],
   [removeSprites(2),removeWeights(2)],
   [unpack("left"),removeWeights(6),split(2)],
-  [removeSprites(2),addWeights(1),split(3),removeWeights(6)]
+  [removeSprites(2),addWeights(1),split(3),removeWeights(6)],
+  // Equal groups; more groups; an ungrouped sprite on the opposite side;
+  // then a mixed sealed and loose-object final challenge.
+  [split(2),unpack("left"),removeWeights(1)],
+  [split(3),unpack("left"),removeWeights(2)],
+  [unpack("left"),removeSprites(1),removeWeights(8)],
+  [unpack("left"),removeSprites(1),removeWeights(7),split(4)]
 ];
 
 const alternateRoutes = new Map([
@@ -43,7 +49,10 @@ const alternateRoutes = new Map([
   [11,[removeWeights(8),split(4)]],
   [17,[removeSprites(2),removeWeights(6),split(2)]],
   [19,[split(2),unpack("left"),removeWeights(3)]],
-  [20,[removeSprites(2),removeWeights(12),removeWeights(5),split(3)]]
+  [20,[removeSprites(2),removeWeights(12),removeWeights(5),split(3)]],
+  [21,[unpack("left"),removeWeights(2),split(2)]],
+  [22,[unpack("left"),removeWeights(6),split(3)]],
+  [24,[removeSprites(1),unpack("left"),removeWeights(7),split(4)]]
 ]);
 
 function checkRoom(r, label) {
@@ -78,8 +87,13 @@ function verifySolution(level, steps, mode = "auto") {
       const response = perform(state,action,"auto");
       assert.equal(response.ok,true,level.id + " failed step " + (i+1) + " " + JSON.stringify(action) + ": " + response.reason);
       state = response.state;
+    } else if(action.op==="unpack"){
+      // An intact group opens in ONE room only, even in manual hand mode.
+      const rewrite=perform(state,action,"auto");
+      assert.equal(rewrite.ok,true,level.id+" local identity rewrite");
+      assert.equal(rewrite.state.history.at(-1).mode,"rewrite");
+      state=rewrite.state;
     } else {
-      assert.notEqual(action.op,"unpack","Identity rewrites are a Guided-only skill in this prototype");
       const first = perform(state,action,"manual","left");
       assert.equal(first.ok,true,level.id + " manual first room, step " + (i+1));
       assert.equal(isSolved(first.state),false,"A single room must not finish the puzzle");
@@ -106,9 +120,9 @@ function verifySolution(level, steps, mode = "auto") {
   return {initial:start,final:equation(state)};
 }
 
-test("World 1 contains 20 unique, viable and entirely positive balances",() => {
-  assert.equal(WORLD1_LEVELS.length,20);
-  assert.equal(solutions.length,20);
+test("World 1 contains 24 unique, viable and entirely positive balances",() => {
+  assert.equal(WORLD1_LEVELS.length,24);
+  assert.equal(solutions.length,24);
   const ids = new Set();
   for (const slot of WORLD1_LEVELS) {
     const level = slot.level;
@@ -120,7 +134,7 @@ test("World 1 contains 20 unique, viable and entirely positive balances",() => {
     assert.equal(level.lockPositive,true);
     assert.equal(level.quantityMode,"positive");
     assert.deepEqual(level.allowedOperations,
-      slot.number===19?[...WORLD1_OPERATIONS,"unpack"]:WORLD1_OPERATIONS);
+      level.groupedPrototype?[...WORLD1_OPERATIONS,"unpack"]:WORLD1_OPERATIONS);
     assert.ok(validInitialLevel(level),"Invalid algebra " + level.id);
     assert.ok(Number.isInteger(level.solution) && level.solution > 0);
     assert.ok(level.title && level.prompt && level.suggested);
@@ -130,16 +144,15 @@ test("World 1 contains 20 unique, viable and entirely positive balances",() => {
   assert.equal(LEVELS.length,13,"Original advanced experiment library is preserved");
 });
 
-test("All 20 model solutions reach one sprite, with only whole-number intermediate states",() => {
+test("All 24 model solutions reach one sprite, with only whole-number intermediate states",() => {
   for (const [i,slot] of WORLD1_LEVELS.entries()) {
     const outcome = verifySolution(slot.level,solutions[i]);
     assert.notEqual(outcome.initial,outcome.final);
   }
 });
 
-test("All 20 solutions work in two-hand Your Turn mode, one complete history step per move",() => {
+test("All 24 solutions allow two-hand operations and single-room crate rewrites",() => {
   for (const [i,slot] of WORLD1_LEVELS.entries()){
-    if(slot.number===19)continue; // Unpacking is a one-room identity rewrite, not a paired hand move.
     verifySolution(slot.level,solutions[i],"manual");
   }
 });
@@ -175,14 +188,14 @@ test("Chapter 2 requires equal whole groups; Chapter 3 requires at least two act
 });
 
 test("Chapters 4/5 include two-sided sprites, reverse orientation and a strategic addition",() => {
-  for (const slot of WORLD1_LEVELS.slice(12))
+  for (const slot of WORLD1_LEVELS.slice(12,20))
     if(slot.number!==19)
       assert.ok(slot.level.left.posX > 0 && slot.level.right.posX > 0);
   assert.equal(WORLD1_LEVELS[18].level.left.crates.count,2,
     "Guided Level 19 contains two identical complete crates");
   assert.ok(WORLD1_LEVELS[13].level.right.posX > WORLD1_LEVELS[13].level.left.posX);
   assert.ok(WORLD1_LEVELS[17].level.right.posX > WORLD1_LEVELS[17].level.left.posX);
-  assert.ok(solutions[19].some(x=>x.op==="add"),"Final puzzle must allow a positive addition shortcut");
+  assert.ok(solutions[19].some(x=>x.op==="add"),"Original Level 20 must retain its positive addition shortcut");
   assert.ok(alternateRoutes.get(20).every(x=>x.op!=="add"),"A subtraction-only alternative remains valid");
 });
 

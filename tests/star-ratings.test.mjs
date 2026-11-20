@@ -24,9 +24,13 @@ test("one completed mathematical move is 3 stars at par, 2 for +1, 1 for +2 or m
   assert.equal(starGlyphs(0),"☆☆☆");
   assert.equal(optimalMoves("notebook",12),4);
   assert.equal(optimalMoves("guided",20),4);
-  assert.equal(optimalMoves("guided",21),null);
+  assert.equal(optimalMoves("guided",21),3);
+  assert.equal(optimalMoves("guided",22),3);
+  assert.equal(optimalMoves("guided",23),3);
+  assert.equal(optimalMoves("guided",24),4);
+  assert.equal(optimalMoves("guided",25),null);
   assert.equal(optimalMoves("other",1),null);
-  assert.equal(TOTAL_AVAILABLE_STARS,168);
+  assert.equal(TOTAL_AVAILABLE_STARS,180);
 });
 
 test("independent star storage retains only valid best move counts and never downgrades",()=>{
@@ -120,7 +124,7 @@ function shortestLegalRoute(level,maximum){
   }
   return null;
 }
-test("all 56 per-level star benchmarks are truly optimal under the legal World 1 engine",()=>{
+test("all 60 per-level star benchmarks are truly optimal under the legal World 1 engine",()=>{
   const stages={
     guided:WORLD1_LEVELS,independent:INDEPENDENT_LEVELS,notebook:APPRENTICE_LEVELS
   };

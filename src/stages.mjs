@@ -1,6 +1,6 @@
 /**
  * World 1 is a curriculum of representations, not just increasing equations.
- * The existing twenty puzzle IDs and math stay in WORLD1_LEVELS untouched.
+ * The first twenty puzzle IDs and equations stay in WORLD1_LEVELS untouched.\n * PR48 adds four new Guided crate levels without altering those saved positions.
  *
  * PR21 activates Stage 3 on Stage 2 mastery (or teacher access).
  * PR22 makes the separate Equation Workshop available as non-campaign free play.

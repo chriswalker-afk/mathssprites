@@ -2,8 +2,8 @@
 
 ## Purpose and scope
 
-This is a **teacher/developer planning layer** for the **104 playable campaign levels**:
-20 Guided, 20 Independent and 16 Algebra Apprentice in World 1
+This is a **teacher/developer planning layer** for the **108 playable campaign levels**:
+24 Guided, 20 Independent and 16 Algebra Apprentice in World 1
 (The Balance Workshop), plus 20 Guided, 16 Independent and 12 Algebra Apprentice
 in World 2 (The Opposite Chambers).
 
@@ -21,7 +21,7 @@ operation or number of objects.
 - src/curriculum.mjs: authored skill definitions and prerequisites, learning
   objectives for every four-level chapter, explicit 1–5 difficulty bands,
   per-level mathematical/physical features and lookup functions
-- tests/curriculum.test.mjs: coverage and consistency tests for **all 104
+- tests/curriculum.test.mjs: coverage and consistency tests for **all 108
   IDs**, chapters, skill IDs, difficulty bands, move benchmarks and no
   accidental imports by the student application
 - scripts/curriculum-report.mjs: author-only Markdown or JSON report,
@@ -81,7 +81,7 @@ representation, signed numbers and mathematical communication.
 
 | World | Guided progression | Independent progression | Notebook progression |
 |---|---|---|---|
-| 1 · Workshop | Equal subtraction → whole equal groups → two-step → unknowns on both sides → efficient routes/crates | Match single moves → match divisions → match sequences → solve strategic two-sided balances | Model/first/last/solo written moves → choose an efficient order → solve multi-operation and reversed equations |
+| 1 · Workshop | Equal subtraction → whole equal groups → two-step → unknowns on both sides → efficient routes → four sealed-crate challenges | Match single moves → match divisions → match sequences → solve strategic two-sided balances | Model/first/last/solo written moves → choose an efficient order → solve multi-operation and reversed equations |
 | 2 · Opposites | Balloons and unit zero pairs → white sprites and variable zero pairs → combine cancellations → reversed signed equations → strategic signed transformations | Match signed hand visits → distinguish local cancellation effects → prepare signed groups → independent signed strategies | Write signed operations → distinguish signs/negative terms → combine independent signed transformations |
 
 ### Design guardrails
@@ -113,6 +113,9 @@ whether pupils select a mathematically appropriate next step. Finally propose
 specific changes to equation contents, sequence and supporting hints in a
 *separate* PR. Do not auto-reorder the campaign from scores alone.
 
-The next planned game feature after this metadata pass is the **grouped-crate
-generalisation**: extend the existing sealed-crate visual and engine mechanism
-beyond the current demonstration without leaking an algebraic expansion.
+PR47 generalised the sealed-crate visuals and engine across Independent
+Balance and Algebra Apprentice. PR48 adds four Guided crate experiments
+(numbered 21–24) while preserving the original 20 Guided equations, IDs,
+positions and legacy progress. New curriculum records have explicit complexity
+and difficulty bands; a crate rewrite is one equivalent-expression step,
+not a pair of opposite hand visits.
