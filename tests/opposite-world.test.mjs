@@ -1,3 +1,4 @@
+import {readOppositesGuideSeen,writeOppositesGuideSeen} from "../src/opposite-onboarding.mjs";
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
@@ -155,4 +156,22 @@ test("signed objects and stars are strictly world scoped, never World 1",()=>{
  assert.equal(campaignStars(save,"opposites","guided",first.id),3);
  assert.equal(campaignStarTotals(save,{worldId:"opposites"}).count,48);
  assert.equal(campaignStarTotals(save,{worldId:"workshop"}).count,48);
+});
+
+
+test("World 2 guide works when browser storage cannot be accessed",()=>{
+ const previous=Object.getOwnPropertyDescriptor(globalThis,"localStorage");
+ Object.defineProperty(globalThis,"localStorage",{
+  configurable:true,get(){throw new Error("Storage disabled");}
+ });
+ try{
+  assert.equal(readOppositesGuideSeen("guided"),false);
+  assert.equal(writeOppositesGuideSeen("guided",true),true);
+  const denied={getItem(){throw new Error("Storage denied");},setItem(){throw new Error("Storage denied");}};
+  assert.equal(readOppositesGuideSeen("independent",denied),false);
+  assert.equal(writeOppositesGuideSeen("independent",false,denied),false);
+ }finally{
+  if(previous)Object.defineProperty(globalThis,"localStorage",previous);
+  else delete globalThis.localStorage;
+ }
 });
