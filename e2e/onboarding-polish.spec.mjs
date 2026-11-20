@@ -17,9 +17,9 @@ test("Level 1 gives four sequential cues pointing at the real controls", async({
   await expect(page.locator("#scene")).toHaveClass(/coach-focus/);
   await page.locator("#guide-next").click();
   await expect(page.locator("#guide-progress")).toHaveText("2 of 4");
-  await expect(page.locator('[data-operation="remove"]')).toHaveClass(/coach-focus/);
+  await expect(page.locator(".operation-picker")).toHaveClass(/coach-focus/);
   await page.locator("#guide-next").click();
-  await expect(page.locator("#amount-control")).toHaveClass(/coach-focus/);
+  await expect(page.locator(".control-top")).toHaveClass(/coach-focus/);
   await page.locator("#guide-next").click();
   await expect(page.locator("#guide-progress")).toHaveText("4 of 4");
   await expect(page.locator("#do-both")).toHaveClass(/coach-focus/);
