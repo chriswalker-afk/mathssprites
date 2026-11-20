@@ -24,6 +24,10 @@ const RULES=Object.freeze([
   [/^(?:src\/(?:opposite-[^/]+|signed-[^/]+)\.mjs|e2e\/(?:opposites-world|signed-objects|world2-difficulty-pass)\.spec\.mjs)$/,["signed"]],
   [/^(?:src\/(?:viewport-[^/]+|scene-[^/]+|stages|adaptive-[^/]+)\.css|e2e\/(?:adaptive-viewport|viewport-fit|scene-polish|hand-art|motion-notice)\.spec\.mjs)$/,["layout"]],
   [/^(?:src\/(?:division-baskets|multiplication-baskets|sprite-[^/]+|hand-[^/]+|star-ratings)\.mjs|e2e\/(?:division-baskets|multiplication-baskets|star-ratings|failed-attempts|animations|sprite-[^/]+|independent-balance|squares)\.spec\.mjs)$/,["physics"]],
+  // The registry joins teacher-certified par counts to visible stars and
+  // all three stage modes; check these rather than the unrelated art suites.
+  [/^src\/campaign-registry\.mjs$/,["navigation","notebook","signed","physics"]],
+  [/^src\/opposite-star-benchmarks\.mjs$/,["navigation","signed","physics"]],
   [/^src\/campaign-records\.mjs$/,["navigation","signed","physics"]],
   [/^src\/polish\.css$/,["navigation","layout"]],
   [/^src\/engine\.mjs$/,["crates","notebook","signed","physics"]],
