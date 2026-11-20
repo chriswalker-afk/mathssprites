@@ -16,6 +16,14 @@ test("feature edits select only their relevant browser group",()=>{
   assert.deepEqual(selectBrowserGroups(["src/site.mjs"]),["navigation"]);
   assert.deepEqual(selectBrowserGroups(["src/viewport-adaptive.css"]),["layout"]);
 });
+test("World 2 rebalance and save migration run the correct focused browser groups",()=>{
+  assert.deepEqual(selectBrowserGroups(["src/opposite-guided.mjs"]),["signed"]);
+  assert.deepEqual(selectBrowserGroups(["e2e/world2-difficulty-pass.spec.mjs"]),["signed"]);
+  assert.ok(GROUP_SPECS.signed.includes("e2e/world2-difficulty-pass.spec.mjs"));
+  assert.deepEqual(selectBrowserGroups(["src/campaign-records.mjs"]),
+    ["navigation","signed","physics"]);
+  assert.deepEqual(selectBrowserGroups(["src/polish.css"]),["navigation","layout"]);
+});
 test("shared maths and entrypoint changes trigger multiple independent safety checks",()=>{
   assert.deepEqual(selectBrowserGroups(["src/engine.mjs"]),["crates","notebook","signed","physics"]);
   assert.equal(selectBrowserGroups(["src/app.mjs"]).length,Object.keys(GROUP_SPECS).length);
