@@ -63,6 +63,8 @@ let playingWorld = null;
 let selectedWorld = campaignResume?.worldId||"workshop";
 let selectedStage = campaignResume?.stageId||"guided";
 let boardReturnScreen = "home";
+// Preserve each stage's chapter scroll position when returning from a game.
+const boardScrollPositions=new Map();
 let supportReturnScreen = "home";
 function stageCanOpen(id) {
   return canOpenWorld1Stage(id,{
@@ -306,7 +308,7 @@ function renderLevels() {
   // never be squeezed to half its readable height by the fixed-height board.
   // Its card grid scrolls internally; the header/navigation remain in place.
   const boardKey=world.id+"/"+stage.id;
-  const priorScroll=sections.dataset.boardKey===boardKey?sections.scrollTop:0;
+  const priorScroll=boardScrollPositions.get(boardKey)??0;
   sections.dataset.boardKey=boardKey;
   sections.dataset.chapterLayout=chapters.length>5?"multi-row":"single-row";
   sections.setAttribute("role","region");
@@ -588,8 +590,19 @@ $("site-shell").addEventListener("click", event => {
     if(target.dataset.screen==="stages")selectedWorld="workshop";
     return showScreen(target.dataset.screen);
   }
-  if (target.dataset.level) return launch(target.dataset.levelId||
-    Number(target.dataset.level),selectedStage,selectedWorld);
+  if (target.dataset.level){
+    const board=$("level-sections");
+    if(board.dataset.boardKey)
+      boardScrollPositions.set(board.dataset.boardKey,board.scrollTop);
+    return launch(target.dataset.levelId||
+      Number(target.dataset.level),selectedStage,selectedWorld);
+  }
+});
+// A level board's own scroll is not document scrolling: save it per stage.
+$("level-sections").addEventListener("scroll",event=>{
+  const board=event.currentTarget;
+  if(currentScreen==="levels"&&!$("site-levels").hidden&&board.dataset.boardKey)
+    boardScrollPositions.set(board.dataset.boardKey,board.scrollTop);
 });
 // Keep the native Tab order, with spatial arrow keys as a shortcut.
 $("site-levels").addEventListener("keydown",event=>{
