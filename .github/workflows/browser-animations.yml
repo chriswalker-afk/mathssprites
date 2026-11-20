@@ -7,14 +7,13 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
-  # Full regression still runs weekly, without delaying ordinary PR reviews.
   schedule:
     - cron: "17 2 * * 1"
 
 permissions:
   contents: read
 
-# The newest push replaces any unfinished QA for the same PR.
+# A new commit cancels stale runs, not the current commit's independent jobs.
 concurrency:
   group: browser-qa-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
@@ -24,7 +23,7 @@ jobs:
     name: Browser smoke QA
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 3
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -37,45 +36,87 @@ jobs:
           key: ${{ runner.os }}-mathssprites-pw-npm-1.65.1-v1
       - name: Install Playwright test
         run: npm install --no-save --ignore-scripts --no-audit --no-fund --prefer-offline @playwright/test@1.65.1
-      - name: Fast browser checks — navigation, stars, notebook and scene animation
-        run: npx playwright test --grep @smoke --workers=2
-      - name: Keep viewport screenshots for compact layout review
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: maths-sprites-viewport-preview
-          path: |
-            artifacts/pr27-*.png
-            artifacts/pr28-*.png
-            artifacts/pr29-*.png
-            artifacts/pr30-*.png
-            artifacts/pr31-*.png
-            artifacts/pr32-*.png
-            artifacts/pr33-*.png
-            artifacts/pr34-*.png
-            artifacts/pr35-*.png
-            artifacts/pr36-*.png
-            artifacts/pr37-*.png
-            artifacts/pr38-*.png
-            artifacts/pr39-*.png
-            artifacts/pr40-*.png
-            artifacts/pr41-*.png
-          if-no-files-found: ignore
-          retention-days: 7
-      - name: Keep screenshots and traces on smoke failures
+      - name: Quick browser checks — 15 core journeys
+        run: npx playwright test --grep @quick --workers=2
+      - name: Keep failure screenshots and traces only
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: maths-sprites-browser-smoke
+          name: maths-sprites-quick-failure
+          path: test-results/
+          if-no-files-found: ignore
+          retention-days: 5
+
+  changes:
+    name: Select focused browser checks
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.pick.outputs.matrix }}
+      run: ${{ steps.pick.outputs.run }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Select browser feature groups from changed paths
+        id: pick
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          MATRIX="$(git diff --name-only "$BASE_SHA" "$HEAD_SHA" | node scripts/browser-qa-plan.mjs --matrix)"
+          echo "matrix=$MATRIX" >> "$GITHUB_OUTPUT"
+          if [[ "$MATRIX" == '{"include":[]}' ]]; then
+            echo "run=false" >> "$GITHUB_OUTPUT"
+            echo "No feature-specific browser suite required."
+          else
+            echo "run=true" >> "$GITHUB_OUTPUT"
+            echo "Focused browser matrix: $MATRIX"
+          fi
+
+  focused:
+    name: Focused browser QA (${{ matrix.group }})
+    needs: changes
+    if: github.event_name == 'pull_request' && needs.changes.outputs.run == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        include: ${{ fromJSON(needs.changes.outputs.matrix).include }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Cache Playwright package
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-mathssprites-pw-npm-1.65.1-v1
+      - name: Install Playwright test
+        run: npm install --no-save --ignore-scripts --no-audit --no-fund --prefer-offline @playwright/test@1.65.1
+      - name: Run relevant feature browser scenarios
+        # The specs string comes exclusively from the constant, unit-tested
+        # map in scripts/browser-qa-plan.mjs; it is not user-supplied shell code.
+        run: npx playwright test ${{ matrix.specs }} --workers=2
+      - name: Save feature screenshots on request or failure
+        if: failure() || contains(github.event.pull_request.labels.*.name, 'visual-review')
+        uses: actions/upload-artifact@v4
+        with:
+          name: maths-sprites-feature-${{ matrix.group }}
           path: |
             artifacts/
             test-results/
           if-no-files-found: ignore
           retention-days: 7
 
-  # The full multi-minute suite does not block every small PR edit. It runs
-  # after merging to main, on a weekly schedule, by manual dispatch, or when
-  # a PR is explicitly labelled "full-browser-qa".
+  # This remains the unabridged regression. It is deliberately not a default
+  # PR gate for every styling commit. It runs AFTER merge, weekly, manually,
+  # or on PRs explicitly labelled "full-browser-qa".
   full-browser:
     name: Full browser regression (${{ matrix.shard }}/3)
     if: github.event_name != 'pull_request' || contains(github.event.pull_request.labels.*.name, 'full-browser-qa')
@@ -90,20 +131,20 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Cache pinned Playwright npm package
+      - name: Cache Playwright npm package
         uses: actions/cache@v4
         with:
           path: ~/.npm
           key: ${{ runner.os }}-mathssprites-pw-npm-1.65.1-v1
       - name: Install Playwright test
         run: npm install --no-save --ignore-scripts --no-audit --no-fund --prefer-offline @playwright/test@1.65.1
-      - name: Complete animation, hand and maths regression (shard ${{ matrix.shard }})
+      - name: Complete unabridged browser regression (shard ${{ matrix.shard }})
         run: npx playwright test --shard=${{ matrix.shard }}/3 --workers=1
-      - name: Keep screenshots and traces for design review
+      - name: Retain full-regression diagnostics
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: maths-sprites-browser-qa-shard-${{ matrix.shard }}
+          name: maths-sprites-full-browser-${{ matrix.shard }}
           path: |
             artifacts/
             test-results/

@@ -11,7 +11,7 @@ async function openApprentice(page,level=1){
   await page.locator('[data-level="'+level+'"]').click();
   await expect(page.locator("#notebook-workspace")).toBeVisible();
 }
-test("students choose −3 and the maths editor calculates the equation without asking for the answer @smoke",async({page})=>{
+test("students choose −3 and the maths editor calculates the equation without asking for the answer @quick @smoke",async({page})=>{
   await page.setViewportSize({width:1024,height:720});
   await openApprentice(page,1);
   await expect(page.locator("#notebook-lines li")).toHaveCount(1);

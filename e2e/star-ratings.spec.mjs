@@ -29,7 +29,7 @@ test.beforeEach(async({page})=>{
   await page.goto("/");
 });
 
-test("all 48 implemented levels open for a new student with empty progress @smoke",async({page})=>{
+test("all 48 implemented levels open for a new student with empty progress @quick @smoke",async({page})=>{
   await stages(page);
   for(const [stage,n] of [["guided",20],["independent",16],["notebook",12]]){
     const number={guided:1,independent:2,notebook:3}[stage];
