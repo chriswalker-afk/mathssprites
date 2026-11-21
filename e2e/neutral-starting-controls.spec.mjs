@@ -7,8 +7,9 @@ async function expectNeutral(page){
   for(const selector of ["[data-operation][aria-pressed=true]","[data-kind][aria-pressed=true]"])
     await expect(page.locator(selector)).toHaveCount(0);
   await expect(page.locator("#amount-value")).toHaveText("—");
-  await expect(page.locator("#object-picker")).toBeVisible();
-  await expect(page.locator("#amount-control")).toBeVisible();
+  // First choose an operation. Neither object nor amount is offered yet.
+  await expect(page.locator("#object-picker")).toBeHidden();
+  await expect(page.locator("#amount-control")).toBeHidden();
   await expect(page.locator("#amount-up")).toBeDisabled();
   await expect(page.locator("#do-both")).toBeDisabled();
 }
@@ -20,9 +21,11 @@ test("new Guided level, reset and revisiting never reveal the authored move @qui
   await expectNeutral(page);
   await page.locator('[data-operation="remove"]').click();
   await expect(page.locator("#object-picker")).toBeVisible();
-  await expect(page.locator("#amount-control")).toBeVisible();
+  await expect(page.locator("#amount-control")).toBeHidden();
   await expect(page.locator("#amount-up")).toBeDisabled();
   await page.locator('[data-kind="posOne"]').click();
+  await expect(page.locator("#amount-control")).toBeVisible();
+  await expect(page.locator("#amount-label")).toHaveText("3 · How many?");
   await expect(page.locator("#amount-value")).toHaveText("—");
   await expect(page.locator("#do-both")).toBeDisabled();
   await page.locator("#amount-up").click();
@@ -44,11 +47,20 @@ test("division is not preselected and requires student-selected group count",asy
   await page.locator('[data-level="6"]').click();
   await expectNeutral(page);
   await page.locator('[data-operation="divide"]').click();
+  await expect(page.locator("#object-picker")).toBeHidden();
+  await expect(page.locator("#amount-control")).toBeVisible();
+  await expect(page.locator("#amount-label")).toHaveText("2 · How many groups?");
   await expect(page.locator("#amount-value")).toHaveText("—");
   await expect(page.locator("#do-both")).toBeDisabled();
   await page.locator("#amount-up").click();
   await expect(page.locator("#amount-value")).toHaveText("2");
   await expect(page.locator("#do-both")).toBeEnabled();
+  await page.locator('[data-operation="multiply"]').click();
+  await expect(page.locator("#object-picker")).toBeHidden();
+  await expect(page.locator("#amount-label")).toHaveText("2 · How many groups?");
+  await expect(page.locator("#amount-value")).toHaveText("—");
+  await page.locator("#amount-up").click();
+  await expect(page.locator("#amount-value")).toHaveText("2");
 });
 test("Independent and Opposite Chambers do not highlight solution choices",async({page})=>{
   await page.locator("#home-choose-level").click();
@@ -66,8 +78,11 @@ test("Independent and Opposite Chambers do not highlight solution choices",async
   await page.locator('[data-map-stage="guided"]').click();
   await page.locator('[data-level="1"]').click();
   await expectNeutral(page);
+  await expect(page.locator('[data-kind="negOne"]')).toBeHidden();
+  await expect(page.locator("#object-picker")).toBeHidden();
+  await page.locator('[data-operation="add"]').click();
   await expect(page.locator('[data-kind="negOne"]')).toBeVisible();
-  await expect(page.locator("[data-operation].selected")).toHaveCount(0);
+  await expect(page.locator("[data-operation].selected")).toHaveCount(1);
 });
 test("sealed crates do not suggest Divide or Open as the first move",async({page})=>{
   await page.locator("#home-choose-level").click();
