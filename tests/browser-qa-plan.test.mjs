@@ -13,6 +13,8 @@ test("crate artwork and animation changes run actual crate interaction tests",()
   assert.ok(GROUP_SPECS.crates.includes("e2e/signed-crate-physics.spec.mjs"));
   assert.deepEqual(selectBrowserGroups(["e2e/signed-crate-chapter.spec.mjs"]),["crates"]);
   assert.ok(GROUP_SPECS.crates.includes("e2e/signed-crate-chapter.spec.mjs"));
+  assert.deepEqual(selectBrowserGroups(["e2e/world2-other-mode-crates.spec.mjs"]),["crates"]);
+  assert.ok(GROUP_SPECS.crates.includes("e2e/world2-other-mode-crates.spec.mjs"));
 });
 test("feature edits select only their relevant browser group",()=>{
   assert.deepEqual(selectBrowserGroups(["src/opposite-guided.mjs"]),["signed"]);
