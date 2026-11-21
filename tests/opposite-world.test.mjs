@@ -3,7 +3,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {
  OPPOSITE_LEVELS,OPPOSITE_CHAPTERS,OPPOSITE_LEVEL_COUNT,
- OPPOSITE_KINDS,OPPOSITE_OPERATIONS,OPPOSITE_STAGE_ORDER
+ OPPOSITE_KINDS,OPPOSITE_OPERATIONS,OPPOSITE_CRATE_OPERATIONS,OPPOSITE_STAGE_ORDER
 } from "../src/opposite-levels.mjs";
 import {
  CAMPAIGN_REGISTRY,findCampaignWorld,findCampaignLevel,isCampaignPlayable,
@@ -24,14 +24,14 @@ import {
  withCampaignLastPlayed,withCampaignCompleted,campaignStars
 } from "../src/campaign-records.mjs";
 
-const sizes={guided:20,independent:16,notebook:12};
-test("World 2 mirrors the three World 1 stage sizes and chapter shapes",()=>{
- assert.equal(OPPOSITE_LEVEL_COUNT,48);
+const sizes={guided:24,independent:16,notebook:12};
+test("World 2 includes six Guided chapters while preserving original stage identities",()=>{
+ assert.equal(OPPOSITE_LEVEL_COUNT,52);
  assert.deepEqual(OPPOSITE_STAGE_ORDER,["guided","independent","notebook"]);
  const world=findCampaignWorld("opposites");
  assert.equal(world.available,true);
- assert.deepEqual(world.stages.map(s=>s.levels.length),[20,16,12]);
- assert.deepEqual(world.stages.map(s=>s.chapters.length),[5,4,3]);
+ assert.deepEqual(world.stages.map(s=>s.levels.length),[24,16,12]);
+ assert.deepEqual(world.stages.map(s=>s.chapters.length),[6,4,3]);
  assert.deepEqual(CAMPAIGN_REGISTRY.map(x=>x.available),[true,true,false,false]);
  for(const id of OPPOSITE_STAGE_ORDER){
    assert.equal(OPPOSITE_LEVELS[id].length,sizes[id]);
@@ -60,14 +60,15 @@ test("only real first signed hand levels trigger World 2 onboarding",()=>{
   }
  }
 });
-test("all 48 signed puzzles have exact positive solutions and executable routes",()=>{
+test("all 52 signed puzzles have exact positive solutions and executable routes",()=>{
  for(const id of OPPOSITE_STAGE_ORDER)for(const slot of OPPOSITE_LEVELS[id]){
   const level=slot.level;
   assert.equal(validInitialLevel(level),true,slot.id+" initial equation");
   assert.equal(levelQuantityMode(level),"signed");
   assert.equal(level.solution>0,true,slot.id);
   assert.equal(level.lockPositive,false,slot.id);
-  assert.deepEqual(level.allowedOperations,OPPOSITE_OPERATIONS,slot.id);
+  assert.deepEqual(level.allowedOperations,level.groupedPrototype?
+    OPPOSITE_CRATE_OPERATIONS:OPPOSITE_OPERATIONS,slot.id);
   assert.deepEqual(level.allowedKinds,OPPOSITE_KINDS,slot.id);
   let state=initialState(level);
   assert.equal(balanceDifference(state),0,slot.id);
@@ -158,7 +159,7 @@ test("signed objects and stars are strictly world scoped, never World 1",()=>{
  assert.equal(campaignStageRecord(save,"opposites","guided").completed.length,1);
  assert.equal(campaignStageRecord(save,"workshop","guided").completed.length,0);
  assert.equal(campaignStars(save,"opposites","guided",first.id),3);
- assert.equal(campaignStarTotals(save,{worldId:"opposites"}).count,48);
+ assert.equal(campaignStarTotals(save,{worldId:"opposites"}).count,52);
  assert.equal(campaignStarTotals(save,{worldId:"workshop"}).count,60);
 });
 
