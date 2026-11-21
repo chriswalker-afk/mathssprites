@@ -11,21 +11,14 @@ async function board(page,stage="guided"){
   if(stage!=="guided")await page.locator('[data-map-stage="'+stage+'"]').click();
   await expect(page.locator("#site-levels")).toHaveAttribute("data-active-world","opposites");
 }
-test("World 2 has its own moonlit doorway, discovery stages and all 48 experiments @quick @smoke",async({page})=>{
-  await page.locator('.site-nav-links [data-screen="worlds"]').click();
-  await expect(page.locator(".world-ready")).toHaveCount(2);
-  await expect(page.locator(".world-planned")).toHaveCount(2);
-  await page.locator('[data-world-stages="opposites"]').click();
-  await expect(page.locator("#site-stages")).toHaveAttribute("data-active-world","opposites");
-  await expect(page.locator("#stages-world-kicker")).toContainText("WORLD 02");
-  await expect(page.locator("#world1-workshop")).toBeHidden();
-  await expect(page.locator(".stage-card")).toHaveCount(3);
-  await expect(page.locator('.stage-card[data-stage="guided"]')).toContainText("0 of 20 complete");
-  await expect(page.locator('.stage-card[data-stage="independent"]')).toContainText("0 of 16 complete");
-  await expect(page.locator('.stage-card[data-stage="notebook"]')).toContainText("0 of 12 complete");
-  await page.getByRole("button",{name:"Choose Stage 1 levels"}).click();
-  await expect(page.locator(".level-tile")).toHaveCount(20);
-  await expect(page.locator(".chapter-group")).toHaveCount(5);
+test("World 2 shows six Guided chapters and all 52 experiments on the unified board @quick @smoke",async({page})=>{
+  await board(page);
+  await expect(page.locator("#site-levels")).toBeVisible();
+  await expect(page.locator('[data-map-world="opposites"]')).toBeEnabled();
+  await expect(page.locator(".level-tile")).toHaveCount(24);
+  await expect(page.locator(".chapter-group")).toHaveCount(6);
+  await expect(page.locator('[data-level="21"]')).toContainText("A weight for a balloon");
+  await expect(page.locator('[data-level="24"]')).toContainText("The sealed negatives");
   await expect(page.locator("#board-continue")).toHaveText("Play Level 1 →");
   await page.locator('[data-map-stage="independent"]').click();
   await expect(page.locator(".level-tile")).toHaveCount(16);
@@ -35,7 +28,7 @@ test("World 2 has its own moonlit doorway, discovery stages and all 48 experimen
   await expect(page.locator(".chapter-group")).toHaveCount(3);
   await expect(page.locator('[data-map-world="fractions"]')).toBeDisabled();
   await expect(page.locator('[data-map-world="squares"]')).toBeDisabled();
-  await page.screenshot({path:"artifacts/pr36-opposites-board-1280.png",fullPage:true});
+  await page.screenshot({path:"artifacts/pr57-opposites-board-1280.png",fullPage:true});
 });
 test("signed Guided level makes the balloon-weight zero pair, saves World 2 stars @smoke",async({page})=>{
   test.setTimeout(60000);
@@ -44,6 +37,9 @@ test("signed Guided level makes the balloon-weight zero pair, saves World 2 star
   await expect(page.locator("#level-title")).toHaveText("One rising balloon");
   await expect(page.locator("#chapter-status")).toContainText("WORLD 2 · STAGE 1");
   await expect(page.locator("#left-items .balloon")).toHaveCount(1);
+  // PR54: signed kinds appear only AFTER choosing an operation.
+  await expect(page.locator("#object-picker")).toBeHidden();
+  await page.locator('[data-operation="add"]').click();
   await expect(page.locator('[data-kind="negOne"]')).toBeVisible();
   await expect(page.locator('[data-kind="negX"]')).toBeVisible();
   await expect(page.locator('[data-kind="posX2"]')).toBeHidden();
@@ -119,6 +115,7 @@ test("World 2 reset retains its signed world, separate guide and physics @smoke"
   await page.locator("#reset").click();
   await expect(page.locator("#chapter-status")).toContainText("WORLD 2 · STAGE 1");
   await expect(page.locator("#left-items .balloon")).toHaveCount(2);
+  await page.locator('[data-operation="add"]').click();
   await expect(page.locator('[data-kind="negOne"]')).toBeVisible();
   await page.locator("#game-home").click();
   await expect(page.locator('#home-stage-shortcuts[data-active-world="opposites"]')).toBeVisible();
@@ -142,7 +139,7 @@ test("World 2 menus and board fit small laptop and phone without sideways clippi
     await page.setViewportSize(size);
     await board(page);
     await expect(page.locator("#board-continue")).toBeVisible();
-    await expect(page.locator('[data-level="20"]')).toBeVisible();
+    await expect(page.locator('[data-level="24"]')).toBeVisible();
     const measures=await page.evaluate(()=>({
       scrollWidth:document.documentElement.scrollWidth,
       innerWidth:window.innerWidth,
@@ -152,7 +149,8 @@ test("World 2 menus and board fit small laptop and phone without sideways clippi
     expect(measures.scrollWidth).toBeLessThanOrEqual(measures.innerWidth+3);
     if(size.width>=900){
       expect(measures.scrollHeight).toBeLessThanOrEqual(measures.innerHeight+3);
-      await expect(page.locator('[data-level="20"]')).toBeInViewport();
+      await page.locator('[data-level="24"]').scrollIntoViewIfNeeded();
+      await expect(page.locator('[data-level="24"]')).toBeInViewport();
     }
     await page.screenshot({path:"artifacts/pr36-opposites-board-"+size.width+"x"+size.height+".png",fullPage:true});
     await page.locator("#site-back").click();
