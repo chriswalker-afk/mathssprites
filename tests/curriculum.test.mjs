@@ -21,8 +21,8 @@ const sources={
 };
 
 test("every shipped level has exactly one addressable, immutable curriculum record",()=>{
-  assert.equal(ALL_CURRICULUM_LEVELS.length,108);
-  assert.equal(new Set(ALL_CURRICULUM_LEVELS.map(row=>row.id)).size,108);
+  assert.equal(ALL_CURRICULUM_LEVELS.length,112);
+  assert.equal(new Set(ALL_CURRICULUM_LEVELS.map(row=>row.id)).size,112);
   assert.deepEqual(Object.keys(CURRICULUM_LEVELS),["workshop","opposites"]);
   for(const [worldId,stages] of Object.entries(sources)){
     for(const [stage,slots] of Object.entries(stages)){
