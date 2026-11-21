@@ -1,5 +1,5 @@
 import {
-  crateFloorLandingPlan,spriteEscapeKeyframes,weightEscapeKeyframes
+  crateFloorLandingPlan,spriteEscapeKeyframes,weightEscapeKeyframes,balloonEscapeKeyframes
 } from "./crate-physical-layout.mjs";
 
 /**
@@ -41,8 +41,8 @@ export function createCrateExpansionView({
   const rightInset=loose.length?Math.max(0,Math.min(bounds.width-18,
     bounds.width-leftmost+5)):0;
   const destinations=crateFloorLandingPlan(bounds.width,floorY,
-    plan.totalSprites,plan.totalWeights,{rightInset});
-  const spriteActors=[],weightActors=[];
+    plan.totalByKind,{rightInset});
+  const spriteActors=[],unitActors=[];
   let paused=false,destroyed=false,frame=null;
   const animations=new Set();
   const pausedExternal=new Set();
@@ -79,31 +79,33 @@ export function createCrateExpansionView({
     stage.dataset.phase=phase;
   }
 
-  function addActor(kind,sourceCrate,index,landing){
+  function addActor(tokenKind,sourceCrate,index,landing){
     const actor=document.createElement("span");
-    actor.className="crate-escaped-actor crate-escaped-"+kind;
+    const name={posX:"sprite",negX:"white-sprite",
+      posOne:"weight",negOne:"balloon"}[tokenKind];
+    actor.className="crate-escaped-actor crate-escaped-"+name;
     actor.dataset.sourceCrate=String(sourceCrate);
-    actor.dataset.kind=kind;
+    actor.dataset.kind=tokenKind;
     actor.dataset.landed="false";
     actor.style.left=landing.left+"px";
     actor.style.top=landing.top+"px";
     actor.style.width=landing.width+"px";
     actor.style.height=landing.height+"px";
     actor.style.setProperty("--escape-scale",String(landing.scale));
-    actor.innerHTML=tokenMarkup(kind==="sprite"?"posX":"posOne",index,false,side);
+    // Reuse the REAL sprite, white sprite, brass weight and balloon art.
+    actor.innerHTML=tokenMarkup(tokenKind,index,false,side);
     stage.append(actor);
     return actor;
   }
-  for(let i=0;i<plan.totalSprites;i++){
-    const sourceCrate=Math.floor(i/plan.spritesPerCrate);
-    spriteActors.push({sourceCrate,
-      element:addActor("sprite",sourceCrate,i,destinations.sprites[i])});
-  }
-  for(let i=0;i<plan.totalWeights;i++){
-    const sourceCrate=Math.floor(i/plan.weightsPerCrate);
-    weightActors.push({sourceCrate,
-      indexInCrate:i%plan.weightsPerCrate,
-      element:addActor("weight",sourceCrate,i,destinations.weights[i])});
+  for(const tokenKind of ["posX","negX","posOne","negOne"]){
+    const perCrate=plan.perCrate[tokenKind];
+    for(let i=0;i<plan.totalByKind[tokenKind];i++){
+      const sourceCrate=Math.floor(i/perCrate);
+      const record={tokenKind,sourceCrate,indexInCrate:i%perCrate,
+        element:addActor(tokenKind,sourceCrate,i,destinations.byKind[tokenKind][i])};
+      if(tokenKind==="posX"||tokenKind==="negX")spriteActors.push(record);
+      else unitActors.push(record);
+    }
   }
 
   function openCrate(index){
@@ -115,24 +117,29 @@ export function createCrateExpansionView({
     stage.dataset.crateIndex=String(index);
   }
 
-  async function animateOut(record,index,kind,delay=0){
+  async function animateOut(record,index,delay=0){
+    const kind=record.tokenKind;
+    const creature=kind==="posX"||kind==="negX";
     const crate=crates[record.sourceCrate];
-    const source=kind==="sprite"
+    const source=creature
       ?crate.querySelector(".crate-lid")
-      :crate.querySelector('.crate-bay-weight[data-weight-index="'+record.indexInCrate+'"]');
+      :kind==="posOne"
+        ?crate.querySelector('.crate-bay-weight[data-weight-index="'+record.indexInCrate+'"]')
+        :crate.querySelector('.crate-bay-balloon[data-balloon-index="'+record.indexInCrate+'"]');
     const from=source?.getBoundingClientRect()||crate.getBoundingClientRect();
     const actor=record.element;
     actor.classList.add("released");
     // Source and target are measured in the same physical chamber coordinate
-    // space. No intermediate 2D "counting tray" is ever rendered.
+    // space. No intermediate counting tray or duplicate algebra object.
     const to=actor.getBoundingClientRect();
     const dx=from.left+from.width/2-to.left-to.width/2;
     const dy=from.top+from.height/2-to.top-to.height/2;
-    const keyframes=kind==="sprite"
+    const keyframes=creature
       ?spriteEscapeKeyframes(dx,dy,index,minimal)
+      :kind==="negOne"?balloonEscapeKeyframes(dx,dy,index,minimal)
       :weightEscapeKeyframes(dx,dy,index,minimal);
-    const duration=minimal?(kind==="sprite"?250:190):
-      kind==="sprite"?940:670;
+    const duration=minimal?(creature?250:kind==="negOne"?260:190):
+      creature?940:kind==="negOne"?1000:670;
     const animation=actor.animate(keyframes,{
       duration,delay,easing:"cubic-bezier(.22,.69,.29,1)",fill:"both"
     });
@@ -145,14 +152,14 @@ export function createCrateExpansionView({
     if(destroyed)return;
     actor.classList.add("landed");
     actor.dataset.landed="true";
-    if(kind==="weight")source?.classList.add("crate-weight-taken");
+    if(!creature)source?.classList.add("crate-weight-taken");
   }
   async function spritesBounceTogether(){
     announce("sprites-bouncing");
     // Crucially, every sprite starts at once. They do not appear one per
     // explanatory line or wait for another sprite's movement to finish.
     await Promise.all(spriteActors.map((record,index)=>
-      animateOut(record,index,"sprite",minimal?0:index*45)));
+      animateOut(record,index,minimal?0:index*45)));
     announce("sprites-landed");
     await hold(minimal?470:840);
   }
@@ -163,18 +170,18 @@ export function createCrateExpansionView({
       crate.dataset.crateState="panels-down";
     }
     await hold(minimal?390:780);
-    announce("weights-revealed");
-    // The individual three-weight groups are NOW visible behind the fallen
-    // wooden fronts; keep the room still long enough to recognize them.
+    announce(plan.signed?"units-revealed":"weights-revealed");
+    // The actual loose units (brass weights and/or floating balloons) become
+    // visible behind the fallen wooden fronts; no positive-only surrogate.
     await hold(minimal?680:1090);
   }
   async function weightsTumble(){
     for(let crateIndex=0;crateIndex<plan.count;crateIndex++){
-      announce("weights-tumbling");
+      announce(plan.signed?"units-tumbling":"weights-tumbling");
       stage.dataset.crateIndex=String(crateIndex);
-      const packet=weightActors.filter(r=>r.sourceCrate===crateIndex);
+      const packet=unitActors.filter(r=>r.sourceCrate===crateIndex);
       await Promise.all(packet.map((record,index)=>
-        animateOut(record,index,"weight",minimal?index*25:index*75)));
+        animateOut(record,index,minimal?index*25:index*75)));
       await hold(minimal?190:340);
     }
     // Leave the last tumbling packet visible in motion before all objects
