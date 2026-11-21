@@ -12,7 +12,7 @@ const KINDS=["posX","negX","posX2","posOne","negOne"];
 function clone(source={}) {
   return Object.fromEntries(KINDS.map(k=>[k,Number(source[k]||0)]));
 }
-export function neutralPairSequence(source,side="") {
+export function neutralPairSequence(source,side="",onlyType=null) {
   const current=clone(source);
   const events=[];
   const species=[
@@ -20,6 +20,7 @@ export function neutralPairSequence(source,side="") {
     {type:"constants",positive:"posOne",negative:"negOne",action:"balloon-lift"}
   ];
   for(const pair of species) {
+    if(onlyType!==null&&onlyType!==pair.type)continue;
     const count=Math.min(current[pair.positive],current[pair.negative]);
     for(let i=0;i<count;i++){
       const before=clone(current);
