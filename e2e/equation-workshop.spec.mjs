@@ -6,12 +6,11 @@ test.beforeEach(async({page})=>{
   await page.goto("/");
 });
 async function openBuilder(page){
-  await page.locator('[data-screen="worlds"]').first().click();
-  await page.getByRole("button",{name:"Explore stages"}).click();
-  await expect(page.locator("#world1-workshop")).toContainText("FREE PLAY");
-  await page.getByRole("button",{name:"Create your own equation"}).click();
+  await page.locator("#home-choose-level").click();
+  await page.locator('#site-levels [data-screen="workshop"]').click();
   await expect(page.locator("#site-workshop")).toBeVisible();
 }
+
 async function build(page,text,mode="auto"){
   await page.locator("#workshop-equation").fill(text);
   await page.locator("#workshop-hand-mode").selectOption(mode);
@@ -34,7 +33,7 @@ test("free-play builder opens for new students without campaign unlock or teache
   await page.locator('[data-workshop-example="3x + 5 = 20"]').click();
   await expect(page.locator("#workshop-equation")).toHaveValue("3x + 5 = 20");
   await expect(page.locator("#site-workshop")).toBeVisible();
-  await expect(page.locator('[data-stage="notebook"] button')).toHaveCount(1);
+  await expect(page.locator("#workshop-back")).toHaveText("← Back to levels");
 });
 
 test("validated user equation becomes real rooms; guided hand solves and comic returns to builder",async({page})=>{
