@@ -70,14 +70,20 @@ test("the expansion plan is purely descriptive, with no early algebra or saved-s
   assert.equal(equation(result.state),"2x + 6 = 14");
   assert.deepEqual(undo(result.state),state);
 });
-test("plans are rejected for non-crate rooms and unsupported signed contents",()=>{
+test("plans reject non-crate rooms, empty groups and future square sprites",()=>{
   assert.throws(()=>crateExpansionPlan({posX:1,posOne:3}),/sealed crates/);
   assert.throws(()=>crateExpansionPlan({
-    crates:{count:2,contents:{posX:1,negOne:3}}
-  }),/positive sprites/);
+    crates:{count:2,contents:{posX:1,posX2:1,negOne:3}}
+  }),/whole dark\/white sprites/);
+  assert.throws(()=>crateExpansionPlan({
+    crates:{count:1,contents:{}}
+  }),/whole dark\/white sprites/);
   assert.throws(()=>crateExpansionPlan({
     crates:{count:0,contents:{posX:1,posOne:3}}
   }),/sealed crates/);
+  assert.equal(crateExpansionPlan({
+    crates:{count:2,contents:{posX:1,negOne:3}}
+  }).totalBalloons,6);
 });
 test("special crowbar action preserves ordinary hand timing and a single contact",async()=>{
   const {handMotionPlan,CROWBAR_BEATS}=await import("../src/hand-timeline.mjs");
