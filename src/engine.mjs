@@ -124,7 +124,8 @@ export function initialState(level = LEVELS[0], quantityMode = levelQuantityMode
   if (level.lockPositive && quantityMode !== "positive")
     throw new RangeError("This World 1 level is restricted to positive whole numbers.");
   if (quantityMode === "positive" &&
-      [level.left,level.right].some(r=>r?.negX || r?.negOne))
+      [level.left,level.right].some(r=>r?.negX || r?.negOne ||
+        r?.crates?.contents?.negX || r?.crates?.contents?.negOne))
     throw new RangeError("A signed experiment cannot start in positive-only mode");
   return { levelId: level.id, quantityMode,
     allowedKinds: level.allowedKinds ? [...level.allowedKinds] : null,
@@ -255,6 +256,12 @@ export function areaArrangement(r, op) {
 }
 function transform(source, action, side = "room") {
   const next = room(source);
+  // Opening a crate changes one room's representation only. Preserve
+  // starting opposite pairs in the chamber that the hand never touched.
+  if(action.op==="unpack" && side!==action.side)
+    return {ok:true,after:room(next),raw:room(next),
+      beforeGroups:null,cancellationEvents:[],
+      cancellations:{sprites:0,constants:0}};
   let priorCancellations = { sprites: 0, constants: 0 };
   let preDivisionEvents = [];
   if(action.op==="unpack"){
@@ -579,7 +586,8 @@ export function validInitialLevel(level) {
   if (level.quantityMode && !QUANTITY_MODES.includes(level.quantityMode))
     return false;
   if (levelQuantityMode(level)==="positive" &&
-      [level.left,level.right].some(r=>r?.negX || r?.negOne))
+      [level.left,level.right].some(r=>r?.negX || r?.negOne ||
+        r?.crates?.contents?.negX || r?.crates?.contents?.negOne))
     return false;
   const a = canonical(room(level.left)), b = canonical(room(level.right));
   if (level.solution < 0 || !Number.isInteger(level.solution)) return false;
