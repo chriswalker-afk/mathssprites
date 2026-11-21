@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
-  initialState,perform,undo,evaluate,equation,isSolved,validInitialLevel
+  initialState,perform,undo,evaluate,equation,isSolved,validInitialLevel,levelQuantityMode
 } from "../src/engine.mjs";
 import {crateExpansionPlan,crateExpansionReplayNotes} from "../src/crate-expansion.mjs";
 import {crateFloorLandingPlan,balloonEscapeKeyframes} from "../src/crate-physical-layout.mjs";
@@ -155,6 +155,14 @@ test("signed crate landings and balloon releases stay physically bounded on phon
     assert.equal(motion.at(-1).opacity,1);
     assert.match(motion.at(-1).transform,/translate\(0px,0px\)/);
   }
+});
+
+test("sealed negative contents choose signed mode even without loose balloons",()=>{
+  const inferred={...fixture,quantityMode:undefined,
+    left:{crates:{count:1,contents:{posX:1,negOne:2}}},
+    right:{posOne:3}};
+  assert.equal(levelQuantityMode(inferred),"signed");
+  assert.equal(initialState(inferred).quantityMode,"signed");
 });
 
 test("positive-only levels cannot hide negative signs inside sealed crates",()=>{
