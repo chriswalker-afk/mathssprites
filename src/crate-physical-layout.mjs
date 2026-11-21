@@ -1,47 +1,58 @@
 /**
- * Physical floor choreography for opaque sealed crates.
+ * Physical landing plan for original sealed crates and signed group contents.
+ * The numeric signature is retained for all existing World 1 calls.
  *
- * All coordinates are inside the existing chamber, not inside an abstract
- * demonstration tray. Returns bounded landing slots for REAL token artwork.
- * The calculation adapts to compact phones, tall desktops and 1/2/N crates.
+ * Signed use: crateFloorLandingPlan(width, floorY,
+ *   {posX:2,negX:1,posOne:3,negOne:2}, {rightInset:...}).
+ * The return includes per-kind slots as well as legacy sprites/weights arrays.
  */
-export function crateFloorLandingPlan(width,floorY,spriteCount,weightCount,
-  {leftInset=0,rightInset=0}={}){
+export function crateFloorLandingPlan(width,floorY,spriteCount,weightCount,options={}){
+  const signed=typeof spriteCount==="object"&&spriteCount!==null;
+  const values=signed?spriteCount:
+    {posX:spriteCount,negX:0,posOne:weightCount,negOne:0};
+  const insets=signed?(weightCount||{}):options;
+  const {leftInset=0,rightInset=0}=insets;
+  const kinds=["posX","negX","posOne","negOne"];
   if(!Number.isFinite(width)||width<100||!Number.isFinite(floorY)||
-      !Number.isInteger(spriteCount)||!Number.isInteger(weightCount)||
-      spriteCount<0||weightCount<0||spriteCount+weightCount<1)
+      kinds.some(kind=>!Number.isInteger(values[kind]??0)||(values[kind]??0)<0)||
+      !kinds.some(kind=>(values[kind]??0)>0))
     throw new RangeError("Valid chamber geometry and whole object counts are required.");
   if(!Number.isFinite(leftInset)||!Number.isFinite(rightInset)||
      leftInset<0||rightInset<0||leftInset+rightInset>=width)
     throw new RangeError("Landing space must be inside the original room.");
+  const counts=Object.fromEntries(kinds.map(kind=>[kind,values[kind]??0]));
   const available=width-leftInset-rightInset;
-  const total=spriteCount+weightCount;
-  const spriteWidth=46,weightWidth=29,space=4;
-  const natural=spriteCount*spriteWidth+weightCount*weightWidth+(total-1)*space;
-  // Never overflow a narrow chamber, even when a future puzzle contains
-  // more crates than this initial two-crate prototype.
+  const total=kinds.reduce((n,kind)=>n+counts[kind],0);
+  const dimensions={posX:[46,47],negX:[46,47],posOne:[29,32],negOne:[34,61]};
+  const space=4;
+  const natural=kinds.reduce((n,kind)=>n+counts[kind]*dimensions[kind][0],0)+
+    (total-1)*space;
   const scale=Math.min(1,Math.max(2,available-12)/natural);
   const gap=space*scale;
   const occupied=natural*scale;
   let x=leftInset+(available-occupied)/2;
-  const slots=[];
-  for(let i=0;i<total;i++){
-    const sprite=i<spriteCount;
-    const w=(sprite?spriteWidth:weightWidth)*scale;
-    const h=(sprite?47:32)*scale;
-    slots.push(Object.freeze({
-      kind:sprite?"sprite":"weight",
-      index:sprite?i:i-spriteCount,
-      left:x,
-      top:floorY-h,
-      width:w,height:h,scale
-    }));
-    x+=w+gap;
+  const slots=[],byKind={posX:[],negX:[],posOne:[],negOne:[]};
+  for(const tokenKind of kinds){
+    for(let i=0;i<counts[tokenKind];i++){
+      const [w,h]=dimensions[tokenKind];
+      const kind={posX:"sprite",negX:"white-sprite",
+        posOne:"weight",negOne:"balloon"}[tokenKind];
+      const landing=Object.freeze({
+        kind,tokenKind,index:i,left:x,top:floorY-h*scale,
+        width:w*scale,height:h*scale,scale
+      });
+      slots.push(landing);
+      byKind[tokenKind].push(landing);
+      x+=w*scale+gap;
+    }
   }
+  for(const kind of kinds)byKind[kind]=Object.freeze(byKind[kind]);
+  const parts=Object.freeze(byKind);
   return Object.freeze({
-    scale,slots:Object.freeze(slots),
-    sprites:Object.freeze(slots.slice(0,spriteCount)),
-    weights:Object.freeze(slots.slice(spriteCount)),
+    scale,slots:Object.freeze(slots),byKind:parts,
+    sprites:Object.freeze([...parts.posX,...parts.negX]),
+    weights:Object.freeze([...parts.posOne,...parts.negOne]),
+    whiteSprites:parts.negX,balloons:parts.negOne,
     occupied
   });
 }
@@ -76,5 +87,22 @@ export function weightEscapeKeyframes(dx,dy,index=0,reduced=false){
     {offset:.70,transform:"translate(0px,0px) rotate("+(-wobble)+"deg) scale(1.08,.87)",opacity:1},
     {offset:.83,transform:"translate(0px,-7px) rotate("+Math.round(wobble/3)+"deg)",opacity:1},
     {offset:1,transform:"translate(0px,0px) rotate(0deg) scale(1)",opacity:1}
+  ];
+}
+
+/** A light lift from the opened crate, not a falling brass-weight arc.
+ * Balloon strings and bodies stay attached during the entire release. */
+export function balloonEscapeKeyframes(dx,dy,index=0,reduced=false){
+  if(reduced)return [
+    {transform:"translate("+dx+"px,"+dy+"px) scale(.84)",opacity:.9},
+    {transform:"translate(0px,0px) scale(1)",opacity:1}
+  ];
+  const drift=index%2===0?-12:12;
+  return [
+    {offset:0,transform:"translate("+dx+"px,"+dy+"px) scale(.88)",opacity:1},
+    {offset:.34,transform:"translate("+(dx*.65+drift*.3)+"px,"+(dy*.55-19)+"px) scale(.97)",opacity:1},
+    {offset:.67,transform:"translate("+(dx*.22+drift)+"px,"+(dy*.2-42)+"px) scale(1.04)",opacity:1},
+    {offset:.88,transform:"translate("+Math.round(drift/3)+"px,-11px) scale(.99)",opacity:1},
+    {offset:1,transform:"translate(0px,0px) scale(1)",opacity:1}
   ];
 }
