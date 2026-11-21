@@ -173,3 +173,28 @@
   background:linear-gradient(110deg,#f2d693,#a56f34);
 }
 .comic-crate-story .comic-crowbar-mark{font-size:1.16rem;color:#e1ddcf}
+
+
+/* PR56: the same real sealed crate now holds inverse-unit balloons.
+   The balloons only appear after the wooden fronts fold down. */
+.sealed-crate .crate-bay-balloon{
+  display:inline-block;position:relative;flex:none;
+  width:clamp(8px,calc(var(--crate-w)*.12),14px);
+  height:clamp(13px,calc(var(--crate-h)*.38),23px);
+  margin:0 1px;
+  border-radius:52% 52% 45% 45%;
+  background:radial-gradient(circle at 27% 19%,#f4dbce,#cb9a92 73%,#996a65);
+  border:1px solid #edc6b7;box-shadow:1px 2px 3px #160e0d9c;
+}
+.sealed-crate .crate-bay-balloon::after{
+  content:"";position:absolute;left:50%;top:96%;
+  height:6px;border-left:1px solid #e1c3ac;
+}
+.crate-escaped-white-sprite>.token{width:46px;height:47px}
+.crate-escaped-balloon>.token{width:34px;height:61px}
+.crate-escaped-white-sprite .sprite-motion,
+.crate-escaped-white-sprite .sprite-reaction-shell,
+.crate-escaped-white-sprite .sprite-body,
+.crate-escaped-white-sprite .sprite-ground-shadow,
+.crate-escaped-balloon>.token{animation:none!important}
+.crate-escaped-balloon .balloon-body{box-shadow:2px 3px 6px #0003}
