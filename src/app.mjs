@@ -16,7 +16,7 @@ import {weightPilePosition,weightCountPlaque} from "./weight-piles.mjs";
 import { itemWord, attemptMessage, mismatchedMoveMessage } from "./attempt-feedback.mjs";
 import { fractionCutPlan } from "./fraction-theatre.mjs";
 import {neutralPairSequence, neutralPairSummary} from "./neutral-pairs.mjs";
-import {crateCount,crateMarkup} from "./group-crates.mjs";
+import {crateCount,crateMarkup,looseAfterUnpack} from "./group-crates.mjs";
 import {isCrateOnlyDivisionRoom,playCrateDivision} from "./crate-division.mjs";
 import {resetHand} from "./division-baskets.mjs";
 import {crateExpansionPlan} from "./crate-expansion.mjs";
@@ -1630,6 +1630,24 @@ async function playUnpackChoreography(side,result){
     await view.playReleaseSteps();
     if(currentLevel().id!==levelIdAtStart)
       throw new Error("Crate animation interrupted by level change.");
+    const pairs=result.state.history.at(-1)?.cancellationEvents?.[side]||[];
+    if(pairs.length){
+      // Crates have physically released their original four object kinds.
+      // Swap the temporary flying actors for the SAME loose floor inventory,
+      // then demonstrate every new signed zero pair BEFORE committing the
+      // engine's normalized rewrite. No duplicates and no silent disappearances.
+      const raw=room(looseAfterUnpack(state[side]));
+      override={left:room(state.left),right:room(state.right),[side]:raw};
+      view.destroy();
+      view=null;
+      activeCrateView=null;
+      delete $(side+"-items").dataset.signature;
+      render();
+      await animateNeutralEvents(side,pairs,r=>{
+        override={...override,[side]:room(r)};
+        render();
+      });
+    }
     state=result.state;
     committed=true;
   }catch{
@@ -1972,18 +1990,22 @@ function replayZeroPairNotes(entry) {
 function crateComicStory(before){
   const plan=crateExpansionPlan(before);
   const sprites=Array.from({length:plan.totalSprites},()=>
-    '<span class="comic-crate-sprite"></span>').join("");
-  const weights=Array.from({length:plan.totalWeights},()=>
-    '<span class="comic-crate-weight"></span>').join("");
+    '<span class="comic-crate-sprite"></span>').join("")+
+    Array.from({length:plan.totalWhiteSprites},()=>
+    '<span class="comic-crate-sprite comic-crate-white"></span>').join("");
+  const units=Array.from({length:plan.totalWeights},()=>
+    '<span class="comic-crate-weight"></span>').join("")+
+    Array.from({length:plan.totalBalloons},()=>
+    '<span class="comic-crate-balloon"></span>').join("");
   const groups=Array.from({length:plan.count},()=>'<span class="comic-crate-wood"></span>').join("");
   return '<div class="comic-crate-story" role="img" '+
-    'aria-label="Sealed crates open, sprites escape, wooden fronts fall, and weights tumble out">'+
+    'aria-label="Sealed crates open, both sprite colours escape, wooden fronts fall, and weights or balloons emerge">'+
       '<div class="comic-crate-frame">'+groups+'</div>'+
       '<div class="comic-crate-frame"><span class="comic-crowbar-mark">⌁</span>'+
         '<div class="comic-crate-objects">'+sprites+'</div></div>'+
       '<div class="comic-crate-frame"><span class="comic-crate-wood comic-crate-panels-down"></span>'+
-        '<div class="comic-crate-objects">'+weights+'</div></div>'+
-      '<div class="comic-crate-frame"><div class="comic-crate-objects">'+sprites+weights+
+        '<div class="comic-crate-objects">'+units+'</div></div>'+
+      '<div class="comic-crate-frame"><div class="comic-crate-objects">'+sprites+units+
         '</div></div>'+
     '</div>';
 }

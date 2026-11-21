@@ -9,7 +9,7 @@
 import {readFileSync} from "node:fs";
 
 export const GROUP_SPECS=Object.freeze({
-  crates:Object.freeze(["e2e/crate-expansion.spec.mjs","e2e/crate-stack.spec.mjs","e2e/crate-division.spec.mjs","e2e/group-crates.spec.mjs","e2e/grouped-progression.spec.mjs","e2e/guided-crate-chapter.spec.mjs"]),
+  crates:Object.freeze(["e2e/crate-expansion.spec.mjs","e2e/crate-stack.spec.mjs","e2e/crate-division.spec.mjs","e2e/group-crates.spec.mjs","e2e/grouped-progression.spec.mjs","e2e/guided-crate-chapter.spec.mjs","e2e/signed-crate-physics.spec.mjs"]),
   navigation:Object.freeze(["e2e/experiment-board.spec.mjs","e2e/navigation-journey.spec.mjs","e2e/menu-polish.spec.mjs","e2e/site-navigation.spec.mjs","e2e/onboarding-polish.spec.mjs"]),
   notebook:Object.freeze(["e2e/notebook-operation-editor.spec.mjs","e2e/notebook-first.spec.mjs","e2e/equation-workshop.spec.mjs"]),
   signed:Object.freeze(["e2e/opposites-world.spec.mjs","e2e/world2-difficulty-pass.spec.mjs"]),
@@ -18,7 +18,7 @@ export const GROUP_SPECS=Object.freeze({
 });
 const ALL=Object.freeze(Object.keys(GROUP_SPECS));
 const RULES=Object.freeze([
-  [/^(?:src\/(?:group-crates|crate-[^/]+|hand-timeline|division-baskets)\.mjs|src\/(?:crate-[^/]+|group-crates)\.css|e2e\/(?:crate-[^/]+|group-crates|grouped-progression|guided-crate-chapter)\.spec\.mjs|tests\/(?:crate-[^/]+|group-crates)\.test\.mjs)$/,["crates"]],
+  [/^(?:src\/(?:group-crates|crate-[^/]+|hand-timeline|division-baskets)\.mjs|src\/(?:crate-[^/]+|group-crates)\.css|e2e\/(?:crate-[^/]+|group-crates|grouped-progression|guided-crate-chapter|signed-crate-physics)\.spec\.mjs|tests\/(?:crate-[^/]+|group-crates)\.test\.mjs)$/,["crates"]],
   [/^(?:src\/(?:site|stages|menu-[^/]+|navigation-[^/]+|portal-[^/]+|home-[^/]+|onboarding)\.mjs|src\/(?:site|portal|menu|home)[^/]*\.css|e2e\/(?:experiment-board|navigation-journey|menu-polish|menu-polish-visual|site-navigation|onboarding-polish|home-hero|portal-art)\.spec\.mjs)$/,["navigation"]],
   [/^(?:src\/(?:notebook-[^/]+|equation-workshop|apprentice-levels)\.mjs|e2e\/(?:notebook-[^/]+|apprentice-campaign|equation-workshop|replay-writing)\.spec\.mjs)$/,["notebook"]],
   [/^(?:src\/(?:opposite-[^/]+|signed-[^/]+)\.mjs|e2e\/(?:opposites-world|signed-objects|world2-difficulty-pass)\.spec\.mjs)$/,["signed"]],
