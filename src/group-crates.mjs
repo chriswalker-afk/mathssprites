@@ -70,6 +70,10 @@ export function crateMarkup(value){
     '<span class="crate-mini-sprite" aria-hidden="true"><i></i><i></i></span>').join("");
   const weights=Array.from({length:Math.min(5,contents.posOne)},()=>
     '<span class="crate-mini-weight" aria-hidden="true"></span>').join("");
+  const whiteSprites=Array.from({length:Math.min(4,contents.negX||0)},()=>
+    '<span class="crate-mini-sprite crate-mini-white" aria-hidden="true"><i></i><i></i></span>').join("");
+  const balloons=Array.from({length:Math.min(5,contents.negOne||0)},()=>
+    '<span class="crate-mini-balloon" aria-hidden="true"></span>').join("");
   const description=[
     contents.posX&&contents.posX+" dark "+(contents.posX===1?"sprite":"sprites"),
     contents.posOne&&contents.posOne+" brass "+(contents.posOne===1?"weight":"weights"),
@@ -99,11 +103,13 @@ export function crateMarkup(value){
   const pictureIndex=Math.floor(count/2);
   const bayWeights=Array.from({length:Math.min(12,contents.posOne||0)},(_,n)=>
     '<span class="crate-bay-weight" data-weight-index="'+n+'" aria-hidden="true"></span>').join("");
+  const bayBalloons=Array.from({length:Math.min(12,contents.negOne||0)},(_,n)=>
+    '<span class="crate-bay-balloon" data-balloon-index="'+n+'" aria-hidden="true"></span>').join("");
   const tokens=Array.from({length:count},(_,index)=>
     '<span class="token sealed-crate" data-crate-index="'+index+
     '" data-crate-state="sealed" role="img" aria-label="Sealed crate '+(index+1)+
     ' of '+count+', containing '+description+'" title="Sealed wooden crate: '+description+'">'+
-      '<span class="crate-weight-bay" aria-hidden="true">'+bayWeights+'</span>'+
+      '<span class="crate-weight-bay" aria-hidden="true">'+bayWeights+bayBalloons+'</span>'+
       '<span class="crate-side-panel crate-side-left" aria-hidden="true"></span>'+
       '<span class="crate-side-panel crate-side-right" aria-hidden="true"></span>'+
       '<span class="crate-wood-face" aria-hidden="true">'+
@@ -120,7 +126,7 @@ export function crateMarkup(value){
         (index===pictureIndex?picture:"")+
       '</span>'+
       '<span class="crate-lid" aria-hidden="true"></span>'+
-      '<span class="crate-hidden-contents" aria-hidden="true">'+sprites+weights+'</span>'+
+      '<span class="crate-hidden-contents" aria-hidden="true">'+sprites+whiteSprites+weights+balloons+'</span>'+
     '</span>').join("");
   const label='<span class="crate-stack-count" role="text" aria-label="'+count+
     ' sealed '+(count===1?'crate':'crates')+'">'+count+
