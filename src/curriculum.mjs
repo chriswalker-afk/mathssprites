@@ -139,7 +139,9 @@ export const CURRICULUM_CHAPTERS=Object.freeze({
       chapter("Signed Groups","Use zero pairs to prepare whole divisions in both rooms",
         ["matched-hands","signed-sequences","signed-groups"]),
       chapter("The Moonlit Challenge","Choose and match independent multistep signed strategies",
-        ["matched-hands","signed-sequences","subtract-negatives","strategy-choice"])
+        ["matched-hands","signed-sequences","subtract-negatives","strategy-choice"]),
+      chapter("The Two-Handed Crates","Distinguish one-room expansion from matching two-room algebraic operations",
+        ["sealed-groups","matched-hands","signed-groups","unit-zero-pairs","sprite-zero-pairs","strategy-choice"])
     ]),
     notebook:Object.freeze([
       chapter("Writing the Opposites","Write signed operations on both sides of an equation",
@@ -147,7 +149,9 @@ export const CURRICULUM_CHAPTERS=Object.freeze({
       chapter("Choose the Sign","Use accurate signs for both constants and variable terms",
         ["signed-notation","sprite-zero-pairs","subtract-negatives"]),
       chapter("Apprentice of Opposites","Compose and check independent signed-equation solutions",
-        ["signed-notation","signed-sequences","signed-groups","strategy-choice"])
+        ["signed-notation","signed-sequences","signed-groups","strategy-choice"]),
+      chapter("Brackets of Opposites","Write and expand signed bracket expressions, then replay physical sealed groups",
+        ["written-operations","sealed-groups","signed-notation","signed-sequences","strategy-choice"])
     ])
   })
 });
@@ -165,8 +169,8 @@ export const DIFFICULTY_TIERS=Object.freeze({
   }),
   opposites:Object.freeze({
     guided:Object.freeze([2,2,2,3,3,4,4,4,3,4,4,4,4,4,5,5,5,5,5,5,3,3,4,5]),
-    independent:Object.freeze([2,2,3,3,3,3,4,4,3,4,4,4,5,5,5,5]),
-    notebook:Object.freeze([2,2,3,3,4,4,4,4,5,5,5,5])
+    independent:Object.freeze([2,2,3,3,3,3,4,4,3,4,4,4,5,5,5,5,3,4,4,5]),
+    notebook:Object.freeze([2,2,3,3,4,4,4,4,5,5,5,5,3,4,4,5])
   })
 });
 
@@ -178,13 +182,13 @@ const SOURCES=Object.freeze({
 });
 const FRACTION_TRAPS=new Set([
   "two-step-12","independent-12","apprentice-06","apprentice-08",
-  "crates-23","crates-24","op-g-06","op-g-09","op-g-23","op-g-24","op-i-06","op-a-08"
+  "crates-23","crates-24","op-g-06","op-g-09","op-g-23","op-g-24","op-i-06","op-i-20","op-a-08","op-a-16"
 ]);
 const ALTERNATIVE_ROUTES=new Set([
   "two-step-10","two-step-11","master-17","master-20",
   "apprentice-04","apprentice-05","apprentice-12",
   "crates-21","crates-22","crates-24",
-  "op-g-18","op-g-21","op-g-22","op-g-23","op-g-24","op-i-06","op-a-08"
+  "op-g-18","op-g-21","op-g-22","op-g-23","op-g-24","op-i-06","op-i-19","op-i-20","op-a-08","op-a-15","op-a-16"
 ]);
 const sum=(r,key)=>Number(r?.[key]||0);
 const variableCount=r=>sum(r,"posX")-sum(r,"negX")+

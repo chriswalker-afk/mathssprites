@@ -1,6 +1,6 @@
 /**
  * PR50/PR57 — independently certified shortest-legal-route star targets
- * for the 52 shipped Opposite Chambers levels (24 Guided + 16 + 12).
+ * for the 60 shipped Opposite Chambers levels (24 Guided + 20 + 16).
  *
  * These are RESULTS, not aliases of level.referenceRoute.length. The latter
  * remains a pedagogical example and may be longer than the fastest possible
@@ -22,10 +22,12 @@ export const OPPOSITE_OPTIMAL_MOVES=Object.freeze({
     3,3,3,3
   ]),
   independent:Object.freeze([
-    1,1,1,1, 2,2,3,3, 2,2,3,3, 3,3,3,3
+    1,1,1,1, 2,2,3,3, 2,2,3,3, 3,3,3,3,
+    2,3,3,4
   ]),
   notebook:Object.freeze([
-    1,1,2,2, 2,3,3,3, 3,3,3,3
+    1,1,2,2, 2,3,3,3, 3,3,3,3,
+    2,3,3,3
   ])
 });
 export const OPPOSITE_TOTAL_AVAILABLE_STARS=Object.values(OPPOSITE_OPTIMAL_MOVES)

@@ -8,7 +8,7 @@ import {
 import {ALL_SIGNED_ACTIONS,signedActionsFor,shortestSignedRoute}
   from "../scripts/world2-shortest-routes.mjs";
 import {
-  initialState,perform,undo,isSolved,balanceDifference,equation
+  initialState,perform,undo,isSolved,balanceDifference,equation,attachAvailablePairs
 } from "../src/engine.mjs";
 import {
   CAMPAIGN_REGISTRY,findCampaignStage,findCampaignLevel
@@ -21,8 +21,18 @@ import {startNotebook} from "../src/notebook-engine.mjs";
 import {tryNotebookOperation} from "../src/notebook-maths-editor.mjs";
 import {curriculumForLevel} from "../src/curriculum.mjs";
 
-const stageLengths={guided:24,independent:16,notebook:12};
+const stageLengths={guided:24,independent:20,notebook:16};
+const applyFreePairs=(state,pairings=[],at)=>{
+  let current=state;
+  for(const pairing of pairings.filter(p=>p.at===at)){
+    const next=attachAvailablePairs(current,pairing.side,pairing.type);
+    assert.equal(next.ok,true,"an audit pairing must be physically available");
+    current=next.state;
+  }
+  return current;
+};
 const moveText=action=>{
+  if(action.op==="unpack")return "open"+action.side;
   if(action.op==="divide")return "÷"+action.factor;
   if(action.op==="multiply")return "×"+action.factor;
   const negative=action.kind==="negX"||action.kind==="negOne";
@@ -32,20 +42,20 @@ const moveText=action=>{
     (negative?"(−"+n+(variable?"x":"")+")":n+(variable?"x":""));
 };
 
-test("52 independently certified signed par targets cover exactly the shipped stages",()=>{
-  assert.equal(OPPOSITE_TOTAL_AVAILABLE_STARS,156);
+test("60 independently certified signed par targets cover exactly the shipped stages",()=>{
+  assert.equal(OPPOSITE_TOTAL_AVAILABLE_STARS,180);
   assert.deepEqual(Object.keys(OPPOSITE_OPTIMAL_MOVES),OPPOSITE_STAGE_ORDER);
-  const histogram={1:0,2:0,3:0};
+  const histogram={1:0,2:0,3:0,4:0};
   for(const [stage,count] of Object.entries(stageLengths)){
     const targets=OPPOSITE_OPTIMAL_MOVES[stage];
     assert.equal(targets.length,count);
     assert.ok(Object.isFrozen(targets));
     for(const n of targets){
-      assert.ok(Number.isInteger(n)&&n>0&&n<=3);
+      assert.ok(Number.isInteger(n)&&n>0&&n<=4);
       histogram[n]++;
     }
   }
-  assert.deepEqual(histogram,{1:10,2:8,3:34});
+  assert.deepEqual(histogram,{1:10,2:10,3:39,4:1});
   assert.equal(ALL_SIGNED_ACTIONS.length,104,
     "Two operations × four kinds × 12 counts, plus eight factor actions");
   assert.deepEqual(new Set(ALL_SIGNED_ACTIONS.map(a=>a.op)),
@@ -54,7 +64,7 @@ test("52 independently certified signed par targets cover exactly the shipped st
     assert.equal(signedActionsFor(OPPOSITE_LEVELS[stage][0].level).length,104);
 });
 
-test("ALL 52 World 2 par targets are shortest legal paths under the real engine",()=>{
+test("ALL 60 World 2 par targets are shortest legal paths under the real engine",()=>{
   // Exhaustively breadth-first enumerate the exact engine's permitted moves.
   // Every shorter physical state/action is searched before a solution at par.
   // The stored reference routes are deliberately NOT used by the explorer.
@@ -78,16 +88,22 @@ test("ALL 52 World 2 par targets are shortest legal paths under the real engine"
         .difficulty.complexitySignals.benchmarkType,"proven-minimum");
       let state=initialState(level);
       for(const [i,action] of result.route.entries()){
+        state=applyFreePairs(state,result.freePairings,i);
         const before=state;
         const outcome=perform(state,action,"auto");
         assert.equal(outcome.ok,true,id+" certified step "+i);
         assert.equal(outcome.committed,true);
         state=outcome.state;
         assert.equal(balanceDifference(state),0,id+" every step remains balanced");
-        assert.deepEqual(undo(state),before,id+" Undo after certified step "+i);
-        assert.equal(isSolved(state),i===par-1,
-          id+" must finish ONLY on the final shortest step");
+        // A scored operation consumes any preceding free-pair Undo marker.
+        const undone=undo(state);
+        assert.deepEqual([undone.left,undone.right],
+          [before.left,before.right],id+" Undo restores the same actual rooms");
+        assert.equal(undone.history.length,before.history.length);
+        if(i<par-1)assert.equal(isSolved(state),false);
       }
+      state=applyFreePairs(state,result.freePairings,par);
+      assert.equal(isSolved(state),true,id+" shortest certified final state");
       assert.equal(state.history.length,par);
     }
   }
@@ -116,7 +132,17 @@ test("each certified Independent route works as TWO matching hand visits per ste
     const par=OPPOSITE_OPTIMAL_MOVES.independent[slot.number-1];
     const witness=shortestSignedRoute(slot.level,{maxMoves:par});
     let state=initialState(slot.level);
-    for(const action of witness.route){
+    for(const [i,action] of witness.route.entries()){
+      state=applyFreePairs(state,witness.freePairings,i);
+      if(action.op==="unpack"){
+        assert.equal(perform(state,action,"manual",action.side).code,"unpack-mode");
+        const opened=perform(state,action,"auto");
+        assert.equal(opened.ok,true,slot.id+" local expansion is legal");
+        assert.equal(opened.state.history.at(-1).mode,"rewrite");
+        assert.equal(opened.state.pending,null);
+        state=opened.state;
+        continue;
+      }
       const first=perform(state,action,"manual","left");
       assert.equal(first.ok,true,slot.id+" first room");
       assert.equal(first.committed,false);
@@ -127,8 +153,9 @@ test("each certified Independent route works as TWO matching hand visits per ste
       assert.equal(second.committed,true);
       state=second.state;
     }
+    state=applyFreePairs(state,witness.freePairings,par);
     assert.equal(isSolved(state),true,slot.id);
-    assert.equal(state.history.length,par,"Two visits are still ONE algebra step");
+    assert.equal(state.history.length,par,"Paired visits count once; local expansion once");
   }
 });
 
@@ -136,6 +163,8 @@ test("each certified Signed Algebra Apprentice route is accepted by the maths ed
   for(const slot of OPPOSITE_LEVELS.notebook){
     const par=OPPOSITE_OPTIMAL_MOVES.notebook[slot.number-1];
     const witness=shortestSignedRoute(slot.level,{maxMoves:par});
+    assert.deepEqual(witness.freePairings,[],
+      slot.id+" the maths editor does not expose separate physical zero-pair clicks");
     let session=startNotebook(slot.level);
     for(const action of witness.route){
       const changed=tryNotebookOperation(session,moveText(action));
@@ -159,8 +188,8 @@ test("certifying World 2 minima does not clear existing scores, completion or re
   const signed=current.worlds.opposites.stages.guided;
   signed.historical["op-g-05"]={revision:1,bestMoves:2};
   const before=campaignStarTotals(current,{worldId:"opposites"});
-  assert.equal(before.count,52);
-  assert.equal(before.available,156);
+  assert.equal(before.count,60);
+  assert.equal(before.available,180);
   assert.equal(before.completed,6);
   assert.equal(campaignStars(current,"opposites","guided","op-g-05"),3);
   assert.equal(campaignStars(current,"opposites","guided","op-g-06"),2);
@@ -175,8 +204,8 @@ test("certifying World 2 minima does not clear existing scores, completion or re
   assert.equal(reloaded.worlds.opposites.stages.guided.completedRevisions["op-g-05"],2);
   assert.deepEqual(reloaded.worlds.opposites.stages.guided.historical["op-g-05"],
     {revision:1,bestMoves:2});
-  assert.equal(campaignStarTotals(reloaded).available,336,
-    "World 1's 180 stars plus World 2's 156 include only newly added levels");
+  assert.equal(campaignStarTotals(reloaded).available,360,
+    "World 1's 180 stars plus World 2's 180 include only new levels");
 });
 
 test("World 2 shortest-route script and curriculum remain author-only",()=>{

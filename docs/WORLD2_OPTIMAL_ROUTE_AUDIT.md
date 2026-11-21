@@ -1,4 +1,12 @@
-# World 2 certified shortest legal route audit — PR50 baseline and PR57 extension
+# World 2 certified shortest legal route audit — PR50, PR57 and PR58
+
+**PR58 extension (21 November 2026).** Four Independent and four Algebra Apprentice signed-crate puzzles are added without revising the prior **52** levels. World 2 now has **60 levels**: 24 Guided, 20 Independent and 16 Apprentice, with **180 possible stars**. The 8 new scored minima must pass the same exhaustive actual-engine route audit; their proposed distribution is 2 two-move, 5 three-move, and 1 four-move. Combined with the unchanged 52-level baseline, the proposed World 2 histogram is **10 one-move, 10 two-move, 39 three-move and 1 four-move**. World 1 remains 60 levels with 180 stars, so there are **120 campaign levels** and **360 available stars** in total.
+
+The new tasks explicitly distinguish unpaired one-room crate expansion from two matching visits in Independent and checked algebraic steps in Apprentice. The student editor preserves `2x−x−1` *inside* a bracket until a student elects to expand it. The author-only audit remains separate from the game. See [PR58's level plan and QA](PR58_WORLD2_CRATES_INDEPENDENT_APPRENTICE.md); run `npm run audit:world2` to verify the current 60-level results.
+
+---
+
+## Historical PR57 extension (52 levels)
 
 **PR57 extension (21 November 2026).** The original PR50 results below remain the historical baseline for all **48** previously published levels. PR57 appends four Guided signed-crate levels, with **52** World 2 levels total (24 Guided + 16 Independent + 12 Notebook). All four additions have a **proven three-scored-move minimum**; the new Guided distribution is 4 one-move, 1 two-move, and 19 three-move puzzles. World 2 totals are now **10 one-move, 8 two-move, 34 three-move**, or 156 available stars. Combined with World 1 this gives 112 levels and 336 possible stars.
 

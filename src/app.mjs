@@ -400,10 +400,12 @@ function renderNotebookVisibility() {
     ?"Campaign experiment · Progress saved after a successful sprite replay"
     :"Practice preview · No levels or progress earned";
   $("notebook-signed-operations").hidden=currentLevel().quantityMode!=="signed";
-  $("notebook-operation-tip").textContent=currentLevel().quantityMode==="signed"
-    ?"Use +(−x) for a pale sprite or −(−1) to remove a balloon. Whole objects only."
-    :currentLevel().groupedPrototype
-      ?"Choose a balanced operation on both sides, or expand ONE sealed expression. Neither choice is preselected."
+  $("notebook-operation-tip").textContent=currentLevel().groupedPrototype
+    ?(currentLevel().quantityMode==="signed"
+      ?"Signed groups stay in brackets until you choose to expand west or east. Expansion changes ONE expression's appearance; +, −, × and ÷ change BOTH sides."
+      :"Choose a balanced operation on both sides, or expand ONE sealed expression. Neither choice is preselected.")
+    :currentLevel().quantityMode==="signed"
+      ?"Use +(−x) for a pale sprite or −(−1) to remove a balloon. Whole objects only."
       :"Choose an operation for both sides, not an answer. Use −x to remove a dark sprite.";
   $("notebook-level-prompt").textContent=campaign
     ? currentLevel().prompt

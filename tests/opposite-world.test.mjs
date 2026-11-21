@@ -24,14 +24,14 @@ import {
  withCampaignLastPlayed,withCampaignCompleted,campaignStars
 } from "../src/campaign-records.mjs";
 
-const sizes={guided:24,independent:16,notebook:12};
+const sizes={guided:24,independent:20,notebook:16};
 test("World 2 includes six Guided chapters while preserving original stage identities",()=>{
- assert.equal(OPPOSITE_LEVEL_COUNT,52);
+ assert.equal(OPPOSITE_LEVEL_COUNT,60);
  assert.deepEqual(OPPOSITE_STAGE_ORDER,["guided","independent","notebook"]);
  const world=findCampaignWorld("opposites");
  assert.equal(world.available,true);
- assert.deepEqual(world.stages.map(s=>s.levels.length),[24,16,12]);
- assert.deepEqual(world.stages.map(s=>s.chapters.length),[6,4,3]);
+ assert.deepEqual(world.stages.map(s=>s.levels.length),[24,20,16]);
+ assert.deepEqual(world.stages.map(s=>s.chapters.length),[6,5,4]);
  assert.deepEqual(CAMPAIGN_REGISTRY.map(x=>x.available),[true,true,false,false]);
  for(const id of OPPOSITE_STAGE_ORDER){
    assert.equal(OPPOSITE_LEVELS[id].length,sizes[id]);
@@ -60,7 +60,7 @@ test("only real first signed hand levels trigger World 2 onboarding",()=>{
   }
  }
 });
-test("all 52 signed puzzles have exact positive solutions and executable routes",()=>{
+test("all 60 signed puzzles have exact positive solutions and executable routes",()=>{
  for(const id of OPPOSITE_STAGE_ORDER)for(const slot of OPPOSITE_LEVELS[id]){
   const level=slot.level;
   assert.equal(validInitialLevel(level),true,slot.id+" initial equation");
@@ -93,6 +93,18 @@ test("each signed route can be performed provisionally and matched manually",()=
  for(const slot of OPPOSITE_LEVELS.independent){
   let state=initialState(slot.level);
   for(const action of slot.level.referenceRoute){
+   if(action.op==="unpack"){
+     // A local bracket expansion conserves value in ONE room. It is a
+     // scored, undoable rewrite, not an unfinished two-hand move.
+     assert.equal(perform(state,action,"manual",action.side).code,"unpack-mode");
+     const changed=perform(state,action,"auto");
+     assert.equal(changed.ok,true,slot.id+" local crate rewrite");
+     assert.equal(changed.state.pending,null);
+     assert.equal(changed.state.history.at(-1).mode,"rewrite");
+     assert.deepEqual(undo(changed.state),state);
+     state=changed.state;
+     continue;
+   }
    const pending=perform(state,action,"manual","left");
    assert.equal(pending.ok,true,slot.id+" first manual hand");
    assert.equal(pending.committed,false,slot.id);
@@ -107,11 +119,12 @@ test("each signed route can be performed provisionally and matched manually",()=
   assert.equal(isSolved(state),true,slot.id+" matched manual route");
  }
 });
-test("all twelve signed notebooks use the same checked engine and exact replay",()=>{
+test("all sixteen signed notebooks use the same checked engine and exact replay",()=>{
  for(const slot of OPPOSITE_LEVELS.notebook){
    let session=startNotebook(slot.level);
    for(const action of slot.level.referenceRoute){
-     const word=action.kind?
+     const word=action.op==="unpack"?"open"+action.side:
+       action.kind?
        (action.op==="add"?"+":"−")+
          ((action.kind==="negX"||action.kind==="negOne")?"(−":"")+
          String(action.count===1&&action.kind.endsWith("X")?"":action.count)+
@@ -159,7 +172,7 @@ test("signed objects and stars are strictly world scoped, never World 1",()=>{
  assert.equal(campaignStageRecord(save,"opposites","guided").completed.length,1);
  assert.equal(campaignStageRecord(save,"workshop","guided").completed.length,0);
  assert.equal(campaignStars(save,"opposites","guided",first.id),3);
- assert.equal(campaignStarTotals(save,{worldId:"opposites"}).count,52);
+ assert.equal(campaignStarTotals(save,{worldId:"opposites"}).count,60);
  assert.equal(campaignStarTotals(save,{worldId:"workshop"}).count,60);
 });
 

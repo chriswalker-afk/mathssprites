@@ -2,7 +2,7 @@
 
 *Three ways to learn algebra: watch the balance, move both rooms, then solve on paper before the sprites move.*
 
-**Status:** Worlds 1 and 2 are fully playable. **The Balance Workshop** uses positive whole-number equations; **The Opposite Chambers** introduces balloons (−1), white sprites (−x), visible zero pairs, and sealed signed groups. The two playable worlds contain **112 campaign levels**: World 1 has 24 Guided, 20 Independent and 16 Algebra Apprentice; World 2 has 24 Guided, 16 Independent and 12 Algebra Apprentice. The Inventor's Desk remains positive-whole-number free play, and all 13 earlier advanced experiments remain available separately for QA.
+**Status:** Worlds 1 and 2 are fully playable. **The Balance Workshop** uses positive whole-number equations; **The Opposite Chambers** introduces balloons (−1), white sprites (−x), visible zero pairs, and sealed signed groups. The two playable worlds contain **120 campaign levels**: World 1 has 24 Guided, 20 Independent and 16 Algebra Apprentice; World 2 now has 24 Guided, 20 Independent and 16 Algebra Apprentice. The Inventor's Desk remains positive-whole-number free play, and all 13 earlier advanced experiments remain available separately for QA.
 
 ## The idea
 
@@ -48,7 +48,8 @@ In Stages 1 and 2, **comic-book panels appear automatically** after physical suc
 - [Automatic comic-book equation replay](docs/COMIC_REPLAY.md)
 - [Negative sprites, balloons and zero pairs](docs/SIGNED_TOKENS.md)
 - [World 2: The Opposite Chambers — original signed campaign](docs/PR36_OPPOSITE_CHAMBERS.md)
-- [World 2: four new signed-crate/bracket puzzles (PR57)](docs/PR57_SEALED_OPPOSITES.md)
+- [World 2: four new Guided signed-crate/bracket puzzles (PR57)](docs/PR57_SEALED_OPPOSITES.md)
+- [World 2: Independent and Algebra Apprentice signed-crate chapters (PR58)](docs/PR58_WORLD2_CRATES_INDEPENDENT_APPRENTICE.md)
 
 ## Play the game
 
@@ -57,7 +58,7 @@ The homepage provides a direct **Play / Continue** button, one-tap stage shortcu
 | World | Guided | Independent | Algebra Apprentice | Curriculum |
 |---|---:|---:|---:|---|
 | Balance Workshop | 24 | 20 | 16 | Positive whole-number linear equations and physical groups |
-| Opposite Chambers | 24 | 16 | 12 | Negative terms using white sprites and balloons, zero pairs, and sealed signed groups |
+| Opposite Chambers | 24 | 20 | 16 | Negative terms using white sprites and balloons, zero pairs, and signed crates in all modes |
 
 **Guided:** the hand mirrors each selected operation in both chambers, with an optional first-visit tutorial.
 

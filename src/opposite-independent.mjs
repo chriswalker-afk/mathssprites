@@ -1,4 +1,4 @@
-/** World 2 Independent: four chapters of four puzzles each. */
+/** World 2 Independent: five four-level chapters (PR58 adds signed crates). */
 export const OPPOSITE_INDEPENDENT_RAW=[
  ["First independent lift",[1,0,0,2],[0,0,4,0],6,"add:posOne:2","A signed change must be repeated in the other room before the step is finished."],
  ["Three matching weights",[1,0,0,3],[0,0,2,0],5,"add:posOne:3","Two rooms can react differently to exactly the same hand action."],
@@ -15,5 +15,24 @@ export const OPPOSITE_INDEPENDENT_RAW=[
  ["Four sprites, two balloons",[4,0,0,2],[2,0,8,0],5,"add:posOne:2|add:negX:2|divide:2","Several routes may work; compare their complete pairs of hand visits."],
  ["The moonlit route",[3,0,0,4],[1,0,8,0],6,"add:posOne:4|add:negX:1|divide:2","One operation can simplify the two rooms in different ways."],
  ["Subtracting a negative",[4,0,0,3],[2,0,12,3],6,"remove:negOne:3|add:negX:2|divide:2","Taking away a balloon has a different numerical effect from taking away a weight."],
- ["Two pale sprites",[0,2,25,0],[3,0,5,0],4,"add:posX:2|remove:posOne:5|divide:5","The white sprites count negatively, but the mystery weight remains positive."]
+ ["Two pale sprites",[0,2,25,0],[3,0,5,0],4,"add:posX:2|remove:posOne:5|divide:5","The white sprites count negatively, but the mystery weight remains positive."],
+ // New sealed-group chapter. Independent students still match EACH genuine
+ // algebraic operation in the two chambers; unpacking changes representation
+ // within only one chamber, even though it is recorded as a checked step.
+ ["The careful unsealing",[0,0,2,0],[0,0,8,0],4,
+   "divide:2|unpack:left",
+   "Whole groups may be divided before opening. Watch what is still loose.",
+   {crates:{count:2,contents:{posX:1,negOne:1}}}],
+ ["Visitors outside the crate",[1,1,0,0],[0,0,12,0],5,
+   "divide:3|unpack:left|add:posOne:1",
+   "A black and a white sprite can meet without changing the sealed groups.",
+   {crates:{count:3,contents:{posX:1,negOne:1}}}],
+ ["East-side surprises",[1,0,3,0],[0,0,0,0],5,
+   "unpack:right|remove:posX:1|add:posOne:2",
+   "Sometimes the unopened groups belong to the eastern room.",
+   {rightCrates:{count:2,contents:{posX:1,negOne:1}}}],
+ ["Two hands, sealed negatives",[1,0,3,0],[1,0,11,0],6,
+   "unpack:left|remove:posX:1|add:posOne:1|divide:2",
+   "Choose when to reveal negative objects; then make each matching hand move.",
+   {crates:{count:2,contents:{posX:1,negOne:2}}}]
 ];

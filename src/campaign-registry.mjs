@@ -105,11 +105,11 @@ const OPPOSITE_STAGE_DATA={
   independent:{title:"Independent Opposites",tagline:"Match every signed move.",
     intro:"Change one chamber, then restore the balance in the other.",
     finale:"Both chambers are yours to control. Now write every move in the signed notebook.",
-    icon:"⇄",emblems:["⚖","◯","÷","✦"],method:"manual"},
+    icon:"⇄",emblems:["⚖","◯","÷","✦","▣"],method:"manual"},
   notebook:{title:"Signed Algebra Apprentice",tagline:"Write with negative terms.",
     intro:"Choose signed operations in the maths editor. Sprites replay your verified work.",
     finale:"You have completed the signed algebra notebooks.",
-    icon:"✎",emblems:["✎","±","✦"],method:"notebook"}
+    icon:"✎",emblems:["✎","±","✦","▣"],method:"notebook"}
 };
 const WORLD2_CAMPAIGN_STAGES=OPPOSITE_STAGE_ORDER.map((id,index)=>{
   const stage=OPPOSITE_STAGE_DATA[id];
