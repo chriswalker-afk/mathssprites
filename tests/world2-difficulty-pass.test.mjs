@@ -51,9 +51,9 @@ function hasRouteShorterThan(level,minimum){
  return null;
 }
 
-test("rebalanced World 2 retains 48 numeric positions and all original stable IDs",()=>{
+test("World 2 preserves all previous IDs while appending four new Guided puzzles",()=>{
  for(const [stage,slots] of Object.entries(OPPOSITE_LEVELS)){
-  assert.equal(slots.length,{guided:20,independent:16,notebook:12}[stage]);
+  assert.equal(slots.length,{guided:24,independent:16,notebook:12}[stage]);
   assert.equal(new Set(slots.map(s=>s.id)).size,slots.length);
   for(const [i,slot] of slots.entries()){
    const id="op-"+{guided:"g",independent:"i",notebook:"a"}[stage]+
