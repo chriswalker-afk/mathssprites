@@ -11,7 +11,8 @@ export function levelQuantityMode(level) {
   if (level.quantityMode) return level.quantityMode;
   // Legacy custom test levels with signed INITIAL contents are signed.
   // All curated introductory chapters explicitly default to positive only.
-  return [level.left,level.right].some(r => r?.negX || r?.negOne)
+  return [level.left,level.right].some(r => r?.negX || r?.negOne ||
+    r?.crates?.contents?.negX || r?.crates?.contents?.negOne)
     ? "signed" : "positive";
 }
 export const LEVELS = [
