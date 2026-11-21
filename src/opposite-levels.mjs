@@ -1,5 +1,5 @@
 /**
- * World 2 campaign: 20 Guided, 16 Independent and 12 Algebra Apprentice.
+ * World 2 campaign: 24 Guided, 16 Independent and 12 Algebra Apprentice.
  *
  * White sprites represent −x; balloons represent −1. The mystery value x
  * remains a POSITIVE whole number, so the sign has a stable physical meaning.
@@ -11,6 +11,7 @@ import {OPPOSITE_INDEPENDENT_RAW} from "./opposite-independent.mjs";
 import {OPPOSITE_APPRENTICE_RAW} from "./opposite-apprentice.mjs";
 
 export const OPPOSITE_OPERATIONS=Object.freeze(["remove","add","divide","multiply"]);
+export const OPPOSITE_CRATE_OPERATIONS=Object.freeze([...OPPOSITE_OPERATIONS,"unpack"]);
 export const OPPOSITE_KINDS=Object.freeze(["posX","negX","posOne","negOne"]);
 
 /**
@@ -30,7 +31,8 @@ export const OPPOSITE_CHAPTERS=Object.freeze({
   {id:"white-visitors",title:"The White Visitors",description:"White sprites cancel dark sprites."},
   {id:"two-opposites",title:"Two Kinds of Zero",description:"Combine two forms of opposite pair."},
   {id:"opposite-directions",title:"Across the Mirror",description:"Reversed equations and negative variable terms."},
-  {id:"signed-strategy",title:"Master of Opposites",description:"Choose efficient routes through signed equations."}
+  {id:"signed-strategy",title:"Master of Opposites",description:"Choose efficient routes through signed equations."},
+  {id:"sealed-opposites",title:"The Sealed Opposites",description:"Open physical groups and discover opposites inside."}
  ],
  independent:[
   {id:"two-chambers",title:"Two Hands, Two Signs",description:"Repeat signed operations in both rooms."},
@@ -47,6 +49,11 @@ export const OPPOSITE_CHAPTERS=Object.freeze({
 export function decodeOppositeRoute(route){
   return route.split("|").map(step=>{
     const [op,kind,count]=step.split(":");
+    if(op==="unpack"){
+      if(!["left","right"].includes(kind)||count!==undefined)
+        throw new RangeError("An unpack route must name its chamber.");
+      return Object.freeze({op,side:kind});
+    }
     return op==="divide"||op==="multiply"
       ?Object.freeze({op,factor:Number(kind)})
       :Object.freeze({op,kind,count:Number(count)});
@@ -61,7 +68,8 @@ const INTRO={
   "White sprites are opposite to black sprites. Explore their meeting.",
   "Both sorts of opposites can simplify a balance without changing it.",
   "The rooms may face either way. A white sprite still means negative x.",
-  "Find a short route by making signed zero pairs and whole baskets."
+  "Find a short route by making signed zero pairs and whole baskets.",
+  "Some crates contain objects that pull upwards. Choose whether to open or share the sealed groups."
  ],
  independent:[
   "Move the hand in one room, then match that signed action in the other.",
@@ -80,7 +88,7 @@ function stageLevels(id,rows){
   if(rows.length!==chapters.length*4)
     throw new Error("World 2 chapter sizes must mirror World 1.");
   return Object.freeze(rows.map((raw,i)=>{
-    const [title,west,east,solution,route,suggested]=raw;
+    const [title,west,east,solution,route,suggested,options]=raw;
     const number=i+1,chapterIndex=Math.floor(i/4);
     const key={guided:"g",independent:"i",notebook:"a"}[id];
     const levelId="op-"+key+"-"+String(number).padStart(2,"0");
@@ -97,15 +105,23 @@ function stageLevels(id,rows){
         "Your notebook is yours to solve. Every operation must work in both rooms."
       ][i%4]
     };
+    // PR57: new grouped levels add one sealed package to an ordinary
+    // four-kind loose inventory. Old array rows are not rewritten.
+    const sealed=options?.crates
+      ?Object.freeze({count:options.crates.count,
+        contents:Object.freeze({...options.crates.contents})}):null;
     const level=Object.freeze({
       id:levelId,title,number,solution,
       contentRevision:OPPOSITE_CONTENT_REVISIONS[id].includes(number)?2:1,
-      left:Object.freeze(physical(west)),right:Object.freeze(physical(east)),
+      left:Object.freeze({...physical(west),...(sealed?{crates:sealed}:{})}),
+      right:Object.freeze(physical(east)),
+      ...(sealed?{groupedPrototype:true}:{}),
       chapter:String(chapterIndex+1).padStart(2,"0")+" · "+chapters[chapterIndex].title,
       prompt:INTRO[id][chapterIndex],
       signedIntroduction:number===1&&id!=="notebook",
       suggested,quantityMode:"signed",lockPositive:false,
-      allowedKinds:OPPOSITE_KINDS,allowedOperations:OPPOSITE_OPERATIONS,
+      allowedKinds:OPPOSITE_KINDS,
+      allowedOperations:sealed?OPPOSITE_CRATE_OPERATIONS:OPPOSITE_OPERATIONS,
       startingOperation:first.op,
       ...(first.kind?{startingKind:first.kind,startingAmount:first.count}
         :{startingFactor:first.factor}),
@@ -122,5 +138,5 @@ export const OPPOSITE_LEVELS=Object.freeze({
 export const OPPOSITE_STAGE_ORDER=Object.freeze(["guided","independent","notebook"]);
 export const OPPOSITE_LEVEL_COUNT=OPPOSITE_STAGE_ORDER.reduce(
  (count,id)=>count+OPPOSITE_LEVELS[id].length,0);
-if(OPPOSITE_LEVEL_COUNT!==48)
-  throw new Error("The Opposite Chambers require 20+16+12 levels.");
+if(OPPOSITE_LEVEL_COUNT!==52)
+  throw new Error("The Opposite Chambers require 24+16+12 levels.");
