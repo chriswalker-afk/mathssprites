@@ -598,7 +598,8 @@ background-image:repeating-linear-gradient(90deg,transparent 0 66px,rgba(0,0,0,.
   background:radial-gradient(circle at 28% 18%,#f5e5d9,#cf9f94 70%,#a9756e);
   color:#663f42;border:1px solid #eac8bc;border-radius:50% 50% 47% 47%;
   font:700 .77rem Georgia,serif}
-.item-button.signed-kind{border-color:#a6b8b2}
+/* Signed objects use the same button border in every state as weight/sprite.
+   Only their object icons should differ. */
 .quantity-locked{filter:saturate(.64)}
 .quantity-mode-positive .sprite-white,.quantity-mode-positive .balloon{
   /* Never hide initial objects by CSS; model permission prevents their creation. */
