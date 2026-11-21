@@ -420,6 +420,7 @@ function commit(state, action, pair, mode) {
       right:pair.right.cancellationEvents||[]
     } };
   return { ...state, left: after.left, right: after.right, pending: null,
+    pairUndo:[],
     history: [...state.history, transaction] };
 }
 /**
@@ -476,8 +477,38 @@ export function perform(state, action, mode = "auto", side) {
   if (!prepared.ok) return prepared;
   return { ok: true, committed: true, state: commit(state, action, prepared.pair, "auto") };
 }
+/**
+ * Attach matching opposites already present in ONE room. This is a physical
+ * rewriting of +1 + (-1) or +x + (-x), not an algebra operation on both sides.
+ * It therefore has its own Undo stack, never enters scored move history and
+ * cannot interrupt a provisional manual balance move.
+ */
+export function attachAvailablePairs(state,side,type) {
+  if(!["left","right"].includes(side)||!["constants","sprites"].includes(type))
+    return {ok:false,code:"pair-choice",reason:"Choose a room and an opposite pair."};
+  if(state.pending)return {ok:false,code:"pending",
+    reason:"Finish matching the other room before attaching opposite objects."};
+  if(state.quantityMode!=="signed")return {ok:false,code:"locked-negative",
+    reason:"This room has no signed objects to pair."};
+  const events=neutralPairSequence(state[side],side,type);
+  if(!events.length)return {ok:false,code:"no-pairs",
+    reason:"There are no matching opposites of that kind in this room."};
+  const before=copyRoom(state[side]);
+  const after=copyRoom(events.at(-1).after);
+  if(evaluate(before,state.solution)!==evaluate(after,state.solution))
+    throw new Error("Attaching opposites must preserve the room's value.");
+  return {ok:true,events,count:events.length,state:{
+    ...state,[side]:after,
+    pairUndo:[...(state.pairUndo||[]),{side,before}]
+  }};
+}
 export function undo(state) {
   if (state.pending) return { ...state, pending: null };
+  if(state.pairUndo?.length){
+    const previous=state.pairUndo.at(-1);
+    return {...state,[previous.side]:copyRoom(previous.before),
+      pairUndo:state.pairUndo.slice(0,-1)};
+  }
   if (!state.history.length) return state;
   const last = state.history.at(-1);
   return { ...state, left: copyRoom(last.before.left), right: copyRoom(last.before.right),
