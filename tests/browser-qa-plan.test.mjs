@@ -40,6 +40,13 @@ test("six-chapter board CSS changes route to navigation and layout without game 
   assert.deepEqual(selectBrowserGroups(["e2e/six-chapter-layout.spec.mjs"]),
     ["layout"]);
 });
+test("weight pile changes exercise crate, signed, physics and layout QA",()=>{
+  for(const path of ["src/weight-piles.css","src/weight-piles.mjs",
+    "e2e/weight-piles.spec.mjs"]){
+    assert.deepEqual(selectBrowserGroups([path]),
+      ["crates","signed","layout","physics"],path);
+  }
+});
 test("shared maths and entrypoint changes trigger multiple independent safety checks",()=>{
   assert.deepEqual(selectBrowserGroups(["src/engine.mjs"]),["crates","notebook","signed","physics"]);
   assert.equal(selectBrowserGroups(["src/app.mjs"]).length,Object.keys(GROUP_SPECS).length);

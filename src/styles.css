@@ -194,9 +194,6 @@ background-image:repeating-linear-gradient(90deg,transparent 0 66px,rgba(0,0,0,.
   transform:scale(var(--floor-scale,1));transform-origin:50% 100%;
   transition:opacity .3s ease}
 .items-grid.floor-track>.token{flex:none;margin:0;transform:none}
-.floor-count{position:absolute;bottom:68px;left:50%;transform:translateX(-50%);
-  white-space:nowrap;font:italic .67rem Georgia,serif;letter-spacing:.02em;color:#decba1;
-  text-shadow:0 2px 5px #000;pointer-events:none}
 .area-active .room-items{opacity:.16;transition:opacity .2s ease}
 /* Hide the old row while the grid is arranged, but REVEAL the result at the
    exact contact moment so children can see the creature shape change. */
@@ -1060,7 +1057,6 @@ legend{margin-bottom:12px;padding:0}
   .room-items{height:124px;bottom:17px}
   .items-grid.floor-track>.token{transform:none;margin:0}
   .items-grid.floor-track{gap:4px}
-  .floor-count{font-size:.55rem;bottom:48px}
   .room-action{font-size:.52rem;padding:4px 7px}
   .scale-pan{height:18px}
   .scale-beam{top:296px;height:20px}
