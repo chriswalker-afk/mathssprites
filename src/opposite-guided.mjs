@@ -1,5 +1,5 @@
 /**
- * World 2 guided curriculum: five four-level chapters.
+ * World 2 guided curriculum: six four-level chapters (PR57 appends 21–24).
  * [title, west counts, east counts, positive solution, solution route, hint]
  * Count order: black, white, brass weight, balloon.
  */
@@ -23,5 +23,24 @@ export const OPPOSITE_GUIDED_RAW=[
  ["The clever shortcut",[4,0,0,4],[2,0,6,0],5,"add:posOne:4|add:negX:2|divide:2","Compare more than one possible route before choosing an operation."],
  ["Removing the negative",[3,0,0,2],[1,0,8,2],4,"remove:negOne:2|add:negX:1|divide:2","Taking away an opposite object is not the same as taking away its positive partner."],
  ["A crowded moonlit room",[4,0,0,1],[1,0,14,0],5,"add:posOne:1|add:negX:1|divide:3","The first attractive move is not always the shortest route."],
- ["Master of the opposites",[6,0,0,7],[3,0,8,0],5,"add:posOne:7|add:negX:3|divide:3","Look at both kinds of object before planning your sequence."]
+ ["Master of the opposites",[6,0,0,7],[3,0,8,0],5,"add:posOne:7|add:negX:3|divide:3","Look at both kinds of object before planning your sequence."],
+ // Chapter 6: new signed physical groups, deliberately appended. The loose
+ // counts are in the ordinary four-kind format; one additional sealed group
+ // is described by the last object. These aren't replacements for Levels 1–20.
+ ["A weight for a balloon",[0,0,1,1],[0,0,12,0],5,
+   "divide:2|unpack:left|remove:posOne:1",
+   "One weight and one balloon are already together. Whole sealed groups can sometimes be shared before opening.",
+   {crates:{count:2,contents:{posX:1,posOne:1}}}],
+ ["The pale passenger",[1,1,0,0],[0,0,21,0],5,
+   "divide:3|unpack:left|remove:posOne:2",
+   "A black and a white sprite already share the room. Which groups could stay sealed until later?",
+   {crates:{count:3,contents:{posX:1,posOne:2}}}],
+ ["Three floating friends",[0,0,4,3],[0,0,15,0],5,
+   "unpack:left|remove:posOne:5|divide:2",
+   "The balloons can lift matching weights. Look at what remains outside the crates before choosing the next action.",
+   {crates:{count:2,contents:{posX:1,posOne:2}}}],
+ ["The sealed negatives",[1,0,3,0],[0,0,14,0],5,
+   "unpack:left|add:posOne:1|divide:3",
+   "Something inside each crate pulls upwards. Opening the groups reveals which things can form pairs.",
+   {crates:{count:2,contents:{posX:1,negOne:2}}}]
 ];
