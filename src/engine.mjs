@@ -490,10 +490,15 @@ export function attachAvailablePairs(state,side,type) {
     reason:"Finish matching the other room before attaching opposite objects."};
   if(state.quantityMode!=="signed")return {ok:false,code:"locked-negative",
     reason:"This room has no signed objects to pair."};
-  const events=neutralPairSequence(state[side],side,type);
+  const before=copyRoom(state[side]);
+  // Preserve sealed crates while animating only the loose opposite objects.
+  const events=neutralPairSequence(before,side,type).map(event=>({
+    ...event,
+    before:copyRoom({...before,...event.before}),
+    after:copyRoom({...before,...event.after})
+  }));
   if(!events.length)return {ok:false,code:"no-pairs",
     reason:"There are no matching opposites of that kind in this room."};
-  const before=copyRoom(state[side]);
   const after=copyRoom(events.at(-1).after);
   if(evaluate(before,state.solution)!==evaluate(after,state.solution))
     throw new Error("Attaching opposites must preserve the room's value.");
