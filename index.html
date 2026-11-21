@@ -28,6 +28,7 @@
   <link rel="stylesheet" href="./src/crate-physical.css?v=41" />
   <link rel="stylesheet" href="./src/crate-division.css?v=43" />
   <link rel="stylesheet" href="./src/weight-piles.css?v=52" />
+  <link rel="stylesheet" href="./src/zero-pair-actions.css?v=55" />
   <script type="module" src="./src/app.mjs"></script>
   <script type="module" src="./src/site.mjs"></script>
 </head>
@@ -526,6 +527,10 @@
               <div class="tiny-shelf" aria-hidden="true"><i></i><i></i><i></i></div>
               <div class="room-name">WEST CHAMBER <span class="room-index">I</span></div>
               <div id="left-items" class="room-items" aria-label="Objects in the west chamber"></div>
+              <div id="left-pair-actions" class="room-pair-actions" aria-label="Attach opposites in west chamber" hidden>
+                <button type="button" class="room-pair-action" data-pair-side="left" data-pair-type="constants" hidden>Attach weights to balloons</button>
+                <button type="button" class="room-pair-action" data-pair-side="left" data-pair-type="sprites" hidden>Pair black and white sprites</button>
+              </div>
               <div id="left-attempt-stage" class="attempt-stage" role="img" aria-label="An unsuccessful experiment in the west chamber" hidden></div>
               <div id="left-neutral-effect" class="neutral-effect" role="img" aria-label="Opposite objects making zero in west chamber" hidden></div>
               <div id="left-area-box" class="room-square-box" role="img" aria-label="Physical square being built in the west chamber" hidden></div>
@@ -541,6 +546,10 @@
               <div class="tiny-shelf" aria-hidden="true"><i></i><i></i><i></i></div>
               <div class="room-name">EAST CHAMBER <span class="room-index">II</span></div>
               <div id="right-items" class="room-items" aria-label="Objects in the east chamber"></div>
+              <div id="right-pair-actions" class="room-pair-actions" aria-label="Attach opposites in east chamber" hidden>
+                <button type="button" class="room-pair-action" data-pair-side="right" data-pair-type="constants" hidden>Attach weights to balloons</button>
+                <button type="button" class="room-pair-action" data-pair-side="right" data-pair-type="sprites" hidden>Pair black and white sprites</button>
+              </div>
               <div id="right-attempt-stage" class="attempt-stage" role="img" aria-label="An unsuccessful experiment in the east chamber" hidden></div>
               <div id="right-neutral-effect" class="neutral-effect" role="img" aria-label="Opposite objects making zero in east chamber" hidden></div>
               <div id="right-area-box" class="room-square-box" role="img" aria-label="Physical square being built in the east chamber" hidden></div>

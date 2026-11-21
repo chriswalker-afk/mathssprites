@@ -1,0 +1,28 @@
+/* PR55 — optional in-room identity rewrites for signed starting objects.
+ * This is not an operation on both sides, so it sits inside the chamber,
+ * not among Add / Remove / Multiply / Divide. */
+.room-pair-actions{
+  position:absolute;left:9px;right:9px;top:52px;z-index:11;
+  display:flex;flex-direction:column;align-items:center;gap:5px;
+  pointer-events:none;
+}
+.room-pair-action{
+  pointer-events:auto;max-width:100%;min-height:30px;
+  padding:5px 9px;border-radius:14px;
+  border:1px solid #d2b377;background:linear-gradient(#30443b,#22362f);
+  color:#f6e3bf;box-shadow:0 3px 9px #071413b0;
+  font:700 .69rem/1.15 "Trebuchet MS",sans-serif;
+  text-align:center;white-space:normal;
+}
+.room-pair-action:hover:not(:disabled){
+  background:linear-gradient(#486151,#304c42);border-color:#f2d9a3;
+}
+.room-pair-action:focus-visible{outline:3px solid #f5d493;outline-offset:2px}
+@media(max-width:700px){
+  .room-pair-actions{top:38px;left:3px;right:3px;gap:3px}
+  .room-pair-action{min-height:27px;padding:3px 5px;font-size:.56rem}
+}
+@media(max-width:430px){
+  .room-pair-actions{top:31px}
+  .room-pair-action{min-height:26px;font-size:.5rem}
+}
