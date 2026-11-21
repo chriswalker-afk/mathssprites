@@ -1,7 +1,7 @@
 import {neutralToolSelection,actionFromToolSelection,stepToolQuantity} from "./action-selection.mjs";
 import {
   LEVELS, TOKEN_KINDS, initialState, visibleRooms, evaluate, levelQuantityMode, normalize, room,
-  perform, previewRoomAction, undo, isSolved, equation, operationDescription, algebraOperation, areaArrangement
+  perform, previewRoomAction, attachAvailablePairs, undo, isSolved, equation, operationDescription, algebraOperation, areaArrangement
 } from "./engine.mjs";
 import { buildWritingTimeline, symbolsOf, WRITING_PACE } from "./replay-timeline.mjs";
 import { handMotionPlan } from "./hand-timeline.mjs";
@@ -604,6 +604,35 @@ function render() {
     button.disabled = busy || isSolved(state) || unavailable;
     button.setAttribute("aria-pressed", String(kind!==null && button.dataset.kind === kind));
   }
+  // The two signed zero-pair actions belong to their own chamber: they are
+  // free value-preserving rewrites, not algebraic moves on both rooms.
+  for(const side of ["left","right"]){
+    const r=shown[side];
+    const available=state.quantityMode==="signed"&&!busy&&!awaiting&&
+      !notebookSession&&!isSolved(state);
+    const pairs={
+      constants:Math.min(r.posOne,r.negOne),
+      sprites:Math.min(r.posX,r.negX)
+    };
+    let any=false;
+    for(const type of ["constants","sprites"]){
+      const count=pairs[type],button=document.querySelector(
+        '[data-pair-side="'+side+'"][data-pair-type="'+type+'"]');
+      button.hidden=!available||count===0;
+      button.disabled=!available||count===0;
+      if(!button.hidden){
+        any=true;
+        button.textContent=type==="constants"
+          ?"Attach "+count+" "+(count===1?"weight":"weights")+" to balloons"
+          :"Pair "+count+" black + white "+(count===1?"sprite":"sprites");
+        button.setAttribute("aria-label",
+          (side==="left"?"West":"East")+" chamber: "+
+          (type==="constants"?"attach "+count+" weights to "+count+" balloons":
+            "pair "+count+" black sprites with "+count+" white sprites"));
+      }
+    }
+    $(side+"-pair-actions").hidden=!any;
+  }
   const grouped = operation === "divide" || operation === "multiply";
   const objectOperation=operation==="add"||operation==="remove";
   const quantity=grouped?factor:amount;
@@ -693,7 +722,7 @@ function render() {
     $(side + "-chamber").classList.toggle("needs-match", awaiting && state.pending.first !== side);
     $(side + "-chamber").classList.toggle("already-moved", awaiting && state.pending.first === side);
   }
-  $("undo").disabled = busy || (!awaiting && !state.history.length);
+  $("undo").disabled = busy || (!awaiting && !state.history.length && !state.pairUndo?.length);
   $("reset").disabled = busy;
   $("hint").disabled = busy;
   if (isSolved(state)) {
@@ -1616,6 +1645,31 @@ async function playUnpackChoreography(side,result){
   }
   return committed;
 }
+/** Explicitly cancel existing opposite objects in a single chamber.
+ * Their algebraic sum is zero; there is no matching hand visit, no star cost,
+ * and Undo restores the exact original physical objects if requested. */
+async function attachRoomPairs(side,type){
+  if(busy||state.pending||notebookSession||isSolved(state))return;
+  const result=attachAvailablePairs(state,side,type);
+  if(!result.ok)return notify(result.reason);
+  busy=true;
+  clearSpeech();
+  const before=visibleRooms(state);
+  override={left:room(before.left),right:room(before.right)};
+  render();
+  try{
+    await animateNeutralEvents(side,result.events,r=>{
+      override={...override,[side]:room(r)};
+      render();
+    });
+    state=result.state;
+  }finally{
+    override=null;
+    busy=false;
+    render();
+  }
+  await finishTurn();
+}
 async function unpackCrates(){
   // Opening is a value-preserving rewrite of ONE room. Unlike other actions
   // it does not need a second hand visit, but cannot interrupt a pending pair.
@@ -2276,6 +2330,12 @@ $("amount-up").addEventListener("click", () => {
   else amount=stepToolQuantity(operation,amount,1);
   render();
 });
+for(const button of document.querySelectorAll("[data-pair-side][data-pair-type]")){
+  button.addEventListener("click",()=>{
+    if(button.disabled)return;
+    attachRoomPairs(button.dataset.pairSide,button.dataset.pairType);
+  });
+}
 $("unpack-crates").addEventListener("click",unpackCrates);
 $("crate-animation-pause").addEventListener("click",()=>{
   if(!activeCrateView||!crateExpansionRunning)return;
