@@ -93,6 +93,18 @@ test("each signed route can be performed provisionally and matched manually",()=
  for(const slot of OPPOSITE_LEVELS.independent){
   let state=initialState(slot.level);
   for(const action of slot.level.referenceRoute){
+   if(action.op==="unpack"){
+     // A local bracket expansion conserves value in ONE room. It is a
+     // scored, undoable rewrite, not an unfinished two-hand move.
+     assert.equal(perform(state,action,"manual",action.side).code,"unpack-mode");
+     const changed=perform(state,action,"auto");
+     assert.equal(changed.ok,true,slot.id+" local crate rewrite");
+     assert.equal(changed.state.pending,null);
+     assert.equal(changed.state.history.at(-1).mode,"rewrite");
+     assert.deepEqual(undo(changed.state),state);
+     state=changed.state;
+     continue;
+   }
    const pending=perform(state,action,"manual","left");
    assert.equal(pending.ok,true,slot.id+" first manual hand");
    assert.equal(pending.committed,false,slot.id);
