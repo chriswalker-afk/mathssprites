@@ -63,6 +63,7 @@ let playingWorld = null;
 let selectedWorld = campaignResume?.worldId||"workshop";
 let selectedStage = campaignResume?.stageId||"guided";
 let boardReturnScreen = "home";
+let workshopReturnScreen = "home";
 // Preserve each stage's chapter scroll position when returning from a game.
 const boardScrollPositions=new Map();
 let supportReturnScreen = "home";
@@ -377,7 +378,12 @@ function renderSettings() {
   $("site-motion").setAttribute("aria-pressed",String(motion === "Motion: reduced"));
 }
 function showScreen(name,{focusHeading=true}={}) {
+  // PR53: legacy world/stage routes now lead to the single Experiment Board.
+  if(name==="worlds"||name==="stages")name="levels";
   if (!screenNames.includes(name)) return;
+  if(name==="workshop" && currentScreen!=="workshop" && currentScreen!=="workshop-game"){
+    workshopReturnScreen=currentScreen==="levels"?"levels":"home";
+  }
   if((name==="help"||name==="settings") &&
       !["help","settings"].includes(currentScreen) &&
       screenNames.includes(currentScreen))
@@ -403,14 +409,17 @@ function showScreen(name,{focusHeading=true}={}) {
     $("site-back").textContent="← Back to "+
       ({stages:"stages",worlds:"worlds",home:"home"}[boardReturnScreen]||"home");
   }
+  if(name==="workshop"){
+    $("workshop-back").textContent="← Back to "+(workshopReturnScreen==="levels"?"levels":"home");
+  }
   if (name === "settings") renderSettings();
   if(name==="help"||name==="settings"){
     const label=({home:"home",worlds:"worlds",stages:"stages",
       levels:"levels",workshop:"workshop"})[supportReturnScreen]||"home";
     $(name+"-return").textContent="← Back to "+label;
   }
-  const activeTopLevel=(name==="levels"||name==="stages"||name==="workshop")
-    ?"worlds":name;
+  const activeTopLevel=(name==="levels"||name==="stages")
+    ?"levels":name;
   document.querySelectorAll(".site-nav-links button[data-screen]").forEach(button=>{
     if(button.dataset.screen===activeTopLevel)
       button.setAttribute("aria-current","page");
@@ -587,7 +596,7 @@ $("site-shell").addEventListener("click", event => {
   }
   if (target.dataset.screen){
     if(target.dataset.screen==="levels")boardReturnScreen="home";
-    if(target.dataset.screen==="stages")selectedWorld="workshop";
+    if(target.id==="workshop-back")return showScreen(workshopReturnScreen);
     return showScreen(target.dataset.screen);
   }
   if (target.dataset.level){
@@ -642,7 +651,7 @@ document.addEventListener("keydown",event=>{
         !["checkbox","radio","button"].includes(active.type)));
   if(editing)return;
   const previous={
-    worlds:"home",stages:"worlds",workshop:"stages",
+    worlds:"home",stages:"levels",workshop:workshopReturnScreen,
     levels:boardReturnScreen,help:supportReturnScreen,settings:supportReturnScreen
   }[currentScreen];
   if(!previous)return;
@@ -727,8 +736,7 @@ $("site-motion").addEventListener("click", () => {
   $("motion-toggle").click();
   renderSettings();
 });
-$("site-back").addEventListener("click", () =>
-  showScreen(boardReturnScreen==="stages"?"stages":"home"));
+$("site-back").addEventListener("click", () => showScreen("home"));
 $("stages-back").addEventListener("click", () => showScreen("worlds"));
 window.addEventListener("mathssprites:solved",event=>{
   if(playingNumber===null||!playingWorld||
