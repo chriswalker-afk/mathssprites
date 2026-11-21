@@ -1,10 +1,10 @@
 # World 2 — explicit zero pairs and signed crate/bracket progression
 
-**Status:** PR55 implements the initial free-pair interactions. The crate chapter below is an **implementation proposal**, not additional playable content in PR55.
+**Status:** This is the archived design plan. PR55 added explicit pair attachments, PR56 merged signed-crate physics and PR57 implemented the four additional Guided levels. See [the PR57 implementation and verified route audit](PR57_SEALED_OPPOSITES.md). The original requirements below are retained as design rationale.
 
 ## Audit of the current progression
 
-World 2 currently contains **48 levels**: Guided 20 (five four-level chapters), Independent 16 (four chapters) and Algebra Apprentice 12 (three chapters). Their existing shortest legal **scored** routes have been independently certified in PR50: 10 one-move puzzles, 8 two-move puzzles and 30 three-move puzzles. These numbers are not interchangeable with conceptual difficulty.
+Before PR57, World 2 contained **48 levels**: Guided 20 (five four-level chapters), Independent 16 (four chapters) and Algebra Apprentice 12 (three chapters). Their existing shortest legal **scored** routes have been independently certified in PR50: 10 one-move puzzles, 8 two-move puzzles and 30 three-move puzzles. These numbers are not interchangeable with conceptual difficulty.
 
 | Guided levels | Current learning demand | Gap and planned response |
 |---|---|---|
@@ -13,7 +13,7 @@ World 2 currently contains **48 levels**: Guided 20 (five four-level chapters), 
 | 9–12 | Coordinate different kinds of zero pairs | Provide a start where **both** pair types already exist, so students choose which to simplify first |
 | 13–16 | Reversed layouts and negative variables | Preserve the need to reason about sign and orientation |
 | 17–20 | Signed multi-step strategy and alternatives | Preserve existing certified stars and accepted progress |
-| Proposed 21–24 | Physical groups become brackets; coordinate grouped and signed terms | New content, not edits to previously completed levels |
+| Added 21–24 (PR57) | Physical groups become brackets; coordinate grouped and signed terms | New stable levels, not edits to previously completed levels |
 
 World 2 has starting weight+balloon pairs at Guided 18, Independent 6 and 15, and Apprentice 5 and 8. It has **no existing same-chamber black+white starting pair** and **no authored crate level**.
 
@@ -25,7 +25,7 @@ This is a one-room, value-preserving **representation change**, not an add/remov
 
 Do not automatically cancel initial pairs in the rendered starting scene. The student must be able to observe and choose the pairing. Existing engine-driven cancellation after genuine operations is retained for continuity.
 
-## Proposed sixth Guided chapter — *The Sealed Opposites* (World 2 levels 21–24)
+## Sixth Guided chapter — *The Sealed Opposites* (World 2 levels 21–24)
 
 **Append** these four stable IDs to World 2 Guided. Do not renumber or rewrite the original 20 Guided levels or any existing Independent/Apprentice levels. Four small, progressively harder challenges:
 
@@ -38,7 +38,7 @@ Do not automatically cancel initial pairs in the rendered starting scene. The st
 
 ### Engine/art prerequisites for level 24
 
-The existing `group-crates.mjs` maths and crate sign can represent negative objects inside groups, but `crate-expansion.mjs` **rejects** signed crate contents, and `crate-expansion-view.mjs` only releases black sprites and positive weights. Implement signed crate release **before** authoring level 24:
+These were the prerequisites specified before PR56. They are now implemented: `group-crates.mjs` and the crate view support sealed signed objects and release animations, including white sprites and balloons:
 
 1. Crowbar opens each actual wooden crate; black/white creatures and balloons emerge using the same established physical assets and timing. Crate panels fall, with no separate fake diagram.
 2. The group sign and crate count agree with real contents while sealed; after release, the model and actors agree about each individual sign.
