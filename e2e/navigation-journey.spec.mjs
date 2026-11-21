@@ -100,9 +100,8 @@ test("Escape closes open guidance before navigating and never steals input editi
   await expect(page.locator("#help-stages")).not.toHaveAttribute("open","");
   await page.keyboard.press("Escape");
   await expect(page.locator("#site-home")).toBeVisible();
-  await page.locator('.site-nav-links [data-screen="worlds"]').click();
-  await page.getByRole("button",{name:"Explore stages"}).click();
-  await page.getByRole("button",{name:"Create your own equation"}).click();
+  await page.locator("#home-choose-level").click();
+  await page.locator('#site-levels [data-screen="workshop"]').click();
   await page.locator("#workshop-equation").fill("3x + 5 = 20");
   await page.locator("#workshop-equation").press("Escape");
   await expect(page.locator("#site-workshop")).toBeVisible();

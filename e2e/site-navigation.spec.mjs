@@ -6,29 +6,24 @@ test.beforeEach(async ({page}) => {
   await page.goto("/");
 });
 async function startFirstLevel(page) {
-  await page.getByRole("button",{name:"Choose a world"}).click();
-  await page.getByRole("button",{name:"Explore stages"}).click();
-  await page.getByRole("button",{name:"Choose Stage 1 levels"}).click();
-  await page.locator('[data-level="1"]').click();
+  await page.getByRole("button",{name:"Choose a world and level"}).click();
+      await page.locator('[data-level="1"]').click();
 }
-test("home is the real entry point; four distinct world cards, two locked", async ({page}) => {
-  await expect(page.locator("#site-home")).toBeVisible();
-  await expect(page.locator("#game-shell")).toBeHidden();
-  await expect(page.getByRole("heading",{name:"How much does the sprite weigh?"})).toBeVisible();
-  await page.locator('[data-screen="worlds"]').first().click();
-  await expect(page.locator(".world-card")).toHaveCount(4);
-  await expect(page.locator(".world-ready")).toHaveCount(2);
-  await expect(page.locator(".world-planned")).toHaveCount(2);
-  await expect(page.getByText("The Opposite Chambers")).toBeVisible();
-  await expect(page.getByText("The Fraction Workshop")).toBeVisible();
-  await expect(page.getByText("The Square Laboratory")).toBeVisible();
+test("Worlds opens the same board as Choose a level; future worlds remain visible", async ({page}) => {
+  await page.locator('.site-nav-links [data-screen="levels"]').click();
+  await expect(page.locator("#site-levels")).toBeVisible();
+  await expect(page.locator("#map-world-tabs button")).toHaveCount(4);
+  await expect(page.locator('[data-map-world="opposites"]')).toBeEnabled();
+  await expect(page.locator('[data-map-world="fractions"]')).toBeDisabled();
+  await expect(page.locator('[data-map-world="squares"]')).toBeDisabled();
+  await page.locator("#site-back").click();
+  await page.locator("#home-choose-level").click();
+  await expect(page.locator("#site-levels")).toBeVisible();
 });
 
 test("all 24 Guided levels are selectable from a fresh student account @quick @smoke", async ({page}) => {
-  await page.locator('[data-screen="worlds"]').first().click();
-  await page.getByRole("button",{name:"Explore stages"}).click();
-  await page.getByRole("button",{name:"Choose Stage 1 levels"}).click();
-  await expect(page.locator(".chapter-group")).toHaveCount(6);
+  await page.locator('.site-nav-links [data-screen="levels"]').first().click();
+      await expect(page.locator(".chapter-group")).toHaveCount(6);
   await expect(page.locator(".level-tile")).toHaveCount(24);
   await expect(page.locator(".level-tile.status-upcoming")).toHaveCount(0);
   await expect(page.locator('[data-level="1"]')).toBeEnabled();
@@ -75,10 +70,8 @@ test("solving Level 1 persists progress and earns three stars for the optimal mo
   await page.reload();
   await expect(page.locator("#site-home")).toBeVisible();
   await expect(page.locator("#home-play")).toContainText("Continue Stage 1 · Level 2");
-  await page.locator('[data-screen="worlds"]').first().click();
-  await page.getByRole("button",{name:"Explore stages"}).click();
-  await page.getByRole("button",{name:"Choose Stage 1 levels"}).click();
-  await expect(page.locator('[data-level="1"]')).toContainText("Completed");
+  await page.locator('.site-nav-links [data-screen="levels"]').first().click();
+      await expect(page.locator('[data-level="1"]')).toContainText("Completed");
   await expect(page.locator('[data-level="2"]')).toBeEnabled();
   await expect(page.locator('[data-level="3"]')).toBeEnabled();
   await expect(page.locator('[data-level="1"] .tile-stars')).toHaveText("★★★");
@@ -87,16 +80,12 @@ test("solving Level 1 persists progress and earns three stars for the optimal mo
 test("teacher tools persist but do not affect the already-open level access", async ({page}) => {
   await page.locator('[data-screen="settings"]').first().click();
   await page.locator("#teacher-unlock").check();
-  await page.locator('[data-screen="worlds"]').first().click();
-  await page.getByRole("button",{name:"Explore stages"}).click();
-  await page.getByRole("button",{name:"Choose Stage 1 levels"}).click();
-  for (let n = 1; n <= 24; n++)
+  await page.locator('.site-nav-links [data-screen="levels"]').first().click();
+      for (let n = 1; n <= 24; n++)
     await expect(page.locator('[data-level="'+n+'"]')).toBeEnabled();
   await page.reload();
-  await page.locator('[data-screen="worlds"]').first().click();
-  await page.getByRole("button",{name:"Explore stages"}).click();
-  await page.getByRole("button",{name:"Choose Stage 1 levels"}).click();
-  await expect(page.locator('[data-level="20"]')).toBeEnabled();
+  await page.locator('.site-nav-links [data-screen="levels"]').first().click();
+      await expect(page.locator('[data-level="20"]')).toBeEnabled();
 });
 
 test("legacy deep-link preview retains older signed and square experiments for QA", async ({page}) => {
@@ -115,10 +104,8 @@ test("legacy deep-link preview retains older signed and square experiments for Q
 test("teacher can open the final multi-step puzzle with only whole-number tools", async ({page}) => {
   await page.locator('[data-screen="settings"]').first().click();
   await page.locator("#teacher-unlock").check();
-  await page.locator('[data-screen="worlds"]').first().click();
-  await page.getByRole("button",{name:"Explore stages"}).click();
-  await page.getByRole("button",{name:"Choose Stage 1 levels"}).click();
-  await page.locator('[data-level="20"]').click();
+  await page.locator('.site-nav-links [data-screen="levels"]').first().click();
+      await page.locator('[data-level="20"]').click();
   await expect(page.locator("#level-title")).toHaveText("The master experiment");
   await expect(page.locator("#level-prompt")).toContainText("Sometimes adding something helps");
   await expect(page.locator("#left-items .sprite-black")).toHaveCount(5);
@@ -138,10 +125,8 @@ test("a reversed, two-sided World 1 level completes and reveals correct algebra"
   test.setTimeout(70000);
   await page.locator('[data-screen="settings"]').first().click();
   await page.locator("#teacher-unlock").check();
-  await page.locator('[data-screen="worlds"]').first().click();
-  await page.getByRole("button",{name:"Explore stages"}).click();
-  await page.getByRole("button",{name:"Choose Stage 1 levels"}).click();
-  await page.locator('[data-level="18"]').click();
+  await page.locator('.site-nav-links [data-screen="levels"]').first().click();
+      await page.locator('[data-level="18"]').click();
   await expect(page.locator("#level-title")).toHaveText("The other way round");
   await clickWithReferenceMove(page,"#amount-up"); // remove two sprites on both sides
   await clickWithReferenceMove(page,"#do-both");
@@ -158,21 +143,16 @@ test("a reversed, two-sided World 1 level completes and reveals correct algebra"
   await expect(page.locator("#level-title")).toHaveText("Sealed Crates");
 });
 
-test("World 1 offers 3 stage cards and a playable, independent Equation Workshop", async ({page}) => {
-  await page.locator('[data-screen="worlds"]').first().click();
-  await page.getByRole("button",{name:"Explore stages"}).click();
-  await expect(page.locator(".stage-card")).toHaveCount(3);
-  await expect(page.locator('.stage-card.stage-ready')).toHaveCount(3);
-  await expect(page.locator('.stage-card.stage-planned')).toHaveCount(0);
-  await expect(page.locator('[data-stage="guided"]')).toContainText("24");
-  await expect(page.locator('[data-stage="independent"]')).toContainText("20");
-  await expect(page.locator('[data-stage="notebook"]')).toContainText("16");
-  await expect(page.locator('[data-stage="independent"] button')).toHaveCount(1);
-  await expect(page.locator('[data-stage="notebook"] button')).toHaveCount(1);
-  await expect(page.locator("#world1-workshop")).toContainText("Equation Workshop");
-  await expect(page.locator("#world1-workshop button")).toHaveCount(1);
-  await page.locator("#stages-back").click();
-  await expect(page.locator("#site-worlds")).toBeVisible();
+test("World 1 stage tabs and Equation Workshop remain accessible from the board", async ({page}) => {
+  await page.locator("#home-choose-level").click();
+  await expect(page.locator("#map-stage-tabs button")).toHaveCount(3);
+  await expect(page.locator('[data-map-stage="guided"]')).toBeEnabled();
+  await expect(page.locator('[data-map-stage="independent"]')).toBeEnabled();
+  await expect(page.locator('[data-map-stage="notebook"]')).toBeEnabled();
+  await page.locator('#site-levels [data-screen="workshop"]').click();
+  await expect(page.locator("#site-workshop")).toBeVisible();
+  await page.locator("#workshop-back").click();
+  await expect(page.locator("#site-levels")).toBeVisible();
 });
 
 test("Stage 1 ignores a synthetic switch to manual and mirrors moves automatically", async ({page}) => {
@@ -197,11 +177,9 @@ test("old saved Stage 1 progress survives the new stage selection unchanged", as
   await page.evaluate(data=>localStorage.setItem("mathssprites.progress.v1",JSON.stringify(data)),original);
   await page.reload();
   await expect(page.locator("#home-play")).toContainText("Continue Stage 1 · Level 4");
-  await page.locator('[data-screen="worlds"]').first().click();
-  await page.getByRole("button",{name:"Explore stages"}).click();
-  await expect(page.locator('[data-stage="guided"]')).toContainText("3 of 24");
-  await page.getByRole("button",{name:"Choose Stage 1 levels"}).click();
-  await expect(page.locator(".status-complete")).toHaveCount(3);
+  await page.locator('.site-nav-links [data-screen="levels"]').first().click();
+    await expect(page.locator('[data-stage="guided"]')).toContainText("3 of 24");
+    await expect(page.locator(".status-complete")).toHaveCount(3);
   await expect(page.locator('[data-level="4"]')).toBeEnabled();
   const stored=await page.evaluate(()=>JSON.parse(localStorage.getItem("mathssprites.progress.v1")));
   expect(stored).toEqual(original);
@@ -213,13 +191,11 @@ test("Stage 1 mastery still shows completion, and all stages remain selectable",
   await page.reload();
   await page.locator('[data-screen="settings"]').first().click();
   await page.locator("#teacher-unlock").check();
-  await page.locator('[data-screen="worlds"]').first().click();
-  await page.getByRole("button",{name:"Explore stages"}).click();
-  await expect(page.locator('[data-stage="guided"]')).toContainText("Stage mastered");
+  await page.locator('.site-nav-links [data-screen="levels"]').first().click();
+    await expect(page.locator('[data-stage="guided"]')).toContainText("Stage mastered");
   await expect(page.locator('[data-stage="independent"] button')).toHaveCount(1);
   await expect(page.locator('[data-stage="notebook"] button')).toHaveCount(1);
-  await page.getByRole("button",{name:"Choose Stage 1 levels"}).click();
-  await expect(page.locator("#world1-finale")).toBeVisible();
+    await expect(page.locator("#world1-finale")).toBeVisible();
   await expect(page.locator("#world1-finale")).toContainText("Guided Balance mastered");
   await expect(page.locator("#world1-progress-bar")).toHaveJSProperty("value",24);
 });
