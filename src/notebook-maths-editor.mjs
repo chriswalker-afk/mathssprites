@@ -54,16 +54,37 @@ export function parseNotebookOperation(expression){
   return {ok:true,action:{op:sign==="×"?"multiply":"divide",factor},
     display:sign+factor};
 }
+/** A sealed group's visible signs are mathematical information. Show
+ * 2x−x−1 inside its brackets, not a prematurely simplified x−1: students
+ * must first decide whether to expand the group on paper. */
+function sealedContentsMarkup(contents){
+  const parts=[
+    ["posX",1,true],["negX",-1,true],
+    ["posOne",1,false],["negOne",-1,false]
+  ];
+  let markup="";
+  for(const [kind,sign,variable] of parts){
+    const count=contents[kind]||0;
+    if(!count)continue;
+    if(markup||sign<0)markup+="<mo>"+(sign<0?"−":"+")+"</mo>";
+    markup+=variable?(count===1?"":"<mn>"+count+"</mn>")+"<mi>x</mi>"
+      :"<mn>"+count+"</mn>";
+  }
+  return markup||"<mn>0</mn>";
+}
 function expressionMarkup(room){
   // Keep actual crates grouped on the paper: canonical() alone would
-  // visually expand the brackets *before* the learner chooses to do so.
+  // visually expand the brackets before the learner chooses to do so.
   if(room.crates?.count){
     const n=room.crates.count;
     const group=(n===1?"":"<mn>"+n+"</mn>")+
-      "<mo>(</mo>"+expressionMarkup(room.crates.contents)+"<mo>)</mo>";
+      "<mo>(</mo>"+sealedContentsMarkup(room.crates.contents)+"<mo>)</mo>";
     const hasLoose=["posX","negX","posX2","posOne","negOne"]
       .some(kind=>(room[kind]||0)!==0);
-    return group+(hasLoose?"<mo>+</mo>"+expressionMarkup({...room,crates:null}):"");
+    if(!hasLoose)return group;
+    const loose=expressionMarkup({...room,crates:null});
+    // "2(x+1)−2", never "2(x+1)+−2".
+    return group+(loose.startsWith("<mo>−</mo>")?"":"<mo>+</mo>")+loose;
   }
   const c=canonical(room),terms=[];
   const push=(amount,body)=>{
