@@ -607,11 +607,14 @@ function render() {
   const grouped = operation === "divide" || operation === "multiply";
   const objectOperation=operation==="add"||operation==="remove";
   const quantity=grouped?factor:amount;
-  // Keep all tool families visible in the neutral state.  Nothing is
-  // preselected, but students can see what is available before deciding.
-  $("object-picker").hidden=grouped||operation==="square"||operation==="sqrt";
-  $("amount-control").hidden=operation==="square"||operation==="sqrt";
-  $("amount-label").textContent=grouped?"3 · How many groups?":"3 · How many?";
+  // Ask questions in mathematical order: operation first, then its inputs.
+  // Add/remove: (1) action, (2) object, (3) quantity.
+  // Divide/multiply: (1) action, (2) group count. Neither operation uses
+  // the object picker; no later step appears before its prerequisite.
+  $("object-picker").hidden=!objectOperation;
+  $("amount-control").hidden=!operation ||
+    operation==="square"||operation==="sqrt"||(objectOperation&&!kind);
+  $("amount-label").textContent=grouped?"2 · How many groups?":"3 · How many?";
   $("amount-value").textContent=quantity===null?"—":String(quantity);
   $("amount-down").disabled=busy||isSolved(state)||!operation||
     (objectOperation&&!kind)||quantity===null||
@@ -1113,13 +1116,16 @@ async function handAct(side, action, applyAtContact) {
         case "contact":
           // The only place physical objects change. The hand is still *down*,
           // covering the objects, and the other room has not been touched yet.
+          // A placing hand releases its prop at contact. Hide it BEFORE the
+          // async paint/zero-pair sequence: otherwise a hand-held duplicate
+          // remains next to the actual floor weight lifted by a balloon.
+          cargo.hidden = !!action.fractionAttempt || motion.placing || action.op === "sqrt";
           const contactPromise=applyAtContact();
           if(contactPromise&&typeof contactPromise.then==="function")
             await contactPromise;
           applied = true;
           if (action.op === "square" || action.op === "sqrt") finishAreaPreview(side, action);
           target.classList.add("hand-contact");
-          cargo.hidden = !!action.fractionAttempt || motion.placing || action.op === "sqrt";
           if (reaction) cargo.classList.add("sprite-captured");
           hand.dataset.phase = action.op === "square" ? (areaEffect?.symbolic ? "pound" : "release") :
             action.op === "sqrt" ? (areaEffect?.symbolic ? "squish" : "carry") :
@@ -2249,7 +2255,9 @@ for (const button of document.querySelectorAll("[data-operation]")) {
 }
 for (const button of document.querySelectorAll("[data-kind]")) {
   button.addEventListener("click", () => {
-    if(busy)return;
+    // A hidden/disabled object cannot be chosen before its operation.
+    // This also rejects synthetic clicks during a running animation.
+    if(busy||button.disabled||!(operation==="add"||operation==="remove"))return;
     if(kind!==button.dataset.kind){kind=button.dataset.kind;amount=null;}
     render();
   });
