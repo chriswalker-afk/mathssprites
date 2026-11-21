@@ -50,7 +50,7 @@ test("Undo restores original physical objects without costing a mathematical mov
   assert.equal(undo(undo(afterBoth)).history.length,0);
   const next=perform(afterBoth,{op:"add",kind:"posOne",count:1});
   assert.equal(next.ok,true);
-  assert.equal(next.state.pairUndo.length,0);
+  assert.equal(next.state.pairUndo,undefined);
   assert.equal(next.state.history.length,1);
   assert.deepEqual(undo(next.state).left,afterBoth.left);
 });
