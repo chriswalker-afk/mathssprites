@@ -53,7 +53,7 @@ function hasRouteShorterThan(level,minimum){
 
 test("World 2 preserves all previous IDs while appending four new Guided puzzles",()=>{
  for(const [stage,slots] of Object.entries(OPPOSITE_LEVELS)){
-  assert.equal(slots.length,{guided:24,independent:16,notebook:12}[stage]);
+  assert.equal(slots.length,{guided:24,independent:20,notebook:16}[stage]);
   assert.equal(new Set(slots.map(s=>s.id)).size,slots.length);
   for(const [i,slot] of slots.entries()){
    const id="op-"+{guided:"g",independent:"i",notebook:"a"}[stage]+
