@@ -130,10 +130,10 @@ test("completing all twenty old Guided levels does not complete the newly append
       OPPOSITE_OPTIMAL_MOVES.guided[i]);
   }
   const totals=campaignStarTotals(records,{worldId:"opposites"});
-  assert.equal(totals.count,52);
+  assert.equal(totals.count,60);
   assert.equal(totals.completed,20);
   assert.equal(totals.earned,60);
-  assert.equal(totals.available,156);
+  assert.equal(totals.available,180);
   for(const slot of added)
     assert.equal(campaignStars(records,"opposites","guided",slot.id),0);
   const map=new Map(),storage={
