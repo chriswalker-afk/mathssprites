@@ -48,7 +48,7 @@
       </button>
       <nav class="site-nav-links" aria-label="Main menu">
         <button type="button" data-screen="home">Home</button>
-        <button type="button" data-screen="worlds" aria-label="Choose a world">Worlds</button>
+        <button type="button" data-screen="levels" aria-label="Choose a world and level">Worlds</button>
         <button type="button" data-screen="help" aria-label="How to play">Help</button>
         <button type="button" data-screen="settings">Settings</button>
       </nav>
@@ -62,6 +62,7 @@
           <div class="landing-actions">
             <button type="button" id="home-play" class="primary-btn">Start Stage 1 · Level 1 →</button>
             <button type="button" id="home-choose-level" class="secondary-btn">Choose a level →</button>
+            <button type="button" class="secondary-btn" data-screen="workshop">Equation Workshop →</button>
           </div>
           <span id="home-progress" class="landing-progress" aria-live="polite"></span>
         </div>
@@ -124,7 +125,7 @@
       <p id="stage-teacher-note" class="teacher-note" hidden>Teacher tools include extra previews; all implemented student levels are open.</p>
     </main>
     <main class="site-page" id="site-workshop" hidden>
-      <button type="button" id="workshop-back" class="site-back-link" data-screen="stages">← Back to stages</button>
+      <button type="button" id="workshop-back" class="site-back-link" data-screen="levels">← Back to levels</button>
       <div class="portal-heading">
         <div><div class="portal-kicker">THE INVENTOR'S DESK · WORLD 01 · FREE PLAY</div>
           <h1 id="workshop-heading" tabindex="-1">The Equation Workshop</h1>
@@ -189,7 +190,7 @@
         <div><div id="levels-stage-kicker" class="portal-kicker">WORLD 01 · STAGE 1 · POSITIVE WHOLE NUMBERS</div>
           <h1 id="levels-stage-title" tabindex="-1">Guided Balance</h1>
           <p id="levels-stage-intro">Choose the operation. The hand automatically makes the same change to both rooms.</p></div>
-        <div class="level-board-actions"><span id="level-progress" class="landing-progress" aria-live="polite"></span><button type="button" class="primary-btn" id="board-continue">Play Level 1 →</button></div>
+        <div class="level-board-actions"><span id="level-progress" class="landing-progress" aria-live="polite"></span><button type="button" class="secondary-btn" data-screen="workshop">Equation Workshop →</button><button type="button" class="primary-btn" id="board-continue">Play Level 1 →</button></div>
       </div>
       <div class="world1-progress-panel" aria-label="Selected stage completion">
         <div class="world1-progress-labels"><span id="world1-progress-description">Stage 1 · Guided Balance</span><span id="world1-progress-number">0 of 20 complete</span></div>
