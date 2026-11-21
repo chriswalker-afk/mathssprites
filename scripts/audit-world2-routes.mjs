@@ -20,6 +20,7 @@ const stages=stageOnly?[stageOnly]:OPPOSITE_STAGE_ORDER;
 const routeText=route=>route.map(action=>{
   if(action.op==="divide")return "÷"+action.factor;
   if(action.op==="multiply")return "×"+action.factor;
+  if(action.op==="unpack")return "open "+action.side+" crates";
   const sign=action.op==="remove"?"−":"+";
   const negative=action.kind==="negX"||action.kind==="negOne";
   const sprite=action.kind==="posX"||action.kind==="negX";
@@ -48,6 +49,7 @@ for(const stage of stages)for(const slot of OPPOSITE_LEVELS[stage]){
     stage,number:slot.number,id:slot.id,equation:equation(initialState(level)),
     minimum:result.moves,authoredRouteMoves:authored,
     shortestExample:routeText(result.route),
+    freePairings:result.freePairings||[],
     authoredExample:routeText(level.referenceRoute),
     shortestMatchesAuthored:routeText(result.route)===routeText(level.referenceRoute),
     visitedStates:result.visitedStates,
@@ -78,6 +80,7 @@ if(args.includes("--json")){
     "",
     "The solver enumerates every permitted signed action through the real game engine,",
     "including all four object kinds, add/remove 1–12, multiply/divide 2–5,",
+    "whole-crate opening and free in-room opposite pair attachments,",
     "cancellations and physical room capacities. A two-room move counts once,",
     "even in Independent mode; equations and routes here are teacher-only.",
     ""

@@ -1,10 +1,10 @@
-# Maths Sprites — Curriculum definitions and difficulty metadata (PR46–PR50)
+# Maths Sprites — Curriculum definitions and difficulty metadata (PR46–PR57)
 
 ## Purpose and scope
 
-This is a **teacher/developer planning layer** for the **108 playable campaign levels**:
+This is a **teacher/developer planning layer** for the **112 playable campaign levels**:
 24 Guided, 20 Independent and 16 Algebra Apprentice in World 1
-(The Balance Workshop), plus 20 Guided, 16 Independent and 12 Algebra Apprentice
+(The Balance Workshop), plus 24 Guided, 16 Independent and 12 Algebra Apprentice
 in World 2 (The Opposite Chambers).
 
 The 13 legacy experiments in src/engine.mjs remain preview and mathematical
@@ -21,7 +21,7 @@ operation or number of objects.
 - src/curriculum.mjs: authored skill definitions and prerequisites, learning
   objectives for every four-level chapter, explicit 1–5 difficulty bands,
   per-level mathematical/physical features and lookup functions
-- tests/curriculum.test.mjs: coverage and consistency tests for **all 108
+- tests/curriculum.test.mjs: coverage and consistency tests for **all 112
   IDs**, chapters, skill IDs, difficulty bands, move benchmarks and no
   accidental imports by the student application
 - scripts/curriculum-report.mjs: author-only Markdown or JSON report,
@@ -89,7 +89,7 @@ representation, signed numbers and mathematical communication.
 | World | Guided progression | Independent progression | Notebook progression |
 |---|---|---|---|
 | 1 · Workshop | Equal subtraction → whole equal groups → two-step → unknowns on both sides → efficient routes → four sealed-crate challenges | Match single moves → match divisions → match sequences → solve strategic two-sided balances | Model/first/last/solo written moves → choose an efficient order → solve multi-operation and reversed equations |
-| 2 · Opposites | Balloons and unit zero pairs → white sprites and variable zero pairs → combine cancellations → reversed signed equations → strategic signed transformations | Match signed hand visits → distinguish local cancellation effects → prepare signed groups → independent signed strategies | Write signed operations → distinguish signs/negative terms → combine independent signed transformations |
+| 2 · Opposites | Balloons and unit zero pairs → white sprites and variable zero pairs → combine cancellations → reversed signed equations → strategic signed transformations → sealed crates containing signed objects | Match signed hand visits → distinguish local cancellation effects → prepare signed groups → independent signed strategies | Write signed operations → distinguish signs/negative terms → combine independent signed transformations |
 
 ### Design guardrails
 

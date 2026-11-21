@@ -127,7 +127,9 @@ export const CURRICULUM_CHAPTERS=Object.freeze({
       chapter("Across the Mirror","Read signed equations regardless of which side holds the unknown",
         ["opposite-sprites","reverse-orientation","signed-groups"]),
       chapter("Master of Opposites","Choose efficient signed strategies, including subtracting negatives",
-        ["signed-sequences","signed-groups","subtract-negatives","strategy-choice"])
+        ["signed-sequences","signed-groups","subtract-negatives","strategy-choice"]),
+      chapter("The Sealed Opposites","Choose when to attach existing opposites, keep groups sealed, or open signed crates",
+        ["sealed-groups","unit-zero-pairs","sprite-zero-pairs","signed-sequences","signed-groups","strategy-choice"])
     ]),
     independent:Object.freeze([
       chapter("Two Hands, Two Signs","Repeat signed operations using separate hand visits",
@@ -162,7 +164,7 @@ export const DIFFICULTY_TIERS=Object.freeze({
     notebook:Object.freeze([2,2,3,3,3,3,4,4,4,4,5,5,3,4,4,5])
   }),
   opposites:Object.freeze({
-    guided:Object.freeze([2,2,2,3,3,4,4,4,3,4,4,4,4,4,5,5,5,5,5,5]),
+    guided:Object.freeze([2,2,2,3,3,4,4,4,3,4,4,4,4,4,5,5,5,5,5,5,3,3,4,5]),
     independent:Object.freeze([2,2,3,3,3,3,4,4,3,4,4,4,5,5,5,5]),
     notebook:Object.freeze([2,2,3,3,4,4,4,4,5,5,5,5])
   })
@@ -176,17 +178,18 @@ const SOURCES=Object.freeze({
 });
 const FRACTION_TRAPS=new Set([
   "two-step-12","independent-12","apprentice-06","apprentice-08",
-  "crates-23","crates-24","op-g-06","op-g-09","op-i-06","op-a-08"
+  "crates-23","crates-24","op-g-06","op-g-09","op-g-23","op-g-24","op-i-06","op-a-08"
 ]);
 const ALTERNATIVE_ROUTES=new Set([
   "two-step-10","two-step-11","master-17","master-20",
   "apprentice-04","apprentice-05","apprentice-12",
   "crates-21","crates-22","crates-24",
-  "op-g-18","op-i-06","op-a-08"
+  "op-g-18","op-g-21","op-g-22","op-g-23","op-g-24","op-i-06","op-a-08"
 ]);
 const sum=(r,key)=>Number(r?.[key]||0);
 const variableCount=r=>sum(r,"posX")-sum(r,"negX")+
-  sum(r?.crates?.contents,"posX")*sum(r?.crates,"count");
+  (sum(r?.crates?.contents,"posX")-sum(r?.crates?.contents,"negX"))*
+    sum(r?.crates,"count");
 const freezeList=values=>Object.freeze([...values]);
 
 function flagsFor(level){
@@ -196,8 +199,11 @@ function flagsFor(level){
       sum(r?.crates?.contents,"negX"))>0;
   const leftHasVariable=hasVariable(left);
   const rightHasVariable=hasVariable(right);
-  const hasNegativeUnits=sum(left,"negOne")+sum(right,"negOne")>0;
-  const hasNegativeSprites=sum(left,"negX")+sum(right,"negX")>0;
+  // Signed contents remain mathematically present even when sealed.
+  const totalSigned=(r,kind)=>sum(r,kind)+
+    sum(r?.crates,"count")*sum(r?.crates?.contents,kind);
+  const hasNegativeUnits=totalSigned(left,"negOne")+totalSigned(right,"negOne")>0;
+  const hasNegativeSprites=totalSigned(left,"negX")+totalSigned(right,"negX")>0;
   return Object.freeze({
     variablesOnBothSides:leftHasVariable&&rightHasVariable,
     reversed:variableCount(right)>variableCount(left),

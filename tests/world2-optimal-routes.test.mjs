@@ -21,7 +21,7 @@ import {startNotebook} from "../src/notebook-engine.mjs";
 import {tryNotebookOperation} from "../src/notebook-maths-editor.mjs";
 import {curriculumForLevel} from "../src/curriculum.mjs";
 
-const stageLengths={guided:20,independent:16,notebook:12};
+const stageLengths={guided:24,independent:16,notebook:12};
 const moveText=action=>{
   if(action.op==="divide")return "÷"+action.factor;
   if(action.op==="multiply")return "×"+action.factor;
@@ -32,8 +32,8 @@ const moveText=action=>{
     (negative?"(−"+n+(variable?"x":"")+")":n+(variable?"x":""));
 };
 
-test("48 independent signed par targets cover exactly the shipped stages",()=>{
-  assert.equal(OPPOSITE_TOTAL_AVAILABLE_STARS,144);
+test("52 independently certified signed par targets cover exactly the shipped stages",()=>{
+  assert.equal(OPPOSITE_TOTAL_AVAILABLE_STARS,156);
   assert.deepEqual(Object.keys(OPPOSITE_OPTIMAL_MOVES),OPPOSITE_STAGE_ORDER);
   const histogram={1:0,2:0,3:0};
   for(const [stage,count] of Object.entries(stageLengths)){
@@ -45,7 +45,7 @@ test("48 independent signed par targets cover exactly the shipped stages",()=>{
       histogram[n]++;
     }
   }
-  assert.deepEqual(histogram,{1:10,2:8,3:30});
+  assert.deepEqual(histogram,{1:10,2:8,3:34});
   assert.equal(ALL_SIGNED_ACTIONS.length,104,
     "Two operations × four kinds × 12 counts, plus eight factor actions");
   assert.deepEqual(new Set(ALL_SIGNED_ACTIONS.map(a=>a.op)),
@@ -54,7 +54,7 @@ test("48 independent signed par targets cover exactly the shipped stages",()=>{
     assert.equal(signedActionsFor(OPPOSITE_LEVELS[stage][0].level).length,104);
 });
 
-test("ALL 48 World 2 par targets are shortest legal paths under the real engine",()=>{
+test("ALL 52 World 2 par targets are shortest legal paths under the real engine",()=>{
   // Exhaustively breadth-first enumerate the exact engine's permitted moves.
   // Every shorter physical state/action is searched before a solution at par.
   // The stored reference routes are deliberately NOT used by the explorer.
@@ -159,8 +159,8 @@ test("certifying World 2 minima does not clear existing scores, completion or re
   const signed=current.worlds.opposites.stages.guided;
   signed.historical["op-g-05"]={revision:1,bestMoves:2};
   const before=campaignStarTotals(current,{worldId:"opposites"});
-  assert.equal(before.count,48);
-  assert.equal(before.available,144);
+  assert.equal(before.count,52);
+  assert.equal(before.available,156);
   assert.equal(before.completed,6);
   assert.equal(campaignStars(current,"opposites","guided","op-g-05"),3);
   assert.equal(campaignStars(current,"opposites","guided","op-g-06"),2);
@@ -175,8 +175,8 @@ test("certifying World 2 minima does not clear existing scores, completion or re
   assert.equal(reloaded.worlds.opposites.stages.guided.completedRevisions["op-g-05"],2);
   assert.deepEqual(reloaded.worlds.opposites.stages.guided.historical["op-g-05"],
     {revision:1,bestMoves:2});
-  assert.equal(campaignStarTotals(reloaded).available,324,
-    "World 1's 180 stars plus World 2's 144 remain unchanged");
+  assert.equal(campaignStarTotals(reloaded).available,336,
+    "World 1's 180 stars plus World 2's 156 include only newly added levels");
 });
 
 test("World 2 shortest-route script and curriculum remain author-only",()=>{

@@ -89,8 +89,8 @@ test("existing World 2 completions are visibly archived when their puzzle is rev
   await expect(page.locator('[data-level="5"]')).toHaveClass(/status-revised/);
   await expect(page.locator('[data-level="5"] .tile-status')).toContainText("Revised");
   await expect(page.locator('[data-level="18"]')).toHaveClass(/status-revised/);
-  await expect(page.locator("#world1-progress-number")).toContainText("1 of 20 complete");
-  await expect(page.locator("#level-progress")).toContainText("3 / 60 stars earned");
+  await expect(page.locator("#world1-progress-number")).toContainText("1 of 24 complete");
+  await expect(page.locator("#level-progress")).toContainText("3 / 72 stars earned");
   await page.locator('[data-level="5"]').click();
   const record=await page.evaluate(()=>JSON.parse(localStorage.getItem("mathssprites.campaign.v2"))
     .worlds.opposites.stages.guided);

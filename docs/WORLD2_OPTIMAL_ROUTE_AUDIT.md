@@ -1,4 +1,12 @@
-# PR50 — World 2 certified shortest legal route audit
+# World 2 certified shortest legal route audit — PR50 baseline and PR57 extension
+
+**PR57 extension (21 November 2026).** The original PR50 results below remain the historical baseline for all **48** previously published levels. PR57 appends four Guided signed-crate levels, with **52** World 2 levels total (24 Guided + 16 Independent + 12 Notebook). All four additions have a **proven three-scored-move minimum**; the new Guided distribution is 4 one-move, 1 two-move, and 19 three-move puzzles. World 2 totals are now **10 one-move, 8 two-move, 34 three-move**, or 156 available stars. Combined with World 1 this gives 112 levels and 336 possible stars.
+
+The expanded teacher-only BFS now enumerates opening intact crates on either side and allows **free zero-pair attachment**; it keys states on exact loose counts and intact crate contents. No pre-existing benchmark or recorded completion is revised. See [PR57's four challenges and tests](PR57_SEALED_OPPOSITES.md). Reproduce the current **52-level** audit using `npm run audit:world2`.
+
+---
+
+## Historical PR50 audit (48 levels)
 
 **Date:** 20 November 2026  
 **Scope:** Every one of the 48 currently playable signed-number levels (20 Guided, 16 Independent, 12 Algebra Apprentice).  
