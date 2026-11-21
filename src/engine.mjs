@@ -419,9 +419,12 @@ function commit(state, action, pair, mode) {
       left: pair.left.cancellationEvents||[],
       right:pair.right.cancellationEvents||[]
     } };
-  return { ...state, left: after.left, right: after.right, pending: null,
-    pairUndo:[],
-    history: [...state.history, transaction] };
+  // Do not add a new state property to every legacy operation: established
+  // histories and saved states keep precisely their original shape.
+  const committed={...state,left:after.left,right:after.right,pending:null,
+    history:[...state.history,transaction]};
+  delete committed.pairUndo;
+  return committed;
 }
 /**
  * In manual mode a first-side action is provisional until the other room is selected.
@@ -511,8 +514,10 @@ export function undo(state) {
   if (state.pending) return { ...state, pending: null };
   if(state.pairUndo?.length){
     const previous=state.pairUndo.at(-1);
-    return {...state,[previous.side]:copyRoom(previous.before),
+    const next={...state,[previous.side]:copyRoom(previous.before),
       pairUndo:state.pairUndo.slice(0,-1)};
+    if(!next.pairUndo.length)delete next.pairUndo;
+    return next;
   }
   if (!state.history.length) return state;
   const last = state.history.at(-1);
