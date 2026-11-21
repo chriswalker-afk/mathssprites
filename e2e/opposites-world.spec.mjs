@@ -11,7 +11,7 @@ async function board(page,stage="guided"){
   if(stage!=="guided")await page.locator('[data-map-stage="'+stage+'"]').click();
   await expect(page.locator("#site-levels")).toHaveAttribute("data-active-world","opposites");
 }
-test("World 2 shows six Guided chapters and all 52 experiments on the unified board @quick @smoke",async({page})=>{
+test("World 2 shows the extended independent and notebook stages alongside six Guided chapters on the unified board @quick @smoke",async({page})=>{
   await board(page);
   await expect(page.locator("#site-levels")).toBeVisible();
   await expect(page.locator('[data-map-world="opposites"]')).toBeEnabled();
@@ -21,11 +21,11 @@ test("World 2 shows six Guided chapters and all 52 experiments on the unified bo
   await expect(page.locator('[data-level="24"]')).toContainText("The sealed negatives");
   await expect(page.locator("#board-continue")).toHaveText("Play Level 1 →");
   await page.locator('[data-map-stage="independent"]').click();
+  await expect(page.locator(".level-tile")).toHaveCount(20);
+  await expect(page.locator(".chapter-group")).toHaveCount(5);
+  await page.locator('[data-map-stage="notebook"]').click();
   await expect(page.locator(".level-tile")).toHaveCount(16);
   await expect(page.locator(".chapter-group")).toHaveCount(4);
-  await page.locator('[data-map-stage="notebook"]').click();
-  await expect(page.locator(".level-tile")).toHaveCount(12);
-  await expect(page.locator(".chapter-group")).toHaveCount(3);
   await expect(page.locator('[data-map-world="fractions"]')).toBeDisabled();
   await expect(page.locator('[data-map-world="squares"]')).toBeDisabled();
   await page.screenshot({path:"artifacts/pr57-opposites-board-1280.png",fullPage:true});
