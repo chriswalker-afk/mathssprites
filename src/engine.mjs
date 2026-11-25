@@ -11,7 +11,9 @@ import {FRACTION_MODE,fractionRoom,fractionCanonical,fractionEvaluate,fractionEx
   fractionPerform,fractionUndo,fractionOperationText} from "./fraction-engine.mjs";
 import {cloneCrate,crateCount,crateAlgebra,crateContentsTotal,looseAfterUnpack,crateLabel} from "./group-crates.mjs";
 export const TOKEN_KINDS = ["posX", "negX", "posX2", "posOne", "negOne"];
-export const QUANTITY_MODES = Object.freeze(["positive","signed",FRACTION_MODE]);
+// Public whole-object mode choices stay unchanged until World 3 is enabled.
+// Fraction states explicitly dispatch before these legacy mode guards.
+export const QUANTITY_MODES = Object.freeze(["positive","signed"]);
 export function levelQuantityMode(level) {
   if (level.quantityMode) return level.quantityMode;
   // Legacy custom test levels with signed INITIAL contents are signed.
