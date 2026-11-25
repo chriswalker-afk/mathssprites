@@ -386,10 +386,10 @@ function renderNotebookVisibility() {
   $("chapter-status").textContent=campaign
     ?notebookLocation:"PAPER FIRST · SPRITE REPLAY SECOND · NO PROGRESS";
   $("notebook-stage-kicker").textContent=campaign
-    ?notebookLocation:"STAGE 3 · ALGEBRA APPRENTICE · TEACHER PROTOTYPE";
+    ?notebookLocation:workshopActive?"FREE PLAY · SQUARE ALGEBRA APPRENTICE":"STAGE 3 · ALGEBRA APPRENTICE · TEACHER PROTOTYPE";
   $("notebook-stage-note").textContent=campaign
     ?"Campaign experiment · Progress saved after a successful sprite replay"
-    :"Practice preview · No levels or progress earned";
+    :workshopActive?"Free play · No levels or stars earned":"Practice preview · No levels or progress earned";
   const square=!!currentLevel().squareLaboratory;
   $("notebook-square-operations").hidden=!square;
   $("notebook-square-key").hidden=!square;
@@ -410,7 +410,9 @@ function renderNotebookVisibility() {
     ? square?(currentLevel().goal==="area"
       ?"Write the operation that squares each entire expression."
       :"Choose operations that leave one round sprite facing only weights."):currentLevel().prompt
-    : "You already have the equation. Choose an operation for both sides. The maths editor calculates the new equation automatically; the sprites will replay your route.";
+    :workshopActive&&square?currentLevel().goal==="area"
+      ?"Write operations that build both square areas.":"Choose operations that leave one round sprite facing only weights."
+      : "You already have the equation. Choose an operation for both sides. The maths editor calculates the new equation automatically; the sprites will replay your route.";
   const support=campaign?currentLevel().scaffold:null;
   const showSupport=!!support&&support.kind!=="none"&&notebookPhase==="writing";
   $("notebook-scaffold").hidden=!showSupport;
@@ -424,9 +426,9 @@ function renderNotebookVisibility() {
   $("mode-wrapper").hidden=true;
   $("notebook-back-paper").hidden=notebookPhase!=="complete";
   $("notebook-watch-again").hidden=notebookPhase!=="complete";
-  $("notebook-next").hidden=!campaign||notebookPhase!=="complete"||
+  $("notebook-next").hidden=(!campaign&&!workshopActive)||notebookPhase!=="complete"||
     !notebookReplaySuccessful;
-  $("notebook-next").textContent=campaignLevelNumber>=campaignStageLevelCount
+  $("notebook-next").textContent=workshopActive?"Build another equation →":campaignLevelNumber>=campaignStageLevelCount
     ?"Back to levels →":"Next notebook level →";
 }
 /** Shared game renderer, but with zero campaign-credit navigation. */
@@ -439,7 +441,7 @@ function renderWorkshopVisibility(){
   $("chapter-status").textContent="CUSTOM EQUATION · NO CAMPAIGN PROGRESS";
   $("game-guide-restart").hidden=true;
   $("campaign-hand-mode").hidden=true;
-  $("mode-wrapper").hidden=false;
+  $("mode-wrapper").hidden=!!notebookSession;
 }
 function notebookMessage(message,status="info"){
   $("notebook-feedback").textContent=message;
@@ -535,7 +537,8 @@ function renderNotebookPaper() {
   renderNotebookMathEditor();
 }
 function independentSquareCampaign(){
-  return campaignWorldId==="squares"&&campaignStage==="independent";
+  return (campaignWorldId==="squares"&&campaignStage==="independent")||
+    (workshopActive&&currentLevel().squareLaboratory&&mode==="manual"&&!notebookSession);
 }
 function inspectionPolicy(){
   return squareInspectionPolicy(currentLevel(),{mode,notebook:!!notebookSession});
@@ -760,7 +763,7 @@ function render() {
     ? "● black = +x   ·   ◯ white = −x   ·   ◆ weight = +1   ·   ♧ balloon = −1"
     : "● black sprite = +x   ·   ◆ weight = +1";
   $("level-select").value = String(levelIndex);
-  $("level-select").disabled = busy || awaiting || squarePreviewActive || campaignLevelNumber !== null;
+  $("level-select").disabled = busy || awaiting || workshopActive || squarePreviewActive || campaignLevelNumber !== null;
   document.body.classList.toggle("square-inspection-preview",squarePreviewActive);
   if(squarePreviewActive){
     $("chapter-status").hidden=false;
@@ -1555,7 +1558,7 @@ async function finishTurn() {
     // A level can now be played out of order; its number alone is NOT
     // evidence that a whole chapter or stage has been mastered.
     $("level-clear-title").textContent =
-      workshopActive?"Your own equation, balanced!":
+      workshopActive?(state.goal==="area"?"Your squares, constructed!":"Your own equation, balanced!") :
         currentLevel().squareLaboratory&&state.goal==="area"?"Squares constructed!":"Balance restored!";
     $("level-clear").hidden = false;
     $("feedback").dataset.tone="success";
@@ -1588,7 +1591,7 @@ async function guidedMove() {
     left:previewRoomAction(previous.left,action,state.quantityMode,"left"),
     right:previewRoomAction(previous.right,action,state.quantityMode,"right")
   };
-  busy=true;clearSpeech();
+  busy=true;clearSpeech();render();
   setFeedback(currentLevel().groupedPrototype?"":operationDescription(action)+"...","working");
   try {
     if(action.op==="divide"){
@@ -1836,7 +1839,8 @@ async function replayNotebookWithSprites() {
     $("level-clear").hidden=false;
     $("notebook-playback-message").textContent=
       "Your "+script.length+" checked algebra step"+(script.length===1?"":"s")+
-      " just happened in the rooms. Every move stayed balanced.";
+      " just happened in the rooms. Every move stayed balanced."+
+      (workshopActive?" · Free play, no stars awarded.":"");
     await sleep(reducedMotion?650:1250);
     notebookReplaySuccessful=true;
     // Only a fully completed, physically verified Stage 3 replay earns credit.
@@ -1877,7 +1881,10 @@ async function manualMove(side) {
   }
   const before=visible();
   const preview=previewRoomAction(before[side],action,state.quantityMode,side);
-  busy=true;clearSpeech();
+  // Publish the busy state before the first awaited animation frame.
+  // Otherwise a phone can still show enabled controls between click and
+  // hand contact, causing the next learner selection to be swallowed.
+  busy=true;clearSpeech();render();
   try{
     if(action.op==="divide"){
       if(preview.cancellationEvents.length){
@@ -2760,8 +2767,9 @@ $("notebook-back-paper").addEventListener("click",()=>{
 });
 $("notebook-watch-again").addEventListener("click",replayNotebookWithSprites);
 $("notebook-next").addEventListener("click",()=>{
-  if(busy||!notebookReplaySuccessful||notebookPhase!=="complete"||
-     campaignStage!=="notebook"||campaignLevelNumber===null)return;
+  if(busy||!notebookReplaySuccessful||notebookPhase!=="complete")return;
+  if(workshopActive){window.dispatchEvent(new Event("mathssprites:workshop-another"));return;}
+  if(campaignStage!=="notebook"||campaignLevelNumber===null)return;
   window.dispatchEvent(new CustomEvent("mathssprites:advance"));
 });
 /** Build a custom balance using the same 48-object, whole-number engine.
@@ -2771,6 +2779,13 @@ window.addEventListener("mathssprites:workshop-launch",event=>{
   const {level,handMode}=event.detail||{};
   if(!level?.lockPositive||level.quantityMode!=="positive"||
      level.id!=="workshop-custom")return;
+  if(level.squareLaboratory&&handMode==="notebook"){
+    openNotebookLevel(level);
+    workshopActive=true;
+    renderNotebookPaper();render();
+    $("notebook-operation").focus({preventScroll:true});
+    return;
+  }
   startLevel(0,"positive",level,null);
   workshopActive=true;
   mode=handMode==="manual"?"manual":"auto";
@@ -2779,7 +2794,11 @@ window.addEventListener("mathssprites:workshop-launch",event=>{
 window.addEventListener("mathssprites:workshop-close",()=>{
   if(busy)return;
   workshopActive=false;
-  document.body.classList.remove("workshop-mode");
+  notebookSession=null;
+  notebookPhase="idle";
+  notebookReplaySuccessful=false;
+  closeSquareInspection();
+  document.body.classList.remove("workshop-mode","notebook-mode");
   render();
 });
 window.addEventListener("mathssprites:launch",event=>{

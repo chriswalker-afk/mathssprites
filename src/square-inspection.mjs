@@ -13,6 +13,8 @@ const art=k=>k==="posOne"?'<span class="box-actor box-actor-weight"></span>':are
  * chapters, other worlds, or paper-first replay. */
 export function squareInspectionPolicy(level,{mode="auto",notebook=false}={}){
   if(notebook||level?.squareLaboratory!==true||level.goal!=="isolate")return null;
+  if(level.id==="workshop-custom"&&level.squareInspection==="free")
+    return mode==="auto"?"guided":mode==="manual"?"independent":null;
   if(level.squareInspection==="guided"&&mode==="auto")return "guided";
   if(level.squareInspection==="independent"&&mode==="manual")return "independent";
   return null;
