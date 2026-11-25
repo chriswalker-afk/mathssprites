@@ -9,10 +9,11 @@ import { divisionBasketMarkup, playDivisionBaskets } from "./division-baskets.mj
 import {
   multiplicationBasketMarkup,multiplicationHandProp,playMultiplicationBaskets
 } from "./multiplication-baskets.mjs";
-import {spriteCreatureMarkup,heldSpriteMarkup,miniSpriteMarkup,areaSpriteMarkup} from "./square-sprites.mjs";
+import {spriteCreatureMarkup,heldSpriteMarkup,miniSpriteMarkup} from "./square-sprites.mjs";
 import { pickSpriteHandReaction, dodgeOffsetPx } from "./sprite-reactions.mjs";
 import { floorScaleToFit, inRoomBoxPlan, areaMathLabel } from "./area-layout.mjs";
 import {mountSquareConstruction,squareOverflowPlan,squareOverflowMarkup} from "./square-construction.mjs";
+import {mountSquareRoot,squareRootTrialPlan,squareRootTrialMessage,mountSquareRootTrial} from "./square-root-construction.mjs";
 import {weightPilePosition,weightCountPlaque} from "./weight-piles.mjs";
 import { itemWord, attemptMessage, mismatchedMoveMessage } from "./attempt-feedback.mjs";
 import { fractionCutPlan } from "./fraction-theatre.mjs";
@@ -799,116 +800,32 @@ function roomOperationText(action, side) {
   return "The hand "+(action.op==="remove"?"lifts away ":"places ")+
     action.count+" "+nouns+" in the "+roomName+" room...";
 }
-function areaBoxActor(kind) {
-  if(kind==="posOne")return '<span class="box-actor box-actor-weight"></span>';
-  return areaSpriteMarkup(kind);
-}
-const BOX_NOTES={
-  square:{
-    frame:"The hand sets a box onto the floor.",
-    edge:"Place the original row along one side.",
-    column:"Build a matching side at right angles.",
-    quadratic:"Round sprites meet: square sprites appear.",
-    mixed:"Fill both crossing regions with round sprites.",
-    units:"Fill the last corner with weights."
-  },
-  sqrt:{
-    frame:"Arrange all the objects in the square box.",
-    units:"Lift the weights out of the bottom corner.",
-    mixed:"Remove both matching mixed regions.",
-    quadratic:"Squish the square sprites back to a side.",
-    column:"Remove the duplicate vertical side.",
-    edge:"Keep only the remaining side."
-  }
-};
-/**
- * No detached overlay: a real frame is erected at floor level inside the
- * SAME room as the sprites. Ghost markers show the two physical dimensions;
- * they are guides, not counted as extra algebraic objects. Only the 4 interior
- * regions are the new algebraic objects. This scene never changes state:
- * the hand contact later commits the engine's already-validated result.
- */
+/** Both directions of the physical construction share the same frame and
+ * one exact engine contact. The root controller first arranges the original
+ * area; the square controller first arranges the original side length. */
 const squareViews={left:null,right:null};
-function showAreaPreview(side, action) {
-  const node=$(side+"-area-box");
-  const area=areaArrangement(visible()[side],action.op);
+const rootTrialViews={left:null,right:null};
+function showAreaPreview(side,action){
+  const node=$(side+"-area-box"),area=areaArrangement(visible()[side],action.op);
   if(!area||area.kind==="zero")return;
-  if(action.op==="square"){
-    squareViews[side]?.destroy();
-    squareViews[side]=mountSquareConstruction(node,$(side+"-items"),area,{reduced:reducedMotion});
-    node.setAttribute("aria-label",areaMathLabel(area)+
-      "; built inside the "+(side==="left"?"west":"east")+" room; edge guides do not count as objects");
-    return;
-  }
-  const plan=inRoomBoxPlan(area);
-  const tracks=plan.tracks.map(x=>x+"fr").join(" ");
-  const ruler=items=>items.map(({type,index})=>
-    '<span class="box-edge-token edge-'+type+'" data-segment="'+index+
-      '" aria-hidden="true"></span>').join("");
-  const tiles=plan.cells.map(cell=>{
-    const kind=cell.type==="square-sprite"?"posX2":
-      cell.type==="round-sprite"?"posX":"posOne";
-    return '<span class="box-cell region-'+cell.region+' stage-'+cell.stage+
-      '" data-kind="'+kind+'" data-row="'+cell.row+'" data-col="'+cell.col+
-      '" data-cell-index="'+cell.index+'" aria-hidden="true">'+
-      areaBoxActor(kind)+'</span>';
-  }).join("");
-  node.innerHTML='<div class="box-workshop">'+
-    '<div class="box-edge box-edge-top" style="grid-template-columns:'+tracks+
-      '">'+ruler(plan.horizontal)+'</div>'+
-    '<div class="box-edge box-edge-left" style="grid-template-rows:'+tracks+
-      '">'+ruler(plan.vertical)+'</div>'+
-    '<div class="box-grid" style="grid-template-columns:'+tracks+
-      ';grid-template-rows:'+tracks+'">'+tiles+'</div>'+
-    '<span class="box-footnote"></span></div>';
-  node.dataset.operation=action.op;
-  node.dataset.step="frame";
-  node.dataset.layout="in-room";
-  node.dataset.spriteSide=plan.spriteSide;
-  node.dataset.weightSide=plan.weightSide;
-  node.dataset.cells=plan.cells.length;
+  squareViews[side]?.destroy();
+  const mount=action.op==="sqrt"?mountSquareRoot:mountSquareConstruction;
+  squareViews[side]=mount(node,$(side+"-items"),area,{reduced:reducedMotion});
   node.setAttribute("aria-label",areaMathLabel(area)+
-    "; built inside the "+(side==="left"?"west":"east")+" room");
-  node.hidden=false;
-  $(side+"-chamber").classList.add("area-active");
-  if(action.op==="sqrt"){
-    node.querySelector(".box-edge-top").classList.add("built");
-    node.querySelector(".box-edge-left").classList.add("built");
-    for(const cell of node.querySelectorAll(".box-cell"))cell.classList.add("placed");
-  }
-  node.querySelector(".box-footnote").textContent=BOX_NOTES[action.op].frame;
+    "; "+(action.op==="sqrt"?"recover one nonnegative side in the ":"built inside the ")+
+    (side==="left"?"west":"east")+" room; edge guides do not count as objects");
 }
-function advanceAreaPreview(side, action, step) {
+function advanceAreaPreview(side,action,step){
   if(step==="frame"){showAreaPreview(side,action);return;}
-  if(action.op==="square"){squareViews[side]?.advance(step);return;}
-  const node=$(side+"-area-box");
-  if(node.hidden)return;
-  node.dataset.step=step;
-  const root=action.op==="sqrt";
-  const selector=step==="quadratic"||step==="mixed"||step==="units"
-    ? ".box-cell.stage-"+step : null;
-  if(selector)for(const cell of node.querySelectorAll(selector)){
-    cell.classList.add(root?"removed":"placed");
-  }
-  if(step==="edge")node.querySelector(".box-edge-top").classList.add(root?"kept":"built");
-  if(step==="column")node.querySelector(".box-edge-left").classList.add(root?"retired":"built");
-  node.querySelector(".box-footnote").textContent=BOX_NOTES[action.op][step]||"";
+  squareViews[side]?.advance(step);
 }
-function finishAreaPreview(side,action) {
-  if(action.op==="square"){squareViews[side]?.release();return;}
-  const node=$(side+"-area-box");
-  if(node.hidden)return;
-  node.dataset.step="result";
-  $(side+"-chamber").classList.add(action.op==="square"?
-    "area-after-square":"area-after-sqrt");
-}
-function clearAreaPreview(side) {
+function finishAreaPreview(side,action){squareViews[side]?.release();}
+function clearAreaPreview(side){
   squareViews[side]?.destroy();squareViews[side]=null;
   const node=$(side+"-area-box");
   node.hidden=true;node.innerHTML="";
   delete node.dataset.step;delete node.dataset.layout;
-  const chamber=$(side+"-chamber");
-  chamber.classList.remove("area-active","area-after-square","area-after-sqrt");
+  $(side+"-chamber").classList.remove("area-active","area-after-square","area-after-sqrt");
 }
 
 function clearNeutralEffect(side) {
@@ -1081,7 +998,7 @@ async function handAct(side, action, applyAtContact) {
 
   const caption = $("action-caption");
   caption.textContent = roomOperationText(action, side);
-  caption.hidden = action.op==="unpack"||action.op==="square";
+  caption.hidden = action.op==="unpack"||action.op==="square"||action.op==="sqrt";
   cargo.innerHTML = handProp(action, side);
   cargo.classList.remove("sprite-captured");
   if(action.op==="unpack")hand.dataset.crowbar="true";
@@ -1117,6 +1034,7 @@ async function handAct(side, action, applyAtContact) {
           if (reaction === "dodge") hand.classList.add("tracking-sprite");
           break;
         case "frame":
+        case "arrange":
         case "edge":
         case "column":
         case "quadratic":
@@ -1146,7 +1064,7 @@ async function handAct(side, action, applyAtContact) {
           // Capture the completed cells before the existing exact engine
           // callback replaces the visible floor inventory. Never recalculate
           // the equation or commit a second move in the visual controller.
-          if(action.op==="square")squareViews[side]?.capture();
+          if(action.op==="square"||action.op==="sqrt")squareViews[side]?.capture();
           const contactPromise=applyAtContact();
           if(contactPromise&&typeof contactPromise.then==="function")
             await contactPromise;
@@ -1315,6 +1233,16 @@ function failureStage(side, issue, action) {
   stage.dataset.issue = issue.code || "invalid";
   let html = "";
   if (issue.code === "fraction") return showFractionCut(side,issue);
+  if(issue.code==="unsupported-area"&&action.op==="sqrt"){
+    const trial=squareRootTrialPlan(visible()[side]);
+    if(trial){
+      rootTrialViews[side]?.destroy();
+      rootTrialViews[side]=mountSquareRootTrial(stage,$(side+"-items"),trial,{reduced:reducedMotion});
+      stage.classList.remove("rewinding");
+      chamber.classList.add("attempt-unsupported-area");
+      return;
+    }
+  }
   if (issue.code==="locked-crate"||issue.code==="crate-split"){
     for(const crate of $(side+"-items").querySelectorAll(".sealed-crate"))
       crate.classList.add("crate-locked-rattle");
@@ -1350,6 +1278,7 @@ function failureStage(side, issue, action) {
   chamber.classList.add("attempt-" + (issue.code || "invalid"));
 }
 function clearFailureStage(side) {
+  rootTrialViews[side]?.destroy();rootTrialViews[side]=null;
   const stage = $(side + "-attempt-stage");
   stage.hidden = true;
   stage.innerHTML = "";
@@ -1408,7 +1337,7 @@ async function animateRejectedAction(action, failure, preferredSide, rollbackPen
     // A visual pause comes BEFORE the speech bubble; learners can notice the
     // cut pieces or spilling tokens for themselves.
     await sleep(reducedMotion ? 220 : 850);
-    const message = attemptMessage(issue, action, side);
+    const message = squareRootTrialMessage(rootTrialViews[side]?.plan)||attemptMessage(issue, action, side);
     setFeedback(message,"warning");
     showTrialSpeech(message, reducedMotion ? 4500 : 7600);
     await sleep(reducedMotion ? 650 : 2450);

@@ -43,7 +43,7 @@ export const BOX_STAGES_SQUARE = Object.freeze([
   "frame", "edge", "column", "quadratic", "mixed-top", "mixed-bottom", "units"
 ]);
 export const BOX_STAGES_ROOT = Object.freeze([
-  "frame", "units", "mixed", "quadratic", "column", "edge"
+  "frame", "arrange", "units", "mixed-bottom", "mixed-top", "quadratic", "column", "edge"
 ]);
 
 /**

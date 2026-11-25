@@ -41,7 +41,7 @@ export function squareConstructionMarkup(plan){
     '<div class="box-edge box-edge-left" data-non-counting="true" style="grid-template-rows:'+tracks+'">'+ruler("left")+'</div>'+
     '<div class="box-grid" style="grid-template-columns:'+tracks+';grid-template-rows:'+tracks+'">'+tiles+'</div></div>';
 }
-const centre=el=>{const r=el.getBoundingClientRect();return {x:r.left+r.width/2,y:r.top+r.height/2};};
+export const centre=el=>{const r=el.getBoundingClientRect();return {x:r.left+r.width/2,y:r.top+r.height/2};};
 // Convert screen-space displacement into the element's parent coordinate
 // system. The scale track and the tilting room may both be transformed.
 function localDelta(el,dx,dy){
@@ -57,7 +57,7 @@ function localDelta(el,dx,dy){
   }catch{}
   return [dx,dy];
 }
-function fromPoint(el,point,animations,{duration=390,delay=0,bounce=false}={}){
+export function fromPoint(el,point,animations,{duration=390,delay=0,bounce=false}={}){
   if(!point||typeof el.animate!=="function")return;
   const end=centre(el),[dx,dy]=localDelta(el,point.x-end.x,point.y-end.y);
   if(!Number.isFinite(dx)||!Number.isFinite(dy))return;
@@ -76,7 +76,7 @@ function fromPoint(el,point,animations,{duration=390,delay=0,bounce=false}={}){
   // Natural completion restores the exact normal CSS and floor geometry.
   animation.finished.then(()=>animation.cancel(),()=>{});
 }
-const currentTokens=(items,kind)=>[...items.querySelectorAll(".floor-track > "+SELECTORS[kind])];
+export const currentTokens=(items,kind)=>[...items.querySelectorAll(".floor-track > "+SELECTORS[kind])];
 export function mountSquareConstruction(node,items,area,{reduced=false}={}){
   const plan=squareConstructionPlan(area),chamber=items.closest(".chamber"),animations=[];
   // The original row is visible until the edge stage. No extra visible copy
