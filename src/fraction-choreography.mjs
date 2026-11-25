@@ -4,8 +4,8 @@
  */
 import {rational,radd,rmul,rsub,req,rtext} from "./rational.mjs";
 import {FRACTION_KINDS,FRACTION_DENOMINATORS,fractionRoom,fractionRoomCount,fractionParts} from "./fraction-engine.mjs";
-import {weightGrid,weightChangeStages} from "./fraction-weights.mjs";
-import {spriteGrid,spriteChangeStages} from "./fraction-sprites.mjs";
+import {weightGrid,weightChangeStages,weightAssemblyMarkup} from "./fraction-weights.mjs";
+import {spriteGrid,spriteChangeStages,spriteAssemblyMarkup} from "./fraction-sprites.mjs";
 
 const gridFor=(kind,value,d)=>(kind==="posX"?spriteGrid:weightGrid)(value,d);
 export function gridValue(grid){
@@ -72,4 +72,31 @@ export function failureDiagram(failure){
     return {type:"grid",denominator:failure.denominator};
   if(failure.code==="overflow")return {type:"overflow",excess:Math.max(1,Number(failure.excess)||1)};
   return {type:"shake"};
+}
+
+/** Transient refusal artwork only. A representative whole shows the
+ * requested equal subdivision; a small illustrative spill is deliberately
+ * bounded even if the attempted overflow is large. Neither is a room or
+ * counted object, and neither participates in engine state. */
+export function fractionRefusalMarkup(failure,action,room){
+  const diagram=failureDiagram(failure);
+  if(diagram.type==="grid"){
+    const kind=failure.kind||action?.kind||"posOne";
+    const art=kind==="posX"?spriteAssemblyMarkup:weightAssemblyMarkup;
+    const d=diagram.denominator;
+    return '<div class="fb-refusal-art fb-refusal-cut" role="img" aria-label="Illustration of an attempted '+d+'-part '+(kind==="posX"?"sprite":"weight")+' cut" data-trial-denominator="'+d+'">'+
+      art(d,Array.from({length:d},(_,i)=>i),{trial:true,label:false,outline:true})+'</div>';
+  }
+  if(diagram.type==="overflow"){
+    const kinds=action?.kind?[action.kind]:FRACTION_KINDS.filter(k=>room?.[k]?.n>0);
+    if(!kinds.length)kinds.push("posOne");
+    const n=Math.min(5,diagram.excess);
+    return '<div class="fb-refusal-art fb-refusal-spill" role="img" aria-label="Illustrative spill; '+diagram.excess+' extra pieces exceed capacity" data-excess="'+diagram.excess+'">'+
+      Array.from({length:n},(_,i)=>{
+        const kind=kinds[i%kinds.length],art=kind==="posX"?spriteAssemblyMarkup:weightAssemblyMarkup;
+        const value=room?.[kind],d=value?.d||1;
+        return '<span class="fb-spill-object" style="--spill-index:'+i+'">'+art(d,[0],{outline:false,label:false})+'</span>';
+      }).join("")+'</div>';
+  }
+  return "";
 }

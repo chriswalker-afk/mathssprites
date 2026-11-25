@@ -84,3 +84,25 @@
 .fb-lab[data-mode="manual"] .needs-match .room-action{border-color:#ebc788;background:#5b4b31;color:#fff1c8;}
 .fb-lab[data-mode="manual"] .already-moved .room-action{opacity:.38;}
 .fb-lab[data-mode="manual"] .needs-match .room-interior{outline:3px solid #e8c17f;outline-offset:-3px;}
+
+/* PR68: pack a crowded direct chamber in more than one row, preserving
+ * the existing individual weight-pile layout. Fit baskets separately. */
+.fb-room-floor[data-wrap]{width:var(--fb-wrap-width);flex-wrap:wrap;align-content:flex-end;row-gap:5px}
+.fb-room-floor[data-wrap]>.fw-inventory,.fb-room-floor[data-wrap]>.fs-inventory,.fb-room-floor[data-wrap]>.fw-grid-inventory,.fb-room-floor[data-wrap]>.fs-grid-inventory{max-width:100%}
+.fb-room-floor[data-wrap] .fw-inventory-objects,.fb-room-floor[data-wrap] .fs-inventory-objects,.fb-room-floor[data-wrap] .fw-grid-inventory,.fb-room-floor[data-wrap] .fs-grid-inventory{flex-wrap:wrap}
+.fb-lab .room-items:has(.fb-refusal-cut)>.fb-room-floor{opacity:.24}
+.fb-refusal-overlay{position:absolute;inset:0;z-index:10;display:grid;place-items:center;pointer-events:none}
+.fb-refusal-art{display:flex;align-items:center;justify-content:center;gap:4px}
+.fb-refusal-cut .fw-assembly,.fb-refusal-cut .fs-assembly{width:clamp(90px,20vw,145px);max-width:100%}
+.fb-refusal-spill{position:absolute;right:3%;bottom:4px;align-items:flex-end;flex-wrap:wrap;max-width:90%}
+.fb-spill-object{opacity:0;transform:translateY(-25px);transition:opacity .24s,transform .45s;transition-delay:calc(var(--spill-index)*65ms)}
+.fb-refusal-active .fb-spill-object{opacity:1;transform:translateY(6px) rotate(calc((var(--spill-index) - 2)*12deg))}
+.fb-spill-object .fw-assembly,.fb-spill-object .fs-assembly{width:37px}
+.fb-lab[data-reduced="true"] .fb-spill-object{transition:none!important}
+@media(prefers-reduced-motion:reduce){.fb-spill-object{transition:none!important}}
+
+.fb-lab[data-reduced="false"] .fw-piece{transition:transform .42s cubic-bezier(.22,.75,.24,1)!important}
+.fb-lab[data-reduced="false"] .fs-piece{transition:transform .46s cubic-bezier(.2,.82,.28,1)!important}
+.fb-lab[data-reduced="false"] .fs-joined-art{transition:opacity .12s linear!important}
+.fb-lab[data-reduced="false"] .fs-assembly[data-complete="true"]:not(.is-separated) .fs-joined-art{transition-delay:.46s!important}
+.fb-lab[data-reduced="false"] .fs-assembly.is-separated .fs-fragment-motion{animation:fs-magic-wiggle .68s ease-in-out var(--fs-delay) 1 both!important}

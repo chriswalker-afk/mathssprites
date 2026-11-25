@@ -1,5 +1,5 @@
 /**
- * Curriculum planning catalogue for the 108 SHIPPED campaign levels.
+ * Curriculum planning catalogue for the 180 SHIPPED campaign levels.
  *
  * This module is for curriculum authors, reviewers and diagnostics. It is NOT
  * imported by the student game or menus: a difficulty or reference route must
@@ -15,6 +15,13 @@ import {APPRENTICE_LEVELS} from "./apprentice-levels.mjs";
 import {OPPOSITE_LEVELS} from "./opposite-levels.mjs";
 import {OPTIMAL_MOVES} from "./star-ratings.mjs";
 import {OPPOSITE_OPTIMAL_MOVES} from "./opposite-star-benchmarks.mjs";
+import {FRACTION_CAMPAIGN_STAGES} from "./fraction-campaign-levels.mjs";
+import {FRACTION_LEVEL_PLAN} from "./fraction-level-plan.mjs";
+import {fractionRoomCount} from "./fraction-engine.mjs";
+import {rcompare} from "./rational.mjs";
+const FRACTION_SOURCES=Object.freeze(Object.fromEntries(FRACTION_CAMPAIGN_STAGES.map(stage=>[stage.id,stage.levels])));
+const FRACTION_BENCHMARKS=Object.fromEntries(FRACTION_CAMPAIGN_STAGES.map(stage=>[stage.id,stage.optimalMoves]));
+const FRACTION_REFERENCES=new Map(FRACTION_LEVEL_PLAN.map(level=>[level.id,level.reference]));
 
 const skill=(label,strand,canDo,prerequisites=[])=>Object.freeze({
   label,strand,canDo,prerequisites:Object.freeze([...prerequisites])
@@ -58,7 +65,15 @@ export const CURRICULUM_SKILLS=Object.freeze({
   "subtract-negatives":skill("Subtracting a negative","signed",
     "Distinguish subtracting a balloon from subtracting a positive weight",["opposite-units"]),
   "signed-notation":skill("Accurate written signed operations","communication",
-    "Write operations such as adding negative x or subtracting negative four",["written-operations","opposite-units"])
+    "Write operations such as adding negative x or subtracting negative four",["written-operations","opposite-units"]),
+  "fraction-sharing":skill("Sharing a whole into equal parts","fractions","Share whole objects fairly and interpret leftover equal fragments",["equal-groups"]),
+  "fraction-solutions":skill("Exact fractional solutions","fractions","Interpret a fractional or mixed-number weight as the value of one sprite",["fraction-sharing"]),
+  "fraction-weights":skill("Fractional constants","fractions","Add or remove an equal rational quantity of weights on both sides",["remove-units","fraction-sharing"]),
+  "fraction-equivalence":skill("Equivalent physical fractions","fractions","Choose a supported common denominator and recognise equal rational quantities",["fraction-sharing"]),
+  "fraction-borrowing":skill("Borrowing and recombining","representation","Split a whole into equal pieces before subtraction and regroup remaining parts",["fraction-equivalence"]),
+  "fraction-sprites":skill("Fractional coefficients","fractions","Interpret a fragment of a sprite as the corresponding fraction of x",["fraction-sharing"]),
+  "fraction-scaling":skill("Scaling fractional equations","linear","Use whole-number copies and equal sharing to recover one whole sprite",["fraction-sprites","equal-groups"]),
+  "fraction-notation":skill("Exact fractional notation","communication","Write an exact fraction operation, confirm the next equation and replay the accepted steps",["written-operations","fraction-equivalence"])
 });
 
 export const DIFFICULTY_BANDS=Object.freeze({
@@ -153,6 +168,29 @@ export const CURRICULUM_CHAPTERS=Object.freeze({
       chapter("Brackets of Opposites","Write and expand signed bracket expressions, then replay physical sealed groups",
         ["written-operations","sealed-groups","signed-notation","signed-sequences","strategy-choice"])
     ])
+  }),
+  fractions:Object.freeze({
+    guided:Object.freeze([
+      chapter("Sharing the Leftovers","Share whole objects and interpret exact fractional answers",["fraction-sharing","fraction-solutions"]),
+      chapter("Little Pieces","Subtract equal fractional weights, including borrowing from a whole",["fraction-weights","fraction-borrowing"]),
+      chapter("Changing Pieces","Use equivalent parts and common denominators to remove fractional weights",["fraction-equivalence","fraction-borrowing"]),
+      chapter("Pieces of Sprites","Reassemble fractional unknowns by integer scaling and equal sharing",["fraction-sprites","fraction-scaling"]),
+      chapter("Fractional Mysteries","Sequence fractional subtraction, reassembly and division",["fraction-weights","fraction-sprites","fraction-scaling","two-step"]),
+      chapter("Master of Fractions","Remove fractional unknowns from both sides and select legal scaling routes",["variables-both-sides","fraction-equivalence","fraction-scaling","strategy-choice"])
+    ]),
+    independent:Object.freeze([
+      chapter("Equal Shares","Choose and match equal shares with fractional remainders",["matched-hands","fraction-sharing","fraction-solutions"]),
+      chapter("Fractional Weights","Match equivalent fractional removals and borrow from wholes",["matched-hands","fraction-weights","fraction-equivalence","fraction-borrowing"]),
+      chapter("Fractional Sprites","Match integer copies and sharing to isolate one whole sprite",["matched-hands","fraction-sprites","fraction-scaling"]),
+      chapter("Multiple Operations","Match multistep changes involving fractional coefficients and weights",["matched-hands","fraction-scaling","fraction-equivalence","two-step"]),
+      chapter("Across the Balance","Independently match strategic operations on both-sided fractional equations",["matched-hands","variables-both-sides","fraction-scaling","strategy-choice"])
+    ]),
+    notebook:Object.freeze([
+      chapter("Fractional Answers","Record and confirm exact operations producing fractional answers",["fraction-notation","fraction-solutions","written-operations"]),
+      chapter("Fractional Terms","Write operations with equivalent fractions and fractional coefficients",["fraction-notation","fraction-equivalence","fraction-sprites","fraction-scaling"]),
+      chapter("Multi-step Equations","Select and record a legal sequence of fractional transformations",["fraction-notation","fraction-scaling","two-step","fraction-borrowing"]),
+      chapter("Strategic Equations","Write and replay efficient solutions to two-sided fraction equations",["fraction-notation","variables-both-sides","fraction-equivalence","strategy-choice","fraction-scaling"])
+    ])
   })
 });
 
@@ -171,6 +209,11 @@ export const DIFFICULTY_TIERS=Object.freeze({
     guided:Object.freeze([2,2,2,3,3,4,4,4,3,4,4,4,4,4,5,5,5,5,5,5,3,3,4,5]),
     independent:Object.freeze([2,2,3,3,3,3,4,4,3,4,4,4,5,5,5,5,3,4,4,5]),
     notebook:Object.freeze([2,2,3,3,4,4,4,4,5,5,5,5,3,4,4,5])
+  }),
+  fractions:Object.freeze({
+    guided:Object.freeze([1,1,1,2,2,2,2,3,2,3,3,3,2,2,3,4,3,4,4,4,4,4,5,5]),
+    independent:Object.freeze([2,2,2,3,2,2,3,3,2,3,3,4,3,3,4,4,4,4,4,5]),
+    notebook:Object.freeze([2,2,2,3,3,3,3,4,3,3,4,4,4,4,5,5])
   })
 });
 
@@ -178,7 +221,8 @@ const SOURCES=Object.freeze({
   workshop:Object.freeze({
     guided:WORLD1_LEVELS,independent:INDEPENDENT_LEVELS,notebook:APPRENTICE_LEVELS
   }),
-  opposites:OPPOSITE_LEVELS
+  opposites:OPPOSITE_LEVELS,
+  fractions:FRACTION_SOURCES
 });
 const FRACTION_TRAPS=new Set([
   "two-step-12","independent-12","apprentice-06","apprentice-08",
@@ -198,6 +242,16 @@ const freezeList=values=>Object.freeze([...values]);
 
 function flagsFor(level){
   const left=level.left,right=level.right;
+  if(level.quantityMode==="fractions"){
+    const values=[left.posX,left.posOne,right.posX,right.posOne];
+    return Object.freeze({variablesOnBothSides:left.posX.n>0&&right.posX.n>0,
+      reversed:rcompare(right.posX,left.posX)>0,negativeUnits:false,negativeSprites:false,
+      sealedCrates:false,fractionTrap:false,alternativeRoutes:false,independentlyMatchedHands:false,
+      fractionalWeights:left.posOne.d>1||right.posOne.d>1,
+      fractionalSprites:left.posX.d>1||right.posX.d>1,
+      fractionalSolution:level.solution.d>1,
+      mixedDenominators:new Set(values.filter(q=>q.d>1).map(q=>q.d)).size>1});
+  }
   const hasVariable=r=>sum(r,"posX")+sum(r,"negX")+
     sum(r?.crates,"count")*(sum(r?.crates?.contents,"posX")+
       sum(r?.crates?.contents,"negX"))>0;
@@ -238,21 +292,26 @@ function makeEntry(worldId,stage,slot){
   if(flags.sealedCrates)skills.add("sealed-groups");
   if(flags.fractionTrap)skills.add("fraction-avoidance");
   if(flags.alternativeRoutes)skills.add("strategy-choice");
+  if(flags.fractionalWeights)skills.add("fraction-weights");
+  if(flags.fractionalSprites)skills.add("fraction-sprites");
+  if(flags.fractionalSolution)skills.add("fraction-solutions");
+  if(flags.mixedDenominators)skills.add("fraction-equivalence");
+  if(worldId==="fractions"&&stage==="notebook")skills.add("fraction-notation");
   if(stage==="independent")skills.add("matched-hands");
   if(stage==="notebook")skills.add("written-operations");
   const skillIds=freezeList(skills);
   const prerequisiteSkillIds=freezeList(new Set(skillIds.flatMap(id=>
     CURRICULUM_SKILLS[id]?.prerequisites||[])));
-  // Both worlds now have independently certified, engine-exhaustive star
-  // targets. The World 2 referenceRoute remains an author example, not
-  // the definition of "optimal" or a student-facing instruction.
-  const benchmarkMoves=(worldId==="workshop"?OPTIMAL_MOVES:
-    OPPOSITE_OPTIMAL_MOVES)[stage][number-1];
+  // World 3 uses a rigorous algebraic lower bound with a legal engine
+  // witness; the other worlds retain their separately certified targets.
+  const benchmarkMoves=worldId==="fractions"?FRACTION_BENCHMARKS[stage][level.id]:
+    (worldId==="workshop"?OPTIMAL_MOVES:OPPOSITE_OPTIMAL_MOVES)[stage][number-1];
   const benchmarkType="proven-minimum";
-  const authoredRouteMoves=worldId==="opposites"?level.referenceRoute.length:null;
-  const referenceOperations=worldId==="opposites"
-    ?freezeList(new Set(level.referenceRoute.map(step=>step.op))):freezeList([]);
-  const initialZeroPairs=["left","right"].reduce((total,side)=>{
+  const reference=worldId==="fractions"?FRACTION_REFERENCES.get(level.id):
+    worldId==="opposites"?level.referenceRoute:null;
+  const authoredRouteMoves=reference?reference.length:null;
+  const referenceOperations=freezeList(new Set((reference||[]).map(step=>step.op)));
+  const initialZeroPairs=worldId==="fractions"?0:["left","right"].reduce((total,side)=>{
     const r=level[side]||{};
     return total+Math.min(sum(r,"posX"),sum(r,"negX"))+
       Math.min(sum(r,"posOne"),sum(r,"negOne"));
@@ -270,7 +329,9 @@ function makeEntry(worldId,stage,slot){
     fractionTrap:flags.fractionTrap,
     multipleSolutionRoutes:flags.alternativeRoutes,
     sealedGroupReasoning:flags.sealedCrates,
-    initialZeroPairs
+    initialZeroPairs,
+    ...(worldId==="fractions"?{initialDenominators:freezeList([...new Set([level.left.posX.d,level.left.posOne.d,level.right.posX.d,level.right.posOne.d])].sort((a,b)=>a-b)),
+      solutionDenominator:level.solution.d,initialPeakPieces:Math.max(fractionRoomCount(level.left),fractionRoomCount(level.right))}:{})
   });
   const difficulty=Object.freeze({
     tier,label:DIFFICULTY_BANDS[tier],withinChapter:Number(number-1)%4+1,

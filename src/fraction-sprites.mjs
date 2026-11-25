@@ -16,8 +16,8 @@ const fmt=n=>Number(n.toFixed(6));
 const point=(angle,r=SPRITE_RADIUS)=>[fmt(SPRITE_CENTER[0]+r*Math.cos(angle)),fmt(SPRITE_CENTER[1]+r*Math.sin(angle))];
 const xy=p=>p.join(" ");
 const cache=new Map();
-export function spritePartition(denominator){
-  if(!allowed(denominator))throw new RangeError("Unsupported sprite denominator");
+export function spritePartition(denominator,{trial=false}={}){
+  if(!allowed(denominator)&&!(trial&&Number.isInteger(denominator)&&denominator>1&&denominator<=120))throw new RangeError("Unsupported sprite denominator");
   if(cache.has(denominator))return cache.get(denominator);
   const start=-Math.PI/2,step=tau/denominator;
   const pieces=Object.freeze(Array.from({length:denominator},(_,index)=>{
@@ -99,8 +99,8 @@ function spriteArt(id){
     '<ellipse class="fs-pupil" cx="55" cy="56" rx="1.9" ry="2.7" fill="#1c2726"/>'+
     '<ellipse class="fs-pupil" cx="77" cy="56" rx="1.9" ry="2.7" fill="#1c2726"/></g></defs>';
 }
-export function spriteAssemblyMarkup(denominator,indices,{outline=true,label=true,separated=false}={}){
-  const partition=spritePartition(denominator);
+export function spriteAssemblyMarkup(denominator,indices,{outline=true,label=true,separated=false,trial=false}={}){
+  const partition=spritePartition(denominator,{trial});
   if(!Array.isArray(indices)||!indices.length||new Set(indices).size!==indices.length||
     indices.some(i=>!Number.isInteger(i)||i<0||i>=denominator))
     throw new RangeError("Select distinct pieces of one sprite");

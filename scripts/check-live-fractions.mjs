@@ -1,0 +1,38 @@
+/** Strict deployed World 3 smoke check. Run after GitHub Pages has deployed
+ * the release; never infer the branch under test from the public URL. */
+import {chromium} from "@playwright/test";
+import {mkdirSync,writeFileSync} from "node:fs";
+const url="https://chriswalker-afk.github.io/mathssprites/";
+const results={url,checks:[],errors:[]};
+const browser=await chromium.launch({channel:"chrome",headless:true});
+const page=await browser.newPage({viewport:{width:1280,height:720},reducedMotion:"reduce"});
+page.on("pageerror",e=>results.errors.push(String(e)));
+const verify=(condition,message)=>{if(!condition)throw new Error(message);results.checks.push(message);};
+mkdirSync("artifacts",{recursive:true});
+try{
+  const response=await page.goto(url+"?world3-release="+Date.now(),{waitUntil:"networkidle",timeout:30000});
+  verify(response?.ok(),"Published home resolves");
+  await page.locator("#home-choose-level").click();
+  await page.locator('[data-map-world="fractions"]').click();
+  for(const [stage,count] of [["guided",24],["independent",20],["notebook",16]]){
+    await page.locator('[data-map-stage="'+stage+'"]').click();
+    await page.locator(".level-tile").first().waitFor({state:"visible"});
+    verify(await page.locator(".level-tile").count()===count,"Published "+stage+" has "+count+" levels");
+    verify(await page.locator(".level-tile:disabled").count()===0,"Published "+stage+" is fully selectable");
+  }
+  await page.screenshot({path:"artifacts/live-world3-board.png",fullPage:true});
+  await page.goto(url+"?workshop=2x%3D5&workshopWorld=fractions&workshopMode=auto",{waitUntil:"networkidle"});
+  verify(await page.locator("#workshop-quantity-mode").inputValue()==="fractions","Published fractional workshop deep link");
+  const before=await page.evaluate(()=>JSON.stringify(localStorage));
+  await page.locator("#workshop-create").click();
+  const root=page.locator("#fraction-game-host #fraction-lab");
+  await root.locator('[data-fb-op="divide"]').click();await root.locator('[data-fb-factor="2"]').click();
+  await root.locator("#fb-apply").click();
+  await root.locator("#fb-next-level").waitFor({state:"visible",timeout:30000});
+  verify(await root.getAttribute("data-solved")==="true","Published physical fraction division solves 2x=5");
+  verify((await root.locator("#right-items").getAttribute("aria-label")).includes("5/2 weights"),"Published result is exactly five halves");
+  verify((await page.evaluate(()=>JSON.stringify(localStorage)))===before,"Published custom play leaves saves unchanged");
+  await page.screenshot({path:"artifacts/live-world3-workshop.png",fullPage:true});
+  verify(results.errors.length===0,"No uncaught browser errors");
+}catch(e){results.errors.push(String(e));process.exitCode=1;}
+finally{await browser.close();console.log(JSON.stringify(results,null,2));writeFileSync("artifacts/live-world3-release.json",JSON.stringify(results,null,2));}
