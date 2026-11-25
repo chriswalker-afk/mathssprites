@@ -94,7 +94,7 @@ test("all sixteen Apprentice levels reach the certified minimum through typed op
     assert.deepEqual(session,startFractionNotebook(slot.level));
   }
   assert.equal(nextCampaignLevel("fractions","notebook",16),null);
-  assert.equal(isCampaignPlayable("squares","notebook",1),false);
+  assert.equal(isCampaignPlayable("squares","notebook",1),true);
 });
 test("fraction notebook saves remain isolated and totals are 60 levels and 180 stars in World 3",()=>{
   let state=blankCampaignRecords();
@@ -109,5 +109,6 @@ test("fraction notebook saves remain isolated and totals are 60 levels and 180 s
   assert.equal(campaignStarTotals(state).count,240);
   assert.equal(campaignStarTotals(state).available,720);
   assert.equal(normalizeCampaignResume({worldId:"fractions",stageId:"notebook",levelId:"frac-a-02"}).levelId,"frac-a-02");
-  assert.equal(normalizeCampaignResume({worldId:"squares",stageId:"notebook",levelId:"square-a-01"}),null);
+  assert.deepEqual(normalizeCampaignResume({worldId:"squares",stageId:"notebook",levelId:"square-a-01"}),{worldId:"squares",stageId:"notebook",levelId:"square-a-01"});
+  assert.deepEqual(campaignStageRecord(state,"squares","notebook").completed,[]);
 });

@@ -115,7 +115,7 @@ test("maths keypad, keyboard entry and phone sizing all work",async({page})=>{
   await page.setViewportSize({width:375,height:725});
   await notebook(page,"resident");
   await expect(page.locator("#notebook-operation")).toBeVisible();
-  await expect(page.locator(".notebook-maths-keypad button")).toHaveCount(12);
+  await expect(page.locator(".notebook-maths-keypad button:visible")).toHaveCount(12);
   const el=await page.locator("#notebook-operation").boundingBox();
   expect(el.x).toBeGreaterThanOrEqual(0);
   expect(el.x+el.width).toBeLessThanOrEqual(377);
