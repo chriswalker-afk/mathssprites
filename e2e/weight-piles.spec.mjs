@@ -129,6 +129,14 @@ test("basket sharing still moves exactly the real weight tokens, and finished gr
   await expect(page.locator("#amount-value")).toHaveText("2");
   await page.locator("#do-both").click();
   await expect(page.locator("#right-items .floor-track > .weight")).toHaveCount(5,{timeout:35000});
+  // The new inventory is painted at hand contact, before the scale has
+  // returned to its resting angle. Check the finished pile, not that
+  // transitional frame. Keep the original geometric tolerances.
+  await expect(page.locator("#undo")).toBeEnabled({timeout:15000});
+  await expect.poll(()=>page.locator(".rooms-row").evaluate(el=>{
+    getComputedStyle(el).transform;
+    return el.getAnimations().every(a=>a.playState!=="running"&&!a.pending);
+  }),{timeout:5000}).toBe(true);
   checkPiles(await measureWeights(page,"right"),5);
   await expect(page.locator("#right-items .weight-stack-count")).toHaveCount(0);
 });
