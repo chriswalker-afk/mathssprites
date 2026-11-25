@@ -83,7 +83,7 @@ export function createWorkshopEquation(input){
   if(!Number.isFinite(value))return fail("invalid-solution","This equation has no usable whole-number solution.");
   if(value<0)return fail("negative-solution","This equation needs a negative sprite value. Negative numbers belong to a later world.");
   if(value===0)return fail("zero-solution","This equation gives x = 0. The first workshop works with positive whole-number sprite values.");
-  if(!Number.isInteger(value))return fail("fraction-solution","The mystery sprite would need a fractional value. Fractions belong to a later world.");
+  if(!Number.isInteger(value))return fail("fraction-solution","The mystery sprite would need a fractional value. Select Fractions in the number system menu.");
   if(value>48)return fail("solution-overflow","The solved room would need more than 48 weights. Try a smaller whole-number solution.");
 
   const level={

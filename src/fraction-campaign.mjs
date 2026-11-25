@@ -65,19 +65,21 @@ export function createFractionCampaignView({slot,context,onLeave,onAdvance,onCom
   const abort=new AbortController();
   const listen=(el,type,fn)=>el.addEventListener(type,fn,{signal:abort.signal});
   let completed=null,step=0,notebook=null;
-  const paperFirst=context.method==="notebook";
+  const paperFirst=context.method==="notebook",freePlay=context.freePlay===true;
+  root.dataset.freePlay=String(freePlay);
   if(paperFirst)root.dataset.notebookPhase="paper";
-  $("fb-chapter-status").textContent="WORLD "+context.worldNumber+" · STAGE "+context.stageNumber+" · LEVEL "+
+  $("fb-chapter-status").textContent=freePlay?"FREE PLAY · FRACTIONS · NO CAMPAIGN PROGRESS":"WORLD "+context.worldNumber+" · STAGE "+context.stageNumber+" · LEVEL "+
     String(slot.number).padStart(2,"0")+" / "+context.stageLength;
   $("fb-level-title").textContent=slot.title;
   $("fb-chapter-name").textContent=context.chapterTitle;
+  if(freePlay){$("fb-game-levels").textContent="← Equation Workshop";$("fb-chapter-dots").hidden=true;}
   root.querySelector(".fb-mode-badge").textContent=paperFirst?"Algebra Apprentice":context.method==="manual"?"Independent Balance":"Guided Balance";
   $("fb-chapter-dots").replaceChildren(...context.chapterLevels.map(l=>{
     const dot=document.createElement("span");
     dot.className="progress-dot"+(l.number<=slot.number?" lit":"")+(l.number===slot.number?" current":"");
     dot.title=l.title;return dot;
   }));
-  $("fb-next-level").textContent=slot.number===context.stageLength?"Return to levels →":"Next level →";
+  $("fb-next-level").textContent=freePlay?"Build another equation →":slot.number===context.stageLength?"Return to levels →":"Next level →";
   function showComic(){
     if(!completed?.history.length)return;
     step=Math.max(0,Math.min(step,completed.history.length-1));

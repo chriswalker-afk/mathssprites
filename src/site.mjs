@@ -9,7 +9,8 @@ import {
   withCampaignLastPlayed,withCampaignCompleted,campaignStageRecord,
   campaignStars,campaignStarTotals,campaignOptimalMoves,stageResumeLevel
 } from "./campaign-records.mjs";
-import {createWorkshopEquation} from "./equation-workshop.mjs";
+import {createWorkshopEquation,WORKSHOP_EXAMPLES} from "./equation-workshop.mjs";
+import {createFractionWorkshopEquation,FRACTION_WORKSHOP_EXAMPLES} from "./fraction-workshop.mjs";
 import {createHomeHero} from "./home-hero.mjs";
 import {compactWorldProgress,compactStageProgress,briefStageIntro} from "./menu-copy.mjs";
 import {boardContinueLevel,spatialTileIndex} from "./navigation-journey.mjs";
@@ -386,6 +387,7 @@ function showScreen(name,{focusHeading=true}={}) {
   if (!screenNames.includes(name)) return;
   if(name==="workshop" && currentScreen!=="workshop" && currentScreen!=="workshop-game"){
     workshopReturnScreen=currentScreen==="levels"?"levels":"home";
+    if(currentScreen==="levels")setWorkshopQuantity(selectedWorld==="fractions"?"fractions":"positive");
   }
   if((name==="help"||name==="settings") &&
       !["help","settings"].includes(currentScreen) &&
@@ -502,8 +504,31 @@ function workshopStatus(message,status="info"){
   $("workshop-feedback").dataset.status=status;
   $("workshop-equation").setAttribute("aria-invalid",String(status==="error"));
 }
+function setWorkshopQuantity(quantity){
+  const fractions=quantity==="fractions";
+  $("workshop-quantity-mode").value=fractions?"fractions":"positive";
+  const notebook=$("workshop-hand-mode").querySelector('option[value="notebook"]');
+  notebook.disabled=!fractions;notebook.hidden=!fractions;
+  if(!fractions&&$("workshop-hand-mode").value==="notebook")$("workshop-hand-mode").value="auto";
+  $("workshop-equation").placeholder=fractions?"e.g. (2/3)x = 4":"e.g. 3x + 5 = 20";
+  $("workshop-west-example").textContent=fractions?"2 sprites":"3 sprites + 5 weights";
+  $("workshop-east-example").textContent=fractions?"5 weights":"20 weights";
+  $("workshop-rule-copy").textContent=fractions
+    ?"Use positive linear terms, e.g. (2/3)x, x/2, 1/4 or 1 1/2. Reduced denominators: 1, 2, 3, 4, 5, 6, 8, 10 and 12. Up to 48 objects and pieces per room. Copy or share by 2–5. A legal route of at most 16 moves must be found."
+    :"Use positive whole-number solutions, up to 48 objects per room and whole-object moves. Equal groups must divide into 2–5 complete groups. Select Fractions for exact fractional objects and solutions.";
+  const examples=fractions?FRACTION_WORKSHOP_EXAMPLES:WORKSHOP_EXAMPLES.slice(0,4);
+  const label=document.createElement("span");label.textContent="Try an example:";
+  $("workshop-examples").replaceChildren(label,...examples.map(value=>{
+    const button=document.createElement("button");button.type="button";button.className="workshop-example";
+    button.dataset.workshopExample=value;button.textContent=value;return button;
+  }));
+  workshopStatus("Enter an equation to check it.");
+}
+$("workshop-quantity-mode").addEventListener("change",()=>setWorkshopQuantity($("workshop-quantity-mode").value));
 function launchWorkshopScene(level,handMode){
-  if(!level?.lockPositive||level.quantityMode!=="positive")return false;
+  const fractions=level?.quantityMode==="fractions";
+  if(!fractions&&(!level?.lockPositive||level.quantityMode!=="positive"))return false;
+  closeFractionCampaign();
   homeHero.setActive(false);
   playingNumber=null;
   playingStage=null;
@@ -512,6 +537,18 @@ function launchWorkshopScene(level,handMode){
   $("site-shell").hidden=true;
   $("game-shell").hidden=false;
   document.body.classList.remove("preview-mode");
+  if(fractions){
+    $("game-shell").hidden=true;
+    const method=["auto","manual","notebook"].includes(handMode)?handMode:"auto";
+    fractionCampaign=createFractionCampaignView({slot:{id:level.id,title:level.title,level},
+      context:{freePlay:true,method,chapterLevels:[],chapterTitle:"Your own experiment"},
+      onLeave:screen=>showScreen(screen==="home"?"home":"workshop"),
+      onAdvance:()=>showScreen("workshop"),
+      onComplete:state=>fractionCampaign?.setRating(state.history.length+" checked move"+(state.history.length===1?"":"s")+" · Free play, no stars awarded.")
+    });
+    window.scrollTo?.(0,0);
+    return true;
+  }
   window.dispatchEvent(new CustomEvent("mathssprites:workshop-launch",{
     detail:{level,handMode:handMode==="manual"?"manual":"auto"}
   }));
@@ -522,7 +559,7 @@ function launchWorkshopScene(level,handMode){
 $("workshop-form").addEventListener("submit",event=>{
   event.preventDefault();
   const input=$("workshop-equation").value;
-  const result=createWorkshopEquation(input);
+  const result=$("workshop-quantity-mode").value==="fractions"?createFractionWorkshopEquation(input):createWorkshopEquation(input);
   if(!result.ok){
     workshopStatus(result.message,"error");
     $("workshop-equation").focus();
@@ -824,6 +861,9 @@ const preview = params.get("preview");
 const notebookPreview=params.get("notebook");
 const workshopDraft=params.get("workshop");
 if(workshopDraft!==null){
+  setWorkshopQuantity(params.get("workshopWorld")==="fractions"?"fractions":"positive");
+  const draftMode=params.get("workshopMode");
+  if(["auto","manual","notebook"].includes(draftMode)&&!(draftMode==="notebook"&&$("workshop-quantity-mode").value!=="fractions"))$("workshop-hand-mode").value=draftMode;
   $("workshop-equation").value=workshopDraft.slice(0,80);
   showScreen("workshop");
 } else if(notebookPreview!==null){

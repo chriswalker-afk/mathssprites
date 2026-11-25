@@ -58,3 +58,6 @@ body.workshop-mode #game-levels{white-space:nowrap}
  #workshop-hand-mode{font-size:.87rem}
  .workshop-example{flex:1 1 auto}
 }
+
+#workshop-quantity-mode{width:100%;min-width:0;min-height:42px;padding:8px 12px;border:1px solid #9b8a65;border-radius:8px;background:#fffaf0;color:#283936;font:inherit}
+#workshop-quantity-mode:focus-visible{outline:3px solid #315f68;outline-offset:2px}
