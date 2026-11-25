@@ -77,8 +77,11 @@ test("sprites in the same room do not hop in lockstep and do not reset on tool c
 
 test("hand pauses the target room but not the untouched room", async ({ page }) => {
   await page.locator("#level-select").selectOption("3");
+  await page.locator('[data-operation="remove"]').click();
   await page.locator('[data-kind="posX"]').click();
-  await clickWithReferenceMove(page,"#do-both");
+  await page.locator("#amount-up").click();
+  await expect(page.locator("#amount-value")).toHaveText("1");
+  await page.locator("#do-both").click();
   await expect(page.locator("#left-chamber")).toHaveClass(/hand-target/);
   await expect(page.locator("#left-items .sprite-motion").first()).toHaveCSS("animation-play-state", "paused");
   await expect(page.locator("#left-items .sprite-body").first()).toHaveCSS("animation-play-state", "paused");

@@ -6,7 +6,8 @@ export default defineConfig({
   expect: { timeout: 14000 },
   reporter: [["list"]],
   // Real-time animation and screenshot tests are serial within a runner.
-  // CI parallelism is handled via three isolated workflow shards.
+  // Full CI regression uses six isolated test-level shards, each with one
+  // worker. Ordinary focused jobs explicitly choose their worker count.
   workers: process.env.CI ? 1 : undefined,
   fullyParallel: false,
   use: {

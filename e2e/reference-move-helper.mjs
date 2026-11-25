@@ -56,6 +56,9 @@ export async function chooseReferenceMoveIfBlank(page){
   if(!choice.operation)
     await page.locator('[data-operation="'+action+'"]').click();
   const selected=choice.operation||action;
+  // Square/root acts on the entire room; the operation-first UI correctly
+  // hides the quantity picker. Do not wait on a nonexistent number control.
+  if(selected==="square"||selected==="sqrt")return;
   if(selected==="add"||selected==="remove"){
     if(!choice.kind)
       await page.locator('[data-kind="'+kind+'"]').click();

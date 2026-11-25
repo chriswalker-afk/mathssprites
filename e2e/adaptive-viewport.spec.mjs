@@ -126,7 +126,9 @@ test("world and stage tabs, scrollable chapters and signed notebook use the scre
     withinScreen(await measure(page));
     await page.screenshot({path:"artifacts/pr59-world-tabs-"+size.name+".png"});
     await page.locator('[data-map-world="opposites"]').click();
+    await page.locator('[data-map-stage="guided"]').click();
     await expect(page.locator("#site-levels")).toHaveAttribute("data-active-world","opposites");
+    await expect(page.locator("#site-levels")).toHaveAttribute("data-active-stage","guided");
     await expect(page.locator(".chapter-group")).toHaveCount(6);
     await expect(page.locator(".level-tile")).toHaveCount(24);
     await page.locator('[data-level="24"]').scrollIntoViewIfNeeded();
