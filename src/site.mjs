@@ -473,7 +473,7 @@ function launch(levelIdOrNumber,stageId=selectedStage,worldId=selectedWorld) {
     chapterTitle:stage.chapters[slot.chapterIndex]?.title||"Experiments",
     chapterLevels:stage.levels.filter(s=>s.chapterIndex===slot.chapterIndex)
       .map(s=>({id:s.id,title:s.title,number:s.number}))};
-  if(worldId==="fractions"&&stage.method!=="notebook"){
+  if(worldId==="fractions"){
     $("game-shell").hidden=true;
     fractionCampaign=createFractionCampaignView({slot,context,
       onLeave:screen=>showScreen(screen),
@@ -796,7 +796,7 @@ window.addEventListener("mathssprites:solved",event=>{
     $("level-clear-rating").hidden=false;
     $("replay-star-summary").textContent=message;
     $("replay-star-summary").hidden=false;
-    if(playingStage==="notebook")
+    if(playingStage==="notebook"&&!fractionCampaign)
       $("notebook-playback-message").textContent+=" · "+message;
   }
   renderWorlds();

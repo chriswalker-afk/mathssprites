@@ -1,0 +1,48 @@
+/* Paper-first Fractional Algebra Apprentice. The same physical lab appears
+ * only in the replay phase. All mathematical text uses native MathML. */
+.fb-notebook{color:#352d22;background:#f2e6ca;border:2px solid #b79a65;border-radius:12px;padding:clamp(12px,2vw,22px);box-shadow:0 5px 18px #10171255}
+.fb-notebook h2{font:700 1.15rem Georgia,serif;margin:0 0 6px}
+.fb-notebook p{margin:4px 0;font-size:.85rem}
+.fb-paper-header,.fb-paper-actions,.fb-editor-keys,.fb-editor-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.fb-paper-header{justify-content:space-between}
+.fb-paper-lines{list-style:none;margin:12px 0;padding:0;border:1px solid #cdb98f;border-radius:8px;background:repeating-linear-gradient(#fffbef 0,#fffbef 47px,#e5dbc4 48px,#fffbef 49px);max-height:34vh;overflow:auto}
+.fb-paper-lines li{display:grid;grid-template-columns:3.5rem minmax(0,1fr) minmax(3rem,auto);align-items:center;min-height:48px;padding:6px 10px;gap:8px;border-bottom:1px solid #d9c9a8}
+.fb-paper-lines li:last-child{border-bottom:0}
+.fb-paper-lines .fb-paper-index{font-size:.72rem;color:#786746}
+.fb-paper-lines math{font-size:1.24rem}
+.fb-paper-lines .fb-paper-op math{font-size:1rem;color:#775726}
+.fb-paper-current{background:#fff8df}
+.fb-editor{border:1px solid #c8b287;border-radius:8px;padding:10px;background:#fffbef}
+.fb-editor-row{align-items:center;justify-content:flex-start}
+.fb-notebook button{border-color:#947b52;background:#f5e9c9;color:#3b3125;font-weight:650;min-height:36px}
+.fb-notebook button[aria-pressed="true"]{background:#5b4b31;color:#fff3d1;border-color:#705632}
+.fb-editor-keys button{min-width:40px;font-size:1.1rem}
+.fb-notebook input{font:inherit;color:#352d22;background:#fff;border:1px solid #b9a47b;border-radius:5px;padding:5px 7px;min-height:34px;max-width:100%}
+.fb-notebook input:focus-visible,.fb-notebook button:focus-visible{outline:3px solid #a5813b;outline-offset:2px}
+.fb-operand{display:flex;align-items:center;gap:5px}
+.fb-notebook-fraction{display:grid;grid-template-rows:auto 2px auto;gap:3px;justify-items:center}
+.fb-notebook-fraction input{width:78px;text-align:center;font-size:1rem}
+.fb-notebook-fraction>span{width:100%;background:#765e38}
+.fb-notebook-fraction[data-whole="true"]{grid-template-rows:auto}
+.fb-notebook-fraction[data-whole="true"]>span,.fb-notebook-fraction[data-whole="true"] #fb-nb-den{display:none}
+.fb-notebook #fb-nb-variable{font:italic 1.15rem Georgia,serif;min-width:40px}
+.fb-editor-preview{min-width:85px;flex:1;display:grid;justify-items:center;border-left:1px solid #c9b78e;min-height:55px;align-content:center}
+.fb-editor-preview math{font-size:1.24rem}
+.fb-editor-details{margin-top:9px;font-size:.8rem;color:#6e5b38}
+.fb-editor-details summary{cursor:pointer}
+.fb-editor-details label{display:grid;gap:4px;margin-top:7px}
+.fb-editor-details input{width:min(100%,300px)}
+.fb-paper-result{display:flex;align-items:center;justify-content:center;gap:8px;min-height:60px;margin-top:8px;padding:6px;border:1px dashed #b7a374;border-radius:8px;flex-wrap:wrap}
+.fb-paper-result math{font-size:1.2rem}
+.fb-paper-feedback{min-height:1.4em;font-size:.82rem;color:#775726}
+.fb-paper-feedback[data-error="true"]{color:#942f23}
+.fb-paper-actions{justify-content:flex-end;margin-top:8px}
+.fb-notebook #fb-nb-confirm,.fb-notebook #fb-nb-watch{background:#4b6b52;color:#fff7df;border-color:#354e37}
+.fb-notebook #fb-nb-preview{background:#805f30;color:#fff8e9;border-color:#705026}
+.fb-notebook [hidden]{display:none!important}
+.fb-campaign[data-notebook-phase="paper"] .playfield,.fb-campaign[data-notebook-phase="paper"] .fb-tools,.fb-campaign[data-notebook-phase="paper"] #fb-review{display:none!important}
+.fb-campaign[data-notebook-phase="replaying"] .fb-tools,.fb-campaign[data-notebook-phase="replaying"] #fb-review,.fb-campaign[data-notebook-phase="replay"] .fb-tools{display:none!important}
+.fb-campaign #fb-nb-replay-status[hidden],.fb-campaign #fb-nb-replay-status [hidden]{display:none!important}
+.fb-nb-replay-status{border:1px solid #a58e5d;background:#243a34;padding:7px 10px;border-radius:8px;margin-bottom:8px;display:flex;align-items:center;gap:9px;justify-content:space-between;flex-wrap:wrap}
+.fb-nb-replay-status math{font-size:1.1rem}
+@media(max-width:600px){.fb-paper-lines li{grid-template-columns:2rem minmax(0,1fr) auto;padding:5px;gap:3px}.fb-paper-lines math{font-size:1rem}.fb-paper-lines .fb-paper-op math{font-size:.9rem}.fb-editor-preview{flex-basis:90px}.fb-notebook{padding:10px}}

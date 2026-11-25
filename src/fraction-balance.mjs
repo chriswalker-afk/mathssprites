@@ -246,9 +246,10 @@ export function mountFractionBalance(root,{level,mode="auto",reduced=false,onCom
     if(mode==="manual")resetSelection();
     feedback("Move undone. Try another operation.");
   }
-  async function play(side){
+  async function play(side,explicitAction=null){
     if(busy||dead||isSolved(state))return;
-    const action=selectedAction();if(!action)return;
+    const checked=explicitAction?fractionAction(explicitAction):null;
+    const action=explicitAction?(checked.ok?checked.action:null):selectedAction();if(!action)return;
     busy=true;clearSpeech();controls();
     try{
       const prior=state;
@@ -309,6 +310,13 @@ export function mountFractionBalance(root,{level,mode="auto",reduced=false,onCom
   const observer=typeof ResizeObserver!=="undefined"?new ResizeObserver(fitAll):null;
   for(const side of SIDES)observer?.observe($(side+"-items"));
   setReduced(reduced);restart(level,mode);
-  return {load:restart,setMode,setReduced,getState:()=>state,play,
+  return {load:restart,setMode,setReduced,getState:()=>state,play,refit:fitAll,
+    async playAction(action){
+      // Used only for checked notebook replay, never for uncommitted paper.
+      if(mode!=="auto"||busy||dead||isSolved(state))return false;
+      const count=state.history.length;
+      await play(undefined,action);
+      return !dead&&state.history.length===count+1;
+    },
     destroy(){dead=true;abort.abort();observer?.disconnect();if(activeSide)clearHand(activeSide);}};
 }

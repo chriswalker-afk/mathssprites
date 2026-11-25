@@ -56,7 +56,7 @@ export function fractionAction(action){
   if(!FRACTION_OPERATIONS.includes(action?.op))return failure("locked-operation","That tool belongs to another workshop.");
   const op=action.op;
   if(op==="add"||op==="remove"){
-    if(!FRACTION_KINDS.includes(action.kind))return failure("locked-kind","Use black sprites or weights in this workshop.");
+    if(!FRACTION_KINDS.includes(action.kind))return failure("locked-kind","Use dark sprites or weights in this workshop.");
     let count;
     try{count=rational(action.count);}catch{return failure("invalid","Choose an exact fraction or whole number.");}
     if(count.n<=0||rcompare(count,12)>0)return failure("invalid","Choose a positive amount of at most twelve objects.");

@@ -165,6 +165,6 @@ test("all sixty planned puzzles have exact unique answers and replayable legal r
     for(let i=0;i<level.reference.length;i++)s=undo(s);
     assert.deepEqual(s,start,level.id);
   }
-  // The Guided campaign is published; the other two modes remain locked.
+  // All three Fraction Workshop modes are published.
   assert.deepEqual(CAMPAIGN_REGISTRY.map(w=>w.available),[true,true,true,false]);
 });

@@ -3,13 +3,14 @@
  * Navigation and progress remain owned by site.mjs, not the physics renderer.
  */
 import {mountFractionBalance} from "./fraction-balance.mjs";
+import {mountFractionNotebook} from "./fraction-notebook.mjs";
 import {FRACTION_CAMPAIGN_SCENE} from "./fraction-campaign-scene.mjs";
 import {spriteInventoryMarkup} from "./fraction-sprites.mjs";
 import {weightInventoryMarkup} from "./fraction-weights.mjs";
 import {rational,req,rtext} from "./rational.mjs";
 import {isSolved} from "./engine.mjs";
 
-const STYLE_FILES=["styles.css","fraction-weights.css","fraction-sprites.css","fraction-balance.css","fraction-campaign.css"];
+const STYLE_FILES=["styles.css","fraction-weights.css","fraction-sprites.css","fraction-balance.css","fraction-campaign.css","fraction-notebook.css"];
 const escape=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const mn=n=>"<mn>"+n+"</mn>";
 const mo=s=>"<mo>"+s+"</mo>";
@@ -63,12 +64,14 @@ export function createFractionCampaignView({slot,context,onLeave,onAdvance,onCom
   const $=id=>root.querySelector("#"+id);
   const abort=new AbortController();
   const listen=(el,type,fn)=>el.addEventListener(type,fn,{signal:abort.signal});
-  let completed=null,step=0;
+  let completed=null,step=0,notebook=null;
+  const paperFirst=context.method==="notebook";
+  if(paperFirst)root.dataset.notebookPhase="paper";
   $("fb-chapter-status").textContent="WORLD "+context.worldNumber+" · STAGE "+context.stageNumber+" · LEVEL "+
     String(slot.number).padStart(2,"0")+" / "+context.stageLength;
   $("fb-level-title").textContent=slot.title;
   $("fb-chapter-name").textContent=context.chapterTitle;
-  root.querySelector(".fb-mode-badge").textContent=context.method==="manual"?"Independent Balance":"Guided Balance";
+  root.querySelector(".fb-mode-badge").textContent=paperFirst?"Algebra Apprentice":context.method==="manual"?"Independent Balance":"Guided Balance";
   $("fb-chapter-dots").replaceChildren(...context.chapterLevels.map(l=>{
     const dot=document.createElement("span");
     dot.className="progress-dot"+(l.number<=slot.number?" lit":"")+(l.number===slot.number?" current":"");
@@ -95,20 +98,22 @@ export function createFractionCampaignView({slot,context,onLeave,onAdvance,onCom
     const saved=localStorage.getItem("mathssprites.motion-preference.v1");
     reduced=saved==="reduced"||(saved!=="on"&&matchMedia("(prefers-reduced-motion: reduce)").matches);
   }catch{reduced=matchMedia("(prefers-reduced-motion: reduce)").matches;}
-  const controller=mountFractionBalance(root,{level:slot.level,mode:context.method,reduced,
-    onState:refresh,onComplete});
-  const canLeave=()=>root.dataset.busy!=="true";
+  const controller=mountFractionBalance(root,{level:slot.level,mode:paperFirst?"auto":context.method,reduced,
+    onState:refresh,onComplete:paperFirst?()=>{}:onComplete});
+  if(paperFirst)notebook=mountFractionNotebook(root,{level:slot.level,controller,
+    equationMarkup:fractionEquationMarkup,operationMarkup:fractionOperationMarkup,onComplete});
+  const canLeave=()=>root.dataset.busy!=="true"&&root.dataset.notebookPlaying!=="true";
   listen($("fb-game-home"),"click",()=>{if(canLeave())onLeave("home")});
   listen($("fb-game-levels"),"click",()=>{if(canLeave())onLeave("levels")});
   listen($("fb-next-level"),"click",()=>{if(completed&&canLeave())onAdvance()});
   listen($("fb-replay-prev"),"click",()=>{step--;showComic()});
   listen($("fb-replay-next"),"click",()=>{step++;showComic()});
   const observer=new MutationObserver(()=>{
-    const busy=root.dataset.busy==="true";
+    const busy=!canLeave();
     $("fb-game-home").disabled=busy;$("fb-game-levels").disabled=busy;
   });
-  observer.observe(root,{attributes:true,attributeFilter:["data-busy"]});
+  observer.observe(root,{attributes:true,attributeFilter:["data-busy","data-notebook-playing"]});
   $("fb-level-title").focus({preventScroll:true});
   return {controller,host,setRating(message){$("fb-rating").textContent=message;},
-    destroy(){observer.disconnect();abort.abort();controller.destroy();host.remove();}};
+    destroy(){observer.disconnect();abort.abort();notebook?.destroy();controller.destroy();host.remove();}};
 }

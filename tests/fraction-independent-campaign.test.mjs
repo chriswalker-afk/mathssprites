@@ -55,7 +55,7 @@ test("all twenty Independent fraction levels are published with stable IDs, five
     }
   }
   assert.equal(nextCampaignLevel("fractions","independent",20),null);
-  assert.equal(isCampaignPlayable("fractions","notebook",1),false);
+  assert.equal(isCampaignPlayable("fractions","notebook",1),true);
 });
 
 test("Independent completion awards stars only for completed moves and retains world and stage save isolation",()=>{
@@ -69,10 +69,10 @@ test("Independent completion awards stars only for completed moves and retains w
   assert.deepEqual(campaignStageRecord(state,"workshop","independent").completed,[]);
   assert.deepEqual(campaignStageRecord(state,"opposites","independent").completed,[]);
   assert.deepEqual(campaignStarTotals(state,{worldId:"fractions",stageId:"independent"}),{earned:3,available:60,completed:1,count:20});
-  assert.deepEqual(campaignStarTotals(state,{worldId:"fractions"}),{earned:3,available:132,completed:1,count:44});
-  assert.equal(campaignStarTotals(state).count,164);
-  assert.equal(campaignStarTotals(state).available,492);
+  assert.deepEqual(campaignStarTotals(state,{worldId:"fractions"}),{earned:3,available:180,completed:1,count:60});
+  assert.equal(campaignStarTotals(state).count,180);
+  assert.equal(campaignStarTotals(state).available,540);
   assert.equal(normalizeCampaignResume({worldId:"fractions",stageId:"independent",levelId:"frac-i-02"}).levelId,"frac-i-02");
-  assert.equal(normalizeCampaignResume({worldId:"fractions",stageId:"notebook",levelId:"frac-a-01"}),null);
-  assert.deepEqual(withCampaignCompleted(state,"fractions","notebook","frac-a-01",1),state);
+  assert.equal(normalizeCampaignResume({worldId:"fractions",stageId:"notebook",levelId:"unknown"}),null);
+  assert.deepEqual(withCampaignCompleted(state,"fractions","notebook","unknown",1),state);
 });
