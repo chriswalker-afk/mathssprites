@@ -58,7 +58,7 @@ test("keyboard can change stages without losing focus, announce selection @quick
   await page.keyboard.press("ArrowRight");
   await expect(page.locator('[data-map-world="opposites"]')).toBeFocused();
   await expect(page.locator('[data-map-world="opposites"]')).toHaveAttribute("aria-pressed","true");
-  await expect(page.locator('[data-map-world="fractions"]')).toBeDisabled();
+  await expect(page.locator('[data-map-world="fractions"]')).toBeEnabled();
   await expect(page.locator('[data-map-world="squares"]')).toBeDisabled();
 });
 test("desktop arrow keys follow the visual chapter columns, and Enter launches @smoke",async({page})=>{

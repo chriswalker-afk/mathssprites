@@ -1,0 +1,31 @@
+:host{display:block;color:var(--text,#eee6d5);font-family:"Trebuchet MS","Segoe UI",sans-serif}
+.fb-campaign .fb-header{gap:8px;align-items:flex-end;margin-bottom:7px}
+.fb-campaign-header .fb-game-nav{display:flex;gap:6px;margin-bottom:5px}
+.fb-campaign-header h1{margin:2px 0;font-size:clamp(1.3rem,2.6vw,1.8rem)}
+.fb-game-meta{display:grid;justify-items:end;gap:6px}
+#fb-chapter-dots{display:flex;gap:5px}
+#fb-chapter-dots .progress-dot{width:22px;height:7px}
+.fb-mode-badge{font-size:.72rem;color:#d7c6a4;border:1px solid #988354;padding:4px 9px;border-radius:20px}
+.fb-campaign .playfield{height:clamp(315px,58vh,490px)}
+.fb-campaign .fb-tools{margin-top:7px}
+.fb-campaign .fb-review{scroll-margin-top:8px}
+.fb-review-header,.fb-comic-bottom{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.fb-replay-buttons{display:flex;align-items:center;gap:6px}
+.fb-replay-buttons output{font-size:.8rem;min-width:34px;text-align:center}
+.fb-comic-spread{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:8px;align-items:center;margin:10px 0}
+.fb-comic-panel{background:#20352f;color:#f5ebd1;border-radius:8px;border:2px solid #a58b5e;padding:8px;min-width:0}
+.fb-comic-panel h3{font-size:.9rem;color:#e3c28d}
+.fb-comic-scale{display:grid;grid-template-columns:minmax(0,1fr) 20px minmax(0,1fr);gap:3px;align-items:end;min-height:82px;margin:5px 0}
+.fb-comic-scale>span{text-align:center;color:#d4ad70;font-size:1.15rem;align-self:end}
+.fb-comic-room{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:center;min-width:0;border-bottom:3px solid #a47e4b;padding-bottom:3px;min-height:42px;gap:3px}
+.fb-comic-room .fw-inventory-objects,.fb-comic-room .fs-inventory-objects{gap:2px}
+.fb-comic-room .fw-assembly,.fb-comic-room .fs-assembly{width:44px}
+.fb-comic-room .fw-pile{max-width:100%}
+.fb-comic-room .fw-empty,.fb-comic-room .fs-empty{display:none}
+.fb-comic-room .fw-count-plaque{font-size:9px;padding:3px}
+.fb-comic-room .fw-label,.fb-comic-room .fs-label{font-size:10px;min-height:12px}
+.fb-equation math,.fb-comic-action math{font-size:1.2rem;text-align:center;padding:5px}
+.fb-comic-action{text-align:center;font:700 .75rem Georgia,serif;display:grid;gap:2px;justify-items:center;color:#493922}
+.fb-comic-bottom #fb-rating{font-size:.84rem;font-weight:bold;color:#58411d}
+#fb-next-level{background:#c5a36b;color:#1c221d;font-weight:700}
+@media(max-width:640px){.fb-comic-spread{grid-template-columns:1fr}.fb-comic-action{display:flex;justify-content:center;align-items:center}.fb-game-meta{justify-items:start}.fb-campaign-header{align-items:center}.fb-campaign .playfield{height:335px}}

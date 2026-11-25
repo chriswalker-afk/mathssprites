@@ -183,7 +183,7 @@ export const WORLDS = Object.freeze([
     description:"White sprites and balloons make remarkable zero pairs.",available:true },
   { id:"fractions",number:3,title:"The Fraction Workshop",
     subtitle:"Fractions",theme:"glass",
-    description:"A tiny piece can finally have its own mathematical value.",available:false },
+    description:"A tiny piece can finally have its own mathematical value.",available:true },
   { id:"squares",number:4,title:"The Square Laboratory",
     subtitle:"Squares and square roots",theme:"square",
     description:"Build squares inside the chamber, then work backwards.",available:false }

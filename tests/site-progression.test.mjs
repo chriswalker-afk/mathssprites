@@ -11,7 +11,7 @@ import { initialState, perform, validInitialLevel, isSolved, LEVELS } from "../s
 
 test("four visible worlds, six four-level chapters and twenty-four implemented puzzles", () => {
   assert.equal(WORLDS.length, 4);
-  assert.deepEqual(WORLDS.map(w => w.available), [true,true,false,false]);
+  assert.deepEqual(WORLDS.map(w => w.available), [true,true,true,false]);
   assert.equal(WORLD1_CHAPTERS.length, 6);
   assert.equal(WORLD1_LEVELS.length, 24);
   assert.deepEqual(WORLD1_LEVELS.filter(x => x.available).map(x => x.number),

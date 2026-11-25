@@ -14,7 +14,7 @@ test("Worlds opens the same board as Choose a level; future worlds remain visibl
   await expect(page.locator("#site-levels")).toBeVisible();
   await expect(page.locator("#map-world-tabs button")).toHaveCount(4);
   await expect(page.locator('[data-map-world="opposites"]')).toBeEnabled();
-  await expect(page.locator('[data-map-world="fractions"]')).toBeDisabled();
+  await expect(page.locator('[data-map-world="fractions"]')).toBeEnabled();
   await expect(page.locator('[data-map-world="squares"]')).toBeDisabled();
   await page.locator("#site-back").click();
   await page.locator("#home-choose-level").click();

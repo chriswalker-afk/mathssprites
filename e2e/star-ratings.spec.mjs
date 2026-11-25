@@ -44,7 +44,7 @@ test("all 60 World 1 levels remain selectable with unrated stars and future worl
     await expect(page.locator("#world1-progress-number")).toHaveText("0 of "+n+" complete");
   }
   await expect(page.locator('#site-levels [data-screen="workshop"]')).toBeVisible();
-  await expect(page.locator('[data-map-world="fractions"]')).toBeDisabled();
+  await expect(page.locator('[data-map-world="fractions"]')).toBeEnabled();
   await expect(page.locator('[data-map-world="squares"]')).toBeDisabled();
 });
 

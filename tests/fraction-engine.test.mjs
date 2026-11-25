@@ -165,6 +165,6 @@ test("all sixty planned puzzles have exact unique answers and replayable legal r
     for(let i=0;i<level.reference.length;i++)s=undo(s);
     assert.deepEqual(s,start,level.id);
   }
-  // No public navigation or saves are enabled by the teacher-only fixtures.
-  assert.deepEqual(CAMPAIGN_REGISTRY.map(w=>w.available),[true,true,false,false]);
+  // The Guided campaign is published; the other two modes remain locked.
+  assert.deepEqual(CAMPAIGN_REGISTRY.map(w=>w.available),[true,true,true,false]);
 });

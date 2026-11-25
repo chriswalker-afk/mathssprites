@@ -41,7 +41,7 @@ test("the live world selector has four distinct emblems, with future worlds lock
   expect(new Set(symbols).size).toBe(4);
   await expect(page.locator('[data-map-world="workshop"]')).toBeEnabled();
   await expect(page.locator('[data-map-world="opposites"]')).toBeEnabled();
-  await expect(page.locator('[data-map-world="fractions"]')).toBeDisabled();
+  await expect(page.locator('[data-map-world="fractions"]')).toBeEnabled();
   await expect(page.locator('[data-map-world="squares"]')).toBeDisabled();
   await expect(page.locator("#map-stage-tabs .map-stage-icon")).toHaveCount(3);
   await page.screenshot({path:"artifacts/pr59-world-tabs-1280.png"});
