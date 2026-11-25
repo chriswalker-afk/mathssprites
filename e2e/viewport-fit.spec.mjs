@@ -54,7 +54,7 @@ for(const size of laptopViews){
 
     await openLevels(page,1);
     await expect(page.locator('[data-map-world="opposites"]')).toBeEnabled();
-    await expect(page.locator('[data-map-world="fractions"]')).toBeDisabled();
+    await expect(page.locator('[data-map-world="fractions"]')).toBeEnabled();
     await expect(page.locator('[data-map-world="squares"]')).toBeDisabled();
     await expect(page.locator("#map-stage-tabs button")).toHaveCount(3);
     await expect(page.locator(".level-tile")).toHaveCount(24);
