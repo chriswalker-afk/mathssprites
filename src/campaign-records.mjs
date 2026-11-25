@@ -45,10 +45,12 @@ export function normalizeCampaignRecords(value,registry=CAMPAIGN_REGISTRY){
   for(const world of registry)for(const stage of world.stages){
     const source=value?.worlds?.[world.id]?.stages?.[stage.id]||{};
     const dest=result.worlds[world.id].stages[stage.id];
-    const validIds=new Set(stage.levels.map(x=>x.id));
+    if(!world.available||!stage.available)continue;
+    const validIds=new Set(stage.levels.filter(x=>x.available).map(x=>x.id));
     const completed=new Set(Array.isArray(source.completed)?source.completed:[]);
     dest.lastPlayed=validIds.has(source.lastPlayed)?source.lastPlayed:stage.levels[0]?.id??null;
     for(const slot of stage.levels){
+      if(!slot.available)continue;
       const id=slot.id,revision=contentRevision(slot);
       const previous=source.historical?.[id];
       if(previous&&Number.isInteger(previous.revision)&&previous.revision>=1)
@@ -205,7 +207,7 @@ export function saveCampaignResume(value,storage,registry=CAMPAIGN_REGISTRY){
 }
 export function stageResumeLevel(value,worldId,stageId,registry=CAMPAIGN_REGISTRY){
   const stage=findCampaignStage(worldId,stageId,registry);
-  if(!stage||!findCampaignWorld(worldId,registry)?.available)return null;
+  if(!stage?.available||!findCampaignWorld(worldId,registry)?.available)return null;
   const record=campaignStageRecord(value,worldId,stageId,registry);
   return findCampaignLevel(worldId,stageId,record?.lastPlayed,registry)||
     firstCampaignLevel(worldId,stageId,registry);

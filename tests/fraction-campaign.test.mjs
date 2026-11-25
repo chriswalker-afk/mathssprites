@@ -59,7 +59,7 @@ test("World 3 completion, stars and resume are isolated from old worlds and unkn
   assert.equal(campaignStageRecord(data,"fractions","guided").lastPlayed,second.id);
   assert.equal(campaignStars(data,"fractions","guided",first.id),3);
   assert.deepEqual(campaignStarTotals(data,{worldId:"fractions"}),{earned:3,available:180,completed:1,count:60});
-  assert.equal(campaignStarTotals(data).available,540);
+  assert.equal(campaignStarTotals(data).available,612);
   assert.deepEqual(campaignStageRecord(data,"workshop","guided").completed,[]);
   assert.deepEqual(campaignStageRecord(data,"opposites","guided").completed,[]);
   assert.equal(normalizeCampaignResume({worldId:"fractions",stageId:"guided",levelId:second.id}).levelId,second.id);

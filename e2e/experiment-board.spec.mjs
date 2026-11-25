@@ -14,7 +14,7 @@ test("new student enters any guided level in two clicks, not four @quick @smoke"
   await expect(page.locator(".level-tile:disabled")).toHaveCount(0);
   await expect(page.locator('[data-map-world="opposites"]')).toBeEnabled();
   await expect(page.locator('[data-map-world="fractions"]')).toBeEnabled();
-  await expect(page.locator('[data-map-world="squares"]')).toBeDisabled();
+  await expect(page.locator('[data-map-world="squares"]')).toBeEnabled();
   await page.locator('[data-level="18"]').click();
   await expect(page.locator("#level-title")).toHaveText("The other way round");
   await page.locator("#game-levels").click();

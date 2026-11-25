@@ -604,7 +604,15 @@ function render() {
   // Existing World 1 teacher cues remain, but future mathematical worlds
   // get their own stage/chapter facts rather than World 1's fixed 20/16 map.
   const briefings=campaignWorldId==="workshop"
-    ?(campaignStage==="independent"?INDEPENDENT_BRIEFINGS:CHAPTER_BRIEFINGS):{};
+    ?(campaignStage==="independent"?INDEPENDENT_BRIEFINGS:CHAPTER_BRIEFINGS):
+      campaignWorldId==="squares"&&campaignStage==="guided"?{
+        1:"Square the entire contents of both chambers. Watch the four regions form.",
+        5:"Square root recovers one side of a complete square.",
+        9:"Clear or share objects before taking a square root.",
+        13:"Recognise a complete square made from all three kinds of objects.",
+        17:"Inspect square lets you look for a missing corner without making a move.",
+        21:"Choose a sequence of matching moves to reveal the round sprite."
+      }:{};
   $("chapter-briefing").hidden =
     campaignLevelNumber===null || !briefings[campaignLevelNumber];
   if(campaignLevelNumber!==null){
@@ -640,7 +648,7 @@ function render() {
   $("balance-caption").textContent = (awaiting || override)
     ? "The balance is waiting for its matching move"
     : balance !== 0 ? "The scale is unbalanced." : "";
-  for (const button of document.querySelectorAll("[data-operation]")) {
+  for (const button of document.querySelectorAll(".operation-picker [data-operation]")) {
     const available = !lvl.allowedOperations || lvl.allowedOperations.includes(button.dataset.operation);
     button.hidden = !available;
     button.classList.toggle("selected", operation!==null && button.dataset.operation === operation);
@@ -722,7 +730,9 @@ function render() {
   $("quantity-mode").querySelector('option[value="positive"]').disabled=
     levelQuantityMode(lvl)==="signed";
   document.body.classList.toggle("quantity-mode-positive",state.quantityMode==="positive");
-  $("journal-legend").textContent=state.quantityMode==="signed"
+  $("journal-legend").textContent=lvl.squareLaboratory
+    ?"● round sprite = x   ·   ■ square sprite = x²   ·   ◆ weight = 1"
+    :state.quantityMode==="signed"
     ? "● black = +x   ·   ◯ white = −x   ·   ◆ weight = +1   ·   ♧ balloon = −1"
     : "● black sprite = +x   ·   ◆ weight = +1";
   $("level-select").value = String(levelIndex);
@@ -787,7 +797,8 @@ function render() {
   renderInspectionTool();
   if (isSolved(state)) {
     $("feedback").dataset.tone="success";
-    $("feedback").innerHTML = '<span class="success-mark">✦</span> Mystery solved. ' +
+    $("feedback").innerHTML = '<span class="success-mark">✦</span> '+
+      (lvl.squareLaboratory&&state.goal==="area"?"Squares built. ":"Mystery solved. ")+
       '<button id="watch-again" class="inline-link" type="button">Watch the comic again</button>';
   }
   renderFirstGuide();
@@ -894,7 +905,8 @@ function clearAreaPreview(side){
   squareViews[side]?.destroy();squareViews[side]=null;
   const node=$(side+"-area-box");
   node.hidden=true;node.innerHTML="";
-  delete node.dataset.step;delete node.dataset.layout;
+  for(const key of ["step","layout","operation","cells","spriteSide","weightSide"])delete node.dataset[key];
+  node.classList.remove("selected");node.removeAttribute("aria-pressed");
   $(side+"-chamber").classList.remove("area-active","area-after-square","area-after-sqrt");
 }
 
@@ -1515,7 +1527,8 @@ async function finishTurn() {
     // A level can now be played out of order; its number alone is NOT
     // evidence that a whole chapter or stage has been mastered.
     $("level-clear-title").textContent =
-      workshopActive?"Your own equation, balanced!":"Balance restored!";
+      workshopActive?"Your own equation, balanced!":
+        currentLevel().squareLaboratory&&state.goal==="area"?"Squares constructed!":"Balance restored!";
     $("level-clear").hidden = false;
     $("feedback").dataset.tone="success";
     $("feedback").textContent = state.goal === "square" || state.goal==="area"
@@ -1533,7 +1546,7 @@ async function finishTurn() {
 async function guidedMove() {
   // Stage 2 is manual-only, even if the hidden Guided Mirror control is called.
   if (notebookSession || campaignStage==="independent" ||
-      (workshopActive&&mode!=="auto") || busy || isSolved(state)) return;
+      (squarePreviewActive&&mode!=="auto") || (workshopActive&&mode!=="auto") || busy || isSolved(state)) return;
   const action=currentAction();
   if(!hasCompleteToolSelection())return;
   const outcome=perform(state,action,"auto");
@@ -2218,6 +2231,16 @@ function updateReplayEndNote() {
     (replayPanelFinished || reducedMotion);
   const note = $("replay-end-note");
   note.hidden = !ready || campaignLevelNumber === null;
+  if(ready&&currentLevel().squareLaboratory){
+    note.hidden=false;
+    const built=state.goal==="area";
+    const rootUsed=state.history.some(tx=>tx.action?.op==="sqrt");
+    note.textContent=(built?"Both entire expressions were squared. ":
+      "The isolated round sprite gives its weight. ")+
+      (rootUsed?"Sprite weights are nonnegative, so the hand takes the principal square root. ":"")+
+      (campaignLevelNumber===24&&campaignStage==="guided"?"Return to the board to review your Guided Squares progress.":"");
+    return;
+  }
   if (ready && campaignLevelNumber !== null)
     note.textContent=campaignWorldId==="workshop" &&
       campaignStage==="independent" && campaignLevelNumber===16
@@ -2321,7 +2344,7 @@ function replaySeek(offset) {
 }
 $("level-select").innerHTML = LEVELS.map((lvl, i) =>
   '<option value="' + i + '">' + (i + 1) + " · " + lvl.title + "</option>").join("");
-for (const button of document.querySelectorAll("[data-operation]")) {
+for (const button of document.querySelectorAll(".operation-picker [data-operation]")) {
   button.addEventListener("click", () => {
     if (busy) return;
     if(operation!==button.dataset.operation){

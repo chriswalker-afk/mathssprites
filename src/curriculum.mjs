@@ -1,5 +1,5 @@
 /**
- * Curriculum planning catalogue for the 180 SHIPPED campaign levels.
+ * Curriculum planning catalogue for the 204 SHIPPED campaign levels.
  *
  * This module is for curriculum authors, reviewers and diagnostics. It is NOT
  * imported by the student game or menus: a difficulty or reference route must
@@ -17,6 +17,11 @@ import {OPTIMAL_MOVES} from "./star-ratings.mjs";
 import {OPPOSITE_OPTIMAL_MOVES} from "./opposite-star-benchmarks.mjs";
 import {FRACTION_CAMPAIGN_STAGES} from "./fraction-campaign-levels.mjs";
 import {FRACTION_LEVEL_PLAN} from "./fraction-level-plan.mjs";
+import {SQUARE_LEVEL_PLAN} from "./square-level-plan.mjs";
+import {SQUARE_CAMPAIGN_STAGES} from "./square-campaign-levels.mjs";
+const SQUARE_SOURCES=Object.freeze(Object.fromEntries(SQUARE_CAMPAIGN_STAGES.filter(s=>s.available).map(s=>[s.id,s.levels])));
+const SQUARE_BENCHMARKS=Object.fromEntries(SQUARE_CAMPAIGN_STAGES.map(s=>[s.id,s.optimalMoves]));
+const SQUARE_REFERENCES=new Map(SQUARE_LEVEL_PLAN.map(l=>[l.id,l.reference]));
 import {fractionRoomCount} from "./fraction-engine.mjs";
 import {rcompare} from "./rational.mjs";
 const FRACTION_SOURCES=Object.freeze(Object.fromEntries(FRACTION_CAMPAIGN_STAGES.map(stage=>[stage.id,stage.levels])));
@@ -73,6 +78,11 @@ export const CURRICULUM_SKILLS=Object.freeze({
   "fraction-borrowing":skill("Borrowing and recombining","representation","Split a whole into equal pieces before subtraction and regroup remaining parts",["fraction-equivalence"]),
   "fraction-sprites":skill("Fractional coefficients","fractions","Interpret a fragment of a sprite as the corresponding fraction of x",["fraction-sharing"]),
   "fraction-scaling":skill("Scaling fractional equations","linear","Use whole-number copies and equal sharing to recover one whole sprite",["fraction-sprites","equal-groups"]),
+  "square-area":skill("Squaring whole expressions","representation","Build the four regions of a complete square from its entire side",["balance-invariance"]),
+  "principal-root":skill("Principal square roots","representation","Recover one nonnegative side of a complete square",["square-area"]),
+  "square-isolation":skill("Isolating quadratic terms","strategy","Clear equal objects or share whole groups before taking a root",["principal-root","equal-groups"]),
+  "complete-square":skill("Completing a square","representation","Identify and fill a missing constant corner using equal changes",["square-area","principal-root"]),
+  "quadratic-strategy":skill("Strategic quadratic transformations","strategy","Choose a legal sequence of equal changes to isolate a round sprite",["square-isolation","complete-square"]),
   "fraction-notation":skill("Exact fractional notation","communication","Write an exact fraction operation, confirm the next equation and replay the accepted steps",["written-operations","fraction-equivalence"])
 });
 
@@ -191,6 +201,16 @@ export const CURRICULUM_CHAPTERS=Object.freeze({
       chapter("Multi-step Equations","Select and record a legal sequence of fractional transformations",["fraction-notation","fraction-scaling","two-step","fraction-borrowing"]),
       chapter("Strategic Equations","Write and replay efficient solutions to two-sided fraction equations",["fraction-notation","variables-both-sides","fraction-equivalence","strategy-choice","fraction-scaling"])
     ])
+  }),
+  squares:Object.freeze({
+    guided:Object.freeze([
+      chapter("The Square Press","Construct the square area of the entire contents of both chambers",["square-area"]),
+      chapter("Opening Squares","Recover a nonnegative side length from each complete square area",["principal-root"]),
+      chapter("Clear the Area","Clear or share whole objects before taking the principal root",["square-isolation","two-step"]),
+      chapter("The Four Regions","Recognise and reconstruct mixed square regions to recover a side",["square-area","principal-root"]),
+      chapter("Missing Corners","Choose equal additions that fill the missing constant corner",["complete-square","principal-root"]),
+      chapter("Master of Squares","Choose a multi-step strategy for a whole-object quadratic balance",["quadratic-strategy","strategy-choice"])
+    ])
   })
 });
 
@@ -214,6 +234,9 @@ export const DIFFICULTY_TIERS=Object.freeze({
     guided:Object.freeze([1,1,1,2,2,2,2,3,2,3,3,3,2,2,3,4,3,4,4,4,4,4,5,5]),
     independent:Object.freeze([2,2,2,3,2,2,3,3,2,3,3,4,3,3,4,4,4,4,4,5]),
     notebook:Object.freeze([2,2,2,3,3,3,3,4,3,3,4,4,4,4,5,5])
+  }),
+  squares:Object.freeze({
+    guided:Object.freeze([1,1,2,2,1,2,2,3,2,3,3,4,2,3,3,4,3,3,4,4,4,4,5,5])
   })
 });
 
@@ -222,7 +245,8 @@ const SOURCES=Object.freeze({
     guided:WORLD1_LEVELS,independent:INDEPENDENT_LEVELS,notebook:APPRENTICE_LEVELS
   }),
   opposites:OPPOSITE_LEVELS,
-  fractions:FRACTION_SOURCES
+  fractions:FRACTION_SOURCES,
+  squares:SQUARE_SOURCES
 });
 const FRACTION_TRAPS=new Set([
   "two-step-12","independent-12","apprentice-06","apprentice-08",
@@ -242,6 +266,15 @@ const freezeList=values=>Object.freeze([...values]);
 
 function flagsFor(level){
   const left=level.left,right=level.right;
+  if(level.squareLaboratory){
+    const variables=r=>sum(r,"posX2")+sum(r,"posX");
+    return Object.freeze({variablesOnBothSides:variables(left)>0&&variables(right)>0,
+      reversed:variables(right)>variables(left),negativeUnits:false,negativeSprites:false,
+      sealedCrates:false,fractionTrap:false,alternativeRoutes:false,independentlyMatchedHands:false,
+      squareBuild:level.goal==="area",quadraticTerms:sum(left,"posX2")+sum(right,"posX2")>0,
+      mixedSquare:level.goal!=="area"&&[left,right].some(r=>sum(r,"posX2")>0&&sum(r,"posX")>0),
+      inspectionFrame:!!level.squareInspection});
+  }
   if(level.quantityMode==="fractions"){
     const values=[left.posX,left.posOne,right.posX,right.posOne];
     return Object.freeze({variablesOnBothSides:left.posX.n>0&&right.posX.n>0,
@@ -304,10 +337,12 @@ function makeEntry(worldId,stage,slot){
     CURRICULUM_SKILLS[id]?.prerequisites||[])));
   // World 3 uses a rigorous algebraic lower bound with a legal engine
   // witness; the other worlds retain their separately certified targets.
-  const benchmarkMoves=worldId==="fractions"?FRACTION_BENCHMARKS[stage][level.id]:
+  const benchmarkMoves=worldId==="squares"?SQUARE_BENCHMARKS[stage][level.id]:
+    worldId==="fractions"?FRACTION_BENCHMARKS[stage][level.id]:
     (worldId==="workshop"?OPTIMAL_MOVES:OPPOSITE_OPTIMAL_MOVES)[stage][number-1];
   const benchmarkType="proven-minimum";
-  const reference=worldId==="fractions"?FRACTION_REFERENCES.get(level.id):
+  const reference=worldId==="squares"?SQUARE_REFERENCES.get(level.id):
+    worldId==="fractions"?FRACTION_REFERENCES.get(level.id):
     worldId==="opposites"?level.referenceRoute:null;
   const authoredRouteMoves=reference?reference.length:null;
   const referenceOperations=freezeList(new Set((reference||[]).map(step=>step.op)));
@@ -330,6 +365,7 @@ function makeEntry(worldId,stage,slot){
     multipleSolutionRoutes:flags.alternativeRoutes,
     sealedGroupReasoning:flags.sealedCrates,
     initialZeroPairs,
+    ...(worldId==="squares"?{goal:level.goal,initialPeakObjects:Math.max(...[level.left,level.right].map(r=>sum(r,"posX2")+sum(r,"posX")+sum(r,"posOne"))),inspectionMode:level.squareInspection||"none"}:{}),
     ...(worldId==="fractions"?{initialDenominators:freezeList([...new Set([level.left.posX.d,level.left.posOne.d,level.right.posX.d,level.right.posOne.d])].sort((a,b)=>a-b)),
       solutionDenominator:level.solution.d,initialPeakPieces:Math.max(fractionRoomCount(level.left),fractionRoomCount(level.right))}:{})
   });

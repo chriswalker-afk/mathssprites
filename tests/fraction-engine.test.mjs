@@ -166,5 +166,5 @@ test("all sixty planned puzzles have exact unique answers and replayable legal r
     assert.deepEqual(s,start,level.id);
   }
   // All three Fraction Workshop modes are published.
-  assert.deepEqual(CAMPAIGN_REGISTRY.map(w=>w.available),[true,true,true,false]);
+  assert.deepEqual(CAMPAIGN_REGISTRY.map(w=>w.available),[true,true,true,true]);
 });
