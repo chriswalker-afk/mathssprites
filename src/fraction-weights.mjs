@@ -32,8 +32,8 @@ function clipAt(points,x,keepLeft){
 const area=polygonArea(WEIGHT_BODY);
 const left=Math.min(...WEIGHT_BODY.map(p=>p[0])),right=Math.max(...WEIGHT_BODY.map(p=>p[0]));
 const cache=new Map();
-export function weightPartition(denominator){
-  if(!allowed(denominator))throw new RangeError("Unsupported weight denominator");
+export function weightPartition(denominator,{trial=false}={}){
+  if(!allowed(denominator)&&!(trial&&Number.isInteger(denominator)&&denominator>1&&denominator<=120))throw new RangeError("Unsupported weight denominator");
   if(cache.has(denominator))return cache.get(denominator);
   const cuts=[left];
   for(let i=1;i<denominator;i++){
@@ -111,15 +111,15 @@ const body=coords(WEIGHT_BODY);
 /** One reusable SVG assembly. Every fragment is one real equal-value polygon,
  * never a scaled-down whole. The ghost outline is a reference, not a token.
  */
-export function weightAssemblyMarkup(denominator,indices,{outline=true,label=true,separated=false}={}){
-  const partition=weightPartition(denominator);
+export function weightAssemblyMarkup(denominator,indices,{outline=true,label=true,separated=false,trial=false}={}){
+  const partition=weightPartition(denominator,{trial});
   if(!Array.isArray(indices)||!indices.length||new Set(indices).size!==indices.length||
     indices.some(i=>!Number.isInteger(i)||i<0||i>=denominator))
     throw new RangeError("Select distinct pieces of the original weight");
   const ordered=[...indices].sort((a,b)=>a-b);
   const id="fw-art-"+(++svgSerial);
   const full=ordered.length===denominator;
-  const gap=denominator===1?0:WEIGHT_SLICE_GAP;
+  const gap=denominator===1?0:Math.min(WEIGHT_SLICE_GAP,36/(denominator-1));
   const caption=denominator===1?"1":ordered.length+"/"+denominator;
   const description=denominator===1?"One whole weight":caption+" of one weight ("+ordered.length+" equal pieces)";
   const art=ordered.map(index=>{

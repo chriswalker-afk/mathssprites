@@ -59,7 +59,7 @@ export function createFractionCampaignView({slot,context,onLeave,onAdvance,onCom
     '<button type="button" id="fb-game-home" aria-label="Maths Sprites home">⌂ Home</button>'+
     '<button type="button" id="fb-game-levels">← Levels</button></div>'+
     '<p id="fb-chapter-status" class="eyebrow"></p><h1 id="fb-level-title" tabindex="-1"></h1><p id="fb-chapter-name" class="fb-preview-note"></p></div>'+
-    '<div class="fb-game-meta"><span id="fb-chapter-dots"></span><span class="fb-mode-badge"></span></div></header>'+FRACTION_CAMPAIGN_SCENE;
+    '<div class="fb-game-meta"><span id="fb-chapter-dots"></span><span class="fb-mode-badge"></span><button type="button" id="fb-motion-toggle" aria-pressed="false">Reduce motion</button></div></header>'+FRACTION_CAMPAIGN_SCENE;
   shadow.append(...links,root);document.body.append(host);
   const $=id=>root.querySelector("#"+id);
   const abort=new AbortController();
@@ -105,6 +105,13 @@ export function createFractionCampaignView({slot,context,onLeave,onAdvance,onCom
   if(paperFirst)notebook=mountFractionNotebook(root,{level:slot.level,controller,
     equationMarkup:fractionEquationMarkup,operationMarkup:fractionOperationMarkup,onComplete});
   const canLeave=()=>root.dataset.busy!=="true"&&root.dataset.notebookPlaying!=="true";
+  const motionButton=$("fb-motion-toggle");
+  function reflectMotion(){motionButton.setAttribute("aria-pressed",String(reduced));motionButton.textContent=reduced?"Motion: reduced":"Motion: on";}
+  reflectMotion();
+  listen(motionButton,"click",()=>{
+    if(!canLeave())return;
+    if(controller.setReduced(!reduced)){reduced=!reduced;reflectMotion();}
+  });
   listen($("fb-game-home"),"click",()=>{if(canLeave())onLeave("home")});
   listen($("fb-game-levels"),"click",()=>{if(canLeave())onLeave("levels")});
   listen($("fb-next-level"),"click",()=>{if(completed&&canLeave())onAdvance()});
@@ -112,7 +119,7 @@ export function createFractionCampaignView({slot,context,onLeave,onAdvance,onCom
   listen($("fb-replay-next"),"click",()=>{step++;showComic()});
   const observer=new MutationObserver(()=>{
     const busy=!canLeave();
-    $("fb-game-home").disabled=busy;$("fb-game-levels").disabled=busy;
+    $("fb-game-home").disabled=busy;$("fb-game-levels").disabled=busy;motionButton.disabled=busy;
   });
   observer.observe(root,{attributes:true,attributeFilter:["data-busy","data-notebook-playing"]});
   $("fb-level-title").focus({preventScroll:true});

@@ -18,7 +18,7 @@ export const GROUP_SPECS=Object.freeze({
   physics:Object.freeze(["e2e/fraction-balance-preview.spec.mjs","e2e/division-baskets.spec.mjs","e2e/multiplication-baskets.spec.mjs","e2e/star-ratings.spec.mjs","e2e/independent-balance.spec.mjs"]),
   controls:Object.freeze(["e2e/neutral-starting-controls.spec.mjs","e2e/operation-first-zero-pair.spec.mjs"]),
   motion:Object.freeze(["e2e/animations.spec.mjs","e2e/sprite-idle.spec.mjs","e2e/sprite-reactions.spec.mjs","e2e/hand-art.spec.mjs"]),
-  attempts:Object.freeze(["e2e/failed-attempts.spec.mjs"]),
+  attempts:Object.freeze(["e2e/failed-attempts.spec.mjs","e2e/fraction-release.spec.mjs"]),
   area:Object.freeze(["e2e/squares.spec.mjs"])
 });
 const ALL=Object.freeze(Object.keys(GROUP_SPECS));
@@ -29,7 +29,7 @@ const RULES=Object.freeze([
   [/^src\/fraction-workshop\.mjs$/ ,["notebook","navigation"]],
   [/^src\/fraction-notebook(?:-engine)?\.(?:mjs|css)$/ ,["notebook"]],
   [/^src\/fraction-campaign(?:-levels|-scene)?\.(?:mjs|css)$/ ,["navigation","notebook"]],
-  [/^(?:src\/fraction-(?:balance(?:-preview)?|choreography)\.(?:mjs|css)|fraction-balance-preview\.html)$/ ,["physics"]],
+  [/^(?:src\/fraction-(?:balance(?:-preview)?|choreography)\.(?:mjs|css)|fraction-balance-preview\.html)$/ ,["physics","attempts"]],
   [/^(?:src\/fraction-sprite(?:s|-preview)\.(?:mjs|css)|fraction-sprite-preview\.html)$/ ,["visual"]],
   [/^(?:src\/fraction-weight(?:s|-preview)\.(?:mjs|css)|fraction-weight-preview\.html)$/ ,["visual"]],
   [/^(?:src\/(?:group-crates|crate-[^/]+|hand-timeline|division-baskets)\.mjs|src\/(?:crate-[^/]+|group-crates)\.css|tests\/(?:crate-[^/]+|group-crates)\.test\.mjs)$/,["crates"]],

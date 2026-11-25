@@ -5,7 +5,8 @@
  *   npm run curriculum -- --world opposites --stage guided
  *   npm run curriculum -- --json
  */
-import {canonical,room} from "../src/engine.mjs";
+import {canonical,room,initialState,equation as exactEquation} from "../src/engine.mjs";
+import {FRACTION_CAMPAIGN_STAGES} from "../src/fraction-campaign-levels.mjs";
 import {WORLD1_LEVELS} from "../src/worlds.mjs";
 import {INDEPENDENT_LEVELS} from "../src/independent-levels.mjs";
 import {APPRENTICE_LEVELS} from "../src/apprentice-levels.mjs";
@@ -14,7 +15,8 @@ import {CURRICULUM_LEVELS,CURRICULUM_CHAPTERS} from "../src/curriculum.mjs";
 
 const sources={
   workshop:{guided:WORLD1_LEVELS,independent:INDEPENDENT_LEVELS,notebook:APPRENTICE_LEVELS},
-  opposites:OPPOSITE_LEVELS
+  opposites:OPPOSITE_LEVELS,
+  fractions:Object.fromEntries(FRACTION_CAMPAIGN_STAGES.map(stage=>[stage.id,stage.levels]))
 };
 const args=process.argv.slice(2);
 const argument=name=>{
@@ -41,7 +43,7 @@ function algebraicExpression(raw){
     (index===0?(term.negative?"−":""):(term.negative?" − ":" + "))+term.value
   ).join("");
 }
-const equation=level=>algebraicExpression(level.left)+" = "+algebraicExpression(level.right);
+const equation=level=>level.quantityMode==="fractions"?exactEquation(initialState(level)):algebraicExpression(level.left)+" = "+algebraicExpression(level.right);
 const flags=entry=>Object.entries(entry.flags)
   .filter(([,value])=>value===true)
   .map(([name])=>name).join(", ")||"—";
@@ -64,7 +66,7 @@ if(asJSON){
     "# Maths Sprites — Curriculum and difficulty authoring report",
     "",
     "Covers "+rows.length+" playable campaign levels; mathematical equations appear here for teachers only.",
-    "Bands describe authored reasoning demand (1–5). Both World 1 and World 2 star benchmarks are independently proven minimums under their legal game-engine actions; World 2 authored example routes remain separate.",
+    "Bands describe authored reasoning demand (1–5). All three worlds use proven minimum star targets under their legal game-engine actions. Authored example routes remain separate; World 3 uses an algebraic lower bound attained by a legal exact route.",
     ""
   ];
   for(const [worldId,stages] of Object.entries(sources)){

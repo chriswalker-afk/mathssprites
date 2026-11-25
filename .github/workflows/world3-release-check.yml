@@ -1,0 +1,28 @@
+name: World 3 published release check
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  live-fractions:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install Chrome browser probe
+        run: npm install --no-save --ignore-scripts --no-audit --no-fund @playwright/test@1.65.1
+      - name: Check published World 3 (run after Pages deployment)
+        run: npm run check:live:world3
+      - name: Retain published release evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: world3-published-release
+          path: artifacts/
+          if-no-files-found: warn

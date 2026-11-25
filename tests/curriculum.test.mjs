@@ -9,6 +9,8 @@ import {APPRENTICE_LEVELS} from "../src/apprentice-levels.mjs";
 import {OPPOSITE_LEVELS} from "../src/opposite-levels.mjs";
 import {OPPOSITE_OPTIMAL_MOVES} from "../src/opposite-star-benchmarks.mjs";
 import {OPTIMAL_MOVES} from "../src/star-ratings.mjs";
+import {FRACTION_CAMPAIGN_STAGES} from "../src/fraction-campaign-levels.mjs";
+import {FRACTION_LEVEL_PLAN} from "../src/fraction-level-plan.mjs";
 import {
   CURRICULUM_SKILLS,CURRICULUM_CHAPTERS,CURRICULUM_LEVELS,
   ALL_CURRICULUM_LEVELS,DIFFICULTY_BANDS,DIFFICULTY_TIERS,
@@ -17,13 +19,14 @@ import {
 
 const sources={
   workshop:{guided:WORLD1_LEVELS,independent:INDEPENDENT_LEVELS,notebook:APPRENTICE_LEVELS},
-  opposites:OPPOSITE_LEVELS
+  opposites:OPPOSITE_LEVELS,
+  fractions:Object.fromEntries(FRACTION_CAMPAIGN_STAGES.map(stage=>[stage.id,stage.levels]))
 };
 
 test("every shipped level has exactly one addressable, immutable curriculum record",()=>{
-  assert.equal(ALL_CURRICULUM_LEVELS.length,120);
-  assert.equal(new Set(ALL_CURRICULUM_LEVELS.map(row=>row.id)).size,120);
-  assert.deepEqual(Object.keys(CURRICULUM_LEVELS),["workshop","opposites"]);
+  assert.equal(ALL_CURRICULUM_LEVELS.length,180);
+  assert.equal(new Set(ALL_CURRICULUM_LEVELS.map(row=>row.id)).size,180);
+  assert.deepEqual(Object.keys(CURRICULUM_LEVELS),["workshop","opposites","fractions"]);
   for(const [worldId,stages] of Object.entries(sources)){
     for(const [stage,slots] of Object.entries(stages)){
       const rows=CURRICULUM_LEVELS[worldId][stage];
@@ -48,7 +51,7 @@ test("every shipped level has exactly one addressable, immutable curriculum reco
   assert.equal(curriculumForLevel("workshop","guided",0),null);
   assert.equal(curriculumForLevel("workshop","guided",25),null);
   assert.equal(curriculumForLevel("workshop","guided","1"),null);
-  assert.equal(curriculumForLevel("fractions","guided",1),null);
+  assert.equal(curriculumForLevel("fractions","guided",25),null);
   assert.equal(curriculumForId("not-yet-authored"),null);
 });
 
@@ -56,7 +59,7 @@ test("skill definitions have meaningful outcomes and declared prerequisites",()=
   for(const [id,skill] of Object.entries(CURRICULUM_SKILLS)){
     assert.ok(skill.label.length>5,id);
     assert.ok(skill.canDo.length>20,id);
-    assert.ok(["equivalence","linear","strategy","representation","communication","signed"]
+    assert.ok(["equivalence","linear","strategy","representation","communication","signed","fractions"]
       .includes(skill.strand),id);
     for(const required of skill.prerequisites)
       assert.ok(CURRICULUM_SKILLS[required],id+" has unknown prerequisite "+required);
@@ -90,6 +93,14 @@ test("difficulty has five deliberate planning bands, a benchmark and physical ev
         if(worldId==="workshop"){
           assert.equal(signals.benchmarkMoves,OPTIMAL_MOVES[stage][index]);
           assert.equal(signals.benchmarkType,"proven-minimum");
+        }else if(worldId==="fractions"){
+          const target=FRACTION_CAMPAIGN_STAGES.find(s=>s.id===stage).optimalMoves[slot.id];
+          const reference=FRACTION_LEVEL_PLAN.find(l=>l.id===slot.id).reference;
+          assert.equal(signals.benchmarkMoves,target);
+          assert.equal(signals.benchmarkType,"proven-minimum");
+          assert.equal(signals.authoredRouteMoves,reference.length);
+          assert.deepEqual(signals.referenceOperations,[...new Set(reference.map(step=>step.op))]);
+          assert.ok(signals.initialPeakPieces<=48);
         }else{
           assert.equal(signals.benchmarkMoves,OPPOSITE_OPTIMAL_MOVES[stage][index]);
           assert.equal(signals.benchmarkType,"proven-minimum");
@@ -123,7 +134,7 @@ test("chapter definitions and level slices align with the playable four-level ch
       }
     }
   assert.equal(curriculumForChapter("workshop","guided",99),null);
-  assert.equal(curriculumForChapter("fractions","guided",0),null);
+  assert.equal(curriculumForChapter("fractions","guided",6),null);
 });
 
 test("physical difficulty markers reflect actual levels, not guesses based on numbers",()=>{
@@ -152,7 +163,7 @@ test("teacher report actually renders every canonical equation and supports filt
   const script=fileURLToPath(new URL("../scripts/curriculum-report.mjs",import.meta.url));
   const output=execFileSync(process.execPath,[script,"--json"],{encoding:"utf8"});
   const report=JSON.parse(output);
-  assert.equal(report.count,120);
+  assert.equal(report.count,180);
   assert.equal(report.levels.find(x=>x.id==="master-19").equation,"2x + 6 = 14");
   assert.equal(report.levels.find(x=>x.id==="op-g-01").equation,"x − 1 = 3");
   const filtered=JSON.parse(execFileSync(process.execPath,
@@ -163,4 +174,19 @@ test("teacher report actually renders every canonical equation and supports filt
     {encoding:"utf8"});
   assert.match(markdown,/24 playable campaign levels/);
   assert.match(markdown,/Master of the Balance/);
+});
+
+test("World 3 curriculum records preserve exact fractional flags and teacher reports",()=>{
+  const first=curriculumForId("frac-g-01");
+  assert.equal(first.flags.fractionalSolution,true);assert.equal(first.flags.fractionalWeights,false);
+  assert.equal(curriculumForId("frac-g-08").flags.reversed,true);
+  assert.equal(curriculumForId("frac-g-12").flags.mixedDenominators,true);
+  assert.equal(curriculumForId("frac-g-24").flags.variablesOnBothSides,true);
+  assert.equal(curriculumForId("frac-g-24").flags.fractionalSprites,true);
+  assert.ok(curriculumForId("frac-a-16").skillIds.includes("fraction-notation"));
+  const script=fileURLToPath(new URL("../scripts/curriculum-report.mjs",import.meta.url));
+  const report=JSON.parse(execFileSync(process.execPath,[script,"--world","fractions","--json"],{encoding:"utf8"}));
+  assert.equal(report.count,60);assert.equal(report.levels[0].equation,"2x = 5");
+  assert.equal(report.levels.find(x=>x.id==="frac-g-24").equation,"(2/3)x + 3/4 = (1/4)x + 2");
+  assert.equal(report.levels.find(x=>x.id==="frac-a-15").difficulty.complexitySignals.benchmarkMoves,5);
 });

@@ -9,7 +9,7 @@ import {FRACTION_DENOMINATORS,FRACTION_FACTORS,fractionAction,fractionRoom} from
 import {weightInventoryMarkup,weightGridMarkup} from "./fraction-weights.mjs";
 import {spriteInventoryMarkup,spriteGridMarkup} from "./fraction-sprites.mjs";
 import {divisionBasketMarkup,resetHand} from "./division-baskets.mjs";
-import {gridRoom,roomChoreography,failureSpeech,failureDiagram} from "./fraction-choreography.mjs";
+import {gridRoom,roomChoreography,failureSpeech,fractionRefusalMarkup} from "./fraction-choreography.mjs";
 const SIDES=["left","right"];
 const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 const frame=()=>new Promise(resolve=>requestAnimationFrame(resolve));
@@ -41,10 +41,18 @@ export function mountFractionBalance(root,{level,mode="auto",reduced=false,onCom
     for(const floor of root.querySelectorAll(".fb-room-floor")){
       const parent=floor.parentElement;
       if(!parent)continue;
-      const width=floor.scrollWidth||floor.offsetWidth,height=floor.offsetHeight;
+      floor.removeAttribute("data-wrap");
+      floor.style.removeProperty("--fb-wrap-width");
+      let width=floor.scrollWidth||floor.offsetWidth,height=floor.offsetHeight;
       const availableW=parent.clientWidth||width,availableH=parent.clientHeight||height;
+      if(parent.classList.contains("room-items")&&width>availableW*1.45&&availableH>height*1.25){
+        const rows=Math.min(4,Math.max(2,Math.ceil(Math.sqrt(width/Math.max(1,availableW)))));
+        floor.dataset.wrap="true";
+        floor.style.setProperty("--fb-wrap-width",Math.ceil(Math.max(availableW,width/rows))+"px");
+        width=floor.scrollWidth||floor.offsetWidth;height=floor.offsetHeight;
+      }
       const scale=Math.min(1,availableW/Math.max(1,width),availableH/Math.max(1,height));
-      floor.style.setProperty("--fb-fit",Math.max(.04,scale).toFixed(4));
+      floor.style.setProperty("--fb-fit",Math.max(.01,scale).toFixed(4));
     }
   }
   function draw(side,room,grid=null){
@@ -230,17 +238,26 @@ export function mountFractionBalance(root,{level,mode="auto",reduced=false,onCom
     shown={...shown,[side]:plan.after};draw(side,plan.after);tilt();
     delete el.dataset.operation;await pause(120);
   }
-  async function refusal(failure,side,rollback){
-    const el=$(side+"-items"),diagram=failureDiagram(failure);
-    if(diagram.type==="grid"){
-      const grid=document.createElement("div");grid.className="fb-failure-grid";grid.setAttribute("aria-label","Attempted "+diagram.denominator+" equal parts; too small for this workshop");
-      for(let i=0;i<diagram.denominator;i++)grid.append(document.createElement("i"));
-      el.append(grid);
-    }else if(diagram.type==="overflow"){
-      const mark=document.createElement("span");mark.className="fb-failure-overflow";mark.textContent="+"+diagram.excess+" too many pieces";el.append(mark);
-    }else el.classList.add("fb-failure-shake");
-    el.dataset.refusal=failure.code||"invalid";await pause(620);
-    tell(failureSpeech(failure));await pause(1150);
+  async function refusal(failure,side,rollback,action){
+    const el=$(side+"-items"),markup=fractionRefusalMarkup(failure,action,shown[side]);
+    el.dataset.refusal=failure.code||"invalid";
+    if(markup){
+      const trial=document.createElement("div");trial.className="fb-refusal-overlay";
+      trial.innerHTML=markup;el.append(trial);
+      // Preserve the actual room beneath an explicitly illustrative cut.
+      // Animate only the temporary art; the engine never receives it.
+      await frame();await pause(170);
+      const cut=trial.querySelector(".fb-refusal-cut .fw-assembly,.fb-refusal-cut .fs-assembly");
+      cut?.classList.add("is-separated");
+      trial.classList.add("fb-refusal-active");
+      await pause(620);
+      tell(failureSpeech(failure));await pause(1150);
+      cut?.classList.remove("is-separated");trial.classList.remove("fb-refusal-active");
+      await pause(460);trial.remove();
+    }else{
+      el.classList.add("fb-failure-shake");await pause(620);
+      tell(failureSpeech(failure));await pause(1150);
+    }
     if(rollback&&state.pending)state=undo(state);
     delete el.dataset.refusal;el.classList.remove("fb-failure-shake");settled();
     if(mode==="manual")resetSelection();
@@ -255,9 +272,9 @@ export function mountFractionBalance(root,{level,mode="auto",reduced=false,onCom
       const prior=state;
       if(mode==="auto"){
         const prepared=prepare(prior,action);
-        if(!prepared.ok){await refusal(prepared,prepared.side||"left",false);return;}
+        if(!prepared.ok){await refusal(prepared,prepared.side||"left",false,action);return;}
         const result=perform(prior,action,"auto");
-        if(!result.ok){await refusal(result,result.side||"left",false);return;}
+        if(!result.ok){await refusal(result,result.side||"left",false,action);return;}
         for(const visit of SIDES)await animate(visit,action,prepared.pair[visit]);
         state=result.state;feedback("Both rooms balanced.");
       }else{
@@ -270,7 +287,7 @@ export function mountFractionBalance(root,{level,mode="auto",reduced=false,onCom
             const trial=previewRoomAction(prior[side],action,"fractions",side);
             if(trial.ok)await animate(side,action,trial);
           }
-          await refusal(result,side,!!prior.pending);return;
+          await refusal(result,side,!!prior.pending,action);return;
         }
         const preview=prior.pending?prior.pending.pair[side]:result.state.pending.pair[side];
         await animate(side,action,preview);state=result.state;

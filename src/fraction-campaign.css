@@ -29,3 +29,7 @@
 .fb-comic-bottom #fb-rating{font-size:.84rem;font-weight:bold;color:#58411d}
 #fb-next-level{background:#c5a36b;color:#1c221d;font-weight:700}
 @media(max-width:640px){.fb-comic-spread{grid-template-columns:1fr}.fb-comic-action{display:flex;justify-content:center;align-items:center}.fb-game-meta{justify-items:start}.fb-campaign-header{align-items:center}.fb-campaign .playfield{height:335px}}
+
+#fb-motion-toggle{font-size:.72rem;min-height:28px;padding:3px 8px}
+.fb-campaign-header .fb-game-meta{display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-end;gap:6px}
+@media(max-width:640px){.fb-campaign-header .fb-game-meta{justify-content:flex-start}}
