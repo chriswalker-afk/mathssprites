@@ -23,9 +23,8 @@ async function openStage3(page,{teacher=false,level=1}={}){
   }else{
     await masterFirstTwo(page);
   }
-  await page.locator('[data-screen="worlds"]').first().click();
-  await page.getByRole("button",{name:"Explore stages"}).click();
-  await page.getByRole("button",{name:"Choose Stage 3 levels"}).click();
+  await page.locator('.site-nav-links [data-screen="levels"]').click();
+  await page.locator('[data-map-stage="notebook"]').click();
   await page.locator('[data-level="'+level+'"]').click();
   await expect(page.locator("#notebook-workspace")).toBeVisible();
   await expect(page.locator("#scene")).toBeHidden();
@@ -36,21 +35,19 @@ async function applyOperation(page,expression){
 }
 
 test("Stage 3 and all sixteen notebook levels are open without prior mastery",async({page})=>{
-  await page.locator('[data-screen="worlds"]').first().click();
-  await page.getByRole("button",{name:"Explore stages"}).click();
-  await expect(page.locator('[data-stage="notebook"] button')).toHaveCount(1);
+  await page.locator('.site-nav-links [data-screen="levels"]').click();
+  await expect(page.locator('[data-map-stage="notebook"]')).toHaveCount(1);
   await masterFirstTwo(page);
   await expect(page.locator("#home-play")).toContainText("Continue Stage 3 · Level 1");
-  await page.locator('[data-screen="worlds"]').first().click();
-  await page.getByRole("button",{name:"Explore stages"}).click();
-  await expect(page.locator('[data-stage="notebook"] button')).toHaveCount(1);
-  await page.getByRole("button",{name:"Choose Stage 3 levels"}).click();
+  await page.locator('.site-nav-links [data-screen="levels"]').click();
+  await expect(page.locator('[data-map-stage="notebook"]')).toHaveCount(1);
+  await page.locator('[data-map-stage="notebook"]').click();
   await expect(page.locator(".chapter-group")).toHaveCount(4);
   await expect(page.locator(".level-tile")).toHaveCount(16);
   await expect(page.locator('[data-level="1"]')).toBeEnabled();
   await expect(page.locator('[data-level="2"]')).toBeEnabled();
   await expect(page.locator('[data-level="12"]')).toBeEnabled();
-  await expect(page.locator("#world1-workshop button")).toHaveCount(1);
+  await expect(page.locator('#site-levels [data-screen="workshop"]')).toBeAttached();
 });
 
 test("backwards fading shows a different worked example, then first/last cues, then none",async({page})=>{
@@ -108,7 +105,7 @@ test("solved paper alone earns NO progress; successful hands earn credit and adv
   await expect(page.locator("#notebook-workspace")).toBeVisible();
   await expect(page.locator("#scene")).toBeHidden();
   await expect(page.locator("#notebook-lines")).toContainText("2x = 12");
-  await expect(page.locator("#world1-workshop button")).toHaveCount(1);
+  await expect(page.locator('#site-levels [data-screen="workshop"]')).toBeAttached();
 });
 
 test("wrong or skipped steps leave campaign progress untouched, and one-step hints do not solve it",async({page})=>{
@@ -134,10 +131,10 @@ test("a fully mastered Stage 3 shows its own 16/16 banner and completion route",
     JSON.stringify({completed:Array.from({length:16},(_,i)=>i+1),lastPlayed:16})));
   await page.reload();
   await expect(page.locator("#home-play")).toContainText("Replay Stage 3 · Level 16");
-  await page.locator('[data-screen="worlds"]').first().click();
-  await page.getByRole("button",{name:"Explore stages"}).click();
-  await expect(page.locator('[data-stage="notebook"]')).toContainText("Stage mastered");
-  await page.getByRole("button",{name:"Choose Stage 3 levels"}).click();
+  await page.locator('.site-nav-links [data-screen="levels"]').click();
+  await page.locator('[data-map-stage="notebook"]').click();
+  await expect(page.locator("#world1-progress-number")).toHaveText("16 of 16 complete");
+  await page.locator('[data-map-stage="notebook"]').click();
   await expect(page.locator("#world1-finale")).toContainText("Algebra Apprentice mastered");
   await expect(page.locator("#world1-progress-bar")).toHaveJSProperty("max",16);
   await expect(page.locator("#world1-progress-bar")).toHaveJSProperty("value",16);

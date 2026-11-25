@@ -20,7 +20,7 @@ test("home leads with the exact question and a functional animation control",asy
   await expect(page.locator("#hero-playback")).toHaveText("Pause animation");
   await expect(page.locator("#hero-playback")).toBeVisible();
   await expect(page.locator("#home-play")).toBeVisible();
-  await expect(page.getByRole("button",{name:"Choose a world"})).toBeVisible();
+  await expect(page.getByRole("button",{name:"Choose a world and level"})).toBeVisible();
   await expect(page.locator(".portal-feature")).toHaveCount(3);
 });
 
@@ -168,7 +168,7 @@ test("navigation stops the loop and preserves home continuation/progress",async(
     "mathssprites.independent-progress.v1",
     "mathssprites.apprentice-progress.v1"
   ].map(key=>[key,localStorage.getItem(key)])));
-  await page.locator('[data-screen="worlds"]').first().click();
+  await page.locator('.site-nav-links [data-screen="levels"]').click();
   await expect(hero(page)).toHaveAttribute("data-playback","inactive");
   const state=await hero(page).getAttribute("data-scene");
   await page.waitForTimeout(650);

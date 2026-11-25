@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {
   RESUME_KEY,normalizeResume,loadResume,saveResume,
-  resumeDestination,resumeLabel,RESUME_STAGE_NUMBERS
+  resumeDestination,resumeLabel,RESUME_STAGE_NUMBERS,RESUME_STAGE_LIMITS
 } from "../src/resume.mjs";
 
 const completed=(n,last=n)=>({completed:Array.from({length:n},(_,i)=>i+1),lastPlayed:last});
@@ -43,7 +43,7 @@ test("invalid, corrupt, or unavailable last-played storage never prevents play",
   assert.equal(normalizeResume(null),null);
   assert.equal(normalizeResume({stage:"guided",number:0}),null);
   assert.equal(normalizeResume({stage:"guided",number:"1"}),null);
-  assert.equal(normalizeResume({stage:"notebook",number:13}),null);
+  assert.equal(normalizeResume({stage:"notebook",number:17}),null);
   assert.equal(normalizeResume({stage:"world4",number:2}),null);
   assert.equal(loadResume({getItem(){throw Error("access blocked")}}),null);
   assert.equal(saveResume({stage:"invalid",number:1}),null);
@@ -57,4 +57,19 @@ test("invalid, corrupt, or unavailable last-played storage never prevents play",
   assert.deepEqual(JSON.parse(store.get("mathssprites.progress.v1")),completed(2,3));
   assert.deepEqual(saveResume({stage:"guided",number:3},{setItem(){throw Error("blocked")}}),
     {stage:"guided",number:3});
+});
+
+test("appended crate chapters are valid resume destinations, including Level 16 Apprentice",()=>{
+  assert.deepEqual(RESUME_STAGE_LIMITS,{guided:24,independent:20,notebook:16});
+  for(const [stage,last] of Object.entries(RESUME_STAGE_LIMITS)){
+    assert.deepEqual(normalizeResume({stage,number:last}),{stage,number:last});
+    assert.equal(normalizeResume({stage,number:last+1}),null);
+    assert.equal(resumeLabel({stage,number:last},{played:true,completed:[last]}),
+      "Replay Stage "+RESUME_STAGE_NUMBERS[stage]+" · Level "+last+" →");
+  }
+  assert.deepEqual(resumeDestination(null,completed(24,24),completed(20,20),completed(16,16)),
+    {stage:"notebook",number:16});
+  assert.deepEqual(resumeDestination(null,completed(23,24)),{stage:"guided",number:24});
+  assert.deepEqual(resumeDestination(null,completed(24,24),completed(19,20)),
+    {stage:"independent",number:20});
 });

@@ -97,6 +97,8 @@ test("legacy deep-link preview retains older signed and square experiments for Q
   await expect(page.locator("#level-select")).toBeVisible();
   await page.locator("#level-select").selectOption("10");
   await expect(page.locator("#quantity-mode")).toHaveValue("signed");
+  await expect(page.locator("#object-picker")).toBeHidden();
+  await page.locator('[data-operation="add"]').click();
   await expect(page.locator('[data-kind="negOne"]')).toBeVisible();
 });
 
@@ -178,7 +180,8 @@ test("old saved Stage 1 progress survives the new stage selection unchanged", as
   await page.reload();
   await expect(page.locator("#home-play")).toContainText("Continue Stage 1 · Level 4");
   await page.locator('.site-nav-links [data-screen="levels"]').first().click();
-    await expect(page.locator('[data-stage="guided"]')).toContainText("3 of 24");
+    await expect(page.locator("#world1-progress-number")).toHaveText("3 of 24 complete");
+    await expect(page.locator('[data-map-stage="guided"]')).toHaveAttribute("aria-pressed","true");
     await expect(page.locator(".status-complete")).toHaveCount(3);
   await expect(page.locator('[data-level="4"]')).toBeEnabled();
   const stored=await page.evaluate(()=>JSON.parse(localStorage.getItem("mathssprites.progress.v1")));
@@ -192,9 +195,9 @@ test("Stage 1 mastery still shows completion, and all stages remain selectable",
   await page.locator('[data-screen="settings"]').first().click();
   await page.locator("#teacher-unlock").check();
   await page.locator('.site-nav-links [data-screen="levels"]').first().click();
-    await expect(page.locator('[data-stage="guided"]')).toContainText("Stage mastered");
-  await expect(page.locator('[data-stage="independent"] button')).toHaveCount(1);
-  await expect(page.locator('[data-stage="notebook"] button')).toHaveCount(1);
+    await expect(page.locator("#world1-progress-number")).toHaveText("24 of 24 complete");
+  await expect(page.locator('[data-map-stage="independent"]')).toBeEnabled();
+  await expect(page.locator('[data-map-stage="notebook"]')).toBeEnabled();
     await expect(page.locator("#world1-finale")).toBeVisible();
   await expect(page.locator("#world1-finale")).toContainText("Guided Balance mastered");
   await expect(page.locator("#world1-progress-bar")).toHaveJSProperty("value",24);

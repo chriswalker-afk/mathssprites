@@ -72,7 +72,8 @@ test("the hand splits one REAL square sprite into three shaped fragments",async(
   test.setTimeout(45000);
   await page.locator("#level-select").selectOption("7"); // 4 square x² sprites facing 36 weights
   await page.locator('[data-operation="divide"]').click();
-  await clickWithReferenceMove(page,"#amount-up");
+  await page.locator("#amount-up").click(); // blank -> 2
+  await page.locator("#amount-up").click(); // 2 -> 3
   await expect(page.locator("#amount-value")).toHaveText("3");
   await clickWithReferenceMove(page,"#do-both");
   const stage=page.locator("#left-attempt-stage");
@@ -222,9 +223,11 @@ test("rejected attempts don't interrupt later valid moves or pollute the comic r
 
 test("Your Turn can remove an object found ONLY on the first side, then learns from a different second move",async ({page})=>{
   await page.locator("#mode-select").selectOption("manual");
+  await page.locator('[data-operation="remove"]').click();
   await page.locator('[data-kind="posX"]').click();
-  await clickWithReferenceMove(page,"#amount-down"); // one sprite, not two
-  await clickWithReferenceMove(page,"#left-action");
+  await page.locator("#amount-up").click(); // explicitly remove one sprite
+  await expect(page.locator("#amount-value")).toHaveText("1");
+  await page.locator("#left-action").click();
   await expect(page.locator("#left-items .sprite-black")).toHaveCount(0);
   await expect(page.locator("#right-items .sprite-black")).toHaveCount(0);
   await expect(page.locator("#replay-backdrop")).toBeHidden();

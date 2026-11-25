@@ -5,9 +5,9 @@ test.beforeEach(async({page})=>{
   await page.goto("/");
 });
 async function openApprentice(page,level=1){
-  await page.locator('[data-screen="worlds"]').first().click();
-  await page.getByRole("button",{name:"Explore stages"}).click();
-  await page.getByRole("button",{name:"Choose Stage 3 levels"}).click();
+  await page.locator("#home-choose-level").click();
+  await page.locator('[data-map-stage="notebook"]').click();
+  await expect(page.locator("#site-levels")).toHaveAttribute("data-active-stage","notebook");
   await page.locator('[data-level="'+level+'"]').click();
   await expect(page.locator("#notebook-workspace")).toBeVisible();
 }

@@ -16,18 +16,18 @@ for(const size of [
     await expect(page.locator("#home-title")).toBeVisible();
     await page.screenshot({path:"artifacts/pr34-"+name+"-foyer.png",fullPage:true});
 
-    await page.locator('.site-nav-links [data-screen="worlds"]').click();
-    await expect(page.locator(".world-card")).toHaveCount(4);
-    await page.screenshot({path:"artifacts/pr34-"+name+"-worlds.png",fullPage:true});
+    await page.locator('.site-nav-links [data-screen="levels"]').click();
+    await expect(page.locator("#map-world-tabs button")).toHaveCount(4);
+    await expect(page.locator(".level-tile")).toHaveCount(24);
+    await page.screenshot({path:"artifacts/pr59-"+name+"-worlds-and-levels.png",fullPage:true});
 
     await page.locator('.site-nav-links [data-screen="home"]').click();
     await page.locator("#home-choose-level").click();
     await expect(page.locator(".level-tile")).toHaveCount(24);
     await page.screenshot({path:"artifacts/pr34-"+name+"-board.png",fullPage:true});
 
-    await page.locator('.site-nav-links [data-screen="worlds"]').click();
-    await page.getByRole("button",{name:"Explore stages"}).click();
-    await page.getByRole("button",{name:"Create your own equation"}).click();
+    await page.locator('.site-nav-links [data-screen="levels"]').click();
+    await page.locator('#site-levels [data-screen="workshop"]').click();
     await expect(page.locator("#workshop-equation")).toBeFocused();
     await page.screenshot({path:"artifacts/pr34-"+name+"-desk.png",fullPage:true});
 

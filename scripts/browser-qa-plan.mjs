@@ -1,7 +1,7 @@
 /**
  * CI routing for Maths Sprites. The quick suite runs on EVERY PR; these
  * focused groups run only when their feature is affected. Full Playwright
- * regression still runs on main, weekly, or via the full-browser-qa label.
+ * regression replaces those groups on main, weekly, manual or labelled runs.
  *
  * This module is deliberately pure and unit-tested. A missed feature path
  * must not silently turn off safety checks for shared game code.
@@ -11,21 +11,35 @@ import {readFileSync} from "node:fs";
 export const GROUP_SPECS=Object.freeze({
   crates:Object.freeze(["e2e/crate-expansion.spec.mjs","e2e/crate-stack.spec.mjs","e2e/crate-division.spec.mjs","e2e/group-crates.spec.mjs","e2e/grouped-progression.spec.mjs","e2e/guided-crate-chapter.spec.mjs","e2e/signed-crate-physics.spec.mjs","e2e/signed-crate-chapter.spec.mjs","e2e/world2-other-mode-crates.spec.mjs"]),
   navigation:Object.freeze(["e2e/experiment-board.spec.mjs","e2e/navigation-journey.spec.mjs","e2e/menu-polish.spec.mjs","e2e/site-navigation.spec.mjs","e2e/onboarding-polish.spec.mjs"]),
-  notebook:Object.freeze(["e2e/notebook-operation-editor.spec.mjs","e2e/notebook-first.spec.mjs","e2e/equation-workshop.spec.mjs"]),
-  signed:Object.freeze(["e2e/opposites-world.spec.mjs","e2e/world2-difficulty-pass.spec.mjs"]),
-  layout:Object.freeze(["e2e/adaptive-viewport.spec.mjs","e2e/viewport-fit.spec.mjs","e2e/six-chapter-layout.spec.mjs","e2e/weight-piles.spec.mjs","e2e/motion-notice.spec.mjs"]),
-  physics:Object.freeze(["e2e/division-baskets.spec.mjs","e2e/multiplication-baskets.spec.mjs","e2e/star-ratings.spec.mjs"])
+  visual:Object.freeze(["e2e/menu-polish-visual.spec.mjs","e2e/portal-art.spec.mjs","e2e/home-hero.spec.mjs"]),
+  notebook:Object.freeze(["e2e/notebook-operation-editor.spec.mjs","e2e/notebook-first.spec.mjs","e2e/equation-workshop.spec.mjs","e2e/apprentice-campaign.spec.mjs","e2e/replay-writing.spec.mjs"]),
+  signed:Object.freeze(["e2e/opposites-world.spec.mjs","e2e/world2-difficulty-pass.spec.mjs","e2e/signed-objects.spec.mjs","e2e/starting-zero-pairs.spec.mjs","e2e/future-world-runtime.spec.mjs"]),
+  layout:Object.freeze(["e2e/adaptive-viewport.spec.mjs","e2e/viewport-fit.spec.mjs","e2e/six-chapter-layout.spec.mjs","e2e/weight-piles.spec.mjs","e2e/motion-notice.spec.mjs","e2e/scene-polish.spec.mjs"]),
+  physics:Object.freeze(["e2e/division-baskets.spec.mjs","e2e/multiplication-baskets.spec.mjs","e2e/star-ratings.spec.mjs","e2e/independent-balance.spec.mjs"]),
+  controls:Object.freeze(["e2e/neutral-starting-controls.spec.mjs","e2e/operation-first-zero-pair.spec.mjs"]),
+  motion:Object.freeze(["e2e/animations.spec.mjs","e2e/sprite-idle.spec.mjs","e2e/sprite-reactions.spec.mjs","e2e/hand-art.spec.mjs"]),
+  attempts:Object.freeze(["e2e/failed-attempts.spec.mjs"]),
+  area:Object.freeze(["e2e/squares.spec.mjs"])
 });
 const ALL=Object.freeze(Object.keys(GROUP_SPECS));
+// The file map above is the single source of truth for spec routing.
+// Keep source dependencies here; a spec belongs to exactly one primary
+// group, with deliberately broader routing for cross-feature weight piles.
 const RULES=Object.freeze([
-  [/^(?:src\/(?:group-crates|crate-[^/]+|hand-timeline|division-baskets)\.mjs|src\/(?:crate-[^/]+|group-crates)\.css|e2e\/(?:crate-[^/]+|group-crates|grouped-progression|guided-crate-chapter|signed-crate-physics|signed-crate-chapter|world2-other-mode-crates)\.spec\.mjs|tests\/(?:crate-[^/]+|group-crates)\.test\.mjs)$/,["crates"]],
-  [/^(?:src\/(?:site|stages|menu-[^/]+|navigation-[^/]+|portal-[^/]+|home-[^/]+|onboarding)\.mjs|src\/(?:site|portal|menu|home)[^/]*\.css|e2e\/(?:experiment-board|navigation-journey|menu-polish|menu-polish-visual|site-navigation|onboarding-polish|home-hero|portal-art)\.spec\.mjs)$/,["navigation"]],
-  [/^(?:src\/(?:notebook-[^/]+|equation-workshop|apprentice-levels)\.mjs|e2e\/(?:notebook-[^/]+|apprentice-campaign|equation-workshop|replay-writing)\.spec\.mjs)$/,["notebook"]],
-  [/^(?:src\/(?:opposite-[^/]+|signed-[^/]+)\.mjs|e2e\/(?:opposites-world|signed-objects|world2-difficulty-pass)\.spec\.mjs)$/,["signed"]],
-  [/^(?:src\/(?:viewport-[^/]+|scene-[^/]+|stages|adaptive-[^/]+)\.css|e2e\/(?:adaptive-viewport|viewport-fit|scene-polish|hand-art|motion-notice)\.spec\.mjs)$/,["layout"]],
-  [/^(?:src\/(?:division-baskets|multiplication-baskets|sprite-[^/]+|hand-[^/]+|star-ratings)\.mjs|e2e\/(?:division-baskets|multiplication-baskets|star-ratings|failed-attempts|animations|sprite-[^/]+|independent-balance|squares)\.spec\.mjs)$/,["physics"]],
-  // The registry joins teacher-certified par counts to visible stars and
-  // all three stage modes; check these rather than the unrelated art suites.
+  [/^(?:src\/(?:group-crates|crate-[^/]+|hand-timeline|division-baskets)\.mjs|src\/(?:crate-[^/]+|group-crates)\.css|tests\/(?:crate-[^/]+|group-crates)\.test\.mjs)$/,["crates"]],
+  [/^src\/(?:site|stages|menu-[^/]+|navigation-[^/]+|portal-[^/]+|home-[^/]+|onboarding|resume|progress)\.mjs$|^src\/(?:site|portal|menu|home)[^/]*\.css$/,["navigation"]],
+  [/^src\/(?:home-[^/]+|portal-[^/]+)\.(?:mjs|css)$/,["visual"]],
+  [/^src\/(?:notebook-[^/]+|equation-workshop|apprentice-levels|replay-timeline)\.mjs$|^src\/(?:notebook[^/]*|workshop)\.css$/,["notebook"]],
+  [/^src\/(?:opposite-[^/]+|signed-[^/]+)\.mjs$|^src\/opposites-world\.css$/,["signed"]],
+  [/^src\/(?:viewport-[^/]+|scene-[^/]+|stages|adaptive-[^/]+)\.css$/,["layout"]],
+  [/^src\/(?:division-baskets|multiplication-baskets|independent-levels|star-ratings)\.mjs$/,["physics"]],
+  [/^src\/(?:sprite-[^/]+|hand-[^/]+|replay-timeline)\.mjs$/,["motion"]],
+  [/^src\/(?:attempt-feedback|fraction-theatre|hand-timeline)\.mjs$/,["attempts"]],
+  [/^src\/(?:area-layout|hand-timeline)\.mjs$/,["area"]],
+  [/^src\/(?:action-selection|neutral-pairs)\.mjs$|^src\/zero-pair-actions\.css$/,["signed","controls"]],
+  [/^src\/neutral-pairs\.mjs$/,["crates","physics"]],
+  [/^src\/action-selection\.mjs$/,["physics","attempts","area"]],
+  [/^src\/zero-pair-actions\.css$/,["layout"]],
   [/^src\/campaign-registry\.mjs$/,["navigation","notebook","signed","physics"]],
   [/^src\/opposite-star-benchmarks\.mjs$/,["navigation","signed","physics"]],
   [/^src\/campaign-records\.mjs$/,["navigation","signed","physics"]],
@@ -33,15 +47,15 @@ const RULES=Object.freeze([
   [/^src\/weight-piles\.(?:css|mjs)$/,["crates","signed","layout","physics"]],
   [/^e2e\/weight-piles\.spec\.mjs$/,["crates","signed","layout","physics"]],
   [/^src\/experiment-board\.css$/,["navigation","layout"]],
-  [/^e2e\/six-chapter-layout\.spec\.mjs$/,["layout"]],
-  [/^src\/engine\.mjs$/,["crates","notebook","signed","physics"]],
+  [/^src\/engine\.mjs$/,["crates","notebook","signed","physics","controls","motion","attempts","area"]],
   [/^src\/worlds\.mjs$/,["crates","navigation","signed","physics"]],
-  // Teacher-only curriculum planning data; unit tests verify it is not
-  // imported by the student runtime. No expensive animation suite needed.
   [/^src\/curriculum\.mjs$/,[]],
   [/^src\/app\.mjs$/,ALL],
-  [/^index\.html$/,["crates","navigation","notebook","signed","layout"]],
-  [/^src\/styles\.css$/,["navigation","layout","physics"]]
+  [/^index\.html$/,["crates","navigation","notebook","signed","layout","controls"]],
+  [/^src\/styles\.css$/,["navigation","visual","layout","physics","controls","motion","attempts","area"]],
+  // A change to the shared browser helper affects its old physics and
+  // animation callers; test coverage must not silently vanish.
+  [/^e2e\/reference-move-helper\.mjs$/,ALL]
 ]);
 export function selectBrowserGroups(paths){
   const selected=new Set();
@@ -49,6 +63,11 @@ export function selectBrowserGroups(paths){
     const path=String(raw||"").trim().replaceAll("\\","/");
     if(!path)continue;
     let matched=false;
+    for(const [group,specs] of Object.entries(GROUP_SPECS)){
+      if(!specs.includes(path))continue;
+      matched=true;
+      selected.add(group);
+    }
     for(const [rule,groups] of RULES){
       if(!rule.test(path))continue;
       matched=true;

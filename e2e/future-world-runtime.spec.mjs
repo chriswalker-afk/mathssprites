@@ -32,6 +32,8 @@ test("future-world launch respects signed engine mode and world-aware chapter in
   await expect(page.locator("#quantity-mode")).toHaveValue("signed");
   await expect(page.locator("#chapter-status")).toContainText("WORLD 2 · STAGE 1 · LEVEL 01 / 3");
   await expect(page.locator("#chapter")).toContainText("Zero pairs");
+  await expect(page.locator("#object-picker")).toBeHidden();
+  await page.locator('[data-operation="remove"]').click();
   await expect(page.locator('[data-kind="negOne"]')).toBeVisible();
   await expect(page.locator("#left-items .balloon")).toHaveCount(1);
   await expect(page.locator(".progress-dot")).toHaveCount(1);

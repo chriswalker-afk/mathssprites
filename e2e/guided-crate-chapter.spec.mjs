@@ -123,12 +123,12 @@ test("old 20-level Guided completion stays recorded but new chapter is not false
   await page.evaluate(value=>localStorage.setItem("mathssprites.progress.v1",
     JSON.stringify(value)),legacy);
   await page.reload();
-  await page.locator('[data-screen="worlds"]').first().click();
-  await expect(page.locator('[data-world-art="workshop"] .world-progress')).toContainText("20 / 60 complete");
-  await page.getByRole("button",{name:"Explore stages"}).click();
-  await expect(page.locator('[data-stage="guided"]')).toContainText("20 of 24");
-  await expect(page.locator('[data-stage="guided"]')).not.toContainText("Stage mastered");
-  await page.getByRole("button",{name:"Choose Stage 1 levels"}).click();
+  await page.locator("#home-choose-level").click();
+  await expect(page.locator("#site-levels")).toHaveAttribute("data-active-world","workshop");
+  await expect(page.locator("#site-levels")).toHaveAttribute("data-active-stage","guided");
+  await expect(page.locator("#world1-progress-number")).toHaveText("20 of 24 complete");
+  await expect(page.locator("#world1-finale")).toBeHidden();
+  await expect(page.locator("#world1-progress-bar")).toHaveJSProperty("value",20);
   await expect(page.locator(".level-tile.status-complete")).toHaveCount(20);
   await expect(page.locator('[data-level="20"]')).toHaveClass(/status-complete/);
   await expect(page.locator('[data-level="21"]')).not.toHaveClass(/status-complete/);

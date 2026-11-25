@@ -9,8 +9,11 @@ test.beforeEach(async({page})=>{
 test("maths mode is INDEPENDENT of hand control, and positive-only lessons hide negatives",async({page})=>{
   await expect(page.locator("#mode-select")).toHaveValue("auto");
   await expect(page.locator("#quantity-mode")).toHaveValue("positive");
+  await expect(page.locator("#object-picker")).toBeHidden();
+  await page.locator('[data-operation="add"]').click();
+  await expect(page.locator("#object-picker")).toBeVisible();
   await expect(page.locator('[data-kind="negX"]')).toBeHidden();
-  await expect(page.locator('[data-kind="negOne"]')).toBeVisible();
+  await expect(page.locator('[data-kind="negOne"]')).toBeHidden();
   await page.locator("#mode-select").selectOption("manual");
   await expect(page.locator("#quantity-mode")).toHaveValue("positive");
   await page.locator("#quantity-mode").selectOption("signed");
@@ -20,7 +23,10 @@ test("maths mode is INDEPENDENT of hand control, and positive-only lessons hide 
   await expect(page.locator('[data-kind="negOne"]')).toBeVisible();
   await expect(page.locator("#journal-legend")).toContainText("white");
   await page.locator("#quantity-mode").selectOption("positive");
+  await page.locator('[data-operation="add"]').click();
+  await expect(page.locator("#object-picker")).toBeVisible();
   await expect(page.locator('[data-kind="negOne"]')).toBeHidden();
+  await expect(page.locator('[data-kind="negX"]')).toBeHidden();
 });
 
 test("students can opt into white sprites on an introductory puzzle and see a REAL zero pair",async({page})=>{
