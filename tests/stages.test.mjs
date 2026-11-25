@@ -50,7 +50,7 @@ test("campaign locks each stage mode and QA previews retain both methods",()=>{
   assert.match(source,/if\(campaignStage==="guided"\)mode="auto";/);
   assert.match(source,/if\(campaignStage==="independent"\)mode="manual";/);
   assert.match(source,/if\(notebookSession \|\| campaignStage==="guided" \|\|/);
-  assert.match(source,/\(workshopActive&&mode!=="manual"\) \|\| busy \|\| isSolved\(state\)\)return;/);
+  assert.match(source,/\(\(workshopActive\|\|squarePreviewActive\)&&mode!=="manual"\) \|\| busy \|\| isSolved\(state\)\)return;/);
   assert.match(source,/if\(campaignStage!==null\)/);
   assert.match(source,/\$\("mode-wrapper"\)\.hidden=inCampaign/);
   assert.match(html,/id="campaign-hand-mode"/);
