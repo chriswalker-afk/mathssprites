@@ -520,6 +520,9 @@ function renderNotebookPaper() {
   $("notebook-reset").disabled=notebookPhase==="replaying";
   renderNotebookMathEditor();
 }
+function independentSquareCampaign(){
+  return campaignWorldId==="squares"&&campaignStage==="independent";
+}
 function inspectionPolicy(){
   return squareInspectionPolicy(currentLevel(),{mode,notebook:!!notebookSession});
 }
@@ -612,6 +615,12 @@ function render() {
         13:"Recognise a complete square made from all three kinds of objects.",
         17:"Inspect square lets you look for a missing corner without making a move.",
         21:"Choose a sequence of matching moves to reveal the round sprite."
+      }:independentSquareCampaign()?{
+        1:"Build one square, then choose the same operation for the other chamber.",
+        5:"Choose either chamber first. Clear or share the area before finding a side.",
+        9:"Reconstruct all four regions before recovering the side.",
+        13:"Inspect square lets you choose your own side markers without making a move.",
+        17:"Choose and match each transformation to isolate one round sprite."
       }:{};
   $("chapter-briefing").hidden =
     campaignLevelNumber===null || !briefings[campaignLevelNumber];
@@ -720,7 +729,8 @@ function render() {
   $("campaign-hand-label").textContent="STAGE "+campaignStageNumber+" · HAND CONTROL";
   $("campaign-hand-title").textContent=campaignStage==="independent"
     ?"Your Turn":"Guided Mirror";
-  $("campaign-hand-help").textContent=campaignStage==="independent"
+  $("campaign-hand-help").textContent=independentSquareCampaign()
+    ?"Choose each visit yourself.":campaignStage==="independent"
     ?"You make both hand visits.":"The hand acts on both rooms.";
   $("mode-select").value=inCampaign
     ? (campaignStage==="independent"?"manual":"auto") : mode;
@@ -764,7 +774,9 @@ function render() {
   $("do-both").hidden = mode !== "auto";
   $("do-both").disabled=busy||awaiting||isSolved(state)||!hasCompleteToolSelection();
   $("manual-explanation").hidden = mode !== "manual";
-  $("manual-explanation").textContent=campaignStage==="independent"
+  $("manual-explanation").textContent=independentSquareCampaign()
+    ? (awaiting?"Choose the matching action for the other chamber.":"Choose a tool, then visit either chamber.")
+    : campaignStage==="independent"
     ? (awaiting
       ? "The scale is tilted. Finish the matching move in the other chamber to restore the balance; different moves will be shown and undone."
       : "Choose an action, visit ONE room, then repeat the same action in the OTHER room. Watch the scale tip and settle.")
@@ -785,6 +797,7 @@ function render() {
           ? selected.factor === expected.factor : true);
     button.textContent = awaiting
       ? (state.pending.first === side ? "First move made" :
+        independentSquareCampaign() ? "Visit other chamber" :
         same ? "Match the move here" : "Try different move here")
       : "Use hand here";
     $(side + "-chamber").classList.toggle("needs-match", awaiting && state.pending.first !== side);
@@ -1380,6 +1393,7 @@ function restoreExperiment({rollbackPending = false} = {}) {
   // Clear *every* temporary representation before returning to the last
   // committed state. No failed step ever changes the mathematical history.
   if (rollbackPending && state.pending) state = undo(state);
+  if(independentSquareCampaign())resetToolSelection();
   override = null;
   groups = {left:0,right:0};
   failureTilt = 0;
@@ -1834,7 +1848,7 @@ async function manualMove(side) {
   // A student-facing Stage 1 cannot perform one-sided actions, even if an
   // invisible prototype button is activated programmatically.
   if(notebookSession || campaignStage==="guided" ||
-     (workshopActive&&mode!=="manual") || busy || isSolved(state))return;
+     ((workshopActive||squarePreviewActive)&&mode!=="manual") || busy || isSolved(state))return;
   const wasPending=!!state.pending,action=currentAction();
   if(!hasCompleteToolSelection())return;
   const outcome=perform(state,action,"manual",side);
@@ -1872,10 +1886,14 @@ async function manualMove(side) {
       override=null;groups[side]=0;render();
     });
   }finally{
-    override=null;groups[side]=0;busy=false;render();clearNeutralEffect(side);
+    override=null;groups[side]=0;busy=false;
+    // Each independent Square Laboratory visit requires its own selection.
+    // Never carry an operation, object or quantity across the balance.
+    if(independentSquareCampaign())resetToolSelection();
+    render();clearNeutralEffect(side);
   }
   if(state.pending) {
-    setFeedback("One room done. The scale is tilted! Now make the matching move in the other room.","working");
+    setFeedback(independentSquareCampaign()?"Choose the matching move for the other chamber.":"One room done. The scale is tilted! Now make the matching move in the other room.","working");
     renderFirstGuide();
   } else {
     if(activeIndependentGuide()) {
@@ -2238,7 +2256,8 @@ function updateReplayEndNote() {
     note.textContent=(built?"Both entire expressions were squared. ":
       "The isolated round sprite gives its weight. ")+
       (rootUsed?"Sprite weights are nonnegative, so the hand takes the principal square root. ":"")+
-      (campaignLevelNumber===24&&campaignStage==="guided"?"Return to the board to review your Guided Squares progress.":"");
+      (campaignLevelNumber===24&&campaignStage==="guided"?"Return to the board to review your Guided Squares progress.":
+        campaignLevelNumber===20&&campaignStage==="independent"?"Return to the board to review your Independent Squares progress.":"");
     return;
   }
   if (ready && campaignLevelNumber !== null)
@@ -2479,6 +2498,7 @@ $("motion-enable").addEventListener("click", () => chooseMotion(false));
 $("undo").addEventListener("click", () => {
   if (notebookSession || busy) return;
   state = undo(state); clearSpeech();
+  if(independentSquareCampaign())resetToolSelection();
   setFeedback("The hand has put everything back.");
   render();
 });

@@ -70,8 +70,8 @@ test("Independent completion awards stars only for completed moves and retains w
   assert.deepEqual(campaignStageRecord(state,"opposites","independent").completed,[]);
   assert.deepEqual(campaignStarTotals(state,{worldId:"fractions",stageId:"independent"}),{earned:3,available:60,completed:1,count:20});
   assert.deepEqual(campaignStarTotals(state,{worldId:"fractions"}),{earned:3,available:180,completed:1,count:60});
-  assert.equal(campaignStarTotals(state).count,204);
-  assert.equal(campaignStarTotals(state).available,612);
+  assert.equal(campaignStarTotals(state).count,224);
+  assert.equal(campaignStarTotals(state).available,672);
   assert.equal(normalizeCampaignResume({worldId:"fractions",stageId:"independent",levelId:"frac-i-02"}).levelId,"frac-i-02");
   assert.equal(normalizeCampaignResume({worldId:"fractions",stageId:"notebook",levelId:"unknown"}),null);
   assert.deepEqual(withCampaignCompleted(state,"fractions","notebook","unknown",1),state);

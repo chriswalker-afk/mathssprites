@@ -204,8 +204,8 @@ test("certifying World 2 minima does not clear existing scores, completion or re
   assert.equal(reloaded.worlds.opposites.stages.guided.completedRevisions["op-g-05"],2);
   assert.deepEqual(reloaded.worlds.opposites.stages.guided.historical["op-g-05"],
     {revision:1,bestMoves:2});
-  assert.equal(campaignStarTotals(reloaded).available,612,
-    "Worlds 1 and 2 retain 360 stars, with 180 fractional and 72 square stars");
+  assert.equal(campaignStarTotals(reloaded).available,672,
+    "Worlds 1 and 2 retain 360 stars, with 180 fractional and 132 square stars");
 });
 
 test("World 2 shortest-route script and curriculum remain author-only",()=>{
