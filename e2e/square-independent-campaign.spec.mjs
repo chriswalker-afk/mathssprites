@@ -186,6 +186,19 @@ test("public Independent inspection starts neutral, permits learner-selected dim
   test.setTimeout(100000);
   await page.setViewportSize({width:390,height:844});
   await board(page);await open(page,14);
+  await page.evaluate(()=>{
+    window.squareVisitLocks=[];
+    for(const side of ["left","right"]){
+      // The game listener is already registered. At the very same click,
+      // BEFORE any animation beat, the next controls must be disabled.
+      document.getElementById(side+"-action").addEventListener("click",()=>{
+        window.squareVisitLocks.push({
+          side,reset:document.getElementById("reset").disabled,
+          operations:[...document.querySelectorAll(".operation-picker [data-operation]")].every(b=>b.disabled)
+        });
+      });
+    }
+  });
   const toggle=page.locator("#square-inspect-toggle");
   const box=page.locator("#left-inspection");
   const plus=k=>page.locator('#square-inspect-panel [data-inspect-dimension="'+k+'"][data-inspect-delta="1"]');
@@ -230,4 +243,7 @@ test("public Independent inspection starts neutral, permits learner-selected dim
   const data=await saved(page);
   expect(data.worlds.squares.stages.independent.completed).toEqual(["square-i-14"]);
   expect(data.worlds.squares.stages.independent.bestMoves["square-i-14"]).toBe(3);
+  const locks=await page.evaluate(()=>window.squareVisitLocks);
+  expect(locks.map(x=>x.side)).toEqual(["right","left","left","right","right","left"]);
+  expect(locks.every(x=>x.reset&&x.operations)).toBe(true);
 });

@@ -61,3 +61,10 @@ body.workshop-mode #game-levels{white-space:nowrap}
 
 #workshop-quantity-mode{width:100%;min-width:0;min-height:42px;padding:8px 12px;border:1px solid #9b8a65;border-radius:8px;background:#fffaf0;color:#283936;font:inherit}
 #workshop-quantity-mode:focus-visible{outline:3px solid #315f68;outline-offset:2px}
+
+/* The extra goal belongs exclusively to the Square Laboratory. */
+#workshop-goal-field[hidden],body.workshop-mode.notebook-mode #mode-wrapper{display:none!important}
+#workshop-goal-field{display:grid;gap:6px}
+#workshop-goal-field label{font-weight:800;font-size:.86rem;color:#3e4c42}
+#workshop-square-goal{width:100%;min-width:0;min-height:42px;padding:8px 12px;border:1px solid #9b8a65;border-radius:8px;background:#fffaf0;color:#283936;font:inherit}
+#workshop-square-goal:focus-visible{outline:3px solid #315f68;outline-offset:2px}

@@ -153,7 +153,11 @@
         <section class="workshop-form-card" aria-label="Build a custom equation">
           <form id="workshop-form" novalidate>
             <label for="workshop-quantity-mode">Number system</label>
-            <select id="workshop-quantity-mode"><option value="positive">Whole numbers</option><option value="fractions">Fractions · World 3</option></select>
+            <select id="workshop-quantity-mode"><option value="positive">Whole numbers</option><option value="fractions">Fractions · World 3</option><option value="squares">Squares · World 4</option></select>
+            <div id="workshop-goal-field" hidden>
+              <label for="workshop-square-goal">Goal</label>
+              <select id="workshop-square-goal"><option value="isolate">Solve a quadratic balance</option><option value="area">Build both square areas</option></select>
+            </div>
             <label for="workshop-equation">Your equation</label>
             <input id="workshop-equation" type="text" maxlength="80" inputmode="text"
               spellcheck="false" autocomplete="off" autocapitalize="off"
