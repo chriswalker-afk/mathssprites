@@ -26,7 +26,7 @@ test("World 2 shows the extended independent and notebook stages alongside six G
   await page.locator('[data-map-stage="notebook"]').click();
   await expect(page.locator(".level-tile")).toHaveCount(16);
   await expect(page.locator(".chapter-group")).toHaveCount(4);
-  await expect(page.locator('[data-map-world="fractions"]')).toBeDisabled();
+  await expect(page.locator('[data-map-world="fractions"]')).toBeEnabled();
   await expect(page.locator('[data-map-world="squares"]')).toBeDisabled();
   await page.screenshot({path:"artifacts/pr57-opposites-board-1280.png",fullPage:true});
 });

@@ -41,7 +41,7 @@ test("the live world selector has four distinct emblems, with future worlds lock
   expect(new Set(symbols).size).toBe(4);
   await expect(page.locator('[data-map-world="workshop"]')).toBeEnabled();
   await expect(page.locator('[data-map-world="opposites"]')).toBeEnabled();
-  await expect(page.locator('[data-map-world="fractions"]')).toBeDisabled();
+  await expect(page.locator('[data-map-world="fractions"]')).toBeEnabled();
   await expect(page.locator('[data-map-world="squares"]')).toBeDisabled();
   await expect(page.locator("#map-stage-tabs .map-stage-icon")).toHaveCount(3);
   await page.screenshot({path:"artifacts/pr59-world-tabs-1280.png"});
@@ -59,7 +59,7 @@ test("the engraved board shows all World 1 stage levels and active artwork @smok
   await expect(page.locator(".level-tile")).toHaveCount(20);
   await page.locator('[data-map-stage="notebook"]').click();
   await expect(page.locator(".level-tile")).toHaveCount(16);
-  await expect(page.locator(".map-world-button:disabled")).toHaveCount(2);
+  await expect(page.locator(".map-world-button:disabled")).toHaveCount(1);
   await page.screenshot({path:"artifacts/pr59-board-1280.png"});
 });
 

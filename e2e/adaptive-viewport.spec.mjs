@@ -121,7 +121,7 @@ test("world and stage tabs, scrollable chapters and signed notebook use the scre
     await page.locator('.site-nav-links [data-screen="levels"]').click();
     await expect(page.locator("#site-levels")).toBeVisible();
     await expect(page.locator("#map-world-tabs button")).toHaveCount(4);
-    await expect(page.locator('[data-map-world="fractions"]')).toBeDisabled();
+    await expect(page.locator('[data-map-world="fractions"]')).toBeEnabled();
     await expect(page.locator('[data-map-world="squares"]')).toBeDisabled();
     withinScreen(await measure(page));
     await page.screenshot({path:"artifacts/pr59-world-tabs-"+size.name+".png"});

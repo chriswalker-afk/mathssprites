@@ -1,4 +1,5 @@
 import { LEVELS } from "./engine.mjs";
+import {createFractionCampaignView} from "./fraction-campaign.mjs";
 import {
   CAMPAIGN_REGISTRY,findCampaignWorld,findCampaignStage,findCampaignLevel,
   nextCampaignLevel,isCampaignPlayable,firstCampaignLevel
@@ -60,6 +61,8 @@ let currentScreen = "home";
 let playingNumber = null;
 let playingStage = null;
 let playingWorld = null;
+let fractionCampaign=null;
+function closeFractionCampaign(){fractionCampaign?.destroy();fractionCampaign=null;}
 let selectedWorld = campaignResume?.worldId||"workshop";
 let selectedStage = campaignResume?.stageId||"guided";
 let boardReturnScreen = "home";
@@ -183,7 +186,7 @@ function renderWorlds() {
       '<div class="world-card-footer"><span class="world-progress">' + progressLine + '</span>' +
         (world.available
           ? '<button type="button" class="primary-btn" data-world-stages="'+clean(world.id)+'">'+
-            (world.id==="workshop"?"Explore stages →":"Explore Opposites →")+'</button>'
+            (world.id==="workshop"?"Explore stages →":world.id==="fractions"?"Explore Fractions →":"Explore Opposites →")+'</button>'
           : '<span class="soon-lock" aria-label="This world is not available yet">◇ Locked</span>') +
       '</div></div></article>';
   }).join("");
@@ -392,6 +395,7 @@ function showScreen(name,{focusHeading=true}={}) {
     window.dispatchEvent(new Event("mathssprites:notebook-close"));
   if(currentScreen==="workshop-game")
     window.dispatchEvent(new Event("mathssprites:workshop-close"));
+  closeFractionCampaign();
   currentScreen = name;
   playingNumber = null;
   playingStage = null;
@@ -438,6 +442,7 @@ function launch(levelIdOrNumber,stageId=selectedStage,worldId=selectedWorld) {
   const slot=findCampaignLevel(worldId,stageId,levelIdOrNumber);
   const stage=findCampaignStage(worldId,stageId);
   if(!slot?.level||!stage)return false;
+  closeFractionCampaign();
   homeHero.setActive(false);
   selectedWorld=worldId;
   selectedStage=stageId;
@@ -468,6 +473,17 @@ function launch(levelIdOrNumber,stageId=selectedStage,worldId=selectedWorld) {
     chapterTitle:stage.chapters[slot.chapterIndex]?.title||"Experiments",
     chapterLevels:stage.levels.filter(s=>s.chapterIndex===slot.chapterIndex)
       .map(s=>({id:s.id,title:s.title,number:s.number}))};
+  if(worldId==="fractions"&&stage.method!=="notebook"){
+    $("game-shell").hidden=true;
+    fractionCampaign=createFractionCampaignView({slot,context,
+      onLeave:screen=>showScreen(screen),
+      onAdvance:()=>window.dispatchEvent(new Event("mathssprites:advance")),
+      onComplete:state=>window.dispatchEvent(new CustomEvent("mathssprites:solved",
+        {detail:{worldId,stage:stageId,number:slot.number,levelId:slot.id,moves:state.history.length}}))
+    });
+    window.scrollTo?.(0,0);
+    return true;
+  }
   if(stage.method==="notebook")
     window.dispatchEvent(new CustomEvent("mathssprites:notebook-campaign",
       {detail:{...context,level:slot.level}}));
@@ -775,6 +791,7 @@ window.addEventListener("mathssprites:solved",event=>{
     const message=starGlyphs(earned)+" "+earned+" star"+(earned===1?"":"s")+
       " · "+moves+" "+(moves===1?"move":"moves")+" (optimal: "+optimal+
       ") · Best: "+starGlyphs(bestRating)+" in "+best+" "+(best===1?"move":"moves");
+    if(fractionCampaign)fractionCampaign.setRating(message);
     $("level-clear-rating").textContent=message;
     $("level-clear-rating").hidden=false;
     $("replay-star-summary").textContent=message;
