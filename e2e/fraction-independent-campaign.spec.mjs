@@ -28,13 +28,13 @@ async function neutral(page){
   await expect(host.locator('[data-fb-op][aria-pressed="true"]')).toHaveCount(0);
 }
 const saved=page=>page.evaluate(()=>JSON.parse(localStorage.getItem("mathssprites.campaign.v2")));
-test("Independent Fractions opens twenty selectable levels, with only Apprentice locked @quick @smoke",async({page})=>{
+test("Independent Fractions opens twenty selectable levels, alongside Apprentice @quick @smoke",async({page})=>{
   await board(page);
   await expect(page.locator(".chapter-group")).toHaveCount(5);
   await expect(page.locator(".level-tile")).toHaveCount(20);
   await expect(page.locator(".level-tile:disabled")).toHaveCount(0);
   await expect(page.locator("#level-progress")).toContainText("0 / 60 stars");
-  await expect(page.locator('[data-map-stage="notebook"]')).toBeDisabled();
+  await expect(page.locator('[data-map-stage="notebook"]')).toBeEnabled();
   await open(page,20);
   await expect(lab(page).locator("#fb-chapter-status")).toContainText("WORLD 3 · STAGE 2 · LEVEL 20 / 20");
   await expect(lab(page).locator(".fb-mode-badge")).toHaveText("Independent Balance");

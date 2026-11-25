@@ -25,13 +25,13 @@ async function amount(page,op,kind,whole,num,den){
   await root.locator("#fb-apply").click();
   await ready(page);
 }
-test("Fraction Workshop opens all 24 Guided levels, while Apprentice remains locked @quick @smoke",async({page})=>{
+test("Fraction Workshop opens all 24 Guided levels, alongside Apprentice @quick @smoke",async({page})=>{
   await board(page);
   await expect(page.locator(".chapter-group")).toHaveCount(6);
   await expect(page.locator(".level-tile")).toHaveCount(24);
   await expect(page.locator(".level-tile:disabled")).toHaveCount(0);
   await expect(page.locator('[data-map-stage="independent"]')).toBeEnabled();
-  await expect(page.locator('[data-map-stage="notebook"]')).toBeDisabled();
+  await expect(page.locator('[data-map-stage="notebook"]')).toBeEnabled();
   await expect(page.locator("#level-progress")).toContainText("0 / 72 stars");
   await page.locator('[data-level="24"]').click();
   await expect(lab(page).locator("#fb-level-title")).toHaveText("The twelfths challenge");
