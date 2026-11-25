@@ -40,7 +40,7 @@ export function previewCells(area) {
 }
 
 export const BOX_STAGES_SQUARE = Object.freeze([
-  "frame", "edge", "column", "quadratic", "mixed", "units"
+  "frame", "edge", "column", "quadratic", "mixed-top", "mixed-bottom", "units"
 ]);
 export const BOX_STAGES_ROOT = Object.freeze([
   "frame", "units", "mixed", "quadratic", "column", "edge"

@@ -6,14 +6,14 @@
  */
 export const HAND_BEATS=Object.freeze({
   hover:510,descend:480,aim:190,
-  frame:320,edge:420,column:450,quadratic:510,mixed:630,units:480,
+  frame:340,edge:460,column:450,quadratic:510,mixed:630,"mixed-top":410,"mixed-bottom":410,units:480,
   close:290,contact:450,lift:430,withdraw:680
 });
 export const HAND_BEATS_REDUCED=Object.freeze({
   hover:90,descend:110,aim:80,
   // Motion reduced: stationary snapshots remain long enough to notice each
   // construction region; no hopping, tracing or rapid flying movements.
-  frame:210,edge:220,column:220,quadratic:250,mixed:280,units:250,
+  frame:210,edge:220,column:220,quadratic:250,mixed:280,"mixed-top":230,"mixed-bottom":230,units:250,
   close:90,contact:380,lift:115,withdraw:150
 });
 
@@ -37,7 +37,7 @@ export function handMotionPlan(action,reducedMotion=false,area=null){
   const b=area?.kind==="mixed"?area.weightSide:area&&!area.symbolic?area.side:0;
   const stageNames=!hasArea?[]:action.op==="square"
     ? ["frame","edge","column",
-      ...(a?["quadratic"]:[]),...(a&&b?["mixed"]:[]),...(b?["units"]:[])]
+      ...(a?["quadratic"]:[]),...(a&&b?["mixed-top","mixed-bottom"]:[]),...(b?["units"]:[])]
     : ["frame",
       ...(b?["units"]:[]),...(a&&b?["mixed"]:[]),...(a?["quadratic"]:[]),
       "column","edge"];
