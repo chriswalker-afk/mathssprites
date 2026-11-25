@@ -13,7 +13,7 @@ export const SPRITE_HAND_REACTION_CHANCES = Object.freeze({
 
 export function pickSpriteHandReaction(action, roll) {
   if (action?.op !== "remove" ||
-      !["posX", "negX"].includes(action.kind) ||
+      !["posX", "negX", "posX2"].includes(action.kind) ||
       !Number.isInteger(action.count) || action.count < 1) return null;
   if (typeof roll !== "number" || !Number.isFinite(roll) || roll < 0 || roll >= 1)
     throw new RangeError("Reaction roll must be between zero (inclusive) and one (exclusive)");

@@ -9,7 +9,7 @@ import { divisionBasketMarkup, playDivisionBaskets } from "./division-baskets.mj
 import {
   multiplicationBasketMarkup,multiplicationHandProp,playMultiplicationBaskets
 } from "./multiplication-baskets.mjs";
-import { spriteMotionProfile, spriteMotionStyle } from "./sprite-motion.mjs";
+import {spriteCreatureMarkup,heldSpriteMarkup,miniSpriteMarkup,areaSpriteMarkup} from "./square-sprites.mjs";
 import { pickSpriteHandReaction, dodgeOffsetPx } from "./sprite-reactions.mjs";
 import { floorScaleToFit, inRoomBoxPlan, areaMathLabel } from "./area-layout.mjs";
 import {weightPilePosition,weightCountPlaque} from "./weight-piles.mjs";
@@ -137,23 +137,9 @@ function roomSummary(r) {
   return parts.length ? parts.join(", ") : "no objects";
 }
 function token(kind, i, mini = false, side = "left", weightTotal = 0) {
-  if (mini) {
-    return '<span class="mini-token ' + kind + '" aria-hidden="true"></span>';
-  }
-  if (kind === "posX" || kind === "negX" || kind === "posX2") {
-    const profile = spriteMotionProfile(currentLevel().id, side, kind, i);
-    const square = kind === "posX2";
-    const appearance = square ? "sprite-square" : kind === "posX" ? "sprite-black" : "sprite-white";
-    return '<span class="token sprite ' + appearance +
-      '" style="' + spriteMotionStyle(profile) + '" title="' +
-      (square ? "A square x² sprite" : kind === "posX" ? "A little dark sprite" : "A little pale sprite") + '">' +
-      '<span class="sprite-ground-shadow"></span>' +
-      '<span class="sprite-reaction-shell"><span class="sprite-motion">' +
-      '<span class="sprite-feet"></span><span class="sprite-body">' +
-      '<span class="sprite-eyes"><i></i><i></i></span>' +
-      (square ? '<span class="square-symbol">✦</span>' : "") + '</span>' +
-      '</span></span></span>';
-  }
+  const creature=kind==="posX"||kind==="negX"||kind==="posX2";
+  if (mini) return creature?miniSpriteMarkup(kind):'<span class="mini-token '+kind+'" aria-hidden="true"></span>';
+  if (creature) return spriteCreatureMarkup(currentLevel().id,side,kind,i);
   if (kind === "posOne") {
     // Only the full-size floor tokens participate in a physical stack.
     // Miniatures used in the hand and artwork stay unchanged.
@@ -773,9 +759,7 @@ function handProp(action, side) {
     return multiplicationHandProp();
   }
   const picture = action.kind === "posX" || action.kind === "negX" || action.kind === "posX2"
-    ? '<span class="held-sprite' + (action.kind === "negX" ? " held-sprite-pale" :
-      action.kind === "posX2" ? " held-sprite-square" : "") +
-      '"><i></i><i></i></span>'
+    ? heldSpriteMarkup(action.kind)
     : action.kind==="negOne" ? '<span class="held-balloon"></span>' :
       '<span class="held-weight"></span>';
   return picture + (action.count > 1 ? '<span class="held-count">×' + action.count + '</span>' : "");
@@ -821,8 +805,7 @@ function roomOperationText(action, side) {
 }
 function areaBoxActor(kind) {
   if(kind==="posOne")return '<span class="box-actor box-actor-weight"></span>';
-  return '<span class="box-actor '+(kind==="posX2"?"box-actor-x2":"box-actor-x")+
-    '"></span>';
+  return areaSpriteMarkup(kind);
 }
 const BOX_NOTES={
   square:{
@@ -1075,9 +1058,9 @@ async function handAct(side, action, applyAtContact) {
   // one that disappears when the hand makes contact. We roll only for real,
   // whole-sprite pickups, never for weights, division, addition or fractions.
   const tokens = !reducedMotion && action.op === "remove" &&
-    (action.kind === "posX" || action.kind === "negX")
+    ["posX","negX","posX2"].includes(action.kind)
     ? [...$(side + "-items").querySelectorAll(
-        action.kind === "posX" ? ".sprite-black" : ".sprite-white"
+        action.kind === "posX" ? ".sprite-black" : action.kind==="posX2" ? ".sprite-square" : ".sprite-white"
       )] : [];
   const actor = tokens.length >= action.count ? tokens.at(-1) : null;
   const reaction = actor ? pickSpriteHandReaction(action, Math.random()) : null;

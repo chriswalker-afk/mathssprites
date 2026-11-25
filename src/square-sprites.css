@@ -1,0 +1,127 @@
+/* PR70: one creature species, two clearly different silhouettes.
+   The floor actor retains its existing footprint, eyes, feet and animation
+   layers. No text, star, gold frame or numeric marking on the body. */
+:root{
+  --sq-body:radial-gradient(circle at 32% 24%,#56615c,#121719 78%);
+  --sq-fur-round:polygon(50.00% 2.00%,53.92% 10.19%,59.36% 2.92%,61.61% 11.72%,68.37% 5.65%,68.86% 14.72%,76.67% 10.09%,75.38% 19.08%,83.94% 16.06%,80.92% 24.62%,89.91% 23.33%,85.28% 31.14%,94.35% 31.63%,88.28% 38.39%,97.08% 40.64%,89.81% 46.08%,98.00% 50.00%,89.81% 53.92%,97.08% 59.36%,88.28% 61.61%,94.35% 68.37%,85.28% 68.86%,89.91% 76.67%,80.92% 75.38%,83.94% 83.94%,75.38% 80.92%,76.67% 89.91%,68.86% 85.28%,68.37% 94.35%,61.61% 88.28%,59.36% 97.08%,53.92% 89.81%,50.00% 98.00%,46.08% 89.81%,40.64% 97.08%,38.39% 88.28%,31.63% 94.35%,31.14% 85.28%,23.33% 89.91%,24.62% 80.92%,16.06% 83.94%,19.08% 75.38%,10.09% 76.67%,14.72% 68.86%,5.65% 68.37%,11.72% 61.61%,2.92% 59.36%,10.19% 53.92%,2.00% 50.00%,10.19% 46.08%,2.92% 40.64%,11.72% 38.39%,5.65% 31.63%,14.72% 31.14%,10.09% 23.33%,19.08% 24.62%,16.06% 16.06%,24.62% 19.08%,23.33% 10.09%,31.14% 14.72%,31.63% 5.65%,38.39% 11.72%,40.64% 2.92%,46.08% 10.19%);
+  --sq-fur-square:polygon(50.00% 2.00%,53.94% 10.00%,59.55% 2.00%,62.13% 10.00%,69.88% 2.00%,71.38% 10.00%,82.07% 2.00%,82.83% 10.00%,98.00% 2.00%,90.00% 17.17%,98.00% 17.93%,90.00% 28.62%,98.00% 30.12%,90.00% 37.87%,98.00% 40.45%,90.00% 46.06%,98.00% 50.00%,90.00% 53.94%,98.00% 59.55%,90.00% 62.13%,98.00% 69.88%,90.00% 71.38%,98.00% 82.07%,90.00% 82.83%,98.00% 98.00%,82.83% 90.00%,82.07% 98.00%,71.38% 90.00%,69.88% 98.00%,62.13% 90.00%,59.55% 98.00%,53.94% 90.00%,50.00% 98.00%,46.06% 90.00%,40.45% 98.00%,37.87% 90.00%,30.12% 98.00%,28.62% 90.00%,17.93% 98.00%,17.17% 90.00%,2.00% 98.00%,10.00% 82.83%,2.00% 82.07%,10.00% 71.38%,2.00% 69.88%,10.00% 62.13%,2.00% 59.55%,10.00% 53.94%,2.00% 50.00%,10.00% 46.06%,2.00% 40.45%,10.00% 37.87%,2.00% 30.12%,10.00% 28.62%,2.00% 17.93%,10.00% 17.17%,2.00% 2.00%,17.17% 10.00%,17.93% 2.00%,28.62% 10.00%,30.12% 2.00%,37.87% 10.00%,40.45% 2.00%,46.06% 10.00%);
+  --sq-radius:7px;
+}
+.sprite-square .sprite-body{
+  border-radius:var(--sq-radius);background:var(--sq-body);
+  box-shadow:inset -2px -4px 6px #0009,0 0 0 1px rgba(228,225,197,.48),0 0 11px rgba(172,191,176,.22);
+  animation-name:square-creature-wiggle;
+}
+.sprite-square .sprite-body:before{
+  border-radius:0;clip-path:var(--sq-fur-square);
+  background:linear-gradient(145deg,#303a37,#192022 54%,#101719);
+  filter:blur(.25px);inset:-5px;
+}
+.sprite-square .sprite-body:after{border-radius:5px}
+.sprite-square .sprite-motion{animation-name:square-creature-hop}
+.sprite-square .sprite-ground-shadow{animation-name:square-creature-shadow}
+@keyframes square-creature-hop{
+  0%,7%,73%,100%{transform:translateY(0) scale(1)}
+  13%{transform:translateY(2px) scale(1.09,.87)}
+  31%{transform:translateY(calc(var(--hop-height,-39px)*.55)) scale(.97,1.04)}
+  48%{transform:translateY(calc(var(--hop-height,-39px)*.29)) scale(1)}
+  60%{transform:translateY(2px) scale(1.09,.83)}
+  66%{transform:translateY(-3px) scale(.98,1.04)}
+}
+@keyframes square-creature-wiggle{
+  0%,100%{transform:rotate(0) scale(1)}
+  22%{transform:translateX(-1px) rotate(calc(var(--wiggle-left,-4deg)*.65)) scale(1.025,.99)}
+  53%{transform:translateX(1px) rotate(calc(var(--wiggle-right,5deg)*.65)) scale(.985,1.025)}
+  78%{transform:rotate(-1deg) scale(1)}
+}
+@keyframes square-creature-shadow{
+  0%,12%,61%,100%{transform:translateX(-50%) scaleX(1);opacity:.7}
+  31%{transform:translateX(-50%) scaleX(.78);opacity:.5}
+  48%{transform:translateX(-50%) scaleX(.9);opacity:.59}
+}
+/* Keep the smaller basket bob instead of hopping out of the container. */
+.group-basket .sprite-square .sprite-motion,
+.basket-in-hand .sprite-square .sprite-motion{animation-name:sprite-basket-bob}
+/* Shared dark appearance for the area actors, carried creature and comic.
+   The existing box actors have two pseudo-element eyes. */
+.held-sprite-square{
+  border-radius:var(--sq-radius);background:var(--sq-body);
+  box-shadow:inset -2px -3px 4px #0008,0 0 0 1px #6a776b;
+}
+.held-sprite-square:before{
+  content:"";position:absolute;inset:-4px;clip-path:var(--sq-fur-square);
+  background:#182021;z-index:-1;
+}
+.held-sprite-square i:after{
+  content:"";position:absolute;top:3px;left:2px;width:2px;height:3px;
+  background:#1c2726;border-radius:50%;
+}
+.box-actor.box-actor-x2{
+  border:1px solid #708077;border-radius:18%;
+  background:var(--sq-body);box-shadow:inset -1px -2px 3px #08110f80,0 2px 2px #0009;
+}
+.box-actor.box-actor-x2:before,.box-actor.box-actor-x2:after{
+  background:radial-gradient(ellipse at 67% 62%,#1c2726 0 23%,#fff6dd 27%);
+}
+.mini-token.posX2{
+  position:relative;border-radius:3px!important;background:#191d1c;
+  box-shadow:0 0 0 1px #59665c!important;
+}
+.mini-token.posX2:after{
+  content:"";position:absolute;left:3px;top:4px;width:2px;height:3px;
+  background:#fff6dd;border-radius:50%;box-shadow:5px 0 #fff6dd;
+}
+.overflow-piece.square-spill{border-radius:var(--sq-radius);background:var(--sq-body)}
+/* Actual area contact still uses the existing room classes. The art
+   preview uses its own data attribute; it cannot invoke an engine move. */
+.area-after-square .sprite-square .sprite-body,
+.sprite[data-square-morph="square"] .sprite-body{
+  animation:square-form .56s cubic-bezier(.22,.82,.25,1) both!important;
+  animation-play-state:running!important;
+}
+.area-after-sqrt .sprite-black .sprite-body,
+.sprite[data-square-morph="round"] .sprite-body{
+  animation:round-form .56s cubic-bezier(.22,.82,.25,1) both!important;
+  animation-play-state:running!important;
+}
+.area-after-square .sprite-square .sprite-body:before,
+.sprite[data-square-morph="square"] .sprite-body:before{
+  border-radius:0;animation:square-fur-form .56s ease-out both;
+}
+.area-after-sqrt .sprite-black .sprite-body:before,
+.sprite[data-square-morph="round"] .sprite-body:before{
+  border-radius:0;background:linear-gradient(145deg,#303a37,#192022 54%,#101719);
+  animation:round-fur-form .56s ease-out both;
+}
+.sprite[data-square-morph] .sprite-motion,.sprite[data-square-morph] .sprite-ground-shadow{
+  animation-play-state:paused!important;
+}
+@keyframes square-form{
+  0%{border-radius:49% 51% 45% 45%;transform:scale(1,.96)}
+  28%{border-radius:32%;transform:scale(1.13,.78)}
+  66%{border-radius:12px;transform:scale(.96,1.07)}
+  100%{border-radius:var(--sq-radius);transform:scale(1)}
+}
+@keyframes round-form{
+  0%{border-radius:var(--sq-radius);transform:scale(1)}
+  30%{border-radius:16px;transform:scale(1.11,.84)}
+  65%{border-radius:44%;transform:scale(.96,1.06)}
+  100%{border-radius:49% 51% 45% 45%;transform:scale(1)}
+}
+@keyframes square-fur-form{
+  from{clip-path:var(--sq-fur-round)}
+  to{clip-path:var(--sq-fur-square)}
+}
+@keyframes round-fur-form{
+  from{clip-path:var(--sq-fur-square)}
+  to{clip-path:var(--sq-fur-round)}
+}
+/* The existing global reduced-motion class wins over every forced contact
+   animation, including the pseudo-element fur and preview-only morph. */
+.reduce-motion .sprite-square .sprite-body,
+.reduce-motion .area-after-square .sprite-square .sprite-body,
+.reduce-motion .area-after-sqrt .sprite-black .sprite-body,
+.reduce-motion .sprite[data-square-morph] .sprite-body,
+.reduce-motion .sprite-body:before{
+  animation:none!important;transform:none!important;
+}
