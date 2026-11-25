@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Maths Sprites · Fractional sprite workshop</title>
+<link rel="stylesheet" href="./src/fraction-weight-preview.css"><link rel="stylesheet" href="./src/fraction-sprites.css"><link rel="stylesheet" href="./src/fraction-sprite-preview.css">
+</head><body><main class="fw-preview fs-preview">
+<header><a href="./">← Maths Sprites</a><span class="fw-dev">Art preview · World 3 locked</span><h1>The Fraction Workshop</h1><p>Fractional sprite visual studies · <a href="./fraction-weight-preview.html">Weight artwork</a></p></header>
+<section aria-labelledby="split-title"><div class="fw-heading"><h2 id="split-title">Magical separation</h2><div class="fw-controls"><label for="denominator">Equal pieces</label><select id="denominator"></select><button id="split" type="button" aria-pressed="false">Separate</button></div></div>
+<div id="split-stage" class="fw-stage fw-split-stage fs-split-stage"></div>
+<p class="fw-note">One sprite, divided into equal parts. Its eyes and fur stay attached to their original pieces, and the pieces reunite to make the same creature.</p></section>
+<section aria-labelledby="gallery-title"><h2 id="gallery-title">The fraction collection</h2><div id="gallery" class="fw-gallery"></div>
+<div class="fw-heading fs-partial-heading"><h2>Choose a partial sprite</h2><div class="fw-controls"><label for="numerator">Pieces to keep</label><select id="numerator"></select><button id="partial-split" type="button" aria-pressed="false">Separate</button></div></div>
+<div id="partial-stage" class="fw-stage fw-split-stage fs-split-stage"></div><p class="fw-note">The dotted outline is only the original whole's reference. The missing pieces are not on the balance.</p></section>
+<section aria-labelledby="regroup-title"><div class="fw-heading"><h2 id="regroup-title">Regroup and reassemble</h2><div class="fw-controls"><label for="example">Example</label><select id="example"><option value="thirds">Two thirds × 3</option><option value="quarters">Three quarters × 4</option><option value="sixths">Half + third</option><option value="borrow">Whole − quarter</option></select></div></div>
+<div class="fw-step-grid" id="example-stage"></div><div class="fw-controls fw-step-controls"><button type="button" id="previous">Previous</button><output id="step-count" aria-live="polite"></output><button type="button" id="next">Next</button></div></section>
+<section aria-labelledby="mixed-title"><h2 id="mixed-title">Mixed sprite inventories</h2><div id="mixed" class="fw-mixed"></div><p class="fw-note">Whole sprites retain a consistent scale. A partial sprite is a piece of a whole, not a new smaller creature.</p></section>
+</main><script type="module" src="./src/fraction-sprite-preview.mjs"></script></body></html>

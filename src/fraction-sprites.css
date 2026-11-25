@@ -1,0 +1,18 @@
+/* Fraction sprites use their own isolated art namespace. */
+.fs-assembly{display:inline-flex;flex-direction:column;align-items:center;justify-content:flex-end;vertical-align:bottom;width:clamp(62px,13vw,112px);max-width:100%;flex:none;color:#a6b9a9}
+.fs-assembly svg{display:block;width:100%;height:auto;overflow:visible}
+.fs-label{font:700 14px/1.2 system-ui,sans-serif;color:#fff0c6;min-height:17px;margin-top:3px}
+.fs-piece{transform:translate(0,0);transition:transform .46s cubic-bezier(.2,.82,.28,1)}
+.fs-assembly.is-separated .fs-piece{transform:translate(var(--fs-dx),var(--fs-dy))}
+.fs-fragment-motion{transform:translateY(0)}
+.fs-assembly.is-separated .fs-fragment-motion{animation:fs-magic-wiggle .68s ease-in-out var(--fs-delay) 1 both}
+@keyframes fs-magic-wiggle{0%,100%{transform:translateY(0)}35%{transform:translateY(-3px)}72%{transform:translateY(1px)}}
+.fs-joined-art{opacity:0;pointer-events:none;transition:opacity .12s linear}
+.fs-assembly[data-complete="true"]:not(.is-separated) .fs-joined-art{opacity:1;transition-delay:.46s}
+.fs-assembly[data-complete="true"]:not(.is-separated) .fs-cut-edge{stroke:none}
+.fs-assembly[data-complete="true"]:not(.is-separated) .fs-whole-outline{visibility:hidden}
+.fs-assembly[data-complete="true"][data-denominator="1"] .fs-joined-art{transition-delay:0s}
+.fs-inventory-objects,.fs-grid-inventory{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:center;gap:6px;min-width:0}
+.fs-inventory-objects > .fs-assembly,.fs-grid-inventory > .fs-assembly{width:70px}
+.fs-empty{color:#d8c8aa;font-style:italic;align-self:center}
+@media(prefers-reduced-motion:reduce){.fs-piece,.fs-joined-art{transition:none!important}.fs-fragment-motion{animation:none!important}}
