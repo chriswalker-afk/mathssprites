@@ -94,3 +94,18 @@ test("teacher-only curriculum metadata uses unit tests, not six browser suites",
   ]),[]);
   assert.deepEqual(featureMatrix(["src/curriculum.mjs"]),{include:[]});
 });
+
+test("retired menu visual, Apprentice and Independent specs are included in focused QA",()=>{
+  for(const name of ["menu-polish-visual","portal-art","home-hero"]){
+    const file="e2e/"+name+".spec.mjs";
+    assert.ok(GROUP_SPECS.visual.includes(file),file);
+    assert.deepEqual(selectBrowserGroups([file]),["visual"],file);
+  }
+  assert.ok(GROUP_SPECS.notebook.includes("e2e/apprentice-campaign.spec.mjs"));
+  assert.deepEqual(selectBrowserGroups(["e2e/apprentice-campaign.spec.mjs"]),["notebook"]);
+  assert.ok(GROUP_SPECS.physics.includes("e2e/independent-balance.spec.mjs"));
+  assert.deepEqual(selectBrowserGroups(["e2e/independent-balance.spec.mjs"]),["physics"]);
+  for(const files of Object.values(GROUP_SPECS))
+    for(const file of files)
+      assert.match(file,/^e2e\/[a-z0-9-]+\.spec\.mjs$/);
+});
