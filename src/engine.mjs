@@ -4,8 +4,15 @@
  * Both play modes commit exactly one two-sided transaction per mathematical step.
  */
 import { neutralPairSequence } from "./neutral-pairs.mjs";
+import {rtext} from "./rational.mjs";
+import {FRACTION_MODE,fractionRoom,fractionCanonical,fractionEvaluate,fractionExpression,
+  fractionAction,fractionLevelAction,fractionTransform,validFractionLevel,initialFractionState,
+  fractionVisibleRooms,fractionBalanceDifference,fractionIsSolved,fractionPrepare,
+  fractionPerform,fractionUndo,fractionOperationText} from "./fraction-engine.mjs";
 import {cloneCrate,crateCount,crateAlgebra,crateContentsTotal,looseAfterUnpack,crateLabel} from "./group-crates.mjs";
 export const TOKEN_KINDS = ["posX", "negX", "posX2", "posOne", "negOne"];
+// Public whole-object mode choices stay unchanged until World 3 is enabled.
+// Fraction states explicitly dispatch before these legacy mode guards.
 export const QUANTITY_MODES = Object.freeze(["positive","signed"]);
 export function levelQuantityMode(level) {
   if (level.quantityMode) return level.quantityMode;
@@ -104,22 +111,34 @@ export const LEVELS = [
 ];
 
 export function room(values = {}) {
+  if(values?.quantityMode===FRACTION_MODE)return fractionRoom(values);
   const result=Object.fromEntries(TOKEN_KINDS.map(key => [key, Number(values[key] || 0)]));
   if(values?.crates?.count)result.crates=cloneCrate(values.crates);
   return result;
 }
 export function copyRoom(value) { return room(value); }
 export function canonical(value) {
+  if(value?.quantityMode===FRACTION_MODE)return fractionCanonical(value);
   const grouped=crateAlgebra(value);
   return {x2:(value.posX2||0)+grouped.x2,
     x:(value.posX||0)-(value.negX||0)+grouped.x,
     constant:(value.posOne||0)-(value.negOne||0)+grouped.constant};
 }
 export function evaluate(value, x) {
+  if(value?.quantityMode===FRACTION_MODE)return fractionEvaluate(value,x);
   const terms = canonical(value);
   return terms.x2 * x * x + terms.x * x + terms.constant;
 }
 export function initialState(level = LEVELS[0], quantityMode = levelQuantityMode(level)) {
+  // Fraction state has a distinct, exact physical schema. Never switch an
+  // existing whole-number experiment into it (or vice versa).
+  if(quantityMode===FRACTION_MODE||level.quantityMode===FRACTION_MODE){
+    if(quantityMode!==FRACTION_MODE||level.quantityMode!==FRACTION_MODE)
+      throw new RangeError("Fractions are restricted to the Fraction Workshop");
+    return initialFractionState(level);
+  }
+  if([level.left,level.right].some(r=>r?.quantityMode===FRACTION_MODE))
+    throw new RangeError("A whole-number experiment cannot contain fraction rooms");
   if (!QUANTITY_MODES.includes(quantityMode))
     throw new TypeError("Unknown quantity mode");
   if (level.lockPositive && quantityMode !== "positive")
@@ -137,15 +156,18 @@ export function initialState(level = LEVELS[0], quantityMode = levelQuantityMode
     left: room(level.left), right: room(level.right), history: [], pending: null };
 }
 export function visibleRooms(state) {
+  if(state.quantityMode===FRACTION_MODE)return fractionVisibleRooms(state);
   if (!state.pending) return { left: state.left, right: state.right };
   return { left: state.pending.first === "left" ? state.pending.pair.left.after : state.left,
     right: state.pending.first === "right" ? state.pending.pair.right.after : state.right };
 }
 export function balanceDifference(state) {
+  if(state.quantityMode===FRACTION_MODE)return fractionBalanceDifference(state);
   const { left, right } = visibleRooms(state);
   return evaluate(left, state.solution) - evaluate(right, state.solution);
 }
 export function isSolved(state) {
+  if(state.quantityMode===FRACTION_MODE)return fractionIsSolved(state);
   if (state.pending) return false;
   const isOneSprite = r => !crateCount(r) && r.posX === 1 && r.negX === 0 && r.posX2 === 0 &&
     r.posOne === 0 && r.negOne === 0;
@@ -166,6 +188,7 @@ export function isSolved(state) {
     (isOneSprite(state.right) && isWeights(state.left, state.solution));
 }
 export function normalize(value) {
+  if(value?.quantityMode===FRACTION_MODE)return {after:fractionRoom(value),cancellations:{sprites:0,constants:0}};
   const next = room(value);
   const sprites = Math.min(next.posX, next.negX);
   const constants = Math.min(next.posOne, next.negOne);
@@ -194,6 +217,7 @@ function check(action) {
   return null;
 }
 export function quantityPermission(quantityMode, action) {
+  if(quantityMode===FRACTION_MODE)return fractionAction(action);
   if (!QUANTITY_MODES.includes(quantityMode))
     return {ok:false,code:"quantity-mode",reason:"Choose a valid mathematics mode."};
   if (quantityMode === "positive" &&
@@ -225,6 +249,7 @@ function pureNonnegativeKind(r) {
  * The original simple-area descriptors are preserved for compatibility.
  */
 export function areaArrangement(r, op) {
+  if(r?.quantityMode===FRACTION_MODE)return null;
   if (op !== "square" && op !== "sqrt") return null;
   const source = room(r);
   if (source.negX || source.negOne) return null;
@@ -368,6 +393,8 @@ function transform(source, action, side = "room") {
 /** Preview exactly one room. This never commits a step or changes the opposite
  * chamber. Used for teaching failed attempts and mismatched manual moves. */
 export function previewRoomAction(source, action, quantityMode = "signed", side = "room") {
+  if(quantityMode===FRACTION_MODE)return fractionTransform(source,action);
+  if(source?.quantityMode===FRACTION_MODE)return {ok:false,code:"locked-world",reason:"Choose the Fraction Workshop."};
   const error = check(action);
   if (error) return { ok: false, code: "invalid", reason: error };
   const permission=quantityPermission(quantityMode,action);
@@ -377,6 +404,7 @@ export function previewRoomAction(source, action, quantityMode = "signed", side 
 /** World-specific permissions live in the pure engine; a hidden DOM button
  * must never be the only barrier between introductory and advanced maths. */
 export function levelActionPermission(state, action) {
+  if(state.quantityMode===FRACTION_MODE)return fractionLevelAction(state,action);
   if((action?.op==="add"||action?.op==="remove") && state.allowedKinds &&
     !state.allowedKinds.includes(action.kind))
     return {ok:false,code:"locked-kind",
@@ -396,6 +424,7 @@ export function levelActionPermission(state, action) {
   return {ok:true};
 }
 export function prepare(state, action) {
+  if(state.quantityMode===FRACTION_MODE)return fractionPrepare(state,action);
   if (state.pending) return { ok: false, reason: "Finish the matching move, or undo the first one." };
   const worldPermission = levelActionPermission(state, action);
   if (!worldPermission.ok) return worldPermission;
@@ -439,6 +468,7 @@ function commit(state, action, pair, mode) {
  * A fully committed action cannot be one-sided.
  */
 export function perform(state, action, mode = "auto", side) {
+  if(state.quantityMode===FRACTION_MODE)return fractionPerform(state,action,mode,side);
   const error=check(action);
   if(error)return {ok:false,code:"invalid",reason:error};
   const worldPermission=levelActionPermission(state,action);
@@ -519,6 +549,7 @@ export function attachAvailablePairs(state,side,type) {
   }};
 }
 export function undo(state) {
+  if(state.quantityMode===FRACTION_MODE)return fractionUndo(state);
   if (state.pending) return { ...state, pending: null };
   if(state.pairUndo?.length){
     const previous=state.pairUndo.at(-1);
@@ -533,6 +564,7 @@ export function undo(state) {
     history: state.history.slice(0, -1), pending: null };
 }
 export function expression(value) {
+  if(value?.quantityMode===FRACTION_MODE)return fractionExpression(value);
   if(crateCount(value)){
     const count=crateCount(value);
     const grouped=(count===1?"":String(count))+
@@ -558,6 +590,7 @@ export function expression(value) {
 export function equation(pair) { return expression(pair.left) + " = " + expression(pair.right); }
 const TOKEN_NAME = { posX: "dark sprite", negX: "pale sprite", posX2: "square x² sprite", posOne: "weight", negOne: "balloon" };
 export function operationDescription(action) {
+  if(typeof action.count==="object"&&action.count!==null)return (action.op==="add"?"Add ":"Remove ")+rtext(action.count)+" "+(action.kind==="posX"?"sprite(s)":"weight(s)")+" in each room";
   if(action.op==="unpack")return "Unpack the sealed crates in the "+
     (action.side==="left"?"west":"east")+" room (same value)";
   if (action.op === "square") return "Square both entire sides (x ≥ 0)";
@@ -568,6 +601,7 @@ export function operationDescription(action) {
   return (action.op === "add" ? "Add " : "Remove ") + action.count + " " + unit + " in each room";
 }
 export function algebraOperation(action) {
+  if(typeof action.count==="object"&&action.count!==null)return fractionOperationText(action);
   if(action.op==="unpack")return "Expand the brackets in the "+
     (action.side==="left"?"left":"right")+" expression — no change in value";
   if (action.op === "square") return "Square both sides (x ≥ 0)";
@@ -584,6 +618,8 @@ export function algebraOperation(action) {
   return (signed < 0 ? "− " : "+ ") + term + " on both sides";
 }
 export function validInitialLevel(level) {
+  if(level?.quantityMode===FRACTION_MODE)return validFractionLevel(level);
+  if([level.left,level.right].some(r=>r?.quantityMode===FRACTION_MODE))return false;
   if (level.quantityMode && !QUANTITY_MODES.includes(level.quantityMode))
     return false;
   if (levelQuantityMode(level)==="positive" &&
