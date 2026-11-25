@@ -1,0 +1,14 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Maths Sprites · Fractional weight workshop</title>
+<link rel="stylesheet" href="./src/fraction-weights.css"><link rel="stylesheet" href="./src/fraction-weight-preview.css">
+</head><body>
+<main class="fw-preview">
+<header><a href="./">← Maths Sprites</a><span class="fw-dev">Art preview · World 3 locked</span><h1>The Fraction Workshop</h1><p>Fractional weight visual studies</p></header>
+<section aria-labelledby="split-title"><div class="fw-heading"><h2 id="split-title">Split and rejoin</h2><div class="fw-controls"><label for="denominator">Equal pieces</label><select id="denominator"></select><button id="split" type="button" aria-pressed="false">Separate</button></div></div>
+<div id="split-stage" class="fw-stage fw-split-stage"></div><p class="fw-note">The dashed silhouette is a reference only. Each brass piece has the same fraction of the original weight.</p></section>
+<section aria-labelledby="gallery-title"><h2 id="gallery-title">The fraction collection</h2><div id="gallery" class="fw-gallery"></div></section>
+<section aria-labelledby="borrow-title"><div class="fw-heading"><h2 id="borrow-title">Borrow and regroup</h2><div class="fw-controls"><label for="example">Example</label><select id="example"><option value="half">Half − quarter</option><option value="whole">Whole − quarter</option><option value="sixths">Half + third</option><option value="tenths">Three fifths + half</option></select></div></div>
+<div class="fw-step-grid" id="example-stage"></div><div class="fw-controls fw-step-controls"><button type="button" id="previous">Previous</button><output id="step-count" aria-live="polite"></output><button type="button" id="next">Next</button></div></section>
+<section aria-labelledby="pile-title"><h2 id="pile-title">Mixed-number inventories</h2><div id="mixed" class="fw-mixed"></div><p class="fw-note">Whole weights keep the three-below, two-above piles of five; loose fractional pieces remain beside them.</p></section>
+</main><script type="module" src="./src/fraction-weight-preview.mjs"></script></body></html>
