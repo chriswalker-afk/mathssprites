@@ -390,8 +390,16 @@ function renderNotebookVisibility() {
   $("notebook-stage-note").textContent=campaign
     ?"Campaign experiment · Progress saved after a successful sprite replay"
     :"Practice preview · No levels or progress earned";
+  const square=!!currentLevel().squareLaboratory;
+  $("notebook-square-operations").hidden=!square;
+  $("notebook-square-key").hidden=!square;
   $("notebook-signed-operations").hidden=currentLevel().quantityMode!=="signed";
-  $("notebook-operation-tip").textContent=currentLevel().groupedPrototype
+  $("notebook-operation").placeholder=square?"e.g. +4, −x², √, ÷2":"e.g. −3, +x or ÷2";
+  $("notebook-help").textContent=square
+    ?"Use 1–12 whole weights, round sprites or square sprites; factors 2–5. Square or root each entire expression. Sprite weights are nonnegative."
+    :"Choose a balancing operation, not the answer. Addition or subtraction can use 1–12 weights or sprites; multiplication and division use factors 2–5. Every move must work with whole objects on both sides.";
+  $("notebook-operation-tip").textContent=square
+    ?"Choose the same operation on both sides. Use x² for square sprites; √ takes the principal nonnegative root.":currentLevel().groupedPrototype
     ?(currentLevel().quantityMode==="signed"
       ?"Signed groups stay in brackets until you choose to expand west or east. Expansion changes ONE expression's appearance; +, −, × and ÷ change BOTH sides."
       :"Choose a balanced operation on both sides, or expand ONE sealed expression. Neither choice is preselected.")
@@ -399,7 +407,9 @@ function renderNotebookVisibility() {
       ?"Use +(−x) for a pale sprite or −(−1) to remove a balloon. Whole objects only."
       :"Choose an operation for both sides, not an answer. Use −x to remove a dark sprite.";
   $("notebook-level-prompt").textContent=campaign
-    ? currentLevel().prompt
+    ? square?(currentLevel().goal==="area"
+      ?"Write the operation that squares each entire expression."
+      :"Choose operations that leave one round sprite facing only weights."):currentLevel().prompt
     : "You already have the equation. Choose an operation for both sides. The maths editor calculates the new equation automatically; the sprites will replay your route.";
   const support=campaign?currentLevel().scaffold:null;
   const showSupport=!!support&&support.kind!=="none"&&notebookPhase==="writing";
@@ -442,7 +452,7 @@ function renderNotebookMathEditor(){
   if(!notebookSession)return;
   const input=$("notebook-operation");
   const text=input.value;
-  const parsed=parseNotebookOperation(text);
+  const parsed=parseNotebookOperation(text,notebookSession.level);
   const preview=previewNotebookOperation(notebookSession,text);
   for(const button of document.querySelectorAll("[data-notebook-expand]")){
     const side=button.dataset.notebookExpand;
@@ -481,6 +491,10 @@ function renderNotebookMathEditor(){
   const sign=(parsed.ok?parsed.display[0]:text.trim().slice(0,1)).replace("-","−");
   for(const button of document.querySelectorAll("[data-notebook-symbol]"))
     button.setAttribute("aria-pressed",String(button.dataset.notebookSymbol===sign));
+  for(const button of document.querySelectorAll("[data-notebook-area-operation]")){
+    button.setAttribute("aria-pressed",String(!!parsed.ok&&parsed.action.op===button.dataset.notebookAreaOperation));
+    button.disabled=busy||notebookPhase!=="writing"||!notebookSession.level.squareLaboratory;
+  }
 }
 function renderNotebookPaper() {
   if(!notebookSession)return;
@@ -508,7 +522,7 @@ function renderNotebookPaper() {
   };
   const initial=initialState(notebookSession.level);
   addLine(equation({left:initial.left,right:initial.right}),
-    "Starting equation · the mystery you must solve",true,initial);
+    notebookSession.level.goal==="area"?"Starting equation · build both square areas":"Starting equation · the mystery you must solve",true,initial);
   for(let i=0;i<notebookSession.steps.length;i++){
     const step=notebookSession.steps[i];
     addLine(step.line,step.explanation,false,notebookSession.state.history[i].after);
@@ -1814,9 +1828,11 @@ async function replayNotebookWithSprites() {
       clearNeutralEffect("left");clearNeutralEffect("right");
       if(i<script.length-1)await sleep(reducedMotion?120:450);
     }
-    if(!isSolved(state))throw new Error("Replay did not reach the validated solution");
+    if(!isSolved(state)||state.history.length!==script.length||
+       equation(state)!==equation(notebookSession.state))
+      throw new Error("Replay did not reach the validated solution");
     $("scene").classList.add("solved-scene");
-    $("level-clear-title").textContent="Your algebra came to life!";
+    $("level-clear-title").textContent=notebookSession.level.goal==="area"?"Your squares came to life!":"Your algebra came to life!";
     $("level-clear").hidden=false;
     $("notebook-playback-message").textContent=
       "Your "+script.length+" checked algebra step"+(script.length===1?"":"s")+
@@ -1836,7 +1852,7 @@ async function replayNotebookWithSprites() {
     override=null;groups={left:0,right:0};
     $("scene").classList.remove("solved-scene");
     $("level-clear").hidden=true;
-    clearNeutralEffect("left");clearNeutralEffect("right");
+    for(const side of ["left","right"]){clearAreaPreview(side);clearFailureStage(side);clearNeutralEffect(side);}
     busy=false;
     notebookPhase=notebookReplaySuccessful?"complete":"writing";
     render();
@@ -2578,7 +2594,9 @@ function openNotebookLevel(level,number=null,context={}){
   $("notebook-hint-message").hidden=true;
   $("notebook-hint-message").textContent="";
   $("notebook-operation").value="";
-  notebookMessage(level.quantityMode==="signed"
+  notebookMessage(level.squareLaboratory
+    ?"Choose one operation on both sides. The editor calculates the next equation; the sprites wait for your checked working."
+    :level.quantityMode==="signed"
     ?"Choose a signed operation for both sides: +2, +(−x), −(−1), or ÷2. The editor calculates the result."
     :level.groupedPrototype
       ?"Choose a balanced operation, or expand the grouped expression in one room. The editor calculates the result."
@@ -2651,10 +2669,22 @@ for(const button of document.querySelectorAll("[data-notebook-symbol]")){
     const input=$("notebook-operation");
     const sign=button.dataset.notebookSymbol;
     const current=input.value.trim();
-    const previous=/^[+\\-−×÷*/]/.test(current)?current.slice(1):current;
+    const parsed=parseNotebookOperation(current,notebookSession.level);
+    const wasArea=parsed.ok&&["square","sqrt"].includes(parsed.action.op);
+    const previous=wasArea?"":/^[+\\-−×÷*/]/.test(current)?current.slice(1):current;
     // × and ÷ apply only to a number. Do not silently turn -x into ×x.
-    const operand=(sign==="×"||sign==="÷")&&previous.endsWith("x")?"":previous;
+    const operand=(sign==="×"||sign==="÷")&&/x(?:²|\^2)?$/i.test(previous)?"":previous;
     input.value=sign+operand;
+    input.dispatchEvent(new Event("input",{bubbles:true}));
+    input.focus({preventScroll:true});
+    input.setSelectionRange(input.value.length,input.value.length);
+  });
+}
+for(const button of document.querySelectorAll("[data-notebook-area-operation]")){
+  button.addEventListener("click",()=>{
+    if(!notebookSession?.level.squareLaboratory||notebookPhase!=="writing"||busy)return;
+    const input=$("notebook-operation");
+    input.value=button.dataset.notebookAreaOperation==="square"?"²":"√";
     input.dispatchEvent(new Event("input",{bubbles:true}));
     input.focus({preventScroll:true});
     input.setSelectionRange(input.value.length,input.value.length);
@@ -2667,6 +2697,7 @@ for(const button of document.querySelectorAll("[data-notebook-key]")){
     const start=input.selectionStart??input.value.length;
     const end=input.selectionEnd??start;
     const key=button.dataset.notebookKey;
+    if(key==="x²"&&!notebookSession.level.squareLaboratory)return;
     if(key==="backspace"){
       const cut=start===end?Math.max(0,start-1):start;
       input.value=input.value.slice(0,cut)+input.value.slice(end);
@@ -2695,7 +2726,7 @@ $("notebook-form").addEventListener("submit",event=>{
   input.value="";
   renderNotebookPaper();
   notebookMessage(result.solved
-    ? "Solution checked! Replay with sprites to see each operation you chose."
+    ? (notebookSession.level.goal==="area"?"Square construction checked! Replay with sprites.":"Solution checked! Replay with sprites to see each operation you chose.")
     : "Applied "+result.explanation+". The new equation was calculated for you. Choose another operation.",
     "success");
   if(!result.solved)input.focus({preventScroll:true});

@@ -11,11 +11,25 @@ import {NOTEBOOK_MAX_STEPS} from "./notebook-engine.mjs";
 
 function failure(code,message){return {ok:false,code,message};}
 const OP_SYMBOLS=Object.freeze({add:"+",remove:"−",multiply:"×",divide:"÷"});
-export function parseNotebookOperation(expression){
+export function parseNotebookOperation(expression,options={}){
   if(typeof expression!=="string"||expression.length>24)
     return failure("syntax","Write an operation such as −3, +(−x), ×2 or ÷3.");
   const compact=expression.replace(/\s+/g,"")
     .replace(/[−–—]/g,"-").replace(/[⋅·*]/g,"×").replace(/\//g,"÷");
+  // Whole-expression operations, not an arbitrary expression parser.
+  const squareMode=options?.squareLaboratory===true;
+  const wholeSquare=/^(?:square|²|\^2)$/i.test(compact);
+  const wholeRoot=/^(?:sqrt|√)$/i.test(compact);
+  const squareTerm=/^([+\-])([1-9][0-9]*|)x(?:²|\^2)$/i.exec(compact);
+  if(wholeSquare||wholeRoot||squareTerm){
+    if(!squareMode)return failure("locked-operation","Square operations and square sprites belong to the Square Laboratory.");
+    if(wholeSquare||wholeRoot)return {ok:true,action:{op:wholeSquare?"square":"sqrt"},display:wholeSquare?"²":"√"};
+    const [,sign,digits]=squareTerm,count=digits===""?1:Number(digits);
+    if(!Number.isInteger(count)||count<1||count>12)
+      return failure("range","Choose 1–12 square sprites.");
+    return {ok:true,action:{op:sign==="+"?"add":"remove",kind:"posX2",count},
+      display:sign+(count===1?"":String(count))+"x²"};
+  }
   // Opening one sealed expression is an identity rewrite, not an
   // operation on both sides. An editor selection never executes by itself.
   const opened=/^(?:expand|open)(left|right|west|east)$/i.exec(compact);
@@ -112,15 +126,23 @@ export function notebookOperationMathML(action){
       '<mrow><mtext>Expand '+(action.side==="left"?"west":"east")+
       ' expression</mtext></mrow></math>';
   }
+  if(action?.op==="square"||action?.op==="sqrt"){
+    const mark=action.op==="square"
+      ?"<msup><mrow><mo>(</mo><mi>□</mi><mo>)</mo></mrow><mn>2</mn></msup>"
+      :"<msqrt><mi>□</mi></msqrt>";
+    return '<math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><mrow>'+mark+"</mrow></math>";
+  }
   if(!action||!Object.hasOwn(OP_SYMBOLS,action.op))
     throw new TypeError("Only one of the four World 1 operations can be typeset");
   const symbol=OP_SYMBOLS[action.op];
   const n=action.factor??action.count;
   if(!Number.isInteger(n)||n<1||n>12)
     throw new RangeError("Invalid operation operand");
-  const variable=action.kind==="posX"||action.kind==="negX";
+  const squared=action.kind==="posX2";
+  const variable=squared||action.kind==="posX"||action.kind==="negX";
   const negative=action.kind==="negX"||action.kind==="negOne";
-  const term=variable?(n===1?"":"<mn>"+n+"</mn>")+"<mi>x</mi>":"<mn>"+n+"</mn>";
+  const term=variable?(n===1?"":"<mn>"+n+"</mn>")+
+    (squared?"<msup><mi>x</mi><mn>2</mn></msup>":"<mi>x</mi>"):"<mn>"+n+"</mn>";
   const signedTerm=negative?"<mo>(</mo><mo>−</mo>"+term+"<mo>)</mo>":term;
   return '<math xmlns="http://www.w3.org/1998/Math/MathML" display="inline">'+
     "<mrow><mo>"+symbol+"</mo>"+signedTerm+"</mrow></math>";
@@ -132,7 +154,7 @@ export function previewNotebookOperation(session,expression){
     return failure("complete","Your solution is finished. Replay your checked steps.");
   if(session.steps.length>=NOTEBOOK_MAX_STEPS)
     return failure("step-limit","You have used all 16 steps. Undo or start again.");
-  const parsed=parseNotebookOperation(expression);
+  const parsed=parseNotebookOperation(expression,session.level);
   if(!parsed.ok)return parsed;
   if((parsed.action.kind==="negX"||parsed.action.kind==="negOne") &&
       session.level.quantityMode!=="signed")
@@ -142,6 +164,8 @@ export function previewNotebookOperation(session,expression){
     return failure(changed.code||"illegal",changed.reason||
       "That cannot be done with whole objects on both sides right now.");
   const action=parsed.action;
+  if(session.level.squareLaboratory&&equation(changed.state)===equation(session.state))
+    return failure("unchanged","That operation leaves both expressions unchanged. Choose a different move.");
   return {ok:true,action,display:parsed.display,
     line:equation(changed.state),state:changed.state,
     explanation:algebraOperation(action),solved:isSolved(changed.state)};

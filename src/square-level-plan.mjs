@@ -127,9 +127,8 @@ export function squareLevelForPlay(fixture){
   const {reference,stage,...level}=fixture;
   return Object.freeze(level);
 }
-/** Authoring data only. It is deliberately NOT connected to the campaign
- * registry, save store, or launch events. PR74 will expose Guided after
- * the art and construction mechanics are ready. No star targets yet.
+/** Immutable authoring metadata. The public square-campaign-levels adapter
+ * publishes stage projections with independently certified star thresholds.
  */
 export const SQUARE_CAMPAIGN_STAGES=Object.freeze(Object.entries(stageMeta).map(([id,meta],i)=>Object.freeze({
   ...meta,emblems:Object.freeze(meta.emblems),id,number:i+1,available:false,

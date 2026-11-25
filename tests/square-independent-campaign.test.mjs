@@ -15,9 +15,9 @@ const remove=(kind,count)=>({op:"remove",kind,count});
 const square={op:"square"},sqrt={op:"sqrt"};
 const other=side=>side==="left"?"right":"left";
 
-test("Independent Squares publishes exactly 20 stable levels in five chapters; Apprentice remains locked",()=>{
+test("Independent Squares publishes exactly 20 stable levels in five chapters; Apprentice is also available",()=>{
   const world=findCampaignWorld(worldId),stage=findCampaignStage(worldId,stageId);
-  assert.deepEqual(world.stages.map(s=>[s.id,s.available,s.count]),[["guided",true,24],["independent",true,20],["notebook",false,16]]);
+  assert.deepEqual(world.stages.map(s=>[s.id,s.available,s.count]),[["guided",true,24],["independent",true,20],["notebook",true,16]]);
   assert.equal(stage.method,"manual");
   assert.equal(stage.chapters.length,5);
   assert.equal(stage.levels.filter(s=>s.level.goal==="area").length,3);
@@ -33,11 +33,11 @@ test("Independent Squares publishes exactly 20 stable levels in five chapters; A
     assert.equal(campaignOptimalMoves(worldId,stageId,slot.id),SQUARE_INDEPENDENT_OPTIMAL_MOVES[i]);
     assert.equal(nextCampaignLevel(worldId,stageId,slot.id)?.id,stage.levels[i+1]?.id);
   }
-  assert.equal(isCampaignPlayable(worldId,"notebook",1),false);
-  assert.equal(normalizeCampaignResume({worldId,stageId:"notebook",levelId:"square-a-01"}),null);
-  assert.equal(stageResumeLevel(blankCampaignRecords(),worldId,"notebook"),null);
+  assert.equal(isCampaignPlayable(worldId,"notebook",1),true);
+  assert.deepEqual(normalizeCampaignResume({worldId,stageId:"notebook",levelId:"square-a-01"}),{worldId,stageId:"notebook",levelId:"square-a-01"});
+  assert.equal(stageResumeLevel(blankCampaignRecords(),worldId,"notebook").id,"square-a-01");
   assert.deepEqual(campaignStarTotals(blankCampaignRecords(),{worldId,stageId}),{earned:0,available:60,completed:0,count:20});
-  assert.deepEqual(campaignStarTotals(blankCampaignRecords(),{worldId}),{earned:0,available:132,completed:0,count:44});
+  assert.deepEqual(campaignStarTotals(blankCampaignRecords(),{worldId}),{earned:0,available:180,completed:0,count:60});
 });
 
 test("all 20 shortest move targets are certified; every matched action works in either chamber order",()=>{
@@ -125,7 +125,7 @@ test("manual inspection candidates do not change the source and only matched add
   assert.equal(squareInspectionPlan(next.state.left,{a:1,b:2}).missing.posOne,0);
   assert.equal(next.state.right.posOne,16);
 });
-test("Independent completion, best scores and resume are isolated from Guided, other worlds and locked Apprentice",()=>{
+test("Independent completion, best scores and resume are isolated from Guided, other worlds and Apprentice",()=>{
   const store={data:new Map(),getItem(k){return this.data.get(k)??null},setItem(k,v){this.data.set(k,v)}};
   let data=blankCampaignRecords();
   data=withCampaignCompleted(data,worldId,"guided","square-g-01",1);
@@ -141,7 +141,7 @@ test("Independent completion, best scores and resume are isolated from Guided, o
   assert.equal(campaignStageRecord(data,worldId,stageId).lastPlayed,"square-i-15");
   assert.equal(JSON.stringify(data.worlds.squares.stages.guided),previous);
   assert.equal(JSON.stringify(data.worlds.fractions),priorFraction);
-  assert.deepEqual(withCampaignCompleted(data,worldId,"notebook","square-a-01",1),data);
+  assert.deepEqual(withCampaignCompleted(data,worldId,"notebook","square-a-99",1),data);
   saveCampaignRecords(data,store);
   saveCampaignResume({worldId,stageId,levelId:"square-i-15"},store);
   assert.deepEqual(loadCampaignRecords(store),data);
@@ -150,6 +150,6 @@ test("Independent completion, best scores and resume are isolated from Guided, o
     data=withCampaignCompleted(data,worldId,stageId,slot.id,campaignOptimalMoves(worldId,stageId,slot.id));
   assert.deepEqual(campaignStarTotals(data,{worldId,stageId}),{earned:60,available:60,completed:20,count:20});
   assert.equal(campaignStageRecord(data,worldId,stageId).lastPlayed,"square-i-20");
-  assert.equal(campaignStarTotals(data).count,224);
-  assert.equal(campaignStarTotals(data).available,672);
+  assert.equal(campaignStarTotals(data).count,240);
+  assert.equal(campaignStarTotals(data).available,720);
 });

@@ -1,6 +1,5 @@
 /** Public release adapter. The 60 immutable author fixtures retain
- * their IDs and reference routes; the Guided and Independent projections are public.
- * Keep other stage metadata visible but locked until their own releases.
+ * their IDs and reference routes; all three stage projections are public.
  */
 import {SQUARE_CAMPAIGN_STAGES as PLAN} from "./square-level-plan.mjs";
 import {SQUARE_OPTIMAL_MOVES} from "./square-star-benchmarks.mjs";
@@ -10,9 +9,10 @@ const copy={
     finale:"You have mastered the Guided Square Laboratory. Try matching each move yourself in Independent Squares."},
   independent:{tagline:"Match each square transformation yourself.",
     menuIntro:"Choose and match each operation yourself in both chambers.",
-    finale:"You have mastered Independent Squares. Square Algebra Apprentice is still in development."},
+    finale:"You have mastered Independent Squares. Try writing your own checked algebra in Square Algebra Apprentice."},
   notebook:{tagline:"Write the algebra, then watch the squares.",
-    menuIntro:"Record the operation on both sides before the sprites replay it."}
+    menuIntro:"Record each operation on both sides before the sprites replay it.",
+    finale:"Your Square Laboratory algebra came to life. Review your stars on the experiment board."}
 };
 export const SQUARE_CAMPAIGN_STAGES=Object.freeze(PLAN.map(stage=>{
   const available=Object.hasOwn(SQUARE_OPTIMAL_MOVES,stage.id);

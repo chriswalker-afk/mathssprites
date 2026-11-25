@@ -2,7 +2,7 @@ import {test,expect} from "@playwright/test";
 import {mkdirSync} from "node:fs";
 const items=(p,side="left")=>p.locator("#"+side+"-items");
 const room=(p,side)=>p.locator("#"+side+"-chamber");
-const tile=(p,id)=>p.locator('[data-level-id="'+id+'"]');
+const tile=(p,id)=>p.locator('.level-tile[data-level-id="'+id+'"]');
 const saved=p=>p.evaluate(()=>JSON.parse(localStorage.getItem("mathssprites.campaign.v2")));
 const ready=p=>expect(p.locator("#reset")).toBeEnabled({timeout:25000});
 const other=side=>side==="left"?"right":"left";
@@ -58,7 +58,7 @@ async function shot(p,name){
   mkdirSync("artifacts",{recursive:true});
   await p.screenshot({path:"artifacts/square-independent-"+name+".png",fullPage:true});
 }
-test("all twenty Independent Squares levels are available immediately, with separate visits and locked Apprentice @quick @smoke",async({page})=>{
+test("all twenty Independent Squares levels are available immediately, with separate visits and public Apprentice @quick @smoke",async({page})=>{
   await board(page);
   await expect(page.locator("#levels-stage-title")).toHaveText("Independent Squares");
   await expect(page.locator(".chapter-group")).toHaveCount(5);
@@ -66,7 +66,7 @@ test("all twenty Independent Squares levels are available immediately, with sepa
   await expect(page.locator(".level-tile:disabled")).toHaveCount(0);
   await expect(page.locator("#level-progress")).toContainText("0 / 60 stars");
   await expect(page.locator('[data-map-stage="guided"]')).toBeEnabled();
-  await expect(page.locator('[data-map-stage="notebook"]')).toBeDisabled();
+  await expect(page.locator('[data-map-stage="notebook"]')).toBeEnabled();
   await open(page,20);
   await expect(page.locator("#campaign-hand-title")).toHaveText("Your Turn");
   await expect(page.locator("#do-both")).toBeHidden();

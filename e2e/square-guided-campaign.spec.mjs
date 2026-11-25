@@ -1,7 +1,7 @@
 import {test,expect} from "@playwright/test";
 import {mkdirSync} from "node:fs";
 const world=p=>p.locator('[data-map-world="squares"]');
-const tile=(p,id)=>p.locator('[data-level-id="'+id+'"]');
+const tile=(p,id)=>p.locator('.level-tile[data-level-id="'+id+'"]');
 const items=(p,side="left")=>p.locator("#"+side+"-items");
 async function start(p){
   await p.addInitScript(()=>localStorage.setItem("mathssprites.motion-preference.v1","reduced"));
@@ -30,14 +30,14 @@ async function move(p,op,kind,count){
   await expect(p.locator("#right-area-box")).toBeHidden();
 }
 async function shot(p,name){mkdirSync("artifacts",{recursive:true});await p.screenshot({path:"artifacts/square-guided-"+name+".png",fullPage:true});}
-test("World 4 board is live with 24 accessible Guided levels and Independent available and Apprentice locked @smoke",async({page})=>{
+test("World 4 board is live with 24 accessible Guided levels and all three stages available @smoke",async({page})=>{
   await start(page);await board(page);
   await expect(page.locator("#levels-stage-title")).toHaveText("Guided Squares");
   await expect(page.locator(".chapter-group")).toHaveCount(6);
   await expect(page.locator(".level-tile")).toHaveCount(24);
   await expect(page.locator(".level-tile:disabled")).toHaveCount(0);
   await expect(page.locator('[data-map-stage="independent"]')).toBeEnabled();
-  await expect(page.locator('[data-map-stage="notebook"]')).toBeDisabled();
+  await expect(page.locator('[data-map-stage="notebook"]')).toBeEnabled();
   await expect(page.locator("#level-progress")).toContainText("0 / 72 stars");
   await expect(tile(page,"square-g-24")).toBeEnabled();
   await shot(page,"board");
