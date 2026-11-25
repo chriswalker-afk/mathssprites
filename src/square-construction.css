@@ -1,0 +1,136 @@
+/* PR71: the carpenter's frame belongs to the physical room. Root
+   construction is intentionally left to the next milestone. */
+.room-square-box[data-construction="square"]{
+  inset:6px 3% 28px;height:auto;max-height:none;align-items:flex-end;
+}
+.room-square-box[data-construction="square"] .square-construction-workshop{
+  width:min(100%,var(--square-frame-size,222px));height:auto;max-height:none;
+  aspect-ratio:1;--sq-guide:13%;--sq-inset:4px;--sq-wall:5px;
+}
+.square-construction-workshop:before,.square-construction-workshop:after{content:none}
+.square-construction-workshop .square-frame-base{
+  position:absolute;inset:var(--sq-guide) 0 0 var(--sq-guide);
+  background:linear-gradient(135deg,#57503b80,#222e2799);
+  box-shadow:inset 0 0 14px #101714a5,0 3px 6px #0008;
+  border-radius:3px;
+}
+.square-construction-workshop .square-frame-wall{
+  position:absolute;z-index:3;display:block;border:1px solid #725136;
+  border-radius:2px;background:linear-gradient(100deg,#b59462,#d9bd82 38%,#84623d 78%,#694d33);
+  box-shadow:0 2px 3px #0008,inset 0 1px 1px #e0c5919c;
+}
+.square-construction-workshop .wall-top{top:var(--sq-guide);left:var(--sq-guide);right:0;height:var(--sq-wall);transform-origin:left center}
+.square-construction-workshop .wall-bottom{bottom:0;left:var(--sq-guide);right:0;height:var(--sq-wall);transform-origin:right center}
+.square-construction-workshop .wall-left{top:var(--sq-guide);left:var(--sq-guide);bottom:0;width:var(--sq-wall);transform-origin:center bottom}
+.square-construction-workshop .wall-right{top:var(--sq-guide);right:0;bottom:0;width:var(--sq-wall);transform-origin:center top}
+.square-construction-workshop .box-grid{
+  inset:calc(var(--sq-guide) + var(--sq-inset)) var(--sq-inset) var(--sq-inset) calc(var(--sq-guide) + var(--sq-inset));
+  gap:1px;border:0;background:linear-gradient(135deg,#3f4b3d68,#1927225e);
+}
+.square-construction-workshop .box-edge{
+  gap:1px;transition:none;transform:none;
+}
+.square-construction-workshop .box-edge-top{
+  left:calc(var(--sq-guide) + var(--sq-inset));right:var(--sq-inset);top:0;height:calc(var(--sq-guide) - 2px);
+}
+.square-construction-workshop .box-edge-left{
+  top:calc(var(--sq-guide) + var(--sq-inset));bottom:var(--sq-inset);left:0;width:calc(var(--sq-guide) - 2px);
+}
+.square-construction-workshop .box-edge.built{opacity:.57;transform:none}
+.square-construction-workshop .box-edge-top.source-arranged{opacity:1}
+.square-construction-workshop .box-edge-token{background:transparent;border:1px dashed #cbb9896e;overflow:visible}
+.square-construction-workshop .box-edge-token:after{content:none}
+.square-construction-workshop .square-edge-actor{
+  width:min(76%,21px);height:min(76%,21px);position:relative;display:grid;place-items:center;
+}
+.square-construction-workshop .square-edge-actor .box-actor{position:relative;display:block;width:100%;height:100%}
+.square-construction-workshop .square-edge-actor .box-actor-weight{width:80%;height:92%}
+.square-construction-workshop .box-cell{transform:none;opacity:0;min-width:0;min-height:0}
+.square-construction-workshop .box-cell.placed{
+  opacity:1;animation:square-cell-land .32s cubic-bezier(.2,.8,.35,1.12) var(--place-delay,0ms) both;
+}
+.square-construction-workshop .box-cell .box-actor{
+  width:min(76%,30px);height:min(76%,30px);min-width:2px;min-height:2px;
+}
+.square-construction-workshop .box-cell .box-actor-weight{width:min(68%,25px);height:min(74%,27px)}
+.square-construction-workshop .box-cell.region-quadratic{background:#6d8d7645}
+.square-construction-workshop .box-cell.region-mixed-top,.square-construction-workshop .box-cell.region-mixed-bottom{background:#4c695b55}
+.square-construction-workshop .box-cell.region-units{background:#ab895942}
+@keyframes square-cell-land{
+  0%{opacity:0;transform:translateY(-14px) scale(.74)}
+  65%{opacity:1;transform:translateY(2px) scale(1.06,.9)}
+  100%{opacity:1;transform:none}
+}
+/* Do not fade the original row when the empty frame arrives. Transfer
+   ownership to the illustrated side at the edge beat, not at the frame beat. */
+.square-construction-active.square-source-visible .room-items{opacity:1;z-index:8;transition:none}
+.square-construction-active.square-source-transferred .room-items{opacity:0;transition:none}
+.square-construction-active.area-after-square .room-items{opacity:1;transition:none}
+.room-square-box[data-construction="square"][data-step="result"] .box-workshop{animation:none}
+.room-square-box[data-construction="square"][data-step="result"] .box-cell .box-actor,
+.room-square-box[data-construction="square"][data-step="result"] .box-edge{visibility:hidden}
+.room-square-box[data-construction="square"][data-step="result"] .box-grid,
+.room-square-box[data-construction="square"][data-step="result"] .square-frame-base{animation:square-frame-fade .38s ease-out both}
+.room-square-box[data-construction="square"][data-step="result"] .wall-top{animation:square-wall-top .62s ease-in both}
+.room-square-box[data-construction="square"][data-step="result"] .wall-bottom{animation:square-wall-bottom .62s ease-in both}
+.room-square-box[data-construction="square"][data-step="result"] .wall-left{animation:square-wall-left .62s ease-in both}
+.room-square-box[data-construction="square"][data-step="result"] .wall-right{animation:square-wall-right .62s ease-in both}
+@keyframes square-frame-fade{to{opacity:0}}
+@keyframes square-wall-top{0%,12%{opacity:1}100%{transform:translate(-9px,22px) rotate(-25deg);opacity:0}}
+@keyframes square-wall-bottom{0%,12%{opacity:1}100%{transform:translate(8px,15px) rotate(12deg);opacity:0}}
+@keyframes square-wall-left{0%,12%{opacity:1}100%{transform:translate(-14px,8px) rotate(-65deg);opacity:0}}
+@keyframes square-wall-right{0%,12%{opacity:1}100%{transform:translate(14px,8px) rotate(65deg);opacity:0}}
+/* The new square creatures already exist inside the frame: do not morph
+   them a second time as they leave it. Their outer actor travels to the
+   actual floor slot, then the original idle motion continues. */
+.square-construction-active.area-after-square .sprite-square .sprite-body{
+  animation:square-creature-wiggle var(--wiggle-period,1100ms) ease-in-out var(--wiggle-delay,0ms) infinite!important;
+  animation-play-state:paused!important;
+}
+.square-construction-active.area-after-square:not(.hand-target) .sprite-square .sprite-body{animation-play-state:running!important}
+.square-construction-active.area-after-square .sprite-square .sprite-body:before{animation:none}
+.giant-hand[data-box-operation="square"][data-box-step="mixed-top"] .hand-art{transform:translate(23px,-28px) rotate(8deg)}
+.giant-hand[data-box-operation="square"][data-box-step="mixed-bottom"] .hand-art{transform:translate(-37px,15px) rotate(-8deg)}
+.giant-hand[data-box-operation="square"][data-box-step="units"] .hand-art{transform:translate(90px,-30px) rotate(8deg)}
+.held-square-press:before{content:"";inset:5px;border:2px solid #e4c48b;border-radius:2px;box-shadow:inset 0 0 0 2px #765333}
+/* Bounded, explicitly uncommitted over-capacity illustration. For a 7x7
+   attempt the 48 shown positions and the one spill are exact; larger
+   requests show only a representative bounded portion. */
+.attempt-overflow .attempt-stage.square-overflow-stage{inset:8px 1% 28px;height:auto;justify-content:center}
+.square-overflow-trial{position:relative;display:grid;place-items:center;width:min(70%,176px);aspect-ratio:1}
+.square-overflow-board{
+  width:100%;height:100%;display:grid;grid-template-columns:repeat(var(--trial-side),minmax(0,1fr));
+  grid-template-rows:repeat(var(--trial-side),minmax(0,1fr));gap:1px;
+  border:5px ridge #b58f5c;border-radius:4px;background:#22372deb;
+}
+.square-overflow-cell{min-width:0;min-height:0;display:grid;place-items:center;background:#b0955738}
+.square-overflow-cell .box-actor,.square-overflow-prop .box-actor{display:block;position:relative;width:80%;height:80%}
+.square-overflow-prop .box-actor-weight,.square-overflow-cell .box-actor-weight{width:65%;height:85%}
+.square-overflow-spill{position:absolute;inset:0;pointer-events:none}
+.square-overflow-prop{position:absolute;right:2%;bottom:3%;width:18%;height:18%;display:grid;place-items:center;
+  animation:square-overflow-tumble .94s cubic-bezier(.2,.72,.35,1) calc(var(--trial-index)*60ms) both}
+@keyframes square-overflow-tumble{
+  0%{opacity:0;transform:translate(0,0) scale(.6)}
+  20%{opacity:1;transform:translate(8px,-8px)}
+  60%{opacity:1;transform:translate(calc(20px + var(--trial-index)*2px),-25px) rotate(30deg)}
+  100%{opacity:1;transform:translate(calc(20px + var(--trial-index)*4px),8px) rotate(65deg)}
+}
+.attempt-overflow .room-interior:has(.square-overflow-stage:not([hidden])) .room-items{opacity:.13}
+.reduce-motion .square-construction-workshop .box-cell.placed,
+.reduce-motion .square-construction-workshop .square-frame-wall,
+.reduce-motion .square-construction-active.area-after-square .sprite-square .sprite-body{animation:none!important;transform:none!important}
+.reduce-motion .room-square-box[data-construction="square"][data-step="result"] .square-frame-wall,
+.reduce-motion .room-square-box[data-construction="square"][data-step="result"] .square-frame-base,
+.reduce-motion .room-square-box[data-construction="square"][data-step="result"] .box-grid{visibility:hidden}
+.reduce-motion .square-overflow-prop{animation:none!important;opacity:1;transform:translate(17px,5px)}
+@media(max-width:600px){
+  .room-square-box[data-construction="square"]{inset:4px 2% 19px}
+  .room-square-box[data-construction="square"] .square-construction-workshop{--sq-guide:14%;--sq-inset:3px;--sq-wall:4px}
+  .square-construction-workshop .box-grid{gap:0}
+  .square-construction-workshop .box-cell .box-actor{width:min(78%,16px);height:min(78%,16px)}
+  .square-construction-workshop .box-cell .box-actor-weight{width:min(68%,15px);height:min(70%,16px)}
+  .giant-hand[data-box-operation="square"][data-box-step="mixed-top"] .hand-art{transform:translate(15px,-15px) rotate(7deg)}
+  .giant-hand[data-box-operation="square"][data-box-step="mixed-bottom"] .hand-art{transform:translate(-18px,7px) rotate(-7deg)}
+  .giant-hand[data-box-operation="square"][data-box-step="units"] .hand-art{transform:translate(46px,-18px) rotate(6deg)}
+  .attempt-overflow .attempt-stage.square-overflow-stage{inset:5px 1% 19px}
+}

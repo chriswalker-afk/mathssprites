@@ -19,13 +19,14 @@ export const GROUP_SPECS=Object.freeze({
   controls:Object.freeze(["e2e/neutral-starting-controls.spec.mjs","e2e/operation-first-zero-pair.spec.mjs"]),
   motion:Object.freeze(["e2e/animations.spec.mjs","e2e/sprite-idle.spec.mjs","e2e/sprite-reactions.spec.mjs","e2e/hand-art.spec.mjs"]),
   attempts:Object.freeze(["e2e/failed-attempts.spec.mjs","e2e/fraction-release.spec.mjs"]),
-  area:Object.freeze(["e2e/squares.spec.mjs","e2e/square-sprite-preview.spec.mjs"])
+  area:Object.freeze(["e2e/squares.spec.mjs","e2e/square-sprite-preview.spec.mjs","e2e/square-construction.spec.mjs"])
 });
 const ALL=Object.freeze(Object.keys(GROUP_SPECS));
 // The file map above is the single source of truth for spec routing.
 // Keep source dependencies here; a spec belongs to exactly one primary
 // group, with deliberately broader routing for cross-feature weight piles.
 const RULES=Object.freeze([
+  [/^src\/square-construction\.(?:mjs|css)$/ ,["area","layout","attempts"]],
   [/^(?:src\/square-sprite(?:s|-preview)\.(?:mjs|css)|square-sprite-preview\.html)$/ ,["visual","motion","area"]],
   [/^src\/square-(?:rules|level-plan)\.mjs$/,["area"]],
   [/^src\/fraction-workshop\.mjs$/ ,["notebook","navigation"]],

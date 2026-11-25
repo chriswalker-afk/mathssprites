@@ -12,6 +12,7 @@ import {
 import {spriteCreatureMarkup,heldSpriteMarkup,miniSpriteMarkup,areaSpriteMarkup} from "./square-sprites.mjs";
 import { pickSpriteHandReaction, dodgeOffsetPx } from "./sprite-reactions.mjs";
 import { floorScaleToFit, inRoomBoxPlan, areaMathLabel } from "./area-layout.mjs";
+import {mountSquareConstruction,squareOverflowPlan,squareOverflowMarkup} from "./square-construction.mjs";
 import {weightPilePosition,weightCountPlaque} from "./weight-piles.mjs";
 import { itemWord, attemptMessage, mismatchedMoveMessage } from "./attempt-feedback.mjs";
 import { fractionCutPlan } from "./fraction-theatre.mjs";
@@ -739,13 +740,8 @@ function handProp(action, side) {
     '<path d="M21 104 L45 34" stroke="#e7f1e9" stroke-opacity=".55" stroke-width="3" '+
     'stroke-linecap="round"/><path d="M9 117 L19 106" stroke="#17282d" stroke-width="2"/></svg>';
   if (action.op === "square") {
-    const area = areaArrangement(visible()[side], "square");
-    if (area?.symbolic)
-      return '<span class="held-square-press" title="A brass press that shapes a round sprite into a square"></span>';
-    const extras = (area?.cells || 0) - (area?.side || 0);
-    return extras > 0
-      ? '<span class="held-weight"></span><span class="held-count">×' + extras + '</span>'
-      : "";
+    // Carry one construction tool, not a fictitious count of extra weights.
+    return '<span class="held-square-press" title="A brass square construction press"></span>';
   }
   if (action.op === "sqrt") return "";
   if (action.op === "divide") {
@@ -832,10 +828,18 @@ const BOX_NOTES={
  * regions are the new algebraic objects. This scene never changes state:
  * the hand contact later commits the engine's already-validated result.
  */
+const squareViews={left:null,right:null};
 function showAreaPreview(side, action) {
   const node=$(side+"-area-box");
   const area=areaArrangement(visible()[side],action.op);
   if(!area||area.kind==="zero")return;
+  if(action.op==="square"){
+    squareViews[side]?.destroy();
+    squareViews[side]=mountSquareConstruction(node,$(side+"-items"),area,{reduced:reducedMotion});
+    node.setAttribute("aria-label",areaMathLabel(area)+
+      "; built inside the "+(side==="left"?"west":"east")+" room; edge guides do not count as objects");
+    return;
+  }
   const plan=inRoomBoxPlan(area);
   const tracks=plan.tracks.map(x=>x+"fr").join(" ");
   const ruler=items=>items.map(({type,index})=>
@@ -876,6 +880,7 @@ function showAreaPreview(side, action) {
 }
 function advanceAreaPreview(side, action, step) {
   if(step==="frame"){showAreaPreview(side,action);return;}
+  if(action.op==="square"){squareViews[side]?.advance(step);return;}
   const node=$(side+"-area-box");
   if(node.hidden)return;
   node.dataset.step=step;
@@ -890,6 +895,7 @@ function advanceAreaPreview(side, action, step) {
   node.querySelector(".box-footnote").textContent=BOX_NOTES[action.op][step]||"";
 }
 function finishAreaPreview(side,action) {
+  if(action.op==="square"){squareViews[side]?.release();return;}
   const node=$(side+"-area-box");
   if(node.hidden)return;
   node.dataset.step="result";
@@ -897,6 +903,7 @@ function finishAreaPreview(side,action) {
     "area-after-square":"area-after-sqrt");
 }
 function clearAreaPreview(side) {
+  squareViews[side]?.destroy();squareViews[side]=null;
   const node=$(side+"-area-box");
   node.hidden=true;node.innerHTML="";
   delete node.dataset.step;delete node.dataset.layout;
@@ -1074,7 +1081,7 @@ async function handAct(side, action, applyAtContact) {
 
   const caption = $("action-caption");
   caption.textContent = roomOperationText(action, side);
-  caption.hidden = action.op==="unpack";
+  caption.hidden = action.op==="unpack"||action.op==="square";
   cargo.innerHTML = handProp(action, side);
   cargo.classList.remove("sprite-captured");
   if(action.op==="unpack")hand.dataset.crowbar="true";
@@ -1114,6 +1121,8 @@ async function handAct(side, action, applyAtContact) {
         case "column":
         case "quadratic":
         case "mixed":
+        case "mixed-top":
+        case "mixed-bottom":
         case "units":
           advanceAreaPreview(side, action, beat.name);
           hand.classList.add("arranging");
@@ -1134,6 +1143,10 @@ async function handAct(side, action, applyAtContact) {
           // async paint/zero-pair sequence: otherwise a hand-held duplicate
           // remains next to the actual floor weight lifted by a balloon.
           cargo.hidden = !!action.fractionAttempt || motion.placing || action.op === "sqrt";
+          // Capture the completed cells before the existing exact engine
+          // callback replaces the visible floor inventory. Never recalculate
+          // the equation or commit a second move in the visual controller.
+          if(action.op==="square")squareViews[side]?.capture();
           const contactPromise=applyAtContact();
           if(contactPromise&&typeof contactPromise.then==="function")
             await contactPromise;
@@ -1307,6 +1320,9 @@ function failureStage(side, issue, action) {
       crate.classList.add("crate-locked-rattle");
     html='<div class="attempt-caption">The latch rattles, but the crate stays shut.</div>'+
       '<span class="attempt-hint">Work with whole crates, or unpack first!</span>';
+  } else if (issue.code === "overflow"&&action.op==="square"&&squareOverflowPlan(visible()[side],issue)) {
+    html=squareOverflowMarkup(squareOverflowPlan(visible()[side],issue));
+    stage.classList.add("square-overflow-stage");
   } else if (issue.code === "overflow") {
     const type = issue.kind === "posX" || issue.kind === "negX" ? "sprite-spill" :
       issue.kind === "posX2" ? "square-spill sprite-spill" :
@@ -1337,7 +1353,7 @@ function clearFailureStage(side) {
   const stage = $(side + "-attempt-stage");
   stage.hidden = true;
   stage.innerHTML = "";
-  stage.classList.remove("rewinding","fraction-floor-stage");
+  stage.classList.remove("rewinding","fraction-floor-stage","square-overflow-stage");
   delete stage.dataset.issue;
   delete stage.dataset.cutPhase;
   delete stage.dataset.cutFactor;
