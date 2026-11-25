@@ -41,6 +41,16 @@ function allCompleted(progress,limit){
   return completed.size>=limit&&Array.from({length:limit},(_,i)=>i+1)
     .every(number=>completed.has(number));
 }
+/** Legacy completion thresholds still work for old, shorter campaigns.
+ * Once a learner has visited an appended crate level, the full current
+ * stage must be completed before the fallback advances to the next stage.
+ */
+function finishedForFallback(progress,stage,legacyLimit){
+  if(allCompleted(progress,RESUME_STAGE_LIMITS[stage]))return true;
+  const visitedAppendedLevel=progress?.lastPlayed>legacyLimit||
+    (progress?.completed||[]).some(number=>number>legacyLimit);
+  return !visitedAppendedLevel&&allCompleted(progress,legacyLimit);
+}
 /** Old browsers without a new resume record still retain sensible progress. */
 export function resumeDestination(recent,stage1={},stage2={},stage3={}){
   const saved=normalizeResume(recent);
@@ -50,9 +60,11 @@ export function resumeDestination(recent,stage1={},stage2={},stage3={}){
   // Keep the original legacy fallback thresholds: a student who finished
   // an earlier, shorter campaign must not lose their later-stage resume.
   // Validate the destination against today's complete level list instead.
-  if(started3||allCompleted(stage2,16)&&allCompleted(stage1,20))
+  const guidedFinished=finishedForFallback(stage1,"guided",20);
+  const independentFinished=finishedForFallback(stage2,"independent",16);
+  if(started3||independentFinished&&guidedFinished)
     return {stage:"notebook",number:validNumber(stage3?.lastPlayed,RESUME_STAGE_LIMITS.notebook)};
-  if(started2||allCompleted(stage1,20))
+  if(started2||guidedFinished)
     return {stage:"independent",number:validNumber(stage2?.lastPlayed,RESUME_STAGE_LIMITS.independent)};
   return {stage:"guided",number:validNumber(stage1?.lastPlayed,RESUME_STAGE_LIMITS.guided)};
 }
