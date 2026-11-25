@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Maths Sprites · Square creature studio</title>
+<link rel="stylesheet" href="./src/styles.css">
+<link rel="stylesheet" href="./src/square-sprites.css">
+<link rel="stylesheet" href="./src/square-sprite-preview.css">
+</head><body><main class="ss-studio" id="square-studio">
+<header class="ss-header"><div><a href="./">← Maths Sprites</a><p class="eyebrow">THE SQUARE LABORATORY · ART STUDY</p><h1>Meet the square sprite</h1><p class="ss-muted">Visual preview only. World 4 remains locked.</p></div><button type="button" id="ss-motion" aria-pressed="false">Motion: on</button></header>
+<section class="ss-panel" aria-labelledby="ss-compare-title"><h2 id="ss-compare-title">Same species, different shape</h2><div class="ss-comparison">
+<figure><div class="ss-floor ss-large" id="ss-round"></div><figcaption>Round sprite <math><mi>x</mi></math></figcaption></figure>
+<figure><div class="ss-floor ss-large" id="ss-square"></div><figcaption>Square sprite <math><msup><mi>x</mi><mn>2</mn></msup></math></figcaption></figure>
+</div><p class="ss-muted">The silhouette alone distinguishes the creatures. Mathematical labels are outside the artwork.</p></section>
+<section class="ss-panel" aria-labelledby="ss-morph-title"><div class="ss-row"><h2 id="ss-morph-title">Shape transformation</h2><div class="ss-buttons"><button type="button" id="ss-to-square">Square form</button><button type="button" id="ss-to-round">Round form</button></div></div>
+<div class="ss-floor ss-large" id="ss-morph-stage"></div><output id="ss-form-status" aria-live="polite">Round form</output>
+<p class="ss-muted">A single-creature animation study, not a mathematical balance move. Real squaring and roots transform the entire contents of both chambers.</p></section>
+<section class="ss-panel" aria-labelledby="ss-room-title"><div class="ss-row"><h2 id="ss-room-title">Mixed chamber</h2><div class="ss-buttons"><label for="ss-quantity">Square sprites</label><select id="ss-quantity"><option>1</option><option selected>4</option><option>8</option><option>12</option></select><button type="button" id="ss-pause" aria-pressed="false">Hand approaches</button></div></div>
+<div class="ss-floor ss-crowd" id="ss-room" aria-label="Mixed sprite chamber"></div>
+<p class="ss-muted">Three round sprites and the selected number of square sprites, at the actual game scale.</p></section>
+<section class="ss-panel" aria-labelledby="ss-reaction-title"><div class="ss-row"><h2 id="ss-reaction-title">Creature reactions</h2><div class="ss-buttons"><button type="button" id="ss-duck">Duck</button><button type="button" id="ss-dodge">Dodge</button><button type="button" id="ss-catch">Caught</button><button type="button" id="ss-rest">Rest</button></div></div>
+<div class="ss-floor ss-large" id="ss-reaction-stage"></div><output id="ss-reaction-status" aria-live="polite">Idle</output></section>
+<section class="ss-panel" aria-labelledby="ss-context-title"><h2 id="ss-context-title">Same artwork in every context</h2>
+<div class="ss-context">
+<figure><div class="ss-floor ss-prop" id="ss-held"></div><figcaption>In the hand</figcaption></figure>
+<figure><div class="ss-floor ss-prop" id="ss-cell"></div><figcaption>Inside a construction cell</figcaption></figure>
+<figure><div class="ss-floor ss-prop ss-mini" id="ss-mini"></div><figcaption>Comic-book miniature</figcaption></figure>
+</div></section></main><script type="module" src="./src/square-sprite-preview.mjs"></script></body></html>
