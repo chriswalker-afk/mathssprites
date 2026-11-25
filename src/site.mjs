@@ -858,6 +858,7 @@ window.addEventListener("mathssprites:advance",()=>{
 
 const params = new URLSearchParams(window.location.search);
 const preview = params.get("preview");
+const squarePreview=params.get("squarePreview");
 const notebookPreview=params.get("notebook");
 const workshopDraft=params.get("workshop");
 if(workshopDraft!==null){
@@ -866,6 +867,19 @@ if(workshopDraft!==null){
   if(["auto","manual","notebook"].includes(draftMode)&&!(draftMode==="notebook"&&$("workshop-quantity-mode").value!=="fractions"))$("workshop-hand-mode").value=draftMode;
   $("workshop-equation").value=workshopDraft.slice(0,80);
   showScreen("workshop");
+} else if(squarePreview!==null){
+  // Direct review links only: never register or unlock a World 4 stage,
+  // save a resume destination, or award campaign credit.
+  const {SQUARE_LEVEL_PLAN,squareLevelForPlay}=await import("./square-level-plan.mjs");
+  const fixture=SQUARE_LEVEL_PLAN.find(l=>l.id===squarePreview&&["guided","independent"].includes(l.stage));
+  if(fixture){
+    homeHero.setActive(false);
+    document.body.classList.add("preview-mode");
+    $("site-shell").hidden=true;
+    $("game-shell").hidden=false;
+    window.dispatchEvent(new CustomEvent("mathssprites:square-preview",{detail:{
+      level:squareLevelForPlay(fixture),handMode:fixture.stage==="independent"?"manual":"auto"}}));
+  }else showScreen("home",{focusHeading:false});
 } else if(notebookPreview!==null){
   // Deliberately ONLY existing positive integer sample puzzles until PR21.
   // Direct QA URLs never count towards any campaign's saved progress.

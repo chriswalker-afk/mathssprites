@@ -31,6 +31,7 @@
   <link rel="stylesheet" href="./src/zero-pair-actions.css?v=55" />
   <link rel="stylesheet" href="./src/square-sprites.css" />
   <link rel="stylesheet" href="./src/square-construction.css" />
+  <link rel="stylesheet" href="./src/square-inspection.css" />
   <script type="module" src="./src/app.mjs"></script>
   <script type="module" src="./src/site.mjs"></script>
 </head>
@@ -538,6 +539,7 @@
               </div>
               <div id="left-attempt-stage" class="attempt-stage" role="img" aria-label="An unsuccessful experiment in the west chamber" hidden></div>
               <div id="left-neutral-effect" class="neutral-effect" role="img" aria-label="Opposite objects making zero in west chamber" hidden></div>
+              <div id="left-inspection" class="square-inspection-stage" role="img" hidden></div>
               <div id="left-area-box" class="room-square-box" role="img" aria-label="Physical square being built in the west chamber" hidden></div>
               <div class="room-floor" aria-hidden="true"></div>
               <button id="left-action" class="room-action" type="button">Use hand here</button>
@@ -557,6 +559,7 @@
               </div>
               <div id="right-attempt-stage" class="attempt-stage" role="img" aria-label="An unsuccessful experiment in the east chamber" hidden></div>
               <div id="right-neutral-effect" class="neutral-effect" role="img" aria-label="Opposite objects making zero in east chamber" hidden></div>
+              <div id="right-inspection" class="square-inspection-stage" role="img" hidden></div>
               <div id="right-area-box" class="room-square-box" role="img" aria-label="Physical square being built in the east chamber" hidden></div>
               <div class="room-floor" aria-hidden="true"></div>
               <button id="right-action" class="room-action" type="button">Use hand here</button>
@@ -610,6 +613,31 @@
               <div class="stepper"><button type="button" id="amount-down" aria-label="Decrease amount">−</button><output id="amount-value">—</output><button type="button" id="amount-up" aria-label="Increase amount">+</button></div>
             </div>
           </div>
+          <section id="square-inspect-panel" class="square-inspect-panel" aria-label="Inspection frame controls" hidden>
+            <div class="inspect-toolbar">
+              <span class="inspect-title">Inspection only</span>
+              <div class="inspect-side-choice" role="group" aria-label="Choose chamber">
+                <button type="button" data-inspect-side="left" aria-pressed="true">West</button>
+                <button type="button" data-inspect-side="right" aria-pressed="false">East</button>
+              </div>
+              <button type="button" id="square-inspect-close" aria-label="Close inspection frame">Close</button>
+            </div>
+            <div id="square-inspect-manual" class="inspect-manual" hidden>
+              <div class="inspect-side-stepper" role="group" aria-label="Round sprites along one side">
+                <span><i class="tiny-sprite" aria-hidden="true">••</i> Sprites</span>
+                <button type="button" data-inspect-dimension="a" data-inspect-delta="-1" aria-label="Remove one sprite side marker">−</button>
+                <output id="square-inspect-a">0</output>
+                <button type="button" data-inspect-dimension="a" data-inspect-delta="1" aria-label="Add one sprite side marker">+</button>
+              </div>
+              <div class="inspect-side-stepper" role="group" aria-label="Weights along one side">
+                <span><i class="tiny-weight" aria-hidden="true"></i> Weights</span>
+                <button type="button" data-inspect-dimension="b" data-inspect-delta="-1" aria-label="Remove one weight side marker">−</button>
+                <output id="square-inspect-b">0</output>
+                <button type="button" data-inspect-dimension="b" data-inspect-delta="1" aria-label="Add one weight side marker">+</button>
+              </div>
+            </div>
+            <p id="square-inspect-status" role="status" aria-live="polite"></p>
+          </section>
           <div class="crate-controls" id="crate-controls" hidden>
             <div class="eyebrow">SEALED CRATES</div>
             <button type="button" id="unpack-crates" class="secondary-btn"
@@ -624,6 +652,7 @@
               <button id="undo" type="button" class="secondary-btn">↶ Undo</button>
               <button id="reset" type="button" class="secondary-btn">Reset</button>
               <button id="hint" type="button" class="secondary-btn">Ask the hand</button>
+              <button id="square-inspect-toggle" type="button" class="secondary-btn" aria-expanded="false" aria-controls="square-inspect-panel" hidden>Inspect square</button>
             </div>
             <button id="do-both" class="primary-btn" type="button">Do it to both rooms <span aria-hidden="true">→</span></button>
             <div class="manual-explanation" id="manual-explanation" hidden>Choose a room, make a move, then try a matching move in the other room. You can also experiment with a different move and watch what happens.</div>

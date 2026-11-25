@@ -1,0 +1,62 @@
+/* Optional carpenter's inspection. It is never an operation, and never
+   competes with the hand's construction or root-failure stage. */
+.square-inspection-stage[hidden],.square-inspect-panel[hidden],
+.square-inspect-panel [hidden],#square-inspect-toggle[hidden]{display:none!important}
+.square-inspection-stage{
+  position:absolute;inset:5px 3% 25px;z-index:9;
+  display:grid;grid-template-rows:minmax(0,1fr) auto;gap:4px;
+  align-items:stretch;justify-items:stretch;pointer-events:none;
+}
+.square-inspecting .room-items{visibility:hidden;transition:none}
+.square-inspection-stage .root-trial-frame-zone{
+  min-height:0;display:flex;justify-content:center;align-items:flex-end;
+}
+.square-inspection-stage .square-construction-workshop{
+  position:relative;flex:none;width:min(100%,var(--square-frame-size,160px));height:auto;
+  aspect-ratio:1;--sq-guide:13%;--sq-inset:4px;--sq-wall:4px;
+}
+.square-inspection-stage .box-cell.placed{
+  opacity:1;transform:none;animation:none;
+}
+.square-inspection-stage .box-cell.placed .box-actor{animation:none;translate:none}
+.square-inspection-stage .box-cell.root-gap{
+  border:1.5px dashed #c7b693;background:#9d825a25;opacity:1;
+}
+.square-inspection-stage .box-cell.inspection-corner-gap{
+  background:#b6924d43;border-color:#f2d59b;box-shadow:inset 0 0 4px #d9b86e75;
+}
+.square-inspection-stage .root-trial-surplus{max-width:220px}
+.square-inspect-panel{
+  border:1px solid var(--line,#907548);border-radius:7px;
+  padding:7px 9px;margin-top:7px;background:#243930;color:#f1e3c6;
+}
+.square-inspect-panel .inspect-toolbar,.square-inspect-panel .inspect-manual,
+.inspect-side-choice,.inspect-side-stepper{
+  display:flex;align-items:center;gap:5px;flex-wrap:wrap;
+}
+.inspect-toolbar{justify-content:space-between}
+.inspect-title{font-size:.79rem;font-weight:700;color:#e7c993;white-space:nowrap}
+.square-inspect-panel button{
+  color:#f3e7d0;background:#344d42;border:1px solid #958057;
+  font:inherit;font-size:.76rem;border-radius:5px;min-height:28px;padding:3px 8px;cursor:pointer;
+}
+.square-inspect-panel button[aria-pressed="true"]{background:#6d5635;border-color:#e4c285}
+.square-inspect-panel button:disabled{opacity:.4;cursor:default}
+.square-inspect-panel button:focus-visible{outline:2px solid #f1d08e;outline-offset:2px}
+.inspect-manual{margin-top:5px;justify-content:space-between}
+.inspect-side-stepper{gap:4px}
+.inspect-side-stepper>span{display:flex;align-items:center;gap:3px;font-size:.73rem}
+.inspect-side-stepper button{width:26px;padding:2px}
+.inspect-side-stepper output{font-size:.85rem;min-width:1.2em;text-align:center;font-variant-numeric:tabular-nums}
+.inspect-side-stepper .tiny-weight,.inspect-side-stepper .tiny-sprite{display:inline-block;flex-shrink:0}
+#square-inspect-status{font-size:.75rem;margin:5px 0 0;line-height:1.35;color:#e5d7bf}
+#square-inspect-toggle[aria-expanded="true"]{outline:1px solid #cda967}
+.square-inspection-preview #step-dots,.square-inspection-preview label[for="level-select"]{display:none!important}
+@media(max-width:600px){
+  .square-inspection-stage{inset:4px 2% 18px;gap:3px}
+  .square-inspection-stage .square-construction-workshop{--sq-guide:14%;--sq-inset:3px;--sq-wall:3px}
+  .square-inspect-panel{padding:5px 7px}
+  .inspect-toolbar,.inspect-manual{gap:4px}
+  .square-inspect-panel button{font-size:.72rem;min-height:28px;padding:3px 6px}
+  .inspect-side-stepper>span{font-size:.7rem}
+}
