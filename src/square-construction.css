@@ -1,9 +1,9 @@
 /* PR71: the carpenter's frame belongs to the physical room. Root
    construction is intentionally left to the next milestone. */
-.room-square-box[data-construction="square"]{
+.room-square-box:is([data-construction="square"],[data-construction="root"]){
   inset:6px 3% 28px;height:auto;max-height:none;align-items:flex-end;
 }
-.room-square-box[data-construction="square"] .square-construction-workshop{
+.room-square-box:is([data-construction="square"],[data-construction="root"]) .square-construction-workshop{
   width:min(100%,var(--square-frame-size,222px));height:auto;max-height:none;
   aspect-ratio:1;--sq-guide:13%;--sq-inset:4px;--sq-wall:5px;
 }
@@ -66,15 +66,15 @@
 .square-construction-active.square-source-visible .room-items{opacity:1;z-index:8;transition:none}
 .square-construction-active.square-source-transferred .room-items{opacity:0;transition:none}
 .square-construction-active.area-after-square .room-items{opacity:1;transition:none}
-.room-square-box[data-construction="square"][data-step="result"] .box-workshop{animation:none}
-.room-square-box[data-construction="square"][data-step="result"] .box-cell .box-actor,
-.room-square-box[data-construction="square"][data-step="result"] .box-edge{visibility:hidden}
-.room-square-box[data-construction="square"][data-step="result"] .box-grid,
-.room-square-box[data-construction="square"][data-step="result"] .square-frame-base{animation:square-frame-fade .38s ease-out both}
-.room-square-box[data-construction="square"][data-step="result"] .wall-top{animation:square-wall-top .62s ease-in both}
-.room-square-box[data-construction="square"][data-step="result"] .wall-bottom{animation:square-wall-bottom .62s ease-in both}
-.room-square-box[data-construction="square"][data-step="result"] .wall-left{animation:square-wall-left .62s ease-in both}
-.room-square-box[data-construction="square"][data-step="result"] .wall-right{animation:square-wall-right .62s ease-in both}
+.room-square-box:is([data-construction="square"],[data-construction="root"])[data-step="result"] .box-workshop{animation:none}
+.room-square-box:is([data-construction="square"],[data-construction="root"])[data-step="result"] .box-cell .box-actor,
+.room-square-box:is([data-construction="square"],[data-construction="root"])[data-step="result"] .box-edge{visibility:hidden}
+.room-square-box:is([data-construction="square"],[data-construction="root"])[data-step="result"] .box-grid,
+.room-square-box:is([data-construction="square"],[data-construction="root"])[data-step="result"] .square-frame-base{animation:square-frame-fade .38s ease-out both}
+.room-square-box:is([data-construction="square"],[data-construction="root"])[data-step="result"] .wall-top{animation:square-wall-top .62s ease-in both}
+.room-square-box:is([data-construction="square"],[data-construction="root"])[data-step="result"] .wall-bottom{animation:square-wall-bottom .62s ease-in both}
+.room-square-box:is([data-construction="square"],[data-construction="root"])[data-step="result"] .wall-left{animation:square-wall-left .62s ease-in both}
+.room-square-box:is([data-construction="square"],[data-construction="root"])[data-step="result"] .wall-right{animation:square-wall-right .62s ease-in both}
 @keyframes square-frame-fade{to{opacity:0}}
 @keyframes square-wall-top{0%,12%{opacity:1}100%{transform:translate(-9px,22px) rotate(-25deg);opacity:0}}
 @keyframes square-wall-bottom{0%,12%{opacity:1}100%{transform:translate(8px,15px) rotate(12deg);opacity:0}}
@@ -119,13 +119,13 @@
 .reduce-motion .square-construction-workshop .box-cell.placed,
 .reduce-motion .square-construction-workshop .square-frame-wall,
 .reduce-motion .square-construction-active.area-after-square .sprite-square .sprite-body{animation:none!important;transform:none!important}
-.reduce-motion .room-square-box[data-construction="square"][data-step="result"] .square-frame-wall,
-.reduce-motion .room-square-box[data-construction="square"][data-step="result"] .square-frame-base,
-.reduce-motion .room-square-box[data-construction="square"][data-step="result"] .box-grid{visibility:hidden}
+.reduce-motion .room-square-box:is([data-construction="square"],[data-construction="root"])[data-step="result"] .square-frame-wall,
+.reduce-motion .room-square-box:is([data-construction="square"],[data-construction="root"])[data-step="result"] .square-frame-base,
+.reduce-motion .room-square-box:is([data-construction="square"],[data-construction="root"])[data-step="result"] .box-grid{visibility:hidden}
 .reduce-motion .square-overflow-prop{animation:none!important;opacity:1;transform:translate(17px,5px)}
 @media(max-width:600px){
-  .room-square-box[data-construction="square"]{inset:4px 2% 19px}
-  .room-square-box[data-construction="square"] .square-construction-workshop{--sq-guide:14%;--sq-inset:3px;--sq-wall:4px}
+  .room-square-box:is([data-construction="square"],[data-construction="root"]){inset:4px 2% 19px}
+  .room-square-box:is([data-construction="square"],[data-construction="root"]) .square-construction-workshop{--sq-guide:14%;--sq-inset:3px;--sq-wall:4px}
   .square-construction-workshop .box-grid{gap:0}
   .square-construction-workshop .box-cell .box-actor{width:min(78%,16px);height:min(78%,16px)}
   .square-construction-workshop .box-cell .box-actor-weight{width:min(68%,15px);height:min(70%,16px)}
@@ -133,4 +133,77 @@
   .giant-hand[data-box-operation="square"][data-box-step="mixed-bottom"] .hand-art{transform:translate(-18px,7px) rotate(-7deg)}
   .giant-hand[data-box-operation="square"][data-box-step="units"] .hand-art{transform:translate(46px,-18px) rotate(6deg)}
   .attempt-overflow .attempt-stage.square-overflow-stage{inset:5px 1% 19px}
+}
+
+/* PR72: reverse the same physical construction. The actual floor row is
+   transferred to the cells only at Arrange; guides are still non-counting. */
+.square-root-active.square-source-visible .room-items{opacity:1;z-index:8;transition:none}
+.square-root-active.square-source-transferred .room-items{opacity:0;transition:none}
+.square-root-active.area-after-sqrt .room-items{opacity:1;transition:none}
+.room-square-box[data-construction="root"] .box-cell.placed:not(.removed){
+  opacity:1;animation:none;transform:none;
+}
+.room-square-box[data-construction="root"] .box-cell.placed .box-actor{
+  animation:none;translate:none;
+}
+.room-square-box[data-construction="root"] .box-cell.removed{
+  animation:root-region-retire .39s ease-in both;
+}
+.room-square-box[data-construction="root"] .box-cell.region-quadratic.removed{
+  animation:root-square-squish .39s ease-in both;
+}
+@keyframes root-region-retire{
+  from{opacity:1;transform:none}to{opacity:0;transform:translateY(-13px) scale(.48)}
+}
+@keyframes root-square-squish{
+  0%{opacity:1;transform:none}45%{opacity:1;transform:scale(1.1,.55)}
+  100%{opacity:0;transform:translateY(-11px) scale(.43)}
+}
+.square-construction-workshop .box-edge-left.retired{opacity:0;transform:translateX(-10px)}
+.square-construction-workshop .box-edge-top.kept{opacity:1;filter:drop-shadow(0 0 4px #efd6a1);transform:none}
+.square-root-active.area-after-sqrt .sprite-black .sprite-body{
+  animation:sprite-wiggle var(--wiggle-period,1100ms) ease-in-out var(--wiggle-delay,0ms) infinite!important;
+  animation-play-state:paused!important;
+}
+.square-root-active.area-after-sqrt:not(.hand-target) .sprite-black .sprite-body{animation-play-state:running!important}
+.square-root-active.area-after-sqrt .sprite-black .sprite-body:before{animation:none}
+.giant-hand[data-box-operation="sqrt"][data-box-step="arrange"] .hand-art{transform:translate(35px,-24px) rotate(7deg)}
+.giant-hand[data-box-operation="sqrt"][data-box-step="mixed-bottom"] .hand-art{transform:translate(-37px,15px) rotate(-8deg)}
+.giant-hand[data-box-operation="sqrt"][data-box-step="mixed-top"] .hand-art{transform:translate(23px,-28px) rotate(8deg)}
+/* No invented objects during a refused root: present cells and the tray
+   account for all source objects. Dashed empty slots remain empty. */
+.attempt-unsupported-area .attempt-stage.square-root-trial-stage{
+  inset:5px 3% 25px;height:auto;max-height:none;display:grid;
+  grid-template-rows:minmax(0,1fr) auto;gap:5px;align-items:stretch;justify-content:stretch;
+}
+.square-root-refusal-active .room-items{opacity:0;transition:none}
+.root-trial-frame-zone{display:flex;align-items:flex-end;justify-content:center;min-height:0;min-width:0}
+.root-trial-frame-zone .square-construction-workshop{
+  position:relative;flex:none;width:min(100%,var(--square-frame-size,160px));aspect-ratio:1;
+  height:auto;--sq-guide:13%;--sq-inset:4px;--sq-wall:4px;
+}
+.square-root-trial-stage .box-cell.placed{opacity:1;transform:none;animation:none}
+.square-root-trial-stage .box-cell.placed .box-actor{animation:none;translate:none}
+.square-root-trial-stage .box-cell.root-gap{
+  border:1.5px dashed #ead09a;background:#9d825a25;opacity:1;
+}
+.root-trial-surplus{
+  display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:2px;
+  width:100%;max-width:240px;margin:auto;box-sizing:border-box;
+  border:2px solid #97754b;border-radius:4px;padding:3px;background:#4d3527cc;
+}
+.root-trial-surplus:empty{display:none}
+.root-trial-extra{position:relative;aspect-ratio:1;display:grid;place-items:center;min-width:0}
+.root-trial-extra .box-actor{position:relative;display:block;width:88%;height:88%}
+.root-trial-extra .box-actor-weight{width:76%;height:90%}
+.reduce-motion .room-square-box[data-construction="root"] .box-cell.removed{animation:none!important;opacity:0;transform:none}
+.reduce-motion .square-construction-workshop .box-edge-left.retired{transform:none;opacity:0}
+.reduce-motion .square-root-active.area-after-sqrt .sprite-black .sprite-body{animation:none!important;transform:none!important}
+@media(max-width:600px){
+  .giant-hand[data-box-operation="sqrt"][data-box-step="arrange"] .hand-art{transform:translate(19px,-12px) rotate(6deg)}
+  .giant-hand[data-box-operation="sqrt"][data-box-step="mixed-bottom"] .hand-art{transform:translate(-18px,7px) rotate(-7deg)}
+  .giant-hand[data-box-operation="sqrt"][data-box-step="mixed-top"] .hand-art{transform:translate(15px,-15px) rotate(7deg)}
+  .attempt-unsupported-area .attempt-stage.square-root-trial-stage{inset:4px 2% 18px;gap:3px}
+  .root-trial-frame-zone .square-construction-workshop{--sq-guide:14%;--sq-inset:3px;--sq-wall:3px}
+  .root-trial-surplus{gap:1px;padding:2px}
 }
