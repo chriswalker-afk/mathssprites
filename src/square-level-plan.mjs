@@ -113,6 +113,8 @@ export const SQUARE_LEVEL_PLAN=Object.freeze(Object.entries(rows).flatMap(([stag
       squareLaboratory:true,quantityMode:"positive",lockPositive:true,
       allowedKinds:SQUARE_KINDS,allowedOperations:SQUARE_OPERATIONS,
       goal,solution,left,right,
+      ...(stage==="guided"&&chapterIndex>=4?{squareInspection:"guided"}:
+        stage==="independent"&&chapterIndex>=3?{squareInspection:"independent"}:{}),
       prompt:goal==="area"?"Build a complete square from each chamber.":"Leave one round sprite facing only weights.",
       ...(goal==="area"?{target:Object.freeze({left:Object.freeze(squareBuildTarget(left)),right:Object.freeze(squareBuildTarget(right))})}:{}),
       reference:decodeRoute(route)};

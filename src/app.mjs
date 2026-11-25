@@ -14,6 +14,7 @@ import { pickSpriteHandReaction, dodgeOffsetPx } from "./sprite-reactions.mjs";
 import { floorScaleToFit, inRoomBoxPlan, areaMathLabel } from "./area-layout.mjs";
 import {mountSquareConstruction,squareOverflowPlan,squareOverflowMarkup} from "./square-construction.mjs";
 import {mountSquareRoot,squareRootTrialPlan,squareRootTrialMessage,mountSquareRootTrial} from "./square-root-construction.mjs";
+import {squareInspectionPolicy,guidedInspectionSide,inspectionSideStep,squareInspectionPlan,mountSquareInspection,INSPECTION_SIDE_LIMIT} from "./square-inspection.mjs";
 import {weightPilePosition,weightCountPlaque} from "./weight-piles.mjs";
 import { itemWord, attemptMessage, mismatchedMoveMessage } from "./attempt-feedback.mjs";
 import { fractionCutPlan } from "./fraction-theatre.mjs";
@@ -82,6 +83,8 @@ let notebookSession=null; // only teacher prototype in PR20; never campaign prog
 let notebookPhase="idle"; // idle | writing | replaying | complete
 let notebookReplaySuccessful=false;
 let workshopActive=false; // free play only, never an indexed campaign level
+let squarePreviewActive=false; // direct teacher preview, never campaign progress
+let inspectionSession=null;
 let guideEnabled = readGuideEnabled();
 let guideSeen = readGuideSeen();
 let independentGuideSeen=readIndependentGuideSeen();
@@ -517,7 +520,67 @@ function renderNotebookPaper() {
   $("notebook-reset").disabled=notebookPhase==="replaying";
   renderNotebookMathEditor();
 }
+function inspectionPolicy(){
+  return squareInspectionPolicy(currentLevel(),{mode,notebook:!!notebookSession});
+}
+function inspectionAvailable(){
+  return !!inspectionPolicy()&&!busy&&!state.pending&&!override&&!isSolved(state)&&
+    $("replay-backdrop").hidden;
+}
+function closeSquareInspection({focus=false}={}){
+  if(inspectionSession){inspectionSession.view?.destroy();inspectionSession=null;}
+  $("square-inspect-panel").hidden=true;
+  $("square-inspect-toggle").setAttribute("aria-expanded","false");
+  $("square-inspect-toggle").textContent="Inspect square";
+  if(focus&&!$("square-inspect-toggle").hidden&&!$("square-inspect-toggle").disabled)
+    $("square-inspect-toggle").focus();
+}
+function renderInspectionTool(){
+  const toggle=$("square-inspect-toggle");
+  toggle.hidden=!inspectionPolicy();
+  toggle.disabled=!inspectionAvailable();
+}
+function refreshSquareInspection(){
+  const session=inspectionSession;
+  if(!session||!inspectionAvailable()){closeSquareInspection();return;}
+  session.view?.destroy();session.view=null;
+  const source=state[session.side];
+  const fitted=inspectionPolicy()==="guided"?guidedInspectionSide(source):null;
+  const side=fitted||session.candidate;
+  const manual=!fitted;
+  $("square-inspect-manual").hidden=!manual;
+  $("square-inspect-a").textContent=String(side.a);
+  $("square-inspect-b").textContent=String(side.b);
+  for(const button of $("square-inspect-panel").querySelectorAll("[data-inspect-side]"))
+    button.setAttribute("aria-pressed",String(button.dataset.inspectSide===session.side));
+  for(const button of $("square-inspect-panel").querySelectorAll("[data-inspect-dimension]")){
+    const key=button.dataset.inspectDimension,delta=Number(button.dataset.inspectDelta);
+    button.disabled=!manual||(delta===-1?side[key]===0:side.a+side.b>=INSPECTION_SIDE_LIMIT);
+  }
+  const plan=squareInspectionPlan(source,side);
+  $("square-inspect-status").textContent=fitted
+    ?plan?.missing.posOne>0
+      ?"Look at the empty corner. What would complete it?"
+      :"Compare the objects with the four regions."
+    :side.a+side.b===0?"Choose the markers along one side."
+    :"Try another side, or close the frame and choose your move.";
+  if(plan)session.view=mountSquareInspection($(session.side+"-inspection"),$(session.side+"-items"),plan,{scaffold:!!fitted});
+}
+function openSquareInspection(){
+  if(!inspectionAvailable())return;
+  if(inspectionSession){closeSquareInspection({focus:true});return;}
+  clearSpeech();
+  inspectionSession={side:state.left.posX2>0||!state.right.posX2?"left":"right",
+    candidate:{a:0,b:0},view:null};
+  $("square-inspect-panel").hidden=false;
+  $("square-inspect-toggle").setAttribute("aria-expanded","true");
+  $("square-inspect-toggle").textContent="Close frame";
+  refreshSquareInspection();
+}
 function render() {
+  // Any ordinary tool selection, level change, hand move or Undo dismisses
+  // the read-only inspection BEFORE the actual inventory is rendered.
+  closeSquareInspection();
   const lvl = currentLevel();
   if (campaignLevelNumber !== null)
     document.body.dataset.workshopChapter = String(
@@ -584,12 +647,12 @@ function render() {
     button.disabled = !available || busy || isSolved(state);
     button.setAttribute("aria-pressed", String(operation!==null && button.dataset.operation === operation));
   }
-  for (const button of document.querySelectorAll("[data-kind]")) {
+  for (const button of document.querySelectorAll("#object-picker [data-kind]")) {
     button.classList.toggle("selected", kind!==null && button.dataset.kind === kind);
     const signedObject=button.dataset.kind==="negX"||button.dataset.kind==="negOne";
     const unavailable = (signedObject && state.quantityMode!=="signed") ||
       (lvl.allowedKinds && !lvl.allowedKinds.includes(button.dataset.kind)) ||
-      (lvl.lockPositive && button.dataset.kind === "posX2");
+      (lvl.lockPositive && !lvl.squareLaboratory && button.dataset.kind === "posX2");
     button.hidden=unavailable;
     button.disabled = busy || isSolved(state) || unavailable;
     button.setAttribute("aria-pressed", String(kind!==null && button.dataset.kind === kind));
@@ -653,7 +716,7 @@ function render() {
     ?"You make both hand visits.":"The hand acts on both rooms.";
   $("mode-select").value=inCampaign
     ? (campaignStage==="independent"?"manual":"auto") : mode;
-  $("mode-select").disabled=inCampaign||busy||awaiting;
+  $("mode-select").disabled=inCampaign||squarePreviewActive||busy||awaiting;
   $("quantity-mode").value=state.quantityMode;
   $("quantity-mode").disabled=busy||awaiting||!!lvl.lockPositive;
   $("quantity-mode").querySelector('option[value="positive"]').disabled=
@@ -663,7 +726,12 @@ function render() {
     ? "● black = +x   ·   ◯ white = −x   ·   ◆ weight = +1   ·   ♧ balloon = −1"
     : "● black sprite = +x   ·   ◆ weight = +1";
   $("level-select").value = String(levelIndex);
-  $("level-select").disabled = busy || awaiting || campaignLevelNumber !== null;
+  $("level-select").disabled = busy || awaiting || squarePreviewActive || campaignLevelNumber !== null;
+  document.body.classList.toggle("square-inspection-preview",squarePreviewActive);
+  if(squarePreviewActive){
+    $("chapter-status").hidden=false;
+    $("chapter-status").textContent="PREVIEW · NO CAMPAIGN PROGRESS";
+  }
   $("game-home").disabled = busy;
   $("game-brand-home").disabled = busy;
   $("game-levels").disabled = busy;
@@ -714,7 +782,9 @@ function render() {
   }
   $("undo").disabled = busy || (!awaiting && !state.history.length && !state.pairUndo?.length);
   $("reset").disabled = busy;
+  $("hint").hidden=!!lvl.squareLaboratory&&!lvl.suggested;
   $("hint").disabled = busy;
+  renderInspectionTool();
   if (isSolved(state)) {
     $("feedback").dataset.tone="success";
     $("feedback").innerHTML = '<span class="success-mark">✦</span> Mystery solved. ' +
@@ -1816,6 +1886,8 @@ function startLevel(index, quantityMode, levelOverride=null, campaignNumber=null
   notebookPhase="idle";
   notebookReplaySuccessful=false;
   workshopActive=false;
+  squarePreviewActive=false;
+  closeSquareInspection();
   document.body.classList.remove("notebook-mode","workshop-mode");
   levelIndex = (index + LEVELS.length) % LEVELS.length;
   const level = levelOverride || LEVELS[levelIndex];
@@ -2199,7 +2271,7 @@ function drawReplay(index, { animate = !reducedMotion, complete = false } = {}) 
   $("replay-progress").textContent = "Panel " + (replayIndex + 1) + " of " + replayEntries.length;
   $("replay-back").disabled = replayIndex === 0;
   $("replay-next").disabled = replayIndex >= replayEntries.length - 1;
-  $("next-level").textContent = workshopActive?"Build another equation →":
+  $("next-level").textContent = squarePreviewActive?"Back to levels →":workshopActive?"Build another equation →":
     campaignLevelNumber !== null
     ? (campaignLevelNumber===campaignStageLevelCount
         ?"Back to level map →":"Next level →")
@@ -2259,7 +2331,7 @@ for (const button of document.querySelectorAll("[data-operation]")) {
     render();
   });
 }
-for (const button of document.querySelectorAll("[data-kind]")) {
+for (const button of document.querySelectorAll("#object-picker [data-kind]")) {
   button.addEventListener("click", () => {
     // A hidden/disabled object cannot be chosen before its operation.
     // This also rejects synthetic clicks during a running animation.
@@ -2295,6 +2367,25 @@ $("crate-animation-pause").addEventListener("click",()=>{
   else activeCrateView.pause();
   render();
 });
+$("square-inspect-toggle").addEventListener("click",openSquareInspection);
+for(const button of $("square-inspect-panel").querySelectorAll("[data-inspect-side]")){
+  button.addEventListener("click",()=>{
+    if(!inspectionSession||!inspectionAvailable())return;
+    if(inspectionSession.side===button.dataset.inspectSide)return;
+    inspectionSession.side=button.dataset.inspectSide;
+    inspectionSession.candidate={a:0,b:0};
+    refreshSquareInspection();
+  });
+}
+for(const button of $("square-inspect-panel").querySelectorAll("[data-inspect-dimension]")){
+  button.addEventListener("click",()=>{
+    if(!inspectionSession||!inspectionAvailable()||button.disabled)return;
+    inspectionSession.candidate=inspectionSideStep(inspectionSession.candidate,
+      button.dataset.inspectDimension,Number(button.dataset.inspectDelta));
+    refreshSquareInspection();
+  });
+}
+$("square-inspect-close").addEventListener("click",()=>closeSquareInspection({focus:true}));
 $("do-both").addEventListener("click", guidedMove);
 $("left-action").addEventListener("click", () => manualMove("left"));
 $("right-action").addEventListener("click", () => manualMove("right"));
@@ -2305,7 +2396,7 @@ $("mode-select").addEventListener("change", event => {
     mode=campaignStage==="independent"?"manual":"auto";
     return render();
   }
-  if (busy || state.pending) return render();
+  if (busy || state.pending || squarePreviewActive) return render();
   mode = event.target.value === "manual" ? "manual" : "auto";
   render();
 });
@@ -2357,7 +2448,7 @@ $("quantity-mode").addEventListener("change", event => {
     : "Only positive sprites and weights are available in this lesson.",5300);
 });
 $("level-select").addEventListener("change", event => {
-  if (notebookSession || workshopActive || campaignLevelNumber !== null) return render();
+  if (notebookSession || workshopActive || squarePreviewActive || campaignLevelNumber !== null) return render();
   startLevel(Number(event.target.value));
 });
 $("motion-toggle").addEventListener("click", () => chooseMotion(!reducedMotion));
@@ -2369,7 +2460,12 @@ $("undo").addEventListener("click", () => {
   render();
 });
 $("reset").addEventListener("click", () => {
-  if(notebookSession)return;
+  if(notebookSession||busy)return;
+  if(squarePreviewActive){
+    const level=currentLevel(),selected=mode;
+    startLevel(0,"positive",level,null);
+    squarePreviewActive=true;mode=selected;render();return;
+  }
   if(workshopActive){
     const level=currentLevel(),selected=mode;
     startLevel(0,"positive",level,null);
@@ -2415,6 +2511,7 @@ $("replay-speed").addEventListener("change", event => {
 });
 document.addEventListener("visibilitychange", () => { replayLastFrame = null; });
 $("next-level").addEventListener("click", () => {
+  if(squarePreviewActive){leaveGame("levels");return;}
   if(workshopActive){
     hideReplay();
     window.dispatchEvent(new Event("mathssprites:workshop-another"));
@@ -2617,8 +2714,16 @@ window.addEventListener("mathssprites:launch",event=>{
   startLevel(legacyIndex||0,levelQuantityMode(level),level,number,stage,event.detail);
 });
 window.addEventListener("mathssprites:preview", event => startLevel(event.detail.index));
+window.addEventListener("mathssprites:square-preview",event=>{
+  if(busy)return;
+  const {level,handMode}=event.detail||{};
+  if(level?.squareLaboratory!==true||!["auto","manual"].includes(handMode))return;
+  startLevel(0,"positive",level,null);
+  squarePreviewActive=true;mode=handMode;render();
+});
 function leaveGame(screen) {
   if (busy) return;
+  closeSquareInspection();
   if (!$("replay-backdrop").hidden) hideReplay();
   window.dispatchEvent(new CustomEvent("mathssprites:leave", {detail:{screen}}));
 }
@@ -2626,6 +2731,7 @@ $("game-home").addEventListener("click", () => leaveGame("home"));
 $("game-brand-home").addEventListener("click", () => leaveGame("home"));
 $("game-levels").addEventListener("click", () => leaveGame("levels"));
 document.addEventListener("keydown", event => {
+  if(event.key==="Escape"&&inspectionSession){event.preventDefault();closeSquareInspection({focus:true});return;}
   if (event.key === "Escape" && !$("replay-backdrop").hidden) { hideReplay(); return; }
   if (event.altKey && event.key.toLowerCase() === "z" && !notebookSession && !busy && $("replay-backdrop").hidden) {
     state = undo(state); render();

@@ -4,6 +4,7 @@
  * counts. Neither a missing corner nor an illustrative trial is a move.
  */
 import {areaArrangement} from "./engine.mjs";
+import {validSquareRoom} from "./square-rules.mjs";
 import {squareConstructionPlan,squareConstructionMarkup,centre,fromPoint,currentTokens} from "./square-construction.mjs";
 import {areaSpriteMarkup} from "./square-sprites.mjs";
 const KINDS=Object.freeze(["posX2","posX","posOne"]);
@@ -46,6 +47,14 @@ export function squareRootTrialPlan(source){
     const suggested=B>0&&Number.isInteger(r)?r:C>0?Math.max(1,Math.round(C/(2*a))):nearestRoot(B);
     b=Math.max(1,Math.min(6-a,suggested));
   }
+  return squareArrangementForSide(source,a,b);
+}
+/** Shared exact allocation for refusal and freely chosen inspection sides.
+ * A frame is purely illustrative: present cells plus the tray account for
+ * the original room; gaps do not add a single object to the engine. */
+export function squareArrangementForSide(source,a,b){
+  if(!validSquareRoom(source)||!Number.isSafeInteger(a)||!Number.isSafeInteger(b)||
+    a<0||b<0||a+b<1||a+b>6)return null;
   const box=squareRootPlan(descriptor(a,b)),used=emptyCounts();
   // Alternating transposed mixed cells means any odd leftover or missing
   // round sprite appears as a genuine asymmetry, not an arbitrary pile.
