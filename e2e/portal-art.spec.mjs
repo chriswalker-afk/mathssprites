@@ -59,7 +59,7 @@ test("the engraved board shows all World 1 stage levels and active artwork @smok
   await expect(page.locator(".level-tile")).toHaveCount(20);
   await page.locator('[data-map-stage="notebook"]').click();
   await expect(page.locator(".level-tile")).toHaveCount(16);
-  await expect(page.locator(".map-world-button:disabled")).toHaveCount(2);
+  await expect(page.locator(".map-world-button:disabled")).toHaveCount(1);
   await page.screenshot({path:"artifacts/pr59-board-1280.png"});
 });
 
