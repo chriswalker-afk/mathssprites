@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Maths Sprites · Fraction balance preview</title>
+<link rel="stylesheet" href="./src/styles.css"><link rel="stylesheet" href="./src/fraction-weights.css"><link rel="stylesheet" href="./src/fraction-sprites.css"><link rel="stylesheet" href="./src/fraction-balance.css">
+</head><body>
+<main class="fb-lab" id="fraction-lab">
+<header class="fb-header"><div><a href="./">← Maths Sprites</a><h1>How much does the sprite weigh?</h1><p class="fb-preview-note">Fraction Workshop · integration preview</p></div><div class="fb-preview-controls"><label>Experiment<select id="fb-level"></select></label><label>Hand control<select id="fb-mode"><option value="auto">Guided</option><option value="manual">Independent</option></select></label><label class="fb-motion"><input type="checkbox" id="fb-reduced"> Reduced motion</label></div></header>
+<section class="playfield" id="scene" aria-label="Balance laboratory scene">
+        <div class="ambient-window" aria-hidden="true"><div class="moon"></div></div>
+        <div class="shelf shelf-left" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+        <div class="shelf shelf-right" aria-hidden="true"><i></i><i></i><i></i></div>
+        <div class="light-pool" aria-hidden="true"></div>
+        <div id="speech" class="speech" role="status" aria-live="polite" hidden></div>
+
+        <div id="hand" class="giant-hand" data-phase="rest" aria-hidden="true">
+          <div id="hand-cargo" class="hand-cargo" aria-hidden="true" hidden></div>
+          <svg class="hand-art" viewBox="0 0 200 270" focusable="false" aria-hidden="true">
+            <defs>
+              <linearGradient id="glove-leather" x1="0" y1="0" x2="1" y2="0.85">
+                <stop offset="0" stop-color="#f2cfaa"/>
+                <stop offset=".29" stop-color="#d7a681"/>
+                <stop offset=".68" stop-color="#bb8669"/>
+                <stop offset="1" stop-color="#825943"/>
+              </linearGradient>
+              <linearGradient id="glove-finger" x1="0" y1="0" x2="1" y2="0.2">
+                <stop offset="0" stop-color="#ecc39e"/>
+                <stop offset=".4" stop-color="#cf9876"/>
+                <stop offset="1" stop-color="#94664f"/>
+              </linearGradient>
+              <linearGradient id="lab-sleeve-fabric" x1="0" y1="0" x2="1" y2=".75">
+                <stop offset="0" stop-color="#66716b"/>
+                <stop offset=".32" stop-color="#374541"/>
+                <stop offset=".75" stop-color="#293631"/>
+                <stop offset="1" stop-color="#1c2927"/>
+              </linearGradient>
+              <linearGradient id="lab-cuff-metal" x1="0" y1="0" x2="1" y2=".4">
+                <stop offset="0" stop-color="#e1c9a1"/>
+                <stop offset=".34" stop-color="#ac895f"/>
+                <stop offset=".75" stop-color="#6f583c"/>
+                <stop offset="1" stop-color="#d2b485"/>
+              </linearGradient>
+              <radialGradient id="glove-palm-highlight">
+                <stop offset="0" stop-color="#ffddb8" stop-opacity=".48"/>
+                <stop offset="1" stop-color="#ebad81" stop-opacity="0"/>
+              </radialGradient>
+            </defs>
+            <!-- Forest-green linen laboratory sleeve, embroidered piping and seams -->
+            <g class="hand-sleeve-detail">
+              <path d="M62 -20 L167 -20 Q166 34 157 88 L150 113 Q116 132 78 110 L73 85 Z"
+                    fill="url(#lab-sleeve-fabric)" stroke="#1b2523" stroke-width="3"/>
+              <path d="M76 -3 Q82 54 83 98 M155 -4 Q151 61 148 98"
+                    fill="none" stroke="#c4b58e" stroke-width="1.6" opacity=".54" stroke-dasharray="4 7"/>
+              <path d="M97 9 Q113 28 111 89 M129 4 Q124 49 126 94"
+                    fill="none" stroke="#101e1b" stroke-width="4.2" opacity=".4"/>
+              <path d="M73 87 Q110 103 155 86 L157 101 Q120 119 76 101 Z"
+                    fill="#262e2c" stroke="#887b63" stroke-width="2"/>
+              <path d="M72 104 Q107 126 159 105 L154 129 Q111 146 77 127 Z"
+                    fill="url(#lab-cuff-metal)" stroke="#453d30" stroke-width="3"/>
+              <path d="M79 114 Q111 135 151 116" fill="none" stroke="#f2d9a7" stroke-width="2" opacity=".75"/>
+              <path d="M82 127 Q112 139 149 126" fill="none" stroke="#594c38" stroke-width="2" opacity=".52"/>
+              <circle cx="133" cy="121" r="3.7" fill="#e7cb91" stroke="#4e3d2c" stroke-width="1"/>
+            </g>
+            <!-- Separate digits: these rotate into a true grip, unlike a flat silhouette -->
+            <g class="hand-digit digit-pinky">
+              <path d="M141 174 Q147 167 156 174 L163 213 Q163 226 154 232 Q144 234 140 220 L134 189 Q132 180 141 174 Z"
+                    fill="url(#glove-finger)" stroke="#745442" stroke-width="2.3"/>
+              <path d="M150 203 Q155 202 159 207 M150 216 Q154 215 158 218" class="skin-crease"/>
+              <path d="M148 219 Q152 217 155 220" class="skin-nail"/>
+            </g>
+            <g class="hand-digit digit-ring">
+              <path d="M120 177 Q129 171 137 181 L143 238 Q143 248 134 251 Q123 252 121 240 L114 196 Q111 184 120 177 Z"
+                    fill="url(#glove-finger)" stroke="#775744" stroke-width="2.4"/>
+              <path d="M126 218 Q133 215 138 218 M128 232 Q132 229 139 233" class="skin-crease"/>
+              <path d="M127 240 Q134 236 138 241" class="skin-nail"/>
+            </g>
+            <g class="hand-digit digit-middle">
+              <path d="M101 177 Q110 169 119 178 L120 247 Q120 260 110 262 Q99 263 97 252 L96 195 Q94 183 101 177 Z"
+                    fill="url(#glove-finger)" stroke="#76533f" stroke-width="2.5"/>
+              <path d="M101 218 Q108 215 117 218 M101 237 Q109 234 117 237" class="skin-crease"/>
+              <path d="M103 250 Q110 247 115 251" class="skin-nail"/>
+            </g>
+            <g class="hand-digit digit-index">
+              <path d="M81 178 Q89 172 99 180 L97 242 Q96 254 86 255 Q76 254 75 243 L74 202 Q71 185 81 178 Z"
+                    fill="url(#glove-finger)" stroke="#714f3c" stroke-width="2.5"/>
+              <path d="M78 215 Q86 212 94 217 M78 233 Q86 231 93 235" class="skin-crease"/>
+              <path d="M80 242 Q85 240 91 244" class="skin-nail"/>
+            </g>
+            <!-- Palm has its own volume, painted highlights and wrist wrinkles -->
+            <g class="hand-palm">
+              <path d="M83 120 Q107 113 139 123 Q154 135 154 157 L157 188
+                    Q153 207 142 215 Q124 218 108 209 Q96 220 82 211
+                    Q71 201 66 182 Q55 160 71 143 Q74 130 83 120 Z"
+                    fill="url(#glove-leather)" stroke="#72503d" stroke-width="3" stroke-linejoin="round"/>
+              <ellipse cx="101" cy="157" rx="47" ry="57" fill="url(#glove-palm-highlight)"/>
+              <path d="M83 141 Q103 135 118 140 M89 149 Q113 145 131 151"
+                    fill="none" stroke="#fff1cb" stroke-width="2" opacity=".28"/>
+              <path d="M96 183 Q111 193 130 186 M83 194 Q92 202 102 204"
+                    class="skin-crease"/>
+              <path d="M81 128 Q109 132 144 127" fill="none" stroke="#694a3b" stroke-width="1.7" opacity=".35"/>
+              <path d="M84 159 Q78 166 80 181 M143 156 Q148 173 144 183" class="skin-crease"/>
+            </g>
+            <!-- Opposable thumb closes toward the index finger -->
+            <g class="hand-digit digit-thumb">
+              <path d="M75 143 Q67 140 59 149 L38 179 Q28 193 35 202 Q43 213 53 203
+                    L78 176 Q89 158 75 143 Z"
+                    fill="url(#glove-finger)" stroke="#795543" stroke-width="2.6"/>
+              <path d="M41 186 Q47 182 54 187 M47 194 Q50 190 57 191" class="skin-crease"/>
+              <path d="M38 197 Q41 201 47 198" class="skin-nail"/>
+            </g>
+            <path class="hand-outline-light" d="M83 120 Q108 115 137 122" fill="none" stroke="#f1d2ac" stroke-width="2.3" opacity=".65"/>
+          </svg>
+        </div>
+
+        <div class="rooms-row" id="rooms-row">
+          <div class="chamber" id="left-chamber" data-side="left">
+            <div class="room-interior">
+              <div class="room-arch" aria-hidden="true"></div>
+              <div class="room-window" aria-hidden="true"><span></span></div>
+              <div class="tiny-shelf" aria-hidden="true"><i></i><i></i><i></i></div>
+              <div class="room-name">WEST CHAMBER <span class="room-index">I</span></div>
+              <div id="left-items" class="room-items" aria-label="Objects in the west chamber"></div>
+              <div id="left-pair-actions" class="room-pair-actions" aria-label="Attach opposites in west chamber" hidden>
+                <button type="button" class="room-pair-action" data-pair-side="left" data-pair-type="constants" hidden>Attach weights to balloons</button>
+                <button type="button" class="room-pair-action" data-pair-side="left" data-pair-type="sprites" hidden>Pair black and white sprites</button>
+              </div>
+              <div id="left-attempt-stage" class="attempt-stage" role="img" aria-label="An unsuccessful experiment in the west chamber" hidden></div>
+              <div id="left-neutral-effect" class="neutral-effect" role="img" aria-label="Opposite objects making zero in west chamber" hidden></div>
+              <div id="left-area-box" class="room-square-box" role="img" aria-label="Physical square being built in the west chamber" hidden></div>
+              <div class="room-floor" aria-hidden="true"></div>
+              <button id="left-action" class="room-action" type="button">Use hand here</button>
+            </div>
+            <div class="scale-pan" aria-hidden="true"></div>
+          </div>
+          <div class="chamber" id="right-chamber" data-side="right">
+            <div class="room-interior">
+              <div class="room-arch" aria-hidden="true"></div>
+              <div class="room-window" aria-hidden="true"><span></span></div>
+              <div class="tiny-shelf" aria-hidden="true"><i></i><i></i><i></i></div>
+              <div class="room-name">EAST CHAMBER <span class="room-index">II</span></div>
+              <div id="right-items" class="room-items" aria-label="Objects in the east chamber"></div>
+              <div id="right-pair-actions" class="room-pair-actions" aria-label="Attach opposites in east chamber" hidden>
+                <button type="button" class="room-pair-action" data-pair-side="right" data-pair-type="constants" hidden>Attach weights to balloons</button>
+                <button type="button" class="room-pair-action" data-pair-side="right" data-pair-type="sprites" hidden>Pair black and white sprites</button>
+              </div>
+              <div id="right-attempt-stage" class="attempt-stage" role="img" aria-label="An unsuccessful experiment in the east chamber" hidden></div>
+              <div id="right-neutral-effect" class="neutral-effect" role="img" aria-label="Opposite objects making zero in east chamber" hidden></div>
+              <div id="right-area-box" class="room-square-box" role="img" aria-label="Physical square being built in the east chamber" hidden></div>
+              <div class="room-floor" aria-hidden="true"></div>
+              <button id="right-action" class="room-action" type="button">Use hand here</button>
+            </div>
+            <div class="scale-pan" aria-hidden="true"></div>
+          </div>
+        </div>
+        <div class="scale-beam" id="scale-beam" aria-hidden="true">
+          <div class="beam-body"></div><div class="pivot-dial"><div class="dial-needle" id="dial-needle"></div><span>⚖</span></div>
+        </div>
+        <div class="scale-base" aria-hidden="true"></div>
+        <div class="workbench" aria-hidden="true"></div>
+        <div class="action-caption" id="action-caption" aria-live="polite" hidden></div>
+        <div id="balance-caption" class="scene-status-visually-hidden" role="status" aria-live="polite"></div>
+        <div id="level-clear" class="level-clear" role="status" aria-live="polite" hidden>
+          <span class="clear-spark" aria-hidden="true">✦</span>
+          <strong id="level-clear-title">Balance restored!</strong>
+          <span id="level-clear-subtitle">Let's discover the algebra behind those moves.</span>
+           <span id="level-clear-rating" class="level-clear-rating" hidden></span>
+        </div>
+      </section>
+<section class="fb-tools" aria-label="Fraction hand tools">
+<div class="fb-tool-row"><fieldset><legend>1 · Operation</legend><div class="fb-buttons"><button type="button" data-fb-op="remove">− Remove</button><button type="button" data-fb-op="add">+ Add</button><button type="button" data-fb-op="divide">÷ Divide</button><button type="button" data-fb-op="multiply">× Multiply</button></div></fieldset>
+<fieldset id="fb-kind-tools" hidden><legend>2 · Object</legend><div class="fb-buttons"><button type="button" data-fb-kind="posX"><i class="fb-mini-sprite" aria-hidden="true"></i> Sprite</button><button type="button" data-fb-kind="posOne"><i class="fb-mini-weight" aria-hidden="true"></i> Weight</button></div></fieldset>
+<fieldset id="fb-amount-tools" hidden><legend>3 · Amount</legend><div class="fb-amount"><label>Whole<select id="fb-whole"></select></label><span class="fb-plus" aria-hidden="true">+</span><div class="fb-stacked"><label class="fb-sr" for="fb-numerator">Numerator</label><select id="fb-numerator"></select><span></span><label class="fb-sr" for="fb-denominator">Denominator</label><select id="fb-denominator"></select></div></div></fieldset>
+<fieldset id="fb-factor-tools" hidden><legend>2 · Equal groups / copies</legend><div class="fb-buttons"><button type="button" data-fb-factor="2">2</button><button type="button" data-fb-factor="3">3</button><button type="button" data-fb-factor="4">4</button><button type="button" data-fb-factor="5">5</button></div></fieldset></div>
+<div class="fb-tool-row fb-actions"><div class="fb-feedback" id="fb-feedback" role="status" aria-live="polite">Choose an operation.</div><button type="button" id="fb-apply" disabled>Use hand on both rooms</button><button type="button" id="fb-undo" disabled>↶ Undo</button><button type="button" id="fb-reset">Restart</button><output id="fb-moves" aria-label="Completed moves">0 moves</output></div>
+</section>
+<section id="fb-review" class="fb-review" hidden aria-label="Completed algebra"><h2>Your algebra</h2><ol id="fb-history"></ol></section>
+</main><script type="module" src="./src/fraction-balance-preview.mjs"></script></body></html>
