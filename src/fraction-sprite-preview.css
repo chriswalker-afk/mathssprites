@@ -1,0 +1,7 @@
+.fs-split-stage .fs-assembly{width:clamp(145px,36vw,200px)}
+.fs-split-stage{min-height:190px}
+.fs-preview .fw-sample .fs-assembly{width:min(100%,104px)}
+.fs-partial-heading{margin-top:18px}
+.fs-preview .fw-step-card .fs-grid-inventory{width:100%}
+.fs-preview .fw-mixed-card{min-height:130px}
+.fs-preview .fw-step-card .fs-inventory{max-width:100%}
