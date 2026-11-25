@@ -204,8 +204,8 @@ test("certifying World 2 minima does not clear existing scores, completion or re
   assert.equal(reloaded.worlds.opposites.stages.guided.completedRevisions["op-g-05"],2);
   assert.deepEqual(reloaded.worlds.opposites.stages.guided.historical["op-g-05"],
     {revision:1,bestMoves:2});
-  assert.equal(campaignStarTotals(reloaded).available,432,
-    "World 1's 180 stars plus World 2's 180 include only new levels");
+  assert.equal(campaignStarTotals(reloaded).available,492,
+    "Worlds 1 and 2 retain 360 stars, with 132 more in the two available fraction modes");
 });
 
 test("World 2 shortest-route script and curriculum remain author-only",()=>{

@@ -60,8 +60,7 @@ test("independent mode accepts equivalent amounts and commits only after matchin
   await expect(page.locator("#fraction-lab")).toHaveAttribute("data-pending","left");
   await expect(page.locator("#scene")).toHaveAttribute("data-balance","right-heavy");
   await expect(page.locator("#fb-moves")).toHaveText("0 moves");
-  await page.locator("#fb-denominator").selectOption("4");
-  await page.locator("#fb-numerator").selectOption("2");
+  await amount(page,"remove","posOne",2,4);
   await page.locator("#right-action").click();await ready(page);
   await expect(page.locator("#fraction-lab")).toHaveAttribute("data-solved","true");
   await expect(page.locator("#scene")).toHaveAttribute("data-balance","level");
@@ -76,8 +75,7 @@ test("refused denominator and mismatched independent move roll back without a sc
   await page.locator("#fb-level").selectOption("frac-g-05");
   await page.locator("#fb-mode").selectOption("manual");
   await amount(page,"remove","posOne",1,2);await page.locator("#left-action").click();await ready(page);
-  await page.locator("#fb-denominator").selectOption("4");
-  await page.locator("#fb-numerator").selectOption("1");
+  await amount(page,"remove","posOne",1,4);
   await page.locator("#right-action").click();await ready(page);
   await expect(page.locator("#fraction-lab")).toHaveAttribute("data-pending","");
   await expect(page.locator("#scene")).toHaveAttribute("data-balance","level");

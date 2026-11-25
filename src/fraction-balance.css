@@ -78,3 +78,9 @@
 .fb-lab .basket-contents > .fb-share-group{width:100%;height:100%;align-items:flex-end}
 .fb-poured{align-items:flex-end;height:30%;top:auto}
 .fb-poured .fb-share-group{align-items:flex-end}
+
+/* PR65: manual mode identifies the next chamber without exposing its operation. */
+.fb-lab[data-mode="manual"] .room-action{border-color:#a9bdab;background:#314a40;}
+.fb-lab[data-mode="manual"] .needs-match .room-action{border-color:#ebc788;background:#5b4b31;color:#fff1c8;}
+.fb-lab[data-mode="manual"] .already-moved .room-action{opacity:.38;}
+.fb-lab[data-mode="manual"] .needs-match .room-interior{outline:3px solid #e8c17f;outline-offset:-3px;}

@@ -80,6 +80,7 @@ export function mountFractionBalance(root,{level,mode="auto",reduced=false,onCom
       const btn=$(side+"-action");btn.hidden=mode!=="manual";
       btn.disabled=disabled||!selectedAction()||state.pending?.first===side;
       btn.textContent=state.pending&&state.pending.first!==side?"Match move":"Use hand here";
+      btn.setAttribute("aria-label",(state.pending&&state.pending.first!==side?"Match move in ":"Use hand in ")+(side==="left"?"west":"east")+" chamber");
       $(side+"-chamber").classList.toggle("needs-match",!!state.pending&&state.pending.first!==side);
       $(side+"-chamber").classList.toggle("already-moved",state.pending?.first===side);
     }
@@ -96,6 +97,7 @@ export function mountFractionBalance(root,{level,mode="auto",reduced=false,onCom
       for(const tx of state.history)items.push(algebraOperation(tx.action)+" → "+equation(tx.after));
       const list=$("fb-history");list.replaceChildren(...items.map(t=>{const li=document.createElement("li");li.textContent=t;return li}));
     }
+    root.dataset.mode=mode;
     root.dataset.busy=String(busy);root.dataset.pending=state.pending?.first||"";
     root.dataset.solved=String(solved);
   }
@@ -241,6 +243,7 @@ export function mountFractionBalance(root,{level,mode="auto",reduced=false,onCom
     tell(failureSpeech(failure));await pause(1150);
     if(rollback&&state.pending)state=undo(state);
     delete el.dataset.refusal;el.classList.remove("fb-failure-shake");settled();
+    if(mode==="manual")resetSelection();
     feedback("Move undone. Try another operation.");
   }
   async function play(side){
@@ -270,7 +273,10 @@ export function mountFractionBalance(root,{level,mode="auto",reduced=false,onCom
         }
         const preview=prior.pending?prior.pending.pair[side]:result.state.pending.pair[side];
         await animate(side,action,preview);state=result.state;
-        feedback(state.pending?"Now match the move in the other room.":"Both rooms balanced.");
+        // Each manual visit is independently chosen. The first action is
+        // recorded in exact engine state, not copied into the next controls.
+        resetSelection();
+        feedback(state.pending?"Choose a matching move for the "+(state.pending.first==="left"?"east":"west")+" chamber.":"Both rooms balanced.");
       }
       settled();
     }catch(error){
@@ -298,7 +304,7 @@ export function mountFractionBalance(root,{level,mode="auto",reduced=false,onCom
   listen($("fb-apply"),"click",()=>play());
   for(const side of SIDES)listen($(side+"-action"),"click",()=>play(side));
   listen($("fb-reset"),"click",()=>restart());
-  listen($("fb-undo"),"click",()=>{if(busy)return;state=undo(state);completeNotified=false;clearSpeech();settled();feedback("Last move undone.");notifyState();});
+  listen($("fb-undo"),"click",()=>{if(busy)return;const wasPending=!!state.pending;state=undo(state);completeNotified=false;if(mode==="manual")resetSelection();clearSpeech();settled();feedback(wasPending?"First visit undone.":"Last move undone.");notifyState();});
   listen(window,"resize",fitAll);
   const observer=typeof ResizeObserver!=="undefined"?new ResizeObserver(fitAll):null;
   for(const side of SIDES)observer?.observe($(side+"-items"));
