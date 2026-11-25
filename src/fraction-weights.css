@@ -1,0 +1,22 @@
+/* Isolated fraction workshop visual language; no legacy token styles changed. */
+.fw-assembly{display:inline-flex;vertical-align:bottom;flex-direction:column;align-items:center;justify-content:flex-end;width:clamp(56px,12vw,112px);max-width:100%;color:#9c835b;flex:none}
+.fw-assembly svg{display:block;width:100%;height:auto;overflow:visible}
+.fw-piece{transform:translateX(0);transition:transform .42s cubic-bezier(.22,.75,.24,1)}
+.fw-assembly.is-separated .fw-piece{transform:translateX(var(--fw-spread))}
+.fw-label{color:#fff0c6;font:700 14px/1.2 system-ui,sans-serif;margin-top:3px;min-height:17px}
+.fw-inventory-objects,.fw-grid-inventory{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:center;gap:8px 14px;min-width:0}
+.fw-pile{position:relative;width:132px;height:76px;flex:none}
+.fw-pile[data-pile-size="1"]{width:44px}
+.fw-pile[data-pile-size="2"]{width:88px}
+.fw-pile-weight{position:absolute;bottom:0;width:44px}
+.fw-pile-weight .fw-assembly{width:58px;margin-left:-7px}
+.fw-inventory-objects > .fw-assembly,.fw-grid-inventory > .fw-assembly{width:58px}
+.fw-joined-edge{display:none}
+.fw-assembly[data-complete="true"]:not(.is-separated) .fw-cut-edge{stroke:none}
+.fw-assembly[data-complete="true"]:not(.is-separated) .fw-joined-edge{display:block}
+.fw-assembly[data-complete="true"]:not(.is-separated) .fw-whole-outline{visibility:hidden}
+.fw-pile-weight[data-slot="1"]{left:0}.fw-pile-weight[data-slot="2"]{left:44px}.fw-pile-weight[data-slot="3"]{left:88px}
+.fw-pile-weight[data-slot="4"]{left:22px;bottom:34px}.fw-pile-weight[data-slot="5"]{left:66px;bottom:34px}
+.fw-count-plaque{border:2px solid #bf9b5d;background:linear-gradient(155deg,#21473f,#172f2d);color:#fff0c6;padding:5px 8px;border-radius:22px;font:700 12px/1.2 Georgia,serif;align-self:center}
+.fw-empty{color:#d8c8aa;font-style:italic;align-self:center}
+@media(prefers-reduced-motion:reduce){.fw-piece{transition:none!important}}
