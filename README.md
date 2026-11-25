@@ -50,15 +50,20 @@ In Stages 1 and 2, **comic-book panels appear automatically** after physical suc
 - [World 2: The Opposite Chambers — original signed campaign](docs/PR36_OPPOSITE_CHAMBERS.md)
 - [World 2: four new Guided signed-crate/bracket puzzles (PR57)](docs/PR57_SEALED_OPPOSITES.md)
 - [World 2: Independent and Algebra Apprentice signed-crate chapters (PR58)](docs/PR58_WORLD2_CRATES_INDEPENDENT_APPRENTICE.md)
+- [World 3 release audit](docs/PR68_WORLD3_RELEASE_AUDIT.md)
+- [World 4 custom Equation Workshop](docs/PR77_SQUARE_EQUATION_WORKSHOP.md)
+- [World 4 final curriculum and release audit](docs/PR78_WORLD4_RELEASE_AUDIT.md)
 
 ## Play the game
 
-The homepage provides a direct **Play / Continue** button, one-tap stage shortcuts and a two-click route via **Choose a level** to any implemented experiment. The Hall of Doors lets students explore two distinct playable worlds; Fractions and Squares remain visible but locked until their curriculums are ready. World and stage selections, last-played locations, completion and best stars are kept separately.
+The homepage provides a direct **Play / Continue** button, one-tap stage shortcuts and a two-click route via **Choose a level** to any implemented experiment. The Experiment Board gives immediate access to all four playable worlds: 240 levels and 720 attainable stars. World and stage selections, last-played locations, completion and best stars are kept separately.
 
 | World | Guided | Independent | Algebra Apprentice | Curriculum |
 |---|---:|---:|---:|---|
 | Balance Workshop | 24 | 20 | 16 | Positive whole-number linear equations and physical groups |
 | Opposite Chambers | 24 | 20 | 16 | Negative terms using white sprites and balloons, zero pairs, and signed crates in all modes |
+| Fraction Workshop | 24 | 20 | 16 | Exact rational quantities, shared denominators and fractional solutions |
+| Square Laboratory | 24 | 20 | 16 | Square areas, principal roots, completing the square and strategic quadratics |
 
 **Guided:** the hand mirrors each selected operation in both chambers, with an optional first-visit tutorial.
 

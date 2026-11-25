@@ -283,11 +283,22 @@ function flagsFor(level){
   const left=level.left,right=level.right;
   if(level.squareLaboratory){
     const variables=r=>sum(r,"posX2")+sum(r,"posX");
+    const complete=r=>{
+      const a=Math.sqrt(sum(r,"posX2")),b=Math.sqrt(sum(r,"posOne"));
+      return a>0&&b>0&&Number.isInteger(a)&&Number.isInteger(b)&&sum(r,"posX")===2*a*b;
+    };
+    const reference=SQUARE_REFERENCES.get(level.id)||[];
+    // Distinguish mixed quadratic expressions from an already complete
+    // square. A corner-filling route requires positive weights BEFORE root.
+    const rootIndex=reference.findIndex(step=>step.op==="sqrt");
+    const completesCorner=rootIndex>0&&reference.slice(0,rootIndex).some(step=>step.op==="add"&&step.kind==="posOne");
     return Object.freeze({variablesOnBothSides:variables(left)>0&&variables(right)>0,
       reversed:variables(right)>variables(left),negativeUnits:false,negativeSprites:false,
       sealedCrates:false,fractionTrap:false,alternativeRoutes:false,independentlyMatchedHands:false,
       squareBuild:level.goal==="area",quadraticTerms:sum(left,"posX2")+sum(right,"posX2")>0,
-      mixedSquare:level.goal!=="area"&&[left,right].some(r=>sum(r,"posX2")>0&&sum(r,"posX")>0),
+      mixedExpression:level.goal!=="area"&&[left,right].some(r=>sum(r,"posX2")>0&&sum(r,"posX")>0),
+      mixedSquare:level.goal!=="area"&&[left,right].some(complete),
+      completesCorner,
       inspectionFrame:!!level.squareInspection});
   }
   if(level.quantityMode==="fractions"){
@@ -345,6 +356,10 @@ function makeEntry(worldId,stage,slot){
   if(flags.fractionalSolution)skills.add("fraction-solutions");
   if(flags.mixedDenominators)skills.add("fraction-equivalence");
   if(worldId==="fractions"&&stage==="notebook")skills.add("fraction-notation");
+  if(worldId==="squares"){
+    if(flags.squareBuild)skills.add("square-area");else skills.add("principal-root");
+    if(flags.completesCorner)skills.add("complete-square");
+  }
   if(stage==="independent")skills.add("matched-hands");
   if(stage==="notebook")skills.add("written-operations");
   const skillIds=freezeList(skills);
@@ -392,7 +407,7 @@ function makeEntry(worldId,stage,slot){
     id:level.id,worldId,stage,number,title:level.title,chapterIndex,
     contentRevision:level.contentRevision||1,
     chapterTitle:definition.title,learningObjective:definition.objective,
-    strand:"Algebra: solving equations",skillIds,prerequisiteSkillIds,
+    strand:flags.squareBuild?"Algebra: squaring expressions":"Algebra: solving equations",skillIds,prerequisiteSkillIds,
     difficulty,flags
   });
 }
