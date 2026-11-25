@@ -1,5 +1,5 @@
 /**
- * Curriculum planning catalogue for the 204 SHIPPED campaign levels.
+ * Curriculum planning catalogue for the 224 SHIPPED campaign levels.
  *
  * This module is for curriculum authors, reviewers and diagnostics. It is NOT
  * imported by the student game or menus: a difficulty or reference route must
@@ -210,6 +210,13 @@ export const CURRICULUM_CHAPTERS=Object.freeze({
       chapter("The Four Regions","Recognise and reconstruct mixed square regions to recover a side",["square-area","principal-root"]),
       chapter("Missing Corners","Choose equal additions that fill the missing constant corner",["complete-square","principal-root"]),
       chapter("Master of Squares","Choose a multi-step strategy for a whole-object quadratic balance",["quadratic-strategy","strategy-choice"])
+    ]),
+    independent:Object.freeze([
+      chapter("The Two-Handed Press","Independently choose and match square constructions and principal roots",["matched-hands","square-area","principal-root"]),
+      chapter("Restore the Balance","Clear equal objects and share whole groups before recovering a side",["matched-hands","square-isolation","principal-root"]),
+      chapter("Rebuilding the Square","Recognise mixed complete squares and match transformations in both rooms",["matched-hands","square-area","principal-root"]),
+      chapter("Complete the Picture","Choose a candidate side and complete the square with equal additions",["matched-hands","complete-square","principal-root"]),
+      chapter("Independent Mastery","Choose and match a multi-step strategy for a quadratic balance",["matched-hands","quadratic-strategy","strategy-choice"])
     ])
   })
 });
@@ -236,7 +243,8 @@ export const DIFFICULTY_TIERS=Object.freeze({
     notebook:Object.freeze([2,2,2,3,3,3,3,4,3,3,4,4,4,4,5,5])
   }),
   squares:Object.freeze({
-    guided:Object.freeze([1,1,2,2,1,2,2,3,2,3,3,4,2,3,3,4,3,3,4,4,4,4,5,5])
+    guided:Object.freeze([1,1,2,2,1,2,2,3,2,3,3,4,2,3,3,4,3,3,4,4,4,4,5,5]),
+    independent:Object.freeze([2,2,2,2,2,3,3,4,3,3,4,4,3,4,4,4,4,4,5,5])
   })
 });
 

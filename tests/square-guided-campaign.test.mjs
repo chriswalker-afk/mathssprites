@@ -8,10 +8,10 @@ import {initialState,perform,isSolved,undo,balanceDifference,validInitialLevel} 
 import {shortestSquareRoute} from "../scripts/square-shortest-routes.mjs";
 import {blankCampaignRecords,campaignStarTotals,campaignStageRecord,campaignStars,withCampaignCompleted,withCampaignLastPlayed,campaignOptimalMoves,normalizeCampaignRecords,normalizeCampaignResume,stageResumeLevel,saveCampaignRecords,loadCampaignRecords,saveCampaignResume,loadCampaignResume} from "../src/campaign-records.mjs";
 
-test("World 4 publishes exactly 24 Guided slots with six chapters and stable IDs, locking the other stages",()=>{
+test("World 4 publishes exactly 24 Guided slots with six chapters and stable IDs, alongside the new Independent stage",()=>{
   const world=findCampaignWorld("squares");
   assert.equal(world.available,true);
-  assert.deepEqual(world.stages.map(s=>[s.id,s.available,s.count]),[["guided",true,24],["independent",false,20],["notebook",false,16]]);
+  assert.deepEqual(world.stages.map(s=>[s.id,s.available,s.count]),[["guided",true,24],["independent",true,20],["notebook",false,16]]);
   const guided=world.stages[0];
   assert.equal(guided.method,"auto");
   assert.equal(guided.chapters.length,6);
@@ -27,7 +27,7 @@ test("World 4 publishes exactly 24 Guided slots with six chapters and stable IDs
     assert.equal(campaignOptimalMoves("squares","guided",s.id),SQUARE_GUIDED_OPTIMAL_MOVES[i]);
     assert.equal(nextCampaignLevel("squares","guided",s.id)?.id,guided.levels[i+1]?.id);
   }
-  for(const stage of world.stages.slice(1)){
+  for(const stage of world.stages.filter(s=>!s.available)){
     assert.equal(stageResumeLevel(blankCampaignRecords(),"squares",stage.id),null);
     for(const s of stage.levels){
       assert.equal(isCampaignPlayable("squares",stage.id,s.id),false);
@@ -36,9 +36,9 @@ test("World 4 publishes exactly 24 Guided slots with six chapters and stable IDs
     }
   }
   assert.equal(SQUARE_CAMPAIGN_STAGES[0].available,true);
-  assert.deepEqual(campaignStarTotals(blankCampaignRecords(),{worldId:"squares"}),{earned:0,available:72,completed:0,count:24});
-  assert.equal(campaignStarTotals(blankCampaignRecords()).count,204);
-  assert.equal(campaignStarTotals(blankCampaignRecords()).available,612);
+  assert.deepEqual(campaignStarTotals(blankCampaignRecords(),{worldId:"squares"}),{earned:0,available:132,completed:0,count:44});
+  assert.equal(campaignStarTotals(blankCampaignRecords()).count,224);
+  assert.equal(campaignStarTotals(blankCampaignRecords()).available,672);
 });
 test("all 24 star targets are exact BFS minima and both the computed and authored routes work on the actual engine",()=>{
   for(const fixture of SQUARE_LEVEL_PLAN.filter(l=>l.stage==="guided")){
@@ -81,22 +81,22 @@ test("progress, best scores and resume belong to World 4 only and survive reload
   assert.equal(campaignStars(records,"squares","guided","square-g-18"),3);
   assert.equal(campaignStageRecord(records,"squares","guided").lastPlayed,"square-g-19");
   assert.deepEqual(Object.fromEntries(Object.entries(records.worlds).filter(([id])=>id!=="squares")),earlier);
-  const locked=withCampaignCompleted(records,"squares","independent","square-i-01",1);
+  const locked=withCampaignCompleted(records,"squares","notebook","square-a-01",1);
   assert.deepEqual(locked,records);
   saveCampaignRecords(records,store);
   saveCampaignResume({worldId:"squares",stageId:"guided",levelId:"square-g-19"},store);
   assert.deepEqual(loadCampaignRecords(store),records);
   assert.deepEqual(loadCampaignResume(store),{worldId:"squares",stageId:"guided",levelId:"square-g-19"});
   const tampered=JSON.parse(JSON.stringify(records));
-  tampered.worlds.squares.stages.independent.completed=["square-i-01"];
-  tampered.worlds.squares.stages.independent.bestMoves={"square-i-01":1};
+  tampered.worlds.squares.stages.notebook.completed=["square-a-01"];
+  tampered.worlds.squares.stages.notebook.bestMoves={"square-a-01":1};
   assert.deepEqual(normalizeCampaignRecords(tampered),records);
 });
 test("each completion adds one distinct guided record and all 72 stars are attainable",()=>{
   let data=blankCampaignRecords();
   for(const slot of findCampaignStage("squares","guided").levels)
     data=withCampaignCompleted(data,"squares","guided",slot.id,campaignOptimalMoves("squares","guided",slot.id));
-  assert.deepEqual(campaignStarTotals(data,{worldId:"squares"}),{earned:72,available:72,completed:24,count:24});
+  assert.deepEqual(campaignStarTotals(data,{worldId:"squares"}),{earned:72,available:132,completed:24,count:44});
   assert.equal(campaignStageRecord(data,"squares","guided").lastPlayed,"square-g-24");
   assert.deepEqual(campaignStageRecord(data,"squares","independent").completed,[]);
   assert.deepEqual(campaignStageRecord(data,"squares","notebook").completed,[]);
