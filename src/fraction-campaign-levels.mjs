@@ -1,4 +1,4 @@
-/** World 3 campaign definitions. Only Guided is published by PR64.
+/** World 3 campaign definitions. Guided and Independent are published; Apprentice remains locked.
  * Reference routes stay in fraction-level-plan.mjs, never in the controls. */
 import {FRACTION_LEVEL_PLAN} from "./fraction-level-plan.mjs";
 import {FRACTION_KINDS,FRACTION_OPERATIONS} from "./fraction-engine.mjs";
@@ -72,9 +72,10 @@ const chapters={
   ]
 };
 const names=["Share the spare weight","Three equal shares","Four equal shares","Five equal shares","A half weight","Two thirds to remove","Borrow a whole","Fifths on the other side","Halves and quarters","Halves and thirds","Eighths and quarters","Fifths and halves","Half a sprite","One third of a sprite","Three quarters of a sprite","Two fifths of a sprite","A half and a whole weight","Thirds and weights","Three quarters and a half","The other chamber","Sprites on both sides","Quarter sprite exchange","A sixth remains","The twelfths challenge"];
+const independentNames=["Two baskets, seven weights","Three equal baskets","Four equal baskets","Five shares in reverse","Remove three quarters","Two fifths to remove","Thirds and halves","Quarters and thirds","Rebuild the half","Rebuild the thirds","Rebuild the quarters","Fifths in the east","A half to remove","Half a sprite and quarters","Thirds and fifths","Quarters and thirds","Match the half sprites","Match the quarter sprites","Across the chambers","The twelfths balance"];
 const stageData={
   guided:{title:"Guided Fractions",tagline:"Discover the value of every piece.",intro:"Choose a move. The hand mirrors it in both chambers.",finale:"All 24 Guided fraction experiments complete!",icon:"½",method:"auto",emblems:["÷","½","⅙","⅔","✦","⇄"]},
-  independent:{title:"Independent Fractions",tagline:"Match each fractional move.",intro:"Change one chamber, then match the move in the other.",icon:"⇄",method:"manual",emblems:["÷","½","⅔","✦","⇄"]},
+  independent:{title:"Independent Fractions",tagline:"Match each fractional move.",intro:"Choose a move for one chamber, then independently choose its match in the other.",finale:"All 20 Independent fraction experiments complete!",icon:"⇄",method:"manual",emblems:["÷","½","⅔","✦","⇄"]},
   notebook:{title:"Fractional Algebra Apprentice",tagline:"Write exact fractional operations.",intro:"Record operations using exact fractions.",icon:"✎",method:"notebook",emblems:["✎","½","≡","✦"]}
 };
 /** Lower bound for any legal route. A successful route scales |a-c| to
@@ -100,11 +101,11 @@ export function fractionMoveLowerBound(level){
   return shared+fractionScalingLowerBound(rsub(level.left.posX,level.right.posX));
 }
 function stageDefinition(id,index){
-  const available=id==="guided";
+  const available=id!=="notebook";
   const definitions=chapters[id].map(([title,description],i)=>Object.freeze({id:id+"-chapter-"+String(i+1).padStart(2,"0"),title,description}));
   const levels=FRACTION_LEVEL_PLAN.filter(l=>l.stage===id).map(fixture=>{
     const {reference,stage,...raw}=fixture;
-    const title=id==="guided"?names[raw.number-1]:definitions[raw.chapterIndex].title+" "+((raw.number-1)%4+1);
+    const title=id==="guided"?names[raw.number-1]:id==="independent"?independentNames[raw.number-1]:definitions[raw.chapterIndex].title+" "+((raw.number-1)%4+1);
     const level=Object.freeze({...raw,title,contentRevision:1,allowedKinds:FRACTION_KINDS,
       allowedOperations:FRACTION_OPERATIONS,prompt:"Leave one whole sprite facing only weights."});
     return Object.freeze({id:raw.id,number:raw.number,title,chapterIndex:raw.chapterIndex,available,level});

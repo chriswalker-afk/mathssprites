@@ -8,10 +8,10 @@ import {initialState,perform,isSolved,validInitialLevel} from "../src/engine.mjs
 import {fractionEquationMarkup,fractionOperationMarkup,fractionComicMarkup} from "../src/fraction-campaign.mjs";
 import {rational as q} from "../src/rational.mjs";
 
-test("World 3 exposes 24 Guided puzzles in six chapters and locks the two future modes",()=>{
+test("World 3 exposes Guided and Independent puzzles and locks Apprentice",()=>{
   const world=findCampaignWorld("fractions");
   assert.equal(world.available,true);
-  assert.deepEqual(world.stages.map(s=>s.available),[true,false,false]);
+  assert.deepEqual(world.stages.map(s=>s.available),[true,true,false]);
   assert.deepEqual(world.stages.map(s=>s.levels.length),[24,20,16]);
   const stage=findCampaignStage("fractions","guided");
   assert.equal(stage.chapters.length,6);
@@ -23,7 +23,7 @@ test("World 3 exposes 24 Guided puzzles in six chapters and locks the two future
     assert.equal(slot.level.quantityMode,"fractions");
     assert.equal(Object.hasOwn(slot.level,"reference"),false);
   }
-  assert.equal(isCampaignPlayable("fractions","independent",1),false);
+  assert.equal(isCampaignPlayable("fractions","independent",1),true);
   assert.equal(isCampaignPlayable("fractions","notebook",1),false);
   assert.equal(nextCampaignLevel("fractions","guided",1).number,2);
   assert.equal(nextCampaignLevel("fractions","guided",24),null);
@@ -58,13 +58,13 @@ test("World 3 completion, stars and resume are isolated from old worlds and futu
   assert.deepEqual(campaignStageRecord(data,"fractions","guided").completed,[first.id]);
   assert.equal(campaignStageRecord(data,"fractions","guided").lastPlayed,second.id);
   assert.equal(campaignStars(data,"fractions","guided",first.id),3);
-  assert.deepEqual(campaignStarTotals(data,{worldId:"fractions"}),{earned:3,available:72,completed:1,count:24});
-  assert.equal(campaignStarTotals(data).available,432);
+  assert.deepEqual(campaignStarTotals(data,{worldId:"fractions"}),{earned:3,available:132,completed:1,count:44});
+  assert.equal(campaignStarTotals(data).available,492);
   assert.deepEqual(campaignStageRecord(data,"workshop","guided").completed,[]);
   assert.deepEqual(campaignStageRecord(data,"opposites","guided").completed,[]);
   assert.equal(normalizeCampaignResume({worldId:"fractions",stageId:"guided",levelId:second.id}).levelId,second.id);
-  assert.equal(normalizeCampaignResume({worldId:"fractions",stageId:"independent",levelId:"frac-i-01"}),null);
-  assert.deepEqual(withCampaignCompleted(data,"fractions","independent","frac-i-01",1),data);
+  assert.equal(normalizeCampaignResume({worldId:"fractions",stageId:"notebook",levelId:"frac-a-01"}),null);
+  assert.deepEqual(withCampaignCompleted(data,"fractions","notebook","frac-a-01",1),data);
 });
 test("fraction comic replay shows exact before/after artwork and MathML rather than rounded decimals",()=>{
   const slot=findCampaignLevel("fractions","guided",1);
