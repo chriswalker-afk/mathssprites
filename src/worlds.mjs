@@ -186,7 +186,7 @@ export const WORLDS = Object.freeze([
     description:"A tiny piece can finally have its own mathematical value.",available:true },
   { id:"squares",number:4,title:"The Square Laboratory",
     subtitle:"Squares and square roots",theme:"square",
-    description:"Build squares inside the chamber, then work backwards.",available:false }
+    description:"Build squares inside the chamber, then work backwards.",available:true }
 ]);
 
 export function findWorld1Level(number) {

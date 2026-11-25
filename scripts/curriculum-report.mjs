@@ -7,6 +7,7 @@
  */
 import {canonical,room,initialState,equation as exactEquation} from "../src/engine.mjs";
 import {FRACTION_CAMPAIGN_STAGES} from "../src/fraction-campaign-levels.mjs";
+import {SQUARE_CAMPAIGN_STAGES} from "../src/square-campaign-levels.mjs";
 import {WORLD1_LEVELS} from "../src/worlds.mjs";
 import {INDEPENDENT_LEVELS} from "../src/independent-levels.mjs";
 import {APPRENTICE_LEVELS} from "../src/apprentice-levels.mjs";
@@ -16,7 +17,8 @@ import {CURRICULUM_LEVELS,CURRICULUM_CHAPTERS} from "../src/curriculum.mjs";
 const sources={
   workshop:{guided:WORLD1_LEVELS,independent:INDEPENDENT_LEVELS,notebook:APPRENTICE_LEVELS},
   opposites:OPPOSITE_LEVELS,
-  fractions:Object.fromEntries(FRACTION_CAMPAIGN_STAGES.map(stage=>[stage.id,stage.levels]))
+  fractions:Object.fromEntries(FRACTION_CAMPAIGN_STAGES.map(stage=>[stage.id,stage.levels])),
+  squares:Object.fromEntries(SQUARE_CAMPAIGN_STAGES.filter(stage=>stage.available).map(stage=>[stage.id,stage.levels]))
 };
 const args=process.argv.slice(2);
 const argument=name=>{
@@ -66,7 +68,7 @@ if(asJSON){
     "# Maths Sprites — Curriculum and difficulty authoring report",
     "",
     "Covers "+rows.length+" playable campaign levels; mathematical equations appear here for teachers only.",
-    "Bands describe authored reasoning demand (1–5). All three worlds use proven minimum star targets under their legal game-engine actions. Authored example routes remain separate; World 3 uses an algebraic lower bound attained by a legal exact route.",
+    "Bands describe authored reasoning demand (1–5). All published stages use proven minimum star targets under their legal game-engine actions. Authored example routes remain separate; World 3 uses an algebraic lower bound attained by a legal exact route.",
     ""
   ];
   for(const [worldId,stages] of Object.entries(sources)){

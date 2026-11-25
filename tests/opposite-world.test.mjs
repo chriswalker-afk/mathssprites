@@ -32,7 +32,7 @@ test("World 2 includes six Guided chapters while preserving original stage ident
  assert.equal(world.available,true);
  assert.deepEqual(world.stages.map(s=>s.levels.length),[24,20,16]);
  assert.deepEqual(world.stages.map(s=>s.chapters.length),[6,5,4]);
- assert.deepEqual(CAMPAIGN_REGISTRY.map(x=>x.available),[true,true,true,false]);
+ assert.deepEqual(CAMPAIGN_REGISTRY.map(x=>x.available),[true,true,true,true]);
  for(const id of OPPOSITE_STAGE_ORDER){
    assert.equal(OPPOSITE_LEVELS[id].length,sizes[id]);
    assert.equal(OPPOSITE_CHAPTERS[id].length,sizes[id]/4);

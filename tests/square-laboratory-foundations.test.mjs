@@ -18,7 +18,7 @@ const checkScene=(state,id)=>{
     assert.ok(capacity(state[side])<=SQUARE_CAPACITY,id+" over capacity");
   }
 };
-test("World 4 defines exactly 60 stable, unpublished levels, nine area targets and no uncertified star thresholds",()=>{
+test("World 4 defines exactly 60 stable author fixtures, nine area targets and public Guided only",()=>{
   assert.deepEqual(SQUARE_CAMPAIGN_STAGES.map(s=>s.id),["guided","independent","notebook"]);
   assert.deepEqual(SQUARE_CAMPAIGN_STAGES.map(s=>s.levels.length),[24,20,16]);
   assert.deepEqual(SQUARE_CAMPAIGN_STAGES.map(s=>s.chapters.length),[6,5,4]);
@@ -40,17 +40,17 @@ test("World 4 defines exactly 60 stable, unpublished levels, nine area targets a
       assert.ok(Object.isFrozen(slot.level.allowedKinds));
       assert.deepEqual(slot.level.allowedKinds,SQUARE_KINDS);
       assert.deepEqual(slot.level.allowedOperations,SQUARE_OPERATIONS);
-      assert.equal(isCampaignPlayable("squares",stage.id,slot.id),false);
-      assert.equal(normalizeCampaignResume({worldId:"squares",stageId:stage.id,levelId:slot.id}),null);
+      assert.equal(isCampaignPlayable("squares",stage.id,slot.id),stage.id==="guided");
+      assert.deepEqual(normalizeCampaignResume({worldId:"squares",stageId:stage.id,levelId:slot.id}),stage.id==="guided"?{worldId:"squares",stageId:stage.id,levelId:slot.id}:null);
       assert.equal(isSolved(initialState(slot.level)),false,slot.id+" is prematurely solved");
     }
   }
-  assert.equal(findCampaignWorld("squares").available,false);
-  assert.equal(firstCampaignLevel("squares","guided"),null);
+  assert.equal(findCampaignWorld("squares").available,true);
+  assert.equal(firstCampaignLevel("squares","guided").id,"square-g-01");
   const records=blankCampaignRecords();
-  assert.deepEqual(withCampaignCompleted(records,"squares","guided","square-g-01",1),records);
-  assert.equal(campaignStarTotals(records).count,180);
-  assert.equal(campaignStarTotals(records).available,540);
+  assert.deepEqual(withCampaignCompleted(records,"squares","independent","square-i-01",1),records);
+  assert.equal(campaignStarTotals(records).count,204);
+  assert.equal(campaignStarTotals(records).available,612);
 });
 test("all sixty authored witnesses solve the actual engine, preserve balance, fit the chamber and undo exactly",()=>{
   let peak=0,maximum=0;
@@ -222,7 +222,7 @@ test("unsupported area attempts are reversible; matching failure cannot commit a
   assert.deepEqual(undo(oneSide.state),trial);
 });
 test("earlier public worlds retain their operation locks and legacy prototypes still work",()=>{
-  for(const world of CAMPAIGN_REGISTRY.filter(w=>w.available)){
+  for(const world of CAMPAIGN_REGISTRY.filter(w=>w.available&&w.id!=="squares")){
     for(const stage of world.stages.filter(s=>s.available)){
       for(const slot of stage.levels.filter(l=>l.available)){
         const state=initialState(slot.level);

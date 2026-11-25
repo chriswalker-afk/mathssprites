@@ -13,7 +13,7 @@ test("the foyer retains direct play and all three shortcuts @quick @smoke",async
   await expect(page.locator("#notebook-workspace")).toBeVisible();
 });
 
-test("the unified board offers three playable worlds, one locked future and current stage progress @quick @smoke",async({page})=>{
+test("the unified board offers four playable worlds and current stage progress @quick @smoke",async({page})=>{
   await page.locator('.site-nav-links [data-screen="levels"]').click();
   await expect(page.locator("#site-levels")).toBeVisible();
   await expect(page.locator("#site-levels")).toHaveAttribute("data-active-world","workshop");
@@ -21,7 +21,7 @@ test("the unified board offers three playable worlds, one locked future and curr
   await expect(page.locator('[data-map-world="workshop"]')).toBeEnabled();
   await expect(page.locator('[data-map-world="opposites"]')).toBeEnabled();
   await expect(page.locator('[data-map-world="fractions"]')).toBeEnabled();
-  await expect(page.locator('[data-map-world="squares"]')).toBeDisabled();
+  await expect(page.locator('[data-map-world="squares"]')).toBeEnabled();
   await expect(page.locator("#map-stage-tabs button")).toHaveCount(3);
   await expect(page.locator("#world1-progress-number")).toHaveText("0 of 24 complete");
   await page.locator('[data-map-stage="notebook"]').click();

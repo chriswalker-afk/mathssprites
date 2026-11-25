@@ -11,6 +11,7 @@ import {INDEPENDENT_LEVELS,INDEPENDENT_CHAPTERS} from "./independent-levels.mjs"
 import {APPRENTICE_LEVELS,APPRENTICE_CHAPTERS} from "./apprentice-levels.mjs";
 import {OPTIMAL_MOVES} from "./star-ratings.mjs";
 import {FRACTION_CAMPAIGN_STAGES} from "./fraction-campaign-levels.mjs";
+import {SQUARE_CAMPAIGN_STAGES} from "./square-campaign-levels.mjs";
 import {OPPOSITE_OPTIMAL_MOVES} from "./opposite-star-benchmarks.mjs";
 import {OPPOSITE_CHAPTERS,OPPOSITE_LEVELS,OPPOSITE_STAGE_ORDER,OPPOSITE_OPERATIONS,OPPOSITE_KINDS} from "./opposite-levels.mjs";
 
@@ -128,7 +129,8 @@ export const CAMPAIGN_REGISTRY=createCampaignRegistry(WORLDS.map(world=>({
   ...world,icon:{workshop:"⚖",opposites:"±",fractions:"½",squares:"□"}[world.id],
   stages:world.id==="workshop"?WORLD1_CAMPAIGN_STAGES:
     world.id==="opposites"?WORLD2_CAMPAIGN_STAGES:
-    world.id==="fractions"?FRACTION_CAMPAIGN_STAGES:[]
+    world.id==="fractions"?FRACTION_CAMPAIGN_STAGES:
+    world.id==="squares"?SQUARE_CAMPAIGN_STAGES:[]
 })));
 export function findCampaignWorld(worldId,registry=CAMPAIGN_REGISTRY){
   return registry.find(w=>w.id===worldId)||null;

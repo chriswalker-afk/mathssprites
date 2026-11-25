@@ -26,6 +26,9 @@ async function observe(page){
         window.rootStages.push({side,step,cells:Number(b.dataset.visibleCells),opacity:getComputedStyle(i).opacity,
           square:i.querySelectorAll(".sprite-square").length,round:i.querySelectorAll(".sprite-black").length,weight:i.querySelectorAll(".weight").length,
           top:b.querySelector(".box-edge-top")?.classList.contains("kept"),left:b.querySelector(".box-edge-left")?.classList.contains("retired"),
+          geometry:(()=>{const grid=b.querySelector(".box-grid").getBoundingClientRect(),room=b.closest(".room-interior").getBoundingClientRect();return {square:Math.abs(grid.width-grid.height)<2,inside:grid.left>=room.left-2&&grid.right<=room.right+2&&grid.top>=room.top-2&&grid.bottom<=room.bottom+2}})(),
+          removedBottom:b.querySelectorAll(".region-mixed-bottom.removed").length,
+          noMotion:getComputedStyle(b.querySelector(".box-cell .box-actor")).animationName==="none",
           released:b.dataset.released||null,
           hiddenActors:[...b.querySelectorAll(".box-cell .box-actor,.square-edge-actor")].every(a=>getComputedStyle(a).visibility==="hidden")});
       }).observe(b,{attributes:true,attributeFilter:["data-step","hidden"]});
@@ -37,16 +40,10 @@ test("mixed root arranges the existing complete area, retires every region, reta
   const errors=[];page.on("pageerror",e=>errors.push(e.message));
   await open(page);await observe(page);await chooseRoot(page);await page.locator("#do-both").click();
   const b=box(page);
-  await expect(b).toHaveAttribute("data-step","arrange");
-  await expect(b.locator(".box-cell.placed")).toHaveCount(25);
-  await shot(page,"arranged");
-  await expect(b).toHaveAttribute("data-step","mixed-bottom");
-  await expect(b.locator(".region-mixed-bottom.removed")).toHaveCount(6);
-  await expect(b).toHaveAttribute("data-step","edge");
-  await expect(b.locator(".box-edge-top.kept .box-edge-token")).toHaveCount(5);
-  await expect(b.locator(".box-edge-left.retired")).toHaveCount(1);
-  await shot(page,"one-side");
-  await expect(b).toHaveAttribute("data-released","true");
+  await expect.poll(()=>page.evaluate(()=>window.rootStages.some(r=>r.side==="left"&&r.step==="arrange"&&r.cells===25))).toBe(true);
+  await expect.poll(()=>page.evaluate(()=>window.rootStages.some(r=>r.side==="left"&&r.step==="mixed-bottom"&&r.removedBottom===6))).toBe(true);
+  await expect.poll(()=>page.evaluate(()=>window.rootStages.some(r=>r.side==="left"&&r.step==="edge"&&r.top&&r.left))).toBe(true);
+  await expect.poll(()=>page.evaluate(()=>window.rootStages.some(r=>r.side==="left"&&r.step==="result"&&r.released==="true"))).toBe(true);
   await expect(items(page).locator(".sprite-square")).toHaveCount(0);
   await expect(items(page).locator(".sprite-black")).toHaveCount(2);
   await expect(items(page).locator(".weight")).toHaveCount(3);
@@ -125,17 +122,13 @@ test("numeric root refusal retains leftover weights, and reduced-motion mobile r
   await expect(t.locator(".box-cell .box-actor")).toHaveCount(9);
   await shot(page,"leftover-weights-phone");
   await expect(t).toBeHidden({timeout:12000});
-  await open(page,"mixed-root",true);
+  await open(page,"mixed-root",true);await observe(page);
   await page.locator("#mode-select").selectOption("manual");await chooseRoot(page);
   await page.locator("#left-action").click();
-  await expect(box(page)).toHaveAttribute("data-step","arrange");
-  const geometry=await box(page).locator(".box-grid").evaluate(el=>{
-    const a=el.getBoundingClientRect(),b=el.closest(".room-interior").getBoundingClientRect();
-    return {square:Math.abs(a.width-a.height)<2,inside:a.left>=b.left-2&&a.right<=b.right+2&&a.top>=b.top-2&&a.bottom<=b.bottom+2};
-  });
-  expect(geometry).toEqual({square:true,inside:true});
-  await expect(box(page).locator(".box-cell.placed .box-actor").first()).toHaveCSS("animation-name","none");
+  await expect.poll(()=>page.evaluate(()=>window.rootStages.find(r=>r.side==="left"&&r.step==="arrange")?.geometry)).toEqual({square:true,inside:true});
+  expect(await page.evaluate(()=>window.rootStages.find(r=>r.side==="left"&&r.step==="arrange")?.noMotion)).toBe(true);
   await expect(box(page)).toBeHidden({timeout:12000});
+  await shot(page,"phone-reduced-root");
   await expect(items(page).locator(".sprite-black")).toHaveCount(2);
   await expect(items(page,"right").locator(".weight")).toHaveCount(25);
   await chooseRoot(page);await page.locator("#right-action").click();

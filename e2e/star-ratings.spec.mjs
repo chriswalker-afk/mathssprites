@@ -31,7 +31,7 @@ test.beforeEach(async({page})=>{
   await page.goto("/");
 });
 
-test("all 60 World 1 levels remain selectable with unrated stars and future worlds locked @quick @smoke",async({page})=>{
+test("all 60 World 1 levels remain selectable with unrated stars and the new Guided Squares world available @quick @smoke",async({page})=>{
   await stages(page);
   for(const [stage,n] of [["guided",24],["independent",20],["notebook",16]]){
     await expect(page.locator('[data-map-stage="'+stage+'"]')).toBeEnabled();
@@ -45,7 +45,7 @@ test("all 60 World 1 levels remain selectable with unrated stars and future worl
   }
   await expect(page.locator('#site-levels [data-screen="workshop"]')).toBeVisible();
   await expect(page.locator('[data-map-world="fractions"]')).toBeEnabled();
-  await expect(page.locator('[data-map-world="squares"]')).toBeDisabled();
+  await expect(page.locator('[data-map-world="squares"]')).toBeEnabled();
 });
 
 test("two-step solution earns two stars; replaying optimally upgrades the best rating @smoke",async({page})=>{

@@ -11,6 +11,8 @@ import {OPPOSITE_OPTIMAL_MOVES} from "../src/opposite-star-benchmarks.mjs";
 import {OPTIMAL_MOVES} from "../src/star-ratings.mjs";
 import {FRACTION_CAMPAIGN_STAGES} from "../src/fraction-campaign-levels.mjs";
 import {FRACTION_LEVEL_PLAN} from "../src/fraction-level-plan.mjs";
+import {SQUARE_LEVEL_PLAN} from "../src/square-level-plan.mjs";
+import {SQUARE_CAMPAIGN_STAGES} from "../src/square-campaign-levels.mjs";
 import {
   CURRICULUM_SKILLS,CURRICULUM_CHAPTERS,CURRICULUM_LEVELS,
   ALL_CURRICULUM_LEVELS,DIFFICULTY_BANDS,DIFFICULTY_TIERS,
@@ -20,13 +22,14 @@ import {
 const sources={
   workshop:{guided:WORLD1_LEVELS,independent:INDEPENDENT_LEVELS,notebook:APPRENTICE_LEVELS},
   opposites:OPPOSITE_LEVELS,
-  fractions:Object.fromEntries(FRACTION_CAMPAIGN_STAGES.map(stage=>[stage.id,stage.levels]))
+  fractions:Object.fromEntries(FRACTION_CAMPAIGN_STAGES.map(stage=>[stage.id,stage.levels])),
+  squares:Object.fromEntries(SQUARE_CAMPAIGN_STAGES.filter(stage=>stage.available).map(stage=>[stage.id,stage.levels]))
 };
 
 test("every shipped level has exactly one addressable, immutable curriculum record",()=>{
-  assert.equal(ALL_CURRICULUM_LEVELS.length,180);
-  assert.equal(new Set(ALL_CURRICULUM_LEVELS.map(row=>row.id)).size,180);
-  assert.deepEqual(Object.keys(CURRICULUM_LEVELS),["workshop","opposites","fractions"]);
+  assert.equal(ALL_CURRICULUM_LEVELS.length,204);
+  assert.equal(new Set(ALL_CURRICULUM_LEVELS.map(row=>row.id)).size,204);
+  assert.deepEqual(Object.keys(CURRICULUM_LEVELS),["workshop","opposites","fractions","squares"]);
   for(const [worldId,stages] of Object.entries(sources)){
     for(const [stage,slots] of Object.entries(stages)){
       const rows=CURRICULUM_LEVELS[worldId][stage];
@@ -93,6 +96,14 @@ test("difficulty has five deliberate planning bands, a benchmark and physical ev
         if(worldId==="workshop"){
           assert.equal(signals.benchmarkMoves,OPTIMAL_MOVES[stage][index]);
           assert.equal(signals.benchmarkType,"proven-minimum");
+        }else if(worldId==="squares"){
+          const target=SQUARE_CAMPAIGN_STAGES.find(s=>s.id===stage).optimalMoves[slot.id];
+          const reference=SQUARE_LEVEL_PLAN.find(l=>l.id===slot.id).reference;
+          assert.equal(signals.benchmarkMoves,target);
+          assert.equal(signals.benchmarkType,"proven-minimum");
+          assert.equal(signals.authoredRouteMoves,reference.length);
+          assert.deepEqual(signals.referenceOperations,[...new Set(reference.map(step=>step.op))]);
+          assert.ok(signals.initialPeakObjects<=48);
         }else if(worldId==="fractions"){
           const target=FRACTION_CAMPAIGN_STAGES.find(s=>s.id===stage).optimalMoves[slot.id];
           const reference=FRACTION_LEVEL_PLAN.find(l=>l.id===slot.id).reference;
@@ -163,7 +174,7 @@ test("teacher report actually renders every canonical equation and supports filt
   const script=fileURLToPath(new URL("../scripts/curriculum-report.mjs",import.meta.url));
   const output=execFileSync(process.execPath,[script,"--json"],{encoding:"utf8"});
   const report=JSON.parse(output);
-  assert.equal(report.count,180);
+  assert.equal(report.count,204);
   assert.equal(report.levels.find(x=>x.id==="master-19").equation,"2x + 6 = 14");
   assert.equal(report.levels.find(x=>x.id==="op-g-01").equation,"x − 1 = 3");
   const filtered=JSON.parse(execFileSync(process.execPath,

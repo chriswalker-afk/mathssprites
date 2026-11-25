@@ -33,6 +33,7 @@ async function observeStages(page){
           originalSquare:items.querySelectorAll(".sprite-square").length,
           weights:items.querySelectorAll(".weight").length,
           guideCount:box.querySelectorAll(".box-edge-token[data-non-counting=true]").length,
+          mixedTop:box.querySelectorAll(".region-mixed-top.placed").length,
           released:box.dataset.released||null,
           hiddenActors:actors.every(a=>getComputedStyle(a).visibility==="hidden")});
       }).observe(box,{attributes:true,attributeFilter:["data-step","hidden"]});
@@ -44,11 +45,9 @@ test("mixed square transfers the original row, fills each region and releases on
   const errors=[];page.on("pageerror",e=>errors.push(e.message));
   await open(page);await observeStages(page);await chooseSquare(page);
   await page.locator("#do-both").click();
-  await expect(left(page)).toHaveAttribute("data-step","mixed-top");
-  await expect(left(page).locator(".region-mixed-top.placed")).toHaveCount(6);
-  await expect(left(page)).toHaveAttribute("data-step","units");
-  await shot(page,"four-regions");
-  await expect(left(page)).toHaveAttribute("data-released","true");
+  await expect.poll(()=>page.evaluate(()=>window.squareStageQA.some(r=>r.side==="left"&&r.step==="mixed-top"&&r.mixedTop===6))).toBe(true);
+  await expect.poll(()=>page.evaluate(()=>window.squareStageQA.some(r=>r.side==="left"&&r.step==="units"&&r.cells===25))).toBe(true);
+  await expect.poll(()=>page.evaluate(()=>window.squareStageQA.some(r=>r.side==="left"&&r.step==="result"&&r.released==="true"))).toBe(true);
   await expect(west(page).locator(".sprite-square")).toHaveCount(4);
   await expect(west(page).locator(".sprite-black")).toHaveCount(12);
   await expect(west(page).locator(".weight")).toHaveCount(9);
