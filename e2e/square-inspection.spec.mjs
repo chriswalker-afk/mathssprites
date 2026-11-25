@@ -157,7 +157,7 @@ test("guided fallback offers manual side selection, mobile stays within the room
   await choose(page,"remove","posX2",1);
   await expect(page.locator('#object-picker [data-kind="posX2"]')).toBeEnabled();
 });
-test("earlier chapters and worlds have no inspection tool; Guided and Independent are published and Apprentice preview is not exposed",async({page})=>{
+test("earlier chapters and worlds have no inspection tool; all stages are published but Apprentice direct inspection preview is not exposed",async({page})=>{
   await open(page,"square-g-05");
   await expect(toggle(page)).toBeHidden();
   await page.goto("/?preview=resident");
@@ -168,7 +168,7 @@ test("earlier chapters and worlds have no inspection tool; Guided and Independen
   await expect(page.locator('[data-map-world="squares"]')).toBeEnabled();
   await page.locator('[data-map-world="squares"]').click();
   await expect(page.locator('[data-map-stage="independent"]')).toBeEnabled();
-  await expect(page.locator('[data-map-stage="notebook"]')).toBeDisabled();
+  await expect(page.locator('[data-map-stage="notebook"]')).toBeEnabled();
   await page.locator('[data-map-world="workshop"]').click();
   await page.locator('[data-map-stage="guided"]').click();
   await page.locator('#level-sections [data-level="1"]').click();

@@ -1,5 +1,5 @@
 /**
- * Curriculum planning catalogue for the 224 SHIPPED campaign levels.
+ * Curriculum planning catalogue for the 240 SHIPPED campaign levels.
  *
  * This module is for curriculum authors, reviewers and diagnostics. It is NOT
  * imported by the student game or menus: a difficulty or reference route must
@@ -217,6 +217,12 @@ export const CURRICULUM_CHAPTERS=Object.freeze({
       chapter("Rebuilding the Square","Recognise mixed complete squares and match transformations in both rooms",["matched-hands","square-area","principal-root"]),
       chapter("Complete the Picture","Choose a candidate side and complete the square with equal additions",["matched-hands","complete-square","principal-root"]),
       chapter("Independent Mastery","Choose and match a multi-step strategy for a quadratic balance",["matched-hands","quadratic-strategy","strategy-choice"])
+    ]),
+    notebook:Object.freeze([
+      chapter("Writing Squares and Roots","Write whole-expression squares and principal-root operations on both sides",["written-operations","square-area","principal-root"]),
+      chapter("Recognising Square Expressions","Record exact legal changes before recovering a square side",["written-operations","square-isolation","principal-root"]),
+      chapter("Completing the Square","Record equal additions and a principal root without a visual inspection scaffold",["written-operations","complete-square","principal-root"]),
+      chapter("Strategic Quadratics","Write and verify a multi-step quadratic strategy before physical replay",["written-operations","quadratic-strategy","strategy-choice"])
     ])
   })
 });
@@ -244,7 +250,8 @@ export const DIFFICULTY_TIERS=Object.freeze({
   }),
   squares:Object.freeze({
     guided:Object.freeze([1,1,2,2,1,2,2,3,2,3,3,4,2,3,3,4,3,3,4,4,4,4,5,5]),
-    independent:Object.freeze([2,2,2,2,2,3,3,4,3,3,4,4,3,4,4,4,4,4,5,5])
+    independent:Object.freeze([2,2,2,2,2,3,3,4,3,3,4,4,3,4,4,4,4,4,5,5]),
+    notebook:Object.freeze([2,2,2,3,3,4,3,3,3,4,4,4,4,4,5,5])
   })
 });
 

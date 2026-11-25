@@ -18,7 +18,7 @@ const checkScene=(state,id)=>{
     assert.ok(capacity(state[side])<=SQUARE_CAPACITY,id+" over capacity");
   }
 };
-test("World 4 defines exactly 60 stable author fixtures, nine area targets and public Guided and Independent",()=>{
+test("World 4 defines exactly 60 stable author fixtures, nine area targets and all three stages publicly available",()=>{
   assert.deepEqual(SQUARE_CAMPAIGN_STAGES.map(s=>s.id),["guided","independent","notebook"]);
   assert.deepEqual(SQUARE_CAMPAIGN_STAGES.map(s=>s.levels.length),[24,20,16]);
   assert.deepEqual(SQUARE_CAMPAIGN_STAGES.map(s=>s.chapters.length),[6,5,4]);
@@ -40,17 +40,17 @@ test("World 4 defines exactly 60 stable author fixtures, nine area targets and p
       assert.ok(Object.isFrozen(slot.level.allowedKinds));
       assert.deepEqual(slot.level.allowedKinds,SQUARE_KINDS);
       assert.deepEqual(slot.level.allowedOperations,SQUARE_OPERATIONS);
-      assert.equal(isCampaignPlayable("squares",stage.id,slot.id),stage.id!=="notebook");
-      assert.deepEqual(normalizeCampaignResume({worldId:"squares",stageId:stage.id,levelId:slot.id}),stage.id!=="notebook"?{worldId:"squares",stageId:stage.id,levelId:slot.id}:null);
+      assert.equal(isCampaignPlayable("squares",stage.id,slot.id),true);
+      assert.deepEqual(normalizeCampaignResume({worldId:"squares",stageId:stage.id,levelId:slot.id}),{worldId:"squares",stageId:stage.id,levelId:slot.id});
       assert.equal(isSolved(initialState(slot.level)),false,slot.id+" is prematurely solved");
     }
   }
   assert.equal(findCampaignWorld("squares").available,true);
   assert.equal(firstCampaignLevel("squares","guided").id,"square-g-01");
   const records=blankCampaignRecords();
-  assert.deepEqual(withCampaignCompleted(records,"squares","notebook","square-a-01",1),records);
-  assert.equal(campaignStarTotals(records).count,224);
-  assert.equal(campaignStarTotals(records).available,672);
+  assert.deepEqual(withCampaignCompleted(records,"squares","notebook","square-a-99",1),records);
+  assert.equal(campaignStarTotals(records).count,240);
+  assert.equal(campaignStarTotals(records).available,720);
 });
 test("all sixty authored witnesses solve the actual engine, preserve balance, fit the chamber and undo exactly",()=>{
   let peak=0,maximum=0;
@@ -111,7 +111,7 @@ test("all sixty authored witnesses solve the actual engine, preserve balance, fi
 });
 test("every reference move is atomic in both independent visit orders",()=>{
   // All three fixture groups can use the same exact physical replay;
-  // notebook UI/editor integration is deliberately left for PR76.
+  // Check every other world's existing capability contract.
   for(const fixture of SQUARE_LEVEL_PLAN){
     const initial=initialState(squareLevelForPlay(fixture));
     let state=initial;

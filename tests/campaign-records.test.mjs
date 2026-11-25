@@ -56,8 +56,8 @@ test("previewing a stage and changing last-played never grants a completion or s
   assert.deepEqual(campaignStageRecord(after,"workshop","independent").completed,[]);
   assert.equal(campaignStarTotals(after).earned,0);
   assert.equal(campaignStarTotals(after).completed,0);
-  assert.equal(campaignStarTotals(after).count,224);
-  assert.equal(campaignStarTotals(after).available,672);
+  assert.equal(campaignStarTotals(after).count,240);
+  assert.equal(campaignStarTotals(after).available,720);
   assert.equal(saveCampaignResume({worldId:"workshop",stageId:"independent",
     levelId:stage.levels[6].id},store).levelId,"independent-07");
   assert.equal(store.map.has(RESUME_KEY),false,

@@ -11,6 +11,7 @@ import {
   initialState, perform, isSolved, undo, canonical,
   equation, validInitialLevel, algebraOperation
 } from "./engine.mjs";
+import {validSquareLaboratoryLevel} from "./square-rules.mjs";
 
 export const NOTEBOOK_MAX_STEPS = 16;
 export const NOTEBOOK_MAX_INPUT = 80;
@@ -88,6 +89,15 @@ export function notebookCandidates() {
 const CANDIDATES=Object.freeze(notebookCandidates());
 
 export function startNotebook(level) {
+  // World 4 accepts its explicitly authorised area or unique nonnegative
+  // quadratic goal; the ordinary notebook retains its linear restriction.
+  if(level?.squareLaboratory===true){
+    if(!validSquareLaboratoryLevel(level)||!validInitialLevel(level))
+      throw new RangeError("The Square Laboratory notebook needs a valid whole-object square goal or quadratic balance.");
+    const state=initialState(level);
+    if(isSolved(state))throw new RangeError("This equation is already complete.");
+    return {level,state,steps:[]};
+  }
   const positive=level?.lockPositive&&level.quantityMode==="positive";
   const signed=!level?.lockPositive&&level?.quantityMode==="signed";
   if((!positive&&!signed) ||
@@ -107,6 +117,8 @@ export function startNotebook(level) {
 export function tryNotebookLine(session,text) {
   if(!session?.level||!session.state||!Array.isArray(session.steps))
     return error("session","Start a notebook experiment first.");
+  if(session.level.squareLaboratory)
+    return error("square-editor","Choose one operation for both sides in the Square Laboratory maths editor.");
   if(session.level.quantityMode==="signed")
     return error("signed-editor","Use the signed operation-first editor: choose +, −, × or ÷ for both sides.");
   if(isSolved(session.state))

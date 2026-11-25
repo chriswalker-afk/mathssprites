@@ -106,8 +106,8 @@ test("fraction notebook saves remain isolated and totals are 60 levels and 180 s
   for(const world of ["workshop","opposites"])assert.deepEqual(campaignStageRecord(state,world,"notebook").completed,[]);
   assert.deepEqual(campaignStarTotals(state,{worldId:"fractions",stageId:"notebook"}),{earned:3,available:48,completed:1,count:16});
   assert.deepEqual(campaignStarTotals(state,{worldId:"fractions"}),{earned:3,available:180,completed:1,count:60});
-  assert.equal(campaignStarTotals(state).count,224);
-  assert.equal(campaignStarTotals(state).available,672);
+  assert.equal(campaignStarTotals(state).count,240);
+  assert.equal(campaignStarTotals(state).available,720);
   assert.equal(normalizeCampaignResume({worldId:"fractions",stageId:"notebook",levelId:"frac-a-02"}).levelId,"frac-a-02");
   assert.equal(normalizeCampaignResume({worldId:"squares",stageId:"notebook",levelId:"square-a-01"}),null);
 });

@@ -353,6 +353,10 @@
                 <button type="button" data-notebook-symbol="×" aria-label="Multiply both sides">×</button>
                 <button type="button" data-notebook-symbol="÷" aria-label="Divide both sides">÷</button>
               </div>
+              <div id="notebook-square-operations" class="notebook-signed-operations" role="group" aria-label="Square Laboratory operations" hidden>
+                <button type="button" data-notebook-area-operation="square" aria-label="Square both entire expressions" aria-pressed="false">(&nbsp;□&nbsp;)²</button>
+                <button type="button" data-notebook-area-operation="sqrt" aria-label="Take the principal square root of both entire expressions" aria-pressed="false">√</button>
+              </div>
               <div class="notebook-input-row">
                 <div class="notebook-math-field">
                   <input id="notebook-operation" type="text" inputmode="text" maxlength="24" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="e.g. −3, +x or ÷2" aria-describedby="notebook-feedback notebook-operation-tip" />
@@ -372,6 +376,7 @@
                 <button type="button" data-notebook-key="9">9</button>
                 <button type="button" data-notebook-key="0">0</button>
                 <button type="button" data-notebook-key="x" aria-label="Mystery sprite x">x</button>
+                <button type="button" data-notebook-key="x²" aria-label="Square sprite x squared" id="notebook-square-key" hidden>x²</button>
                 <button type="button" data-notebook-key="backspace" aria-label="Delete last symbol">⌫</button>
               </div>
               <div class="notebook-expand-choices" role="group" aria-label="Expand a sealed expression">
@@ -407,7 +412,7 @@
             <button id="notebook-reset" class="secondary-btn" type="button">↺ Start again</button>
             <button id="notebook-replay" class="primary-btn" type="button" disabled>Replay with sprites →</button>
           </div>
-          <p class="notebook-help">Choose a balancing operation, not the answer. Addition or subtraction can use 1–12 weights or sprites; multiplication and division use factors 2–5. Every move must work with whole objects on both sides.</p>
+          <p id="notebook-help" class="notebook-help">Choose a balancing operation, not the answer. Addition or subtraction can use 1–12 weights or sprites; multiplication and division use factors 2–5. Every move must work with whole objects on both sides.</p>
         </div>
       </section>
       <section id="notebook-playback" class="notebook-playback" role="status" aria-live="polite" hidden>
