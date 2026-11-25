@@ -83,10 +83,10 @@ test("completing every workshop level reveals the mastery banner and themed chap
   const data=JSON.stringify({completed:Array.from({length:24},(_,i)=>i+1),lastPlayed:24});
   await page.evaluate(value=>localStorage.setItem("mathssprites.progress.v1",value),data);
   await page.reload();
-  await page.locator('[data-screen="worlds"]').first().click();
-  await expect(page.locator('[data-world-art="workshop"] .world-progress')).toContainText("24 / 60 complete");
-  await page.getByRole("button",{name:"Explore stages"}).click();
-  await page.getByRole("button",{name:"Choose Stage 1 levels"}).click();
+  await page.locator("#home-choose-level").click();
+  await expect(page.locator("#site-levels")).toHaveAttribute("data-active-world","workshop");
+  await expect(page.locator("#world1-progress-number")).toHaveText("24 of 24 complete");
+  await expect(page.locator("#world1-finale")).toBeVisible();
   await expect(page.locator("#world1-finale")).toBeVisible();
   await expect(page.locator("#world1-progress-bar")).toHaveJSProperty("value",24);
   await expect(page.locator(".chapter-complete")).toHaveCount(6);
@@ -99,9 +99,8 @@ test("completing every workshop level reveals the mastery banner and themed chap
 test("phone menus and replay keep touch actions in view",async({page})=>{
   test.setTimeout(60000);
   await page.setViewportSize({width:375,height:725});
-  await page.locator('[data-screen="worlds"]').first().click();
-  await page.getByRole("button",{name:"Explore stages"}).click();
-  await page.getByRole("button",{name:"Choose Stage 1 levels"}).click();
+  await page.locator("#home-choose-level").click();
+  await expect(page.locator("#site-levels")).toHaveAttribute("data-active-stage","guided");
   await expect(page.locator(".chapter-illustration").first()).toBeVisible();
   await expect(page.locator(".level-tile")).toHaveCount(24);
   await page.locator('[data-level="1"]').click();
@@ -123,9 +122,8 @@ test("phone menus and replay keep touch actions in view",async({page})=>{
 test("chapter-opening levels show new ideas without exposing the hidden equation",async({page})=>{
   await page.locator('[data-screen="settings"]').first().click();
   await page.locator("#teacher-unlock").check();
-  await page.locator('[data-screen="worlds"]').first().click();
-  await page.getByRole("button",{name:"Explore stages"}).click();
-  await page.getByRole("button",{name:"Choose Stage 1 levels"}).click();
+  await page.locator('.site-nav-links [data-screen="levels"]').click();
+  await expect(page.locator("#site-levels")).toHaveAttribute("data-active-world","workshop");
   for (const [number,skill,theme] of [
     [5,"Equal baskets","2"],
     [9,"Two-step experiments","3"],
