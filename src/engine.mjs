@@ -4,6 +4,7 @@
  * Both play modes commit exactly one two-sided transaction per mathematical step.
  */
 import { neutralPairSequence } from "./neutral-pairs.mjs";
+import {validSquareLaboratoryLevel,squareLaboratoryPermission} from "./square-rules.mjs";
 import {rtext} from "./rational.mjs";
 import {FRACTION_MODE,fractionRoom,fractionCanonical,fractionEvaluate,fractionExpression,
   fractionAction,fractionLevelAction,fractionTransform,validFractionLevel,initialFractionState,
@@ -130,6 +131,8 @@ export function evaluate(value, x) {
   return terms.x2 * x * x + terms.x * x + terms.constant;
 }
 export function initialState(level = LEVELS[0], quantityMode = levelQuantityMode(level)) {
+  if(level.squareLaboratory===true&&(quantityMode!=="positive"||!validSquareLaboratoryLevel(level)))
+    throw new RangeError("Invalid whole-object Square Laboratory level");
   // Fraction state has a distinct, exact physical schema. Never switch an
   // existing whole-number experiment into it (or vice versa).
   if(quantityMode===FRACTION_MODE||level.quantityMode===FRACTION_MODE){
@@ -151,6 +154,7 @@ export function initialState(level = LEVELS[0], quantityMode = levelQuantityMode
     allowedKinds: level.allowedKinds ? [...level.allowedKinds] : null,
     allowedOperations: level.allowedOperations ? [...level.allowedOperations] : null,
     lockPositive: !!level.lockPositive,
+    ...(level.squareLaboratory===true?{squareLaboratory:true}:{}),
     goal: level.goal || "isolate", solution: level.solution,
     areaTarget: level.target ? {left:room(level.target.left),right:room(level.target.right)} : null,
     left: room(level.left), right: room(level.right), history: [], pending: null };
@@ -252,7 +256,10 @@ export function areaArrangement(r, op) {
   if(r?.quantityMode===FRACTION_MODE)return null;
   if (op !== "square" && op !== "sqrt") return null;
   const source = room(r);
-  if (source.negX || source.negOne) return null;
+  // A sealed group is not a loose side length. Never silently square or
+  // root only its loose neighbours while leaving its contents unchanged.
+  if (source.negX || source.negOne || crateCount(source) ||
+      TOKEN_KINDS.some(k=>!Number.isSafeInteger(source[k])||source[k]<0)) return null;
   const kind = pureNonnegativeKind(source);
   if (kind === "zero") return {op,kind:"zero",side:0,cells:0,symbolic:false};
   if (op === "square") {
@@ -404,6 +411,7 @@ export function previewRoomAction(source, action, quantityMode = "signed", side 
 /** World-specific permissions live in the pure engine; a hidden DOM button
  * must never be the only barrier between introductory and advanced maths. */
 export function levelActionPermission(state, action) {
+  if(state.squareLaboratory===true)return squareLaboratoryPermission(state,action);
   if(state.quantityMode===FRACTION_MODE)return fractionLevelAction(state,action);
   if((action?.op==="add"||action?.op==="remove") && state.allowedKinds &&
     !state.allowedKinds.includes(action.kind))
@@ -610,7 +618,7 @@ export function algebraOperation(action) {
   if (action.op === "multiply") return "× " + action.factor + " on both sides";
   const signOfToken = action.kind === "negX" || action.kind === "negOne" ? -1 : 1;
   const signOfAction = action.op === "remove" ? -1 : 1;
-  const symbol = action.kind === "posX" || action.kind === "negX" ? "x" : "";
+  const symbol = action.kind === "posX2" ? "x²" : action.kind === "posX" || action.kind === "negX" ? "x" : "";
   const term = (action.count === 1 && symbol ? "" : String(action.count)) + symbol;
   const signed = signOfAction * signOfToken;
   // Preserve the signed physical object in brackets for an exact description.
@@ -618,6 +626,7 @@ export function algebraOperation(action) {
   return (signed < 0 ? "− " : "+ ") + term + " on both sides";
 }
 export function validInitialLevel(level) {
+  if(level?.squareLaboratory===true)return validSquareLaboratoryLevel(level);
   if(level?.quantityMode===FRACTION_MODE)return validFractionLevel(level);
   if([level.left,level.right].some(r=>r?.quantityMode===FRACTION_MODE))return false;
   if (level.quantityMode && !QUANTITY_MODES.includes(level.quantityMode))

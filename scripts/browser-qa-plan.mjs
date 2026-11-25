@@ -26,6 +26,7 @@ const ALL=Object.freeze(Object.keys(GROUP_SPECS));
 // Keep source dependencies here; a spec belongs to exactly one primary
 // group, with deliberately broader routing for cross-feature weight piles.
 const RULES=Object.freeze([
+  [/^src\/square-(?:rules|level-plan)\.mjs$/,["area"]],
   [/^src\/fraction-workshop\.mjs$/ ,["notebook","navigation"]],
   [/^src\/fraction-notebook(?:-engine)?\.(?:mjs|css)$/ ,["notebook"]],
   [/^src\/fraction-campaign(?:-levels|-scene)?\.(?:mjs|css)$/ ,["navigation","notebook"]],
