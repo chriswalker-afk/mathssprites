@@ -19,7 +19,7 @@ export const GROUP_SPECS=Object.freeze({
   controls:Object.freeze(["e2e/neutral-starting-controls.spec.mjs","e2e/operation-first-zero-pair.spec.mjs"]),
   motion:Object.freeze(["e2e/animations.spec.mjs","e2e/sprite-idle.spec.mjs","e2e/sprite-reactions.spec.mjs","e2e/hand-art.spec.mjs"]),
   attempts:Object.freeze(["e2e/failed-attempts.spec.mjs","e2e/fraction-release.spec.mjs"]),
-  area:Object.freeze(["e2e/squares.spec.mjs","e2e/square-sprite-preview.spec.mjs","e2e/square-construction.spec.mjs","e2e/square-root-construction.spec.mjs","e2e/square-inspection.spec.mjs","e2e/square-guided-campaign.spec.mjs","e2e/square-independent-campaign.spec.mjs"])
+  area:Object.freeze(["e2e/squares.spec.mjs","e2e/square-sprite-preview.spec.mjs","e2e/square-construction.spec.mjs","e2e/square-root-construction.spec.mjs","e2e/square-inspection.spec.mjs","e2e/square-guided-campaign.spec.mjs","e2e/square-independent-campaign.spec.mjs","e2e/world4-release.spec.mjs"])
 });
 const ALL=Object.freeze(Object.keys(GROUP_SPECS));
 // The file map above is the single source of truth for spec routing.

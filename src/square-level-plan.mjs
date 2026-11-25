@@ -1,7 +1,7 @@
-/** PR69: unpublished World 4 curriculum.
- * Tuple order: x² sprites, x sprites, weights; the positive integer solution;
- * and a teacher-only legal reference route. The references are witnesses,
- * NOT certified shortest routes or student hints. PR74+ will publish stages.
+/** World 4 authoring fixtures. Tuple order: x² sprites, x sprites,
+ * weights; positive integer solution; teacher-only reference route.
+ * The public adapter supplies separately certified minimum benchmarks.
+ * Reference routes are never copied into student launch objects.
  */
 import {SQUARE_KINDS,SQUARE_OPERATIONS,squareBuildTarget,validSquareLaboratoryLevel} from "./square-rules.mjs";
 const rows={
@@ -85,7 +85,7 @@ const objectives={
 const titles={
   guided:["A new shape","The four square sprites","One mixed corner","The four regions","Keep one side","Five along each edge","The square on the east","Root and share","Loose weights","Two square sprites","Clear then share","Squares across the balance","One missing length","Four round sprites","The eastern square","A double side","Fill one corner","Fill four corners","Fill nine corners","The large missing corner","Share the area","One weight missing","Round sprites across the balance","The master square"],
   independent:["The first press","A mixed press","Three sprites along the edge","Six along each edge","Root in reverse","Clear the square","Three equal groups","Share after the root","Four regions to rebuild","The eastern mixed square","Two sprites along a side","Three sprites along a side","The small missing corner","Three weights missing","Nine weights missing","The larger corner","Share then root","Complete and share","Clear matching round sprites","The final reconstruction"],
-  notebook:["Build a mixed square","Square two sprites and a weight","Write the principal root","Root then share","Clear before rooting","Two square sprites and weights","Recognise the first square","Recognise the larger square","Complete the small corner","Complete four weights","Complete nine weights","Complete the large corner","Share a complete square","Clear the spare weight","Quadratics across the balance","The final square notebook"]
+  notebook:["Build a mixed square","Square two sprites and a weight","Write the principal root","Root then share","Clear before rooting","Two square sprites and weights","Recognise the first square","Recognise the larger square","Complete the small corner","Complete four weights","Complete the nine-weight corner","Complete the large corner","Share a complete square","Clear the spare weight","Quadratics across the balance","The final square notebook"]
 };
 const asRoom=tuple=>Object.freeze(Object.fromEntries(SQUARE_KINDS.map((k,i)=>[k,tuple[i]])));
 function decodeRoute(route){

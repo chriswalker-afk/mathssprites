@@ -1,15 +1,11 @@
-# Maths Sprites — Curriculum definitions and difficulty metadata (PR46–PR58)
+# Maths Sprites — Curriculum definitions and difficulty metadata (PR46–PR78)
 
 ## Purpose and scope
 
-This is a **teacher/developer planning layer** for the **120 playable campaign levels**:
-24 Guided, 20 Independent and 16 Algebra Apprentice in World 1
-(The Balance Workshop), plus 24 Guided, 20 Independent and 16 Algebra Apprentice
-in World 2 (The Opposite Chambers).
+This is a **teacher/developer planning layer** for the **240 playable campaign levels** across the Balance Workshop, Opposite Chambers, Fraction Workshop and Square Laboratory. Each world has 24 Guided, 20 Independent and 16 Algebra Apprentice levels.
 
 The 13 legacy experiments in src/engine.mjs remain preview and mathematical
-test fixtures, not additional campaign entries. The future fractions and
-quadratics worlds are intentionally excluded until they have actual levels.
+test fixtures, not additional campaign entries. All four published worlds have separately certified minimum move targets.
 
 **No game menus, balancing controls, hints, or student-facing equations are
 generated from this catalogue.** PR45's neutral starting controls remain
@@ -21,7 +17,7 @@ operation or number of objects.
 - src/curriculum.mjs: authored skill definitions and prerequisites, learning
   objectives for every four-level chapter, explicit 1–5 difficulty bands,
   per-level mathematical/physical features and lookup functions
-- tests/curriculum.test.mjs: coverage and consistency tests for **all 120
+- tests/curriculum.test.mjs: coverage and consistency tests for **all 240
   IDs**, chapters, skill IDs, difficulty bands, move benchmarks and no
   accidental imports by the student application
 - scripts/curriculum-report.mjs: author-only Markdown or JSON report,
@@ -36,6 +32,10 @@ Run:
     npm run curriculum -- --json
     npm run audit:world2
     npm run audit:world2 -- --json
+    npm run audit:world3
+    npm run audit:world4
+    npm run audit:world4 -- --stage notebook --json
+    npm run curriculum -- --world squares
 
 The JSON report can be used later to chart difficulty, find missing objectives
 or compare planned challenge with student attempt data. It is not part of
@@ -134,3 +134,9 @@ content revision markers, and saved completions are unaffected. Future route
 edits cannot silently change star targets. See
 [the full audit](WORLD2_OPTIMAL_ROUTE_AUDIT.md) and the reproducible
 `npm run audit:world2` report; both are teacher/developer resources.
+
+PR68 certified exact fractional routes and physical piece counts. PR78 audits
+all 60 square fixtures, keeping square construction distinct from isolation,
+complete mixed squares distinct from incomplete mixed expressions, and authored
+corner-filling operations explicit in teacher metadata. See
+[World 4 release audit](PR78_WORLD4_RELEASE_AUDIT.md).
