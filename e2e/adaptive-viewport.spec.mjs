@@ -49,7 +49,7 @@ async function measure(page){
      beam:b(".scale-beam"),base:b(".scale-base"),
      bench:b(".workbench"),
      sections:b("#level-sections"),
-     finalTile:b("#level-sections .level-tile:last-child")};
+     finalTile:b("#level-sections .chapter-group:last-child .level-tile:last-child")};
  });
 }
 function withinScreen(m){
@@ -110,7 +110,7 @@ test("real room/pan/beam/pedestal remain connected while tall gameplay uses larg
     await page.screenshot({path:"artifacts/pr37-game-"+size.name+".png",fullPage:true});
   }
 });
-test("the world, stage, level and notebook pages also use the screen without clipping @smoke",async({page})=>{
+test("world and stage tabs, scrollable chapters and signed notebook use the screen without clipping @smoke",async({page})=>{
   test.setTimeout(85000);
   for(const size of [
     {width:1920,height:1080,name:"wide"},
@@ -118,28 +118,31 @@ test("the world, stage, level and notebook pages also use the screen without cli
     {width:1024,height:720,name:"laptop"}
   ]){
     await page.setViewportSize(size);
-    await page.locator('[data-screen="worlds"]').first().click();
-    await expect(page.locator(".world-card")).toHaveCount(4);
-    await expect(page.locator(".world-card:last-child")).toBeInViewport();
+    await page.locator('.site-nav-links [data-screen="levels"]').click();
+    await expect(page.locator("#site-levels")).toBeVisible();
+    await expect(page.locator("#map-world-tabs button")).toHaveCount(4);
+    await expect(page.locator('[data-map-world="fractions"]')).toBeDisabled();
+    await expect(page.locator('[data-map-world="squares"]')).toBeDisabled();
     withinScreen(await measure(page));
-    await page.screenshot({path:"artifacts/pr37-worlds-"+size.name+".png"});
-    await page.locator('[data-world-stages="opposites"]').click();
-    await expect(page.locator(".stage-card")).toHaveCount(3);
-    await expect(page.locator(".stage-card:last-child")).toBeInViewport();
-    withinScreen(await measure(page));
-    await page.screenshot({path:"artifacts/pr37-stages-"+size.name+".png"});
-    await page.locator('[data-stage-open="guided"]').click();
-    await expect(page.locator(".chapter-group")).toHaveCount(5);
+    await page.screenshot({path:"artifacts/pr59-world-tabs-"+size.name+".png"});
+    await page.locator('[data-map-world="opposites"]').click();
+    await expect(page.locator("#site-levels")).toHaveAttribute("data-active-world","opposites");
+    await expect(page.locator(".chapter-group")).toHaveCount(6);
+    await expect(page.locator(".level-tile")).toHaveCount(24);
+    await page.locator('[data-level="24"]').scrollIntoViewIfNeeded();
+    await expect(page.locator('[data-level="24"]')).toBeInViewport();
     const m=await measure(page);
     withinScreen(m);
     expect(m.finalTile.bottom).toBeLessThanOrEqual(m.sections.bottom+3);
-    await page.screenshot({path:"artifacts/pr37-board-"+size.name+".png"});
+    await page.screenshot({path:"artifacts/pr59-board-"+size.name+".png"});
     await page.locator('[data-map-stage="notebook"]').click();
+    await expect(page.locator(".chapter-group")).toHaveCount(4);
+    await expect(page.locator(".level-tile")).toHaveCount(16);
     await page.locator('[data-level="1"]').click();
     await expect(page.locator("#notebook-workspace")).toBeVisible();
     await expect(page.locator("#notebook-apply")).toBeVisible();
     withinScreen(await measure(page));
-    await page.screenshot({path:"artifacts/pr37-notebook-"+size.name+".png"});
+    await page.screenshot({path:"artifacts/pr59-notebook-"+size.name+".png"});
     await page.locator("#game-home").click();
   }
 });
