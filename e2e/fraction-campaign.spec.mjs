@@ -48,7 +48,7 @@ test("Fraction Workshop opens all 24 Guided levels, alongside Apprentice @quick 
 test("solve a Guided fraction level, reveal exact comic and stars, advance and resume without touching legacy saves",async({page})=>{
   const errors=[];page.on("pageerror",e=>errors.push(e.message));
   await board(page);
-  const legacy=await page.evaluate(()=>Object.fromEntries(Object.entries(localStorage).filter(([k])=>!k.endsWith(".v2"))));
+  const legacy=await page.evaluate(()=>Object.fromEntries(Object.entries(localStorage).filter(([k])=>!k.endsWith(".v2")&&k!=="mathssprites.cosmetics.v1")));
   await page.locator('[data-level="1"]').click();
   const root=lab(page);
   await expect(root.locator("#fb-level-title")).toHaveText("Share the spare weight");
@@ -59,10 +59,12 @@ test("solve a Guided fraction level, reveal exact comic and stars, advance and r
   await expect(root.locator("#fb-comic-page math mfrac")).toHaveCount(1);
   await expect(root.locator("#fb-comic-page")).toContainText("Before");
   await expect(root.locator("#fb-comic-page")).toContainText("After");
+  const cosmetic=await page.evaluate(()=>JSON.parse(localStorage.getItem("mathssprites.cosmetics.v1")));
+  expect(cosmetic.unlockedRewards).toEqual(["curious-eyes"]);
   const store=await page.evaluate(()=>JSON.parse(localStorage.getItem("mathssprites.campaign.v2")));
   expect(store.worlds.fractions.stages.guided.completed).toEqual(["frac-g-01"]);
   expect(store.worlds.fractions.stages.guided.bestMoves["frac-g-01"]).toBe(1);
-  expect(await page.evaluate(()=>Object.fromEntries(Object.entries(localStorage).filter(([k])=>!k.endsWith(".v2"))))).toEqual(legacy);
+  expect(await page.evaluate(()=>Object.fromEntries(Object.entries(localStorage).filter(([k])=>!k.endsWith(".v2")&&k!=="mathssprites.cosmetics.v1")))).toEqual(legacy);
   await root.locator("#fb-next-level").click();
   await expect(lab(page).locator("#fb-chapter-status")).toContainText("LEVEL 02 / 24");
   await lab(page).locator("#fb-game-home").click();

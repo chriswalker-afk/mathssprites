@@ -10,7 +10,7 @@ import {
 import {
   loadProgress,loadStage2Progress,loadStage3Progress
 } from "./progress.mjs";
-import {loadRatings} from "./star-ratings.mjs";
+import {loadRatings,starsForMoves} from "./star-ratings.mjs";
 import {loadResume} from "./resume.mjs";
 
 export const CAMPAIGN_SAVE_KEY="mathssprites.campaign.v2";
@@ -162,23 +162,26 @@ export function campaignOptimalMoves(worldId,stageId,levelId,registry=CAMPAIGN_R
 export function campaignStars(value,worldId,stageId,levelId,registry=CAMPAIGN_REGISTRY){
   const best=campaignStageRecord(value,worldId,stageId,registry)?.bestMoves[levelId];
   const optimal=campaignOptimalMoves(worldId,stageId,levelId,registry);
-  if(!Number.isInteger(best)||!optimal||best<optimal)return 0;
-  return best===optimal?3:best===optimal+1?2:1;
+  return starsForMoves(best,optimal);
 }
 export function campaignStarTotals(value,{worldId=null,stageId=null}={},registry=CAMPAIGN_REGISTRY){
+  // One normalization per total, not one per level. Global cosmetic
+  // milestones use the same rating rules as the existing experiment board.
+  const data=normalizeCampaignRecords(value,registry);
   let earned=0,available=0,completed=0,count=0;
   for(const world of registry){
     if(worldId&&world.id!==worldId)continue;
     for(const stage of world.stages){
       if(stageId&&stage.id!==stageId)continue;
       if(!world.available||!stage.available)continue;
-      const record=campaignStageRecord(value,world.id,stage.id,registry);
+      const record=data.worlds[world.id].stages[stage.id];
       for(const slot of stage.levels){
         if(!slot.available)continue;
         count++;
         if(record?.completed.includes(slot.id))completed++;
-        if(campaignOptimalMoves(world.id,stage.id,slot.id,registry)!==null){
-          available+=3;earned+=campaignStars(value,world.id,stage.id,slot.id,registry);
+        const optimal=stageOptimalMoves(stage,slot.id);
+        if(optimal!==null){
+          available+=3;earned+=starsForMoves(record.bestMoves[slot.id],optimal);
         }
       }
     }

@@ -26,6 +26,7 @@ const ALL=Object.freeze(Object.keys(GROUP_SPECS));
 // Keep source dependencies here; a spec belongs to exactly one primary
 // group, with deliberately broader routing for cross-feature weight piles.
 const RULES=Object.freeze([
+  [/^src\/cosmetic-(?:catalog|rewards)\.mjs$/,["navigation","notebook","signed","physics","area"]],
   [/^src\/square-(?:workshop|route-search)\.mjs$/ ,["notebook","area","navigation"]],
   [/^src\/square-(?:campaign-levels|star-benchmarks)\.mjs$/ ,["area","navigation","layout","physics"]],
   [/^src\/square-inspection\.(?:mjs|css)$/ ,["area","layout","controls"]],
