@@ -7,7 +7,7 @@ test.beforeEach(async({page})=>{
 });
 test("real baskets fall EMPTY, receive the original tokens, and are carried away individually @smoke",async({page})=>{
   test.setTimeout(65000);
-  await page.evaluate(()=>localStorage.setItem("mathssprites.cosmetics.v1",JSON.stringify({version:1,unlockedRewards:["knitted-beanie","brass-spectacles","little-bow-tie"],equipped:{headwear:"knitted-beanie",eyewear:"brass-spectacles",neckwear:"little-bow-tie"}})));
+  await page.evaluate(()=>localStorage.setItem("mathssprites.cosmetics.v1",JSON.stringify({version:1,unlockedRewards:["grand-alchemist"],equipped:Object.fromEntries(["fur","eyes","headwear","eyewear","neckwear","movement","effect"].map(slot=>[slot,"grand-alchemist-"+slot]))})));
   await page.reload();
   await expect(page.locator("#left-items .sprite-wear-headwear").first()).toBeVisible();
   await clickWithReferenceMove(page,"#do-both");
@@ -33,6 +33,8 @@ test("real baskets fall EMPTY, receive the original tokens, and are carried away
     await expect(row.locator(".basket-contents .sprite-wear-"+slot)).toHaveCount(3);
     await expect(row.locator(".basket-contents .sprite-wear-"+slot).first()).toBeVisible();
   }
+  await expect(row.locator(".basket-contents .sprite-motion").first()).toHaveCSS("animation-name","sprite-basket-bob");
+  await expect(row.locator(".basket-contents .sprite-cosmetic-effect").first()).toHaveCSS("visibility","hidden");
   await expect(row.locator(".group-basket")).toHaveCount(3);
   expect(await row.locator(".basket-contents").evaluateAll(nodes=>nodes.map(n=>n.querySelectorAll(".token").length)))
     .toEqual([1,1,1]);
