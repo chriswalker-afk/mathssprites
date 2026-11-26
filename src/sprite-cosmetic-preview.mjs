@@ -1,7 +1,7 @@
 import {COSMETIC_REWARDS} from "./cosmetic-catalog.mjs";
 import {spriteCreatureMarkup} from "./square-sprites.mjs?v=88";
-import {spriteAssemblyMarkup} from "./fraction-sprites.mjs?v=88";
-import {applySpriteAppearance} from "./sprite-cosmetics.mjs?v=88";
+import {spriteAssemblyMarkup} from "./fraction-sprites.mjs?v=89";
+import {applySpriteAppearance} from "./sprite-cosmetics.mjs?v=89";
 const variants=[
   {id:"original",name:"Original",label:"Default",equipped:{}},
   {id:"curious",name:"Curious eyes",label:"3 stars",equipped:{eyes:"curious-eyes"}},
@@ -18,6 +18,9 @@ variants.push({id:"wearable-combination",name:"Laboratory explorer",label:"Combi
 }});
 for(const reward of COSMETIC_REWARDS.filter(r=>["movement","effect"].includes(r.slot))){
   variants.push({id:reward.id,name:reward.name,label:reward.stars+" stars",equipped:{[reward.slot]:reward.id}});
+}
+for(const reward of COSMETIC_REWARDS.filter(r=>["mischievous-eyes","curled-fur","distinguished-eyebrows","silky-fur","grand-alchemist"].includes(r.id))){
+  variants.push({id:reward.id,name:reward.name,label:reward.stars+" stars",equipped:reward.slot?{[reward.slot]:reward.id}:reward.loadout});
 }
 const grid=document.getElementById("study-grid");
 for(const v of variants){

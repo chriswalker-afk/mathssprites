@@ -25,7 +25,7 @@ async function spriteMetrics(actor){
 test("all first cosmetics retain native body dimensions, sign contrast, square corners and exact fragments @quick @smoke",async({page},testInfo)=>{
   await page.goto("/sprite-cosmetic-preview.html");
   const before=await page.evaluate(()=>JSON.stringify(localStorage));
-  await expect(page.locator(".study-card")).toHaveCount(27);
+  await expect(page.locator(".study-card")).toHaveCount(32);
   for(const kind of ["sprite-black","sprite-white","sprite-square"]){
     const baseline=await spriteMetrics(card(page,"original").locator("."+kind));
     for(const name of ["curious","fluffy","sleepy","spiky","combined"]){
@@ -139,7 +139,7 @@ test("every wearable fits the native body envelope and keeps both signs and the 
       fragmentWear:c.querySelectorAll(".fs-assembly .sprite-wear").length}));
   });
   const baseline=report.find(c=>c.id==="original");
-  expect(report.length).toBe(27);
+  expect(report.length).toBe(32);
   for(const entry of report.slice(6,21)){
     expect(entry.fragmentWear).toBe(0);
     for(const actor of entry.actors){
@@ -173,4 +173,71 @@ test("motion and effect art study preserves each sign and has distinct variants"
   for(const [id,name] of effects)await expect(card(page,id).locator(".sprite-black .sprite-cosmetic-effect")).toHaveCSS("animation-name",name);
   await page.locator("#study-motion").click();
   await testInfo.attach("constellation-aura.png",{body:await card(page,"constellation-aura").screenshot(),contentType:"image/png"});
+});
+
+test("final textures and Grand Alchemist preserve body dimensions, sign contrast, exact cuts and square outline",async({page},testInfo)=>{
+  await page.goto("/sprite-cosmetic-preview.html");
+  const ids=["mischievous-eyes","curled-fur","distinguished-eyebrows","silky-fur","grand-alchemist"];
+  const cuts=await card(page,"original").locator(".fs-cut-edge").evaluateAll(els=>els.map(el=>el.getAttribute("d")));
+  for(const kind of ["sprite-black","sprite-white","sprite-square"]){
+    const baseline=await spriteMetrics(card(page,"original").locator("."+kind));
+    for(const id of ids){
+      const actor=card(page,id).locator("."+kind),variant=await spriteMetrics(actor);
+      for(const k of ["tokenW","tokenH","bodyW","bodyH","bodyColor","radius","eyeColor"])expect(variant[k],id+" "+kind+" "+k).toBe(baseline[k]);
+      expect(variant.hop).toBe("none");
+      if(["curled-fur","silky-fur","grand-alchemist"].includes(id))expect(variant.furColor).not.toBe(baseline.furColor);
+      if(["mischievous-eyes","distinguished-eyebrows","grand-alchemist"].includes(id)){
+        const brow=await actor.locator(".sprite-eyes i").first().evaluate(el=>getComputedStyle(el,"::before").display);
+        expect(brow).toBe("block");
+      }
+    }
+  }
+  for(const id of ids){
+    expect(await card(page,id).locator(".fs-cut-edge").evaluateAll(els=>els.map(el=>el.getAttribute("d")))).toEqual(cuts);
+    await expect(card(page,id).locator(".fs-label")).toHaveText("2/3");
+    await expect(card(page,id).locator(".fs-assembly .sprite-wear")).toHaveCount(0);
+    await expect(card(page,id).locator(".fs-assembly .sprite-cosmetic-effect")).toHaveCount(0);
+  }
+  for(const [id,group] of [["curled-fur","curled"],["silky-fur","silky"],["grand-alchemist","grand"]])
+    await expect(card(page,id).locator(".fs-fur-"+group)).toHaveCSS("display","inline");
+  await page.locator("#study-motion").click();
+  for(const kind of ["sprite-black","sprite-white","sprite-square"]){
+    await expect(card(page,"grand-alchemist").locator("."+kind+" .sprite-motion")).toHaveCSS("animation-name","cos-grand-rise");
+    await expect(card(page,"grand-alchemist").locator("."+kind+" .sprite-cosmetic-effect")).toHaveCSS("animation-name","cos-grand-glimmer");
+  }
+  await page.locator("#study-motion").click();
+  await testInfo.attach("grand-alchemist-art.png",{body:await card(page,"grand-alchemist").screenshot(),contentType:"image/png"});
+});
+test("full outfit follows the real sprites through signed, fraction and square campaign scenes",async({page},testInfo)=>{
+  test.setTimeout(90000);
+  const equipped=Object.fromEntries(["fur","eyes","headwear","eyewear","neckwear","movement","effect"].map(slot=>[slot,"grand-alchemist-"+slot]));
+  await seed(page,{version:1,unlockedRewards:["grand-alchemist"],equipped});
+  await page.goto("/?workshop="+encodeURIComponent("3x-2x+3-5=6")+"&workshopWorld=signed");
+  await page.locator("#workshop-create").click();
+  await expect(page.locator("#left-items .sprite-black")).toHaveCount(3);
+  await expect(page.locator("#left-items .sprite-white")).toHaveCount(2);
+  await expect(page.locator("#left-items .sprite-white .sprite-wear-headwear").first()).toBeVisible();
+  await page.locator('[data-pair-side="left"][data-pair-type="sprites"]').click();
+  await expect(page.locator("#left-items .sprite-white")).toHaveCount(0,{timeout:20000});
+  await expect(page.locator("#left-items .sprite-black")).toHaveCount(1);
+  await page.goto("/?workshop="+encodeURIComponent("x+2/3=4+2/3")+"&workshopWorld=fractions");
+  await page.locator("#workshop-create").click();
+  const lab=page.locator("#fraction-game-host").locator("#fraction-lab");
+  await expect(lab).toBeVisible();
+  for(const [slot,id] of Object.entries(equipped))await expect(lab).toHaveAttribute("data-sprite-"+slot,id);
+  await expect(lab.locator("#left-items .fs-whole-actor")).toHaveCount(1);
+  await expect(lab.locator("#left-items .fs-whole-actor .sprite-wear-headwear")).toBeVisible();
+  await page.goto("/");await page.locator("#home-choose-level").click();
+  await page.locator('[data-map-world="squares"]').click();
+  await page.locator('[data-map-stage="guided"]').click();
+  await page.locator('[data-level="1"]').click();
+  await page.locator('.operation-picker [data-operation="square"]').click();
+  await page.locator("#do-both").click();
+  await expect(page.locator("#replay-backdrop")).toBeVisible({timeout:25000});
+  await expect(page.locator("#left-items .sprite-square")).toHaveCount(1);
+  await expect(page.locator("#right-items .weight")).toHaveCount(9);
+  await page.locator("#replay-close").click();
+  await expect(page.locator("#left-items .sprite-square .sprite-wear-headwear")).toBeVisible();
+  await expect(page.locator("#left-items .sprite-square .sprite-body")).toHaveCSS("border-top-left-radius","7px");
+  await testInfo.attach("grand-alchemist-square.png",{body:await page.screenshot({fullPage:true}),contentType:"image/png"});
 });

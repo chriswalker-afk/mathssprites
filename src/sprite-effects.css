@@ -92,3 +92,29 @@
 .atelier-thumb .sprite-cosmetic-effect{visibility:visible}
 /* The site preference, the hero's resting/falling overrides, and the
    existing hand-target/morph pause rules continue to govern native motion. */
+
+/* The final set's motion is a measured rise and return, with the same
+   conservative envelope for square and round forms. */
+[data-sprite-movement="grand-alchemist-movement"]{
+  --cos-round-motion:cos-grand-rise;--cos-square-motion:cos-grand-rise;
+  --cos-round-shadow:cos-grand-shadow;--cos-square-shadow:cos-grand-shadow;
+}
+@keyframes cos-grand-rise{
+  0%,8%,84%,100%{transform:translateY(0)}
+  30%{transform:translateY(-9px)}
+  48%{transform:translateY(-16px)}
+  64%{transform:translateY(-11px)}
+}
+@keyframes cos-grand-shadow{
+  0%,8%,84%,100%{transform:translateX(-50%) scaleX(1);opacity:.7}
+  48%{transform:translateX(-50%) scaleX(.76);opacity:.42}
+}
+[data-sprite-effect="grand-alchemist-effect"]{
+  --cos-effect-display:block;--cos-effect-ring:#d8ba757d;
+  --cos-effect-art:radial-gradient(circle at 50% 2%,#f6e0a1 0 1.3px,transparent 2.2px),radial-gradient(circle at 95% 49%,#e6cc8d 0 1.4px,transparent 2.3px),radial-gradient(circle at 50% 98%,#f6e0a1 0 1.3px,transparent 2.2px),radial-gradient(circle at 5% 49%,#e6cc8d 0 1.4px,transparent 2.3px),radial-gradient(circle at 18% 19%,#d2e4cc 0 1px,transparent 1.8px),radial-gradient(circle at 82% 80%,#d2e4cc 0 1px,transparent 1.8px);
+  --cos-effect-motion:cos-grand-glimmer;
+}
+@keyframes cos-grand-glimmer{0%,100%{opacity:.55}45%,65%{opacity:.95}}
+/* Packed baskets show the face and sign first. Keep the small art still
+   and suppress the aura to prevent neighbouring effects becoming tokens. */
+.group-basket .sprite-cosmetic-effect,.basket-in-hand .sprite-cosmetic-effect{visibility:hidden}

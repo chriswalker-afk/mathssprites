@@ -5,7 +5,7 @@
 import {rational,radd,rmul,rsub,req,rtext} from "./rational.mjs";
 import {FRACTION_KINDS,FRACTION_DENOMINATORS,fractionRoom,fractionRoomCount,fractionParts} from "./fraction-engine.mjs";
 import {weightGrid,weightChangeStages,weightAssemblyMarkup} from "./fraction-weights.mjs";
-import {spriteGrid,spriteChangeStages,spriteAssemblyMarkup} from "./fraction-sprites.mjs?v=88";
+import {spriteGrid,spriteChangeStages,spriteAssemblyMarkup} from "./fraction-sprites.mjs?v=89";
 
 const gridFor=(kind,value,d)=>(kind==="posX"?spriteGrid:weightGrid)(value,d);
 export function gridValue(grid){

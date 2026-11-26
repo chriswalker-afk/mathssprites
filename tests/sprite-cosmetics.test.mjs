@@ -2,20 +2,23 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {readFileSync} from "node:fs";
 import {IMPLEMENTED_SPRITE_COSMETICS,resolveSpriteAppearance,applySpriteAppearance} from "../src/sprite-cosmetics.mjs";
-import {findCosmeticItem,COSMETIC_REWARDS} from "../src/cosmetic-catalog.mjs";
+import {findCosmeticItem,COSMETIC_REWARDS,COSMETIC_ITEMS,findCosmeticReward} from "../src/cosmetic-catalog.mjs";
 import {spriteAssemblyMarkup,spritePartition} from "../src/fraction-sprites.mjs";
 import {spriteCreatureMarkup} from "../src/square-sprites.mjs";
 const wearSlots=["headwear","eyewear","neckwear"];
 const wearableRewards=COSMETIC_REWARDS.filter(r=>wearSlots.includes(r.slot));
 const original={fur:"original",eyes:"original",headwear:"original",eyewear:"original",neckwear:"original",movement:"original",effect:"original"};
-test("all twenty-four visual rewards match their catalogue slots and unavailable art falls back to original",()=>{
+test("all 35 cosmetic components match the 29 catalogue rewards and unknown art falls back to original",()=>{
   assert.equal(wearableRewards.length,14);
-  assert.deepEqual([...IMPLEMENTED_SPRITE_COSMETICS].sort(),["curious-eyes","extra-fluffy","sleepy-eyes","spiky-fur",...wearableRewards.map(r=>r.id),...COSMETIC_REWARDS.filter(r=>["movement","effect"].includes(r.slot)).map(r=>r.id)].sort());
+  assert.equal(COSMETIC_REWARDS.length,29);
+  assert.equal(IMPLEMENTED_SPRITE_COSMETICS.length,35);
+  assert.deepEqual([...IMPLEMENTED_SPRITE_COSMETICS].sort(),COSMETIC_ITEMS.map(r=>r.id).sort());
   for(const id of IMPLEMENTED_SPRITE_COSMETICS){
     const item=findCosmeticItem(id);assert.equal(resolveSpriteAppearance({[item.slot]:id})[item.slot],id);
   }
   assert.deepEqual(resolveSpriteAppearance({fur:"curious-eyes",eyes:"injected",headwear:"knitted-beanie",color:"red"}),{...original,headwear:"knitted-beanie"});
-  assert.deepEqual(resolveSpriteAppearance({fur:"grand-alchemist-fur",eyes:"mischievous-eyes"}),original);
+  assert.deepEqual(resolveSpriteAppearance({fur:"grand-alchemist-fur",eyes:"mischievous-eyes"}),{...original,fur:"grand-alchemist-fur",eyes:"mischievous-eyes"});
+  assert.deepEqual(resolveSpriteAppearance(findCosmeticReward("grand-alchemist").loadout),findCosmeticReward("grand-alchemist").loadout);
 });
 test("appearance updates are local, idempotent and never recreate or resize native actor markup",()=>{
   const attributes=new Map(),calls=[];
@@ -32,7 +35,7 @@ test("appearance updates are local, idempotent and never recreate or resize nati
 test("fraction cosmetics are clipped by the same exact partition and a whole is just one native actor",()=>{
   const sectors=spritePartition(3),art=spriteAssemblyMarkup(3,[0,1]);
   for(const p of sectors.slice(0,2))assert.ok(art.includes('d="'+p.path+'"'));
-  for(const kind of ["original","fluffy","spiky"])assert.ok(art.includes('class="fs-fur-'+kind+'"'));
+  for(const kind of ["original","fluffy","spiky","curled","silky","grand"])assert.ok(art.includes('class="fs-fur-'+kind+'"'));
   assert.equal((art.match(/class="fs-eye"/g)||[]).length,2);
   assert.equal((art.match(/<clipPath /g)||[]).length,2);
   assert.ok(art.includes('data-value="1/3"'));assert.ok(art.includes(">2/3</span>"));
@@ -43,7 +46,8 @@ test("fraction cosmetics are clipped by the same exact partition and a whole is 
 });
 test("cosmetic CSS is scoped to decorative fur and eyes, not token or motion geometry",()=>{
   const css=readFileSync(new URL("../src/sprite-cosmetics.css",import.meta.url),"utf8");
-  assert.doesNotMatch(css,/\b(?:animation|transform|margin|padding|inset|z-index|position|pointer-events)\s*:/);
+  assert.doesNotMatch(css,/\b(?:animation|transform|margin|padding|inset|z-index)\s*:/);
+  assert.match(css,/\.sprite-eyes i::before\{[^}]*pointer-events:none/);
   assert.doesNotMatch(css,/\.token\s*\{/);
   assert.doesNotMatch(css,/\.sprite-body\s*\{/);
 });
@@ -51,7 +55,7 @@ test("cosmetic CSS is scoped to decorative fur and eyes, not token or motion geo
 test("each wearable has distinct decorative vector art, an isolated scope and a native layer on all signs",()=>{
   const css=readFileSync(new URL("../src/sprite-wearables.css",import.meta.url),"utf8");
   const encoded=[...css.matchAll(/url\("data:image\/svg\+xml,([^"]+)"\)/g)].map(m=>decodeURIComponent(m[1]));
-  assert.equal(encoded.length,14);assert.equal(new Set(encoded).size,14);
+  assert.equal(encoded.length,17);assert.equal(new Set(encoded).size,17);
   for(const svg of encoded){assert.match(svg,/<svg[^>]*viewBox="0 0 (?:44 14|36 18)"/);assert.match(svg,/<\/svg>$/);}
   for(const r of wearableRewards)assert.ok(css.includes('[data-sprite-'+r.slot+'="'+r.id+'"]'));
   for(const kind of ["posX","negX","posX2"]){
@@ -84,4 +88,17 @@ test("motion and effects use the native actor and never create extra mathematica
   assert.match(css,/sprite-basket-bob/);
   assert.match(css,/reduce-motion/);
   assert.doesNotMatch(css,/\.token\s*\{|\.sprite-body\s*\{/);
+});
+
+test("all exclusive finale components have their own scoped art, with no additional entitlement",()=>{
+  const set=findCosmeticReward("grand-alchemist");
+  const sources=["sprite-cosmetics.css","sprite-wearables.css","sprite-effects.css"].map(file=>readFileSync(new URL("../src/"+file,import.meta.url),"utf8")).join("\n");
+  for(const [slot,id] of Object.entries(set.loadout)){
+    assert.ok(sources.includes('[data-sprite-'+slot+'="'+id+'"]'));
+    assert.equal(findCosmeticItem(id).unlockId,"grand-alchemist");
+  }
+  assert.equal(set.stars,720);
+  const fragment=spriteAssemblyMarkup(3,[0,1]);
+  assert.match(fragment,/class="fs-brows"/);
+  assert.doesNotMatch(fragment,/sprite-wear-|sprite-cosmetic-effect/);
 });

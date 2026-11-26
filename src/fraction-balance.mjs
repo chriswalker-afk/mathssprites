@@ -7,9 +7,9 @@ import {initialState,visibleRooms,prepare,perform,undo,isSolved,equation,algebra
 import {rational,radd,rsub,rcompare,rtext} from "./rational.mjs";
 import {FRACTION_DENOMINATORS,FRACTION_FACTORS,fractionAction,fractionRoom} from "./fraction-engine.mjs";
 import {weightInventoryMarkup,weightGridMarkup} from "./fraction-weights.mjs";
-import {spriteInventoryMarkup,spriteGridMarkup} from "./fraction-sprites.mjs?v=88";
+import {spriteInventoryMarkup,spriteGridMarkup} from "./fraction-sprites.mjs?v=89";
 import {divisionBasketMarkup,resetHand} from "./division-baskets.mjs";
-import {gridRoom,roomChoreography,failureSpeech,fractionRefusalMarkup} from "./fraction-choreography.mjs?v=88";
+import {gridRoom,roomChoreography,failureSpeech,fractionRefusalMarkup} from "./fraction-choreography.mjs?v=89";
 const SIDES=["left","right"];
 const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 const frame=()=>new Promise(resolve=>requestAnimationFrame(resolve));
