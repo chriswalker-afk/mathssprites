@@ -85,25 +85,39 @@ export function mountSpriteAtelier({root,homeSummary,store}){
     const button=event.target.closest("button[data-reward-id]");
     if(!button||!list.contains(button)||button.hidden)return;
     selected=button.dataset.rewardId;announce("");render();
+    // On phones the shelf sits below the fitting room. Bring the preview
+    // into view after a deliberate selection; a Browse button returns to
+    // that exact card. Do not jump the desktop shelf or reset its scroll.
+    if(matchMedia("(max-width:899px)").matches){
+      $("atelier-detail-title").focus({preventScroll:true});
+      scope.closest(".atelier-dressing").scrollIntoView({block:"start",behavior:"instant"});
+    }
   });
   filter.addEventListener("change",()=>{selected=null;list.scrollTop=0;announce("");render();});
   ownedOnly.addEventListener("change",()=>{selected=null;list.scrollTop=0;announce("");render();});
+  $("atelier-browse").addEventListener("click",()=>{
+    const card=cards.get(selected)?.button;
+    const target=card&&!card.hidden?card:filter;
+    target.focus({preventScroll:true});target.scrollIntoView({block:"center",behavior:"instant"});
+  });
   $("atelier-equip").addEventListener("click",()=>{
     const reward=findCosmeticReward(selected);
     const result=equipAtelierReward(store,selected);
-    if(result.ok){announce(reward.name+" equipped. Appearance saved on this device.");render();cards.get(selected)?.button.focus({preventScroll:true});}
+    if(result.ok){announce(reward.name+" equipped.");render();
+      if(matchMedia("(max-width:899px)").matches)$("atelier-detail-title").focus({preventScroll:true});
+      else cards.get(selected)?.button.focus({preventScroll:true});}
   });
   $("atelier-remove").addEventListener("click",()=>{
     const reward=findCosmeticReward(selected);
     if(!reward||!atelierRewardState(store.getSnapshot(),reward).canRemove)return;
     const result=store.equip(reward.slot,null);
-    if(result.ok){selected=null;render();announce(reward.name+" removed.");$("atelier-filter").focus({preventScroll:true});}
+    if(result.ok){selected=null;render();announce(reward.name+" removed.");$("atelier-detail-title").focus({preventScroll:true});}
   });
   $("atelier-cancel-preview").addEventListener("click",()=>{
-    selected=null;render();announce("Showing your saved appearance.");$("atelier-filter").focus({preventScroll:true});
+    selected=null;render();announce("Showing your saved appearance.");$("atelier-detail-title").focus({preventScroll:true});
   });
   $("atelier-restore").addEventListener("click",()=>{
-    store.restoreOriginal();selected=null;render();announce("Original appearance restored. Your rewards and stars are unchanged.");$("atelier-filter").focus({preventScroll:true});
+    store.restoreOriginal();selected=null;render();announce("Original appearance restored. Your rewards and stars are unchanged.");$("atelier-detail-title").focus({preventScroll:true});
   });
   const unsubscribe=store.subscribe(()=>render());
   updateHome(store.getSnapshot());

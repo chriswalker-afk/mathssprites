@@ -128,6 +128,11 @@ test("navigation returns to the originating board, and desktop and phone have re
     await page.locator("#atelier-filter").selectOption("set");
     await reward(page,"grand-alchemist").click();
     await expect(page.locator("#atelier-equip")).toBeDisabled();
+    if(width<900){
+      await expect(page.locator("#atelier-detail-title")).toBeFocused();
+      await page.locator("#atelier-browse").click();
+      await expect(reward(page,"grand-alchemist")).toBeFocused();
+    }
     await testInfo.attach("atelier-"+width+".png",{body:await page.screenshot({fullPage:true}),contentType:"image/png"});
     await page.locator("#atelier-back").click();
   }

@@ -125,3 +125,6 @@
   .atelier-filters select{min-height:44px}
   .atelier-check{font-size:.73rem}
 }
+
+#site-atelier #atelier-browse{display:none;padding:4px 3px;color:#ead0a0;text-decoration:underline;text-underline-offset:3px;font-size:.78rem}
+@media(max-width:899px){#site-atelier #atelier-browse{display:inline-block;min-height:44px}}
