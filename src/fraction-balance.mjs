@@ -138,14 +138,14 @@ export function mountFractionBalance(root,{level,mode="auto",reduced=false,onCom
     hand.classList.remove("lifting","reaching","grasping");
     hand.classList.add("acting","approaching");hand.dataset.phase="aim";chamber.classList.add("hand-target");
     cargo.replaceChildren();if(carried)cargo.append(carried);cargo.hidden=!carried;fitAll();
-    await frame();await pause(250);
-    hand.classList.remove("approaching");hand.classList.add("reaching");hand.dataset.phase="reach";await pause(260);
+    await frame();await pause(320);
+    hand.classList.remove("approaching");hand.classList.add("reaching");hand.dataset.phase="reach";await pause(340);
     hand.classList.add("grasping");hand.dataset.phase="grip";
   }
   async function lift(side,carried=null){
     if(carried){cargo.replaceChildren(carried);cargo.hidden=false;fitAll();}
-    hand.classList.remove("reaching");hand.classList.add("lifting");hand.dataset.phase="lift";await pause(270);
-    clearHand(side);await pause(130);
+    hand.classList.remove("reaching");hand.classList.add("lifting");hand.dataset.phase="lift";await pause(340);
+    clearHand(side);await pause(330);
   }
   function cargoFor(grid){
     const node=document.createElement("div");node.className="fb-cargo-art";node.innerHTML=gridMarkup(grid);return node;
@@ -160,7 +160,7 @@ export function mountFractionBalance(root,{level,mode="auto",reduced=false,onCom
   }
   async function share(side,plan){
     const el=$(side+"-items");
-    if(plan.borrowed||plan.changedGrid){draw(side,plan.before,plan.prepared);await pause(580);}
+    if(plan.borrowed||plan.changedGrid)await preparePieces(side,plan);
     // Each visible group consists of exact equal parts of the original
     // room. Move the SAME nodes into their waiting wicker baskets.
     el.innerHTML='<div class="fb-share-source"></div><div class="fb-baskets" data-phase="sharing"></div>';
@@ -212,15 +212,60 @@ export function mountFractionBalance(root,{level,mode="auto",reduced=false,onCom
     row.remove();el.dataset.phase="poured";await pause(230);
     draw(side,plan.after,plan.raw);await pause(500);
   }
+  // Transfer the real cargo art through the scene, not an extra counted
+  // token. The layer is temporary; the exact room is settled by the engine.
+  async function transfer(prop,from,to,phase){
+    if(reduced||typeof prop.animate!=="function")return;
+    const bounds=scene.getBoundingClientRect();
+    const layer=document.createElement("div");layer.className="fb-transfer";layer.dataset.transfer=phase;
+    const w=Math.max(38,from.width||76),h=Math.max(32,from.height||48);
+    Object.assign(layer.style,{left:from.left-bounds.left+"px",top:from.top-bounds.top+"px",
+      width:w+"px",height:h+"px"});
+    layer.append(prop);scene.append(layer);fitAll();
+    const dx=to.left-from.left,dy=to.top-from.top;
+    const animation=layer.animate([
+      {transform:"translate(0,0)",offset:0},
+      {transform:"translate("+dx*.68+"px,"+(dy*.68-(phase==="drop"?12:4))+"px)",offset:.72},
+      {transform:"translate("+dx+"px,"+dy+"px)",offset:1}
+    ],{duration:phase==="drop"?460:390,easing:"cubic-bezier(.26,.75,.24,1)",fill:"forwards"});
+    try{await animation.finished;}catch{}finally{layer.remove();}
+    checkLive();
+  }
+  function floorLanding(el,w,h){
+    const r=el.getBoundingClientRect();
+    return {left:r.left+(r.width-w)/2,top:r.bottom-h,width:w,height:h};
+  }
+  async function preparePieces(side,plan){
+    draw(side,plan.before,plan.prepared);
+    const el=$(side+"-items"),pieces=[...el.querySelectorAll(".is-separated")];
+    // Establish the joined pose first. Only then split actual equal-area
+    // polygons/sectors; newly-created nodes otherwise have no transition.
+    for(const p of pieces)p.classList.remove("is-separated");
+    await frame();await frame();await pause(160);
+    for(const p of pieces)p.classList.add("is-separated");
+    await pause(580);
+  }
   async function change(side,plan){
     const el=$(side+"-items"),prop=cargoFor(plan.amount);
-    if(plan.borrowed||plan.changedGrid){draw(side,plan.before,plan.prepared);await pause(570);}
+    if(plan.borrowed||plan.changedGrid)await preparePieces(side,plan);
     if(plan.op==="add"){
       await reach(side,el,prop);
-      draw(side,plan.after,plan.raw);cargo.hidden=true;hand.dataset.phase="release";await pause(220);await lift(side);
+      const from=prop.getBoundingClientRect(),dest=floorLanding(el,from.width,from.height);
+      hand.dataset.phase="release";
+      if(!reduced){await transfer(prop,from,dest,"drop");}
+      cargo.hidden=true;draw(side,plan.after,plan.raw);await pause(220);await lift(side);
     }else{
-      await reach(side,el);
-      draw(side,plan.after,plan.raw);await lift(side,prop);
+      const kind=plan.amount.posX.whole||plan.amount.posX.units?"fs":"fw";
+      // Reach for the actual last relevant assembly, not the centre of
+      // the chamber or an unrelated whole weight in the first pile.
+      const target=[...el.querySelectorAll("."+kind+"-assembly")].at(-1);
+      await reach(side,target||el);
+      const object=target?.getBoundingClientRect();
+      const width=Math.min(96,Math.max(44,object?.width||64)),height=Math.max(38,object?.height||48);
+      const from=object?{left:object.left,top:object.top,width,height}:floorLanding(el,width,height);
+      draw(side,plan.after,plan.raw);
+      if(!reduced){cargo.hidden=false;const to=cargo.getBoundingClientRect();await transfer(prop,from,{left:to.left,top:to.top},"collect");}
+      await lift(side,prop);
     }
     await pause(360);
   }
@@ -300,6 +345,7 @@ export function mountFractionBalance(root,{level,mode="auto",reduced=false,onCom
     }catch(error){
       if(!dead){console.error(error);if(state.pending)state=undo(state);settled();feedback("That animation could not finish. The balance was restored.");}
     }finally{
+      for(const layer of scene.querySelectorAll(".fb-transfer"))layer.remove();
       if(activeSide)clearHand(activeSide);
       busy=false;
       if(!dead){settled();notifyState();}
@@ -311,7 +357,7 @@ export function mountFractionBalance(root,{level,mode="auto",reduced=false,onCom
     resetSelection();clearSpeech();settled();feedback("Choose an operation.");notifyState();return true;
   }
   function setMode(next){if(busy||state.pending||!["auto","manual"].includes(next))return false;mode=next;controls();return true;}
-  function setReduced(next){if(busy)return false;reduced=!!next;root.dataset.reduced=String(reduced);return true;}
+  function setReduced(next){if(busy)return false;reduced=!!next;root.dataset.reduced=String(reduced);root.classList.toggle("reduce-motion",reduced);return true;}
   $("fb-whole").innerHTML=options(Array.from({length:13},(_,i)=>i));
   $("fb-denominator").innerHTML=options(FRACTION_DENOMINATORS.filter(d=>d>1));
   for(const btn of root.querySelectorAll("[data-fb-op]"))listen(btn,"click",()=>{selection={op:btn.dataset.fbOp,kind:null,factor:null};controls();});
@@ -335,5 +381,5 @@ export function mountFractionBalance(root,{level,mode="auto",reduced=false,onCom
       await play(undefined,action);
       return !dead&&state.history.length===count+1;
     },
-    destroy(){dead=true;abort.abort();observer?.disconnect();if(activeSide)clearHand(activeSide);}};
+    destroy(){dead=true;abort.abort();observer?.disconnect();for(const layer of scene.querySelectorAll(".fb-transfer")){for(const a of layer.getAnimations())a.cancel();layer.remove();}if(activeSide)clearHand(activeSide);}};
 }

@@ -20,3 +20,27 @@
 .fw-count-plaque{border:2px solid #bf9b5d;background:linear-gradient(155deg,#21473f,#172f2d);color:#fff0c6;padding:5px 8px;border-radius:22px;font:700 12px/1.2 Georgia,serif;align-self:center}
 .fw-empty{color:#d8c8aa;font-style:italic;align-self:center}
 @media(prefers-reduced-motion:reduce){.fw-piece{transition:none!important}}
+
+/* Attached brass/enamel quantity plaques, in the natural object group
+ * flow like the existing whole-weight count marker. The piece itself
+ * stays on the chamber floor; its label never lifts it off the floor. */
+.fb-campaign .fw-assembly:has(>.fw-label){width:max-content;flex-direction:row;align-items:flex-end;gap:0;max-width:none}
+.fb-campaign .fw-assembly:has(>.fw-label)>svg{width:58px;flex:none;max-width:none}
+.fb-campaign .fw-label,.fb-campaign .fs-label,.fb-campaign .fw-count-plaque{
+ position:relative;display:inline-flex;align-items:center;justify-content:center;flex:none;align-self:flex-end;
+ border:2px solid #bf9b5d;border-radius:22px;background:linear-gradient(155deg,#21473f,#172f2d);
+ color:#fff0c6;font:700 12px/1.15 Georgia,serif;text-shadow:0 1px 2px #091a19;
+ box-shadow:inset 0 0 0 1px #d9c58a5e,0 3px 7px #030b0a92;
+ min-height:25px;min-width:31px;padding:4px 7px;margin:0 0 5px 4px;white-space:nowrap;
+}
+.fb-campaign .fw-label:before,.fb-campaign .fs-label:before{
+ content:"";position:absolute;right:100%;top:50%;width:8px;border-top:2px solid #c8a36a;pointer-events:none
+}
+.fb-campaign .fw-label:after,.fb-campaign .fs-label:after{
+ content:"";position:absolute;right:calc(100% + 7px);top:calc(50% - 2px);width:5px;height:5px;border-radius:50%;
+ background:#e6be77;border:1px solid #805e2d;pointer-events:none
+}
+.fb-campaign .fw-count-plaque{align-self:center;margin:0 7px 0 0}
+.fb-campaign .fw-count-plaque:after{content:"";position:absolute;left:100%;top:50%;width:10px;border-top:2px solid #c8a36a}
+.fb-campaign .fb-comic-room .fw-label,.fb-campaign .fb-comic-room .fs-label,.fb-campaign .fb-comic-room .fw-count-plaque{font-size:10px;min-height:18px;padding:2px 4px;border-width:1px}
+.fb-campaign .fb-comic-room .fw-assembly:has(>.fw-label)>svg{width:40px}

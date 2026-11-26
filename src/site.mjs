@@ -474,6 +474,7 @@ function launch(levelIdOrNumber,stageId=selectedStage,worldId=selectedWorld) {
     stageNumber:stage.number,stageLength:stage.levels.length,
     worldNumber:world.number,chapterIndex:slot.chapterIndex,
     chapterTitle:stage.chapters[slot.chapterIndex]?.title||"Experiments",
+    chapterDescription:stage.chapters[slot.chapterIndex]?.description||"",
     chapterLevels:stage.levels.filter(s=>s.chapterIndex===slot.chapterIndex)
       .map(s=>({id:s.id,title:s.title,number:s.number}))};
   if(worldId==="fractions"){

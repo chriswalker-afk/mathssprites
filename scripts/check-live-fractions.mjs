@@ -6,6 +6,7 @@ const url="https://chriswalker-afk.github.io/mathssprites/";
 const results={url,checks:[],errors:[]};
 const browser=await chromium.launch({channel:"chrome",headless:true});
 const page=await browser.newPage({viewport:{width:1280,height:720},reducedMotion:"reduce"});
+await page.addInitScript(()=>localStorage.setItem("mathssprites.motion-preference.v1","reduced"));
 page.on("pageerror",e=>results.errors.push(String(e)));
 const verify=(condition,message)=>{if(!condition)throw new Error(message);results.checks.push(message);};
 mkdirSync("artifacts",{recursive:true});

@@ -106,3 +106,15 @@
 .fb-lab[data-reduced="false"] .fs-joined-art{transition:opacity .12s linear!important}
 .fb-lab[data-reduced="false"] .fs-assembly[data-complete="true"]:not(.is-separated) .fs-joined-art{transition-delay:.46s!important}
 .fb-lab[data-reduced="false"] .fs-assembly.is-separated .fs-fragment-motion{animation:fs-magic-wiggle .68s ease-in-out var(--fs-delay) 1 both!important}
+
+/* Match the hand choreography's await intervals. Explicit Motion: on
+ * also overrides a system reduced-motion preference, as in Worlds 1/2/4. */
+.fb-lab[data-reduced="false"] .giant-hand{transition:transform .28s cubic-bezier(.22,.75,.25,1)!important}
+.fb-lab[data-reduced="false"] .rooms-row,.fb-lab[data-reduced="false"] .scale-beam,.fb-lab[data-reduced="false"] .dial-needle{transition:transform .42s ease!important}
+.fb-lab[data-reduced="false"] .fb-spill-object{transition:opacity .24s,transform .45s!important}
+.fb-transfer{position:absolute;z-index:21;pointer-events:none;display:flex;align-items:flex-end;justify-content:center;overflow:visible}
+.fb-transfer>.fb-cargo-art{max-width:100%;width:100%;overflow:visible}
+.fb-campaign .fb-room-floor .fs-assembly[data-denominator="1"],.fb-campaign .fb-cargo-art .fs-assembly[data-denominator="1"]{width:46px}
+.fb-campaign .fb-room-floor .fs-assembly:not([data-denominator="1"]):has(>.fs-label){width:max-content}
+.fb-campaign .fb-room-floor .fw-assembly:has(>.fw-label),.fb-campaign .fb-cargo-art .fw-assembly:has(>.fw-label){width:max-content}
+.fb-campaign .fb-room-floor .fw-label,.fb-campaign .fb-room-floor .fs-label{font-size:12px}

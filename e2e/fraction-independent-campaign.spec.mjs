@@ -3,7 +3,8 @@ const lab=page=>page.locator("#fraction-game-host");
 const root=page=>lab(page).locator("#fraction-lab");
 const ready=page=>expect(root(page)).toHaveAttribute("data-busy","false",{timeout:25000});
 async function board(page){
-  await page.emulateMedia({reducedMotion:"reduce"});await page.goto("/");
+  await page.emulateMedia({reducedMotion:"reduce"});
+  await page.addInitScript(()=>localStorage.setItem("mathssprites.motion-preference.v1","reduced"));await page.goto("/");
   await page.locator("#home-choose-level").click();
   await page.locator('[data-map-world="fractions"]').click();
   await page.locator('[data-map-stage="independent"]').click();
@@ -37,7 +38,7 @@ test("Independent Fractions opens twenty selectable levels, alongside Apprentice
   await expect(page.locator('[data-map-stage="notebook"]')).toBeEnabled();
   await open(page,20);
   await expect(lab(page).locator("#fb-chapter-status")).toContainText("WORLD 3 · STAGE 2 · LEVEL 20 / 20");
-  await expect(lab(page).locator(".fb-mode-badge")).toHaveText("Independent Balance");
+  await expect(lab(page).locator(".fb-mode-badge")).toHaveText("Your Turn");
   await expect(lab(page).locator("#fb-apply")).toBeHidden();
   await expect(lab(page).locator("#left-action")).toBeVisible();
   await expect(lab(page).locator("#right-action")).toBeVisible();

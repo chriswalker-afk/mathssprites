@@ -10,7 +10,7 @@ import {weightInventoryMarkup} from "./fraction-weights.mjs";
 import {rational,req,rtext} from "./rational.mjs";
 import {isSolved} from "./engine.mjs";
 
-const STYLE_FILES=["styles.css","fraction-weights.css","fraction-sprites.css","fraction-balance.css","fraction-campaign.css","fraction-notebook.css"];
+const STYLE_FILES=["styles.css","scene-polish.css","fraction-weights.css","fraction-sprites.css","fraction-balance.css","fraction-campaign.css","fraction-notebook.css"];
 const escape=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const mn=n=>"<mn>"+n+"</mn>";
 const mo=s=>"<mo>"+s+"</mo>";
@@ -55,11 +55,31 @@ export function createFractionCampaignView({slot,context,onLeave,onAdvance,onCom
     const link=document.createElement("link");link.rel="stylesheet";link.href=new URL("./"+path,import.meta.url).href;return link;
   });
   const root=document.createElement("main");root.className="fb-lab fb-campaign";root.id="fraction-lab";
-  root.innerHTML='<header class="fb-header fb-campaign-header"><div><div class="fb-game-nav">'+
+  root.innerHTML='<header class="fb-header fb-campaign-header"><div class="identity fb-identity">'+
+    '<button type="button" id="fb-brand-home" class="game-sprite-home" aria-label="Return to Maths Sprites home" title="Home"><span class="brand-sprite-frame" aria-hidden="true"><span class="brand-sprite-actor token sprite sprite-black"><span class="sprite-ground-shadow"></span><span class="sprite-reaction-shell"><span class="sprite-motion"><span class="sprite-feet"></span><span class="sprite-body"><span class="sprite-eyes"><i></i><i></i></span></span></span></span></span></span></button>'+
+    '<h1>Maths Sprites<span class="title-dot">.</span></h1></div><div class="fb-game-meta">'+
     '<button type="button" id="fb-game-home" aria-label="Maths Sprites home">⌂ Home</button>'+
-    '<button type="button" id="fb-game-levels">← Levels</button></div>'+
-    '<p id="fb-chapter-status" class="eyebrow"></p><h1 id="fb-level-title" tabindex="-1"></h1><p id="fb-chapter-name" class="fb-preview-note"></p></div>'+
-    '<div class="fb-game-meta"><span id="fb-chapter-dots"></span><span class="fb-mode-badge"></span><button type="button" id="fb-motion-toggle" aria-pressed="false">Reduce motion</button></div></header>'+FRACTION_CAMPAIGN_SCENE;
+    '<button type="button" id="fb-game-levels">▦ Levels</button>'+
+    '<span class="fb-mode-badge"></span><button type="button" id="fb-motion-toggle" aria-pressed="false">Motion: on</button></div></header>'+
+    '<div class="fb-chapter-strip"><div class="fb-chapter-info"><p id="fb-chapter-name" class="eyebrow"></p><h2 id="fb-level-title" tabindex="-1"></h2><p id="fb-chapter-status" class="eyebrow"></p></div><span id="fb-chapter-dots" aria-label="Chapter experiments"></span></div>'+FRACTION_CAMPAIGN_SCENE;
+  // The preview retains its simple standalone layout; the campaign uses
+  // the same left scene/right controls composition as the other worlds.
+  const board=document.createElement("div");board.className="fb-board";
+  const scene=root.querySelector("#scene"),tools=root.querySelector(".fb-tools");
+  scene.before(board);board.append(scene,tools);
+  const mission=document.createElement("div");mission.className="fb-mission";
+  mission.innerHTML='<span class="eyebrow">Your experiment</span><p id="fb-mission-prompt"></p><p class="fb-mission-brief" id="fb-mission-brief"></p>';
+  tools.prepend(mission);
+  const bottom=tools.querySelector(".fb-actions");
+  const feedback=bottom.querySelector("#fb-feedback");
+  mission.append(feedback);
+  const actions=document.createElement("div");actions.className="fb-small-actions";
+  actions.append(bottom.querySelector("#fb-undo"),bottom.querySelector("#fb-reset"));
+  bottom.prepend(actions);
+  bottom.querySelector("#fb-reset").textContent="Reset";
+  bottom.querySelector("#fb-apply").textContent="Do it to both rooms →";
+  const review=document.createElement("button");review.id="fb-review-link";review.type="button";review.textContent="Review your algebra →";review.hidden=true;bottom.append(review);
+  review.addEventListener("click",()=>root.querySelector("#fb-review").scrollIntoView({block:"start",behavior:"instant"}));
   shadow.append(...links,root);document.body.append(host);
   const $=id=>root.querySelector("#"+id);
   const abort=new AbortController();
@@ -71,9 +91,11 @@ export function createFractionCampaignView({slot,context,onLeave,onAdvance,onCom
   $("fb-chapter-status").textContent=freePlay?"FREE PLAY · FRACTIONS · NO CAMPAIGN PROGRESS":"WORLD "+context.worldNumber+" · STAGE "+context.stageNumber+" · LEVEL "+
     String(slot.number).padStart(2,"0")+" / "+context.stageLength;
   $("fb-level-title").textContent=slot.title;
-  $("fb-chapter-name").textContent=context.chapterTitle;
-  if(freePlay){$("fb-game-levels").textContent="← Equation Workshop";$("fb-chapter-dots").hidden=true;}
-  root.querySelector(".fb-mode-badge").textContent=paperFirst?"Algebra Apprentice":context.method==="manual"?"Independent Balance":"Guided Balance";
+  $("fb-chapter-name").textContent=freePlay?context.chapterTitle:String((context.chapterIndex??0)+1).padStart(2,"0")+" · "+context.chapterTitle;
+  $("fb-mission-prompt").textContent=slot.level.prompt||"Leave one whole sprite facing only weights.";
+  $("fb-mission-brief").textContent=freePlay?"Exact fractional objects. No campaign progress.":context.chapterDescription||"Work with whole objects and equal pieces.";
+  if(freePlay){$("fb-game-levels").textContent="← Workshop";$("fb-chapter-dots").hidden=true;}
+  root.querySelector(".fb-mode-badge").textContent=paperFirst?"Algebra Apprentice":context.method==="manual"?"Your Turn":"Guided Mirror";
   $("fb-chapter-dots").replaceChildren(...context.chapterLevels.map(l=>{
     const dot=document.createElement("span");
     dot.className="progress-dot"+(l.number<=slot.number?" lit":"")+(l.number===slot.number?" current":"");
@@ -89,6 +111,7 @@ export function createFractionCampaignView({slot,context,onLeave,onAdvance,onCom
     $("fb-replay-next").disabled=step===completed.history.length-1;
   }
   function refresh(state){
+    $("fb-review-link").hidden=!isSolved(state);
     if(isSolved(state)){
       completed=state;step=0;showComic();
     }else{
@@ -98,8 +121,9 @@ export function createFractionCampaignView({slot,context,onLeave,onAdvance,onCom
   let reduced;
   try{
     const saved=localStorage.getItem("mathssprites.motion-preference.v1");
-    reduced=saved==="reduced"||(saved!=="on"&&matchMedia("(prefers-reduced-motion: reduce)").matches);
-  }catch{reduced=matchMedia("(prefers-reduced-motion: reduce)").matches;}
+    // Same default and persistent explicit preference as the main renderer.
+    reduced=saved==="reduced";
+  }catch{reduced=document.body.classList.contains("reduce-motion");}
   const controller=mountFractionBalance(root,{level:slot.level,mode:paperFirst?"auto":context.method,reduced,
     onState:refresh,onComplete:paperFirst?()=>{}:onComplete});
   if(paperFirst)notebook=mountFractionNotebook(root,{level:slot.level,controller,
@@ -110,16 +134,21 @@ export function createFractionCampaignView({slot,context,onLeave,onAdvance,onCom
   reflectMotion();
   listen(motionButton,"click",()=>{
     if(!canLeave())return;
-    if(controller.setReduced(!reduced)){reduced=!reduced;reflectMotion();}
+    if(controller.setReduced(!reduced)){
+      reduced=!reduced;reflectMotion();
+      try{localStorage.setItem("mathssprites.motion-preference.v1",reduced?"reduced":"on");}catch{}
+      window.dispatchEvent(new CustomEvent("mathssprites:motion-change",{detail:{reduced}}));
+    }
   });
   listen($("fb-game-home"),"click",()=>{if(canLeave())onLeave("home")});
+  listen($("fb-brand-home"),"click",()=>{if(canLeave())onLeave("home")});
   listen($("fb-game-levels"),"click",()=>{if(canLeave())onLeave("levels")});
   listen($("fb-next-level"),"click",()=>{if(completed&&canLeave())onAdvance()});
   listen($("fb-replay-prev"),"click",()=>{step--;showComic()});
   listen($("fb-replay-next"),"click",()=>{step++;showComic()});
   const observer=new MutationObserver(()=>{
     const busy=!canLeave();
-    $("fb-game-home").disabled=busy;$("fb-game-levels").disabled=busy;motionButton.disabled=busy;
+    $("fb-game-home").disabled=busy;$("fb-brand-home").disabled=busy;$("fb-game-levels").disabled=busy;motionButton.disabled=busy;
   });
   observer.observe(root,{attributes:true,attributeFilter:["data-busy","data-notebook-playing"]});
   $("fb-level-title").focus({preventScroll:true});
