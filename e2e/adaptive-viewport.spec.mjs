@@ -96,13 +96,13 @@ test("real room/pan/beam/pedestal remain connected while tall gameplay uses larg
     // detached pans or scale base; taller rooms move with the hardware.
     expect(m.pan.bottom-m.beam.top).toBeGreaterThan(-9);
     expect(m.pan.bottom-m.beam.top).toBeLessThan(90);
+    expect(Math.abs(m.bench.top-m.base.bottom)).toBeLessThanOrEqual(3);
     if(size.width>=1100&&size.height>=790){
       expect(m.scene.height).toBeGreaterThan(675);
-      expect(Math.abs(m.bench.top-m.base.bottom)).toBeLessThan(38);
       expect(m.room.height).toBeGreaterThan(350);
       // The row rotates around the same brass pivot as the beam — no
       // detached scale when a manual action temporarily unbalances it.
-      expect(Math.abs((m.beam.top-m.rooms.top)-m.pivotY)).toBeLessThan(12);
+      expect(Math.abs((m.beam.top+m.beam.height/2-m.rooms.top)-m.pivotY)).toBeLessThan(12);
     }
     if(size.width<1100&&size.height>=790){
       expect(m.scene.height).toBeLessThanOrEqual(620);

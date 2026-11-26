@@ -1,0 +1,91 @@
+/* PR102 — one floor-relative coordinate system for both physical renderers.
+   The scene itself is NEVER scaled or translated. Hand targets continue to
+   use native client rectangles. Only the vertical stack of physical props
+   is positioned from the actual, available scene height.
+
+   bottom of scene -> bench -> fixed pedestal -> beam -> chamber pans.
+   The chamber row is a bounded box: if the actual scene gets shorter
+   (including notebook replay), sacrifice headroom first, then room height.
+   The beam and row rotate about the SAME point, not two approximate pivots. */
+.app-shell .playfield,
+.fb-lab .playfield{
+  --scene-floor-height:46px;
+  --scene-base-height:67px;
+  --scene-beam-height:34px;
+  --scene-pan-height:29px;
+  --scene-room-height:290px;
+  --scene-chamber-padding:30px;
+  --scene-headroom:42px;
+  --scene-hardware:calc(var(--scene-floor-height) + var(--scene-base-height) + var(--scene-beam-height));
+}
+@media(max-width:1100px){
+  .app-shell .playfield{--scene-room-height:282px}
+}
+@media(max-width:800px){
+  .app-shell .playfield{--scene-room-height:225px;--scene-chamber-padding:20px;--scene-headroom:30px}
+}
+@media(max-width:600px){
+  .app-shell .playfield{--scene-floor-height:25px;--scene-base-height:38px;--scene-beam-height:20px;--scene-pan-height:18px;--scene-room-height:195px;--scene-chamber-padding:15px;--scene-headroom:24px}
+}
+@media(min-width:900px) and (min-height:500px) and (max-height:649px){
+  .app-shell .playfield{--scene-floor-height:34px;--scene-base-height:55px;--scene-room-height:196px;--scene-pan-height:21px;--scene-chamber-padding:19px;--scene-headroom:36px}
+}
+@media(min-width:1100px) and (min-height:790px){
+  .app-shell .playfield{--scene-room-height:var(--wide-room-height,clamp(365px,37dvh,440px))}
+}
+/* Fraction campaign uses the same stack, but retains its own dimensions.
+   The standalone preview also shares the anchor without loading the campaign. */
+.fb-lab .playfield{
+  --scene-floor-height:26px;
+  --scene-base-height:48px;
+  --scene-room-height:clamp(170px,36vh,290px);
+  --scene-chamber-padding:0px;
+  --scene-headroom:30px;
+}
+@media(max-width:600px){
+  .fb-lab .playfield{--scene-beam-height:20px;--scene-pan-height:18px;--scene-headroom:24px}
+}
+.fb-campaign .fb-board .playfield{
+  --scene-floor-height:var(--fb-bench);
+  --scene-base-height:var(--fb-base);
+  --scene-beam-height:var(--fb-beam);
+  --scene-pan-height:29px;
+  --scene-room-height:var(--fb-room-height);
+  --scene-headroom:42px;
+}
+@media(max-width:899px), (max-height:499px){
+  .fb-campaign .fb-board .playfield{--scene-pan-height:20px;--scene-headroom:28px}
+}
+:is(.app-shell,.fb-lab) .playfield .workbench{
+  top:auto;bottom:0;height:var(--scene-floor-height);
+}
+:is(.app-shell,.fb-lab) .playfield .scale-base{
+  top:auto;bottom:var(--scene-floor-height);height:var(--scene-base-height);
+}
+:is(.app-shell,.fb-lab) .playfield .scale-beam{
+  top:auto;bottom:calc(var(--scene-floor-height) + var(--scene-base-height) - 1px);
+  height:var(--scene-beam-height);transform-origin:50% 50%;
+}
+:is(.app-shell,.fb-lab) .playfield .rooms-row{
+  top:auto;
+  bottom:calc(var(--scene-hardware) - 1px);
+  height:min(calc(var(--scene-room-height) + var(--scene-chamber-padding) + var(--scene-pan-height) - 1px),
+    max(0px,calc(100% - var(--scene-hardware) - var(--scene-headroom))));
+  align-items:stretch;
+  transform-origin:50% calc(100% + var(--scene-beam-height) / 2);
+}
+:is(.app-shell,.fb-lab) .playfield .chamber{
+  height:100%;min-height:0;display:flex;flex-direction:column;
+  padding-top:var(--scene-chamber-padding);
+}
+:is(.app-shell,.fb-lab) .playfield .room-interior{
+  height:auto;min-height:0;flex:1 1 auto;
+}
+:is(.app-shell,.fb-lab) .playfield .scale-pan{
+  height:var(--scene-pan-height);flex:0 0 var(--scene-pan-height);
+}
+/* When a replay reduces the available height, keep the inventory inside
+   the room. Existing horizontal fitting, token art and floor offsets stay. */
+:is(.app-shell,.fb-lab) .playfield .room-items{
+  max-height:calc(100% - 50px);
+}

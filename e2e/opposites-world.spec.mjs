@@ -1,3 +1,4 @@
+import {assertGrounded} from "./scene-grounding-helper.mjs";
 import {playCampaignLevel} from "./campaign-menu-helper.mjs";
 import {openCampaignBoard,chooseCampaignWorld,chooseCampaignStage} from "./campaign-menu-helper.mjs";
 import {clickWithReferenceMove} from "./reference-move-helper.mjs";
@@ -91,6 +92,12 @@ test("World 2 signed editor typesets +(−x), previews and replays real steps @s
   await page.locator("#notebook-replay").click();
   await expect(page.locator("#notebook-playback")).toBeVisible();
   await expect(page.locator("#notebook-next")).toBeVisible({timeout:60000});
+  // PR102: replay has less scene height than an ordinary experiment.
+  const replayViewport=page.viewportSize();
+  await page.setViewportSize({width:1092,height:540});
+  await assertGrounded(page.locator("#scene"));
+  await page.setViewportSize(replayViewport);
+  await assertGrounded(page.locator("#scene"));
   const save=await page.evaluate(()=>JSON.parse(localStorage.getItem("mathssprites.campaign.v2")));
   expect(save.worlds.opposites.stages.notebook.completed).toContain("op-a-05");
   expect(save.worlds.workshop.stages.notebook.completed).toEqual([]);

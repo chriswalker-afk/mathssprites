@@ -1,3 +1,4 @@
+import {assertGrounded} from "./scene-grounding-helper.mjs";
 import {playCampaignLevel} from "./campaign-menu-helper.mjs";
 import {openCampaignBoard,chooseCampaignStage} from "./campaign-menu-helper.mjs";
 import {test,expect} from "@playwright/test";
@@ -92,6 +93,12 @@ test("solved paper alone earns NO progress; successful hands earn credit and adv
   await page.locator("#notebook-replay").click();
   await expect(page.locator("#scene")).toBeVisible();
   await expect(page.locator("#notebook-next")).toBeVisible({timeout:35000});
+  // PR102: replay has less scene height than an ordinary experiment.
+  const replayViewport=page.viewportSize();
+  await page.setViewportSize({width:1092,height:540});
+  await assertGrounded(page.locator("#scene"));
+  await page.setViewportSize(replayViewport);
+  await assertGrounded(page.locator("#scene"));
   await expect(page.locator("#notebook-playback-message")).toContainText("checked algebra step");
   const earned=await page.evaluate(()=>JSON.parse(localStorage.getItem("mathssprites.apprentice-progress.v1")));
   expect(earned.completed).toEqual([1]);

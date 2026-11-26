@@ -196,8 +196,6 @@
   .app-shell{
     --wide-board-height:min(calc(100dvh - 104px),820px);
     --wide-room-height:clamp(365px,37dvh,440px);
-    --wide-room-growth:calc(var(--wide-room-height) - 290px);
-    --wide-scene-shift:calc(var(--wide-board-height) - 607px - var(--wide-room-growth));
   }
   .app-shell .game-board{
     max-height:var(--wide-board-height);
@@ -206,11 +204,6 @@
     grid-template-columns:minmax(0,1fr) clamp(300px,22vw,365px);
   }
   .app-shell .game-board .playfield{height:100%;min-height:0}
-  .app-shell .rooms-row{
-    top:calc(101px + var(--wide-scene-shift));
-    /* The tilt must still pivot at the beam, even with taller chambers. */
-    transform-origin:50% calc(350px + var(--wide-room-growth));
-  }
   .app-shell .room-interior{height:var(--wide-room-height)}
   .app-shell .room-items{
     height:clamp(180px,23dvh,252px);
@@ -220,12 +213,6 @@
     height:clamp(88px,11dvh,124px);
   }
   .app-shell .tiny-shelf{top:clamp(100px,14dvh,166px)}
-  .app-shell .scale-beam{
-    top:calc(449px + var(--wide-scene-shift) + var(--wide-room-growth));
-  }
-  .app-shell .scale-base{
-    top:calc(482px + var(--wide-scene-shift) + var(--wide-room-growth));
-  }
   .app-shell .ambient-window{
     height:clamp(355px,65dvh,660px);
   }
