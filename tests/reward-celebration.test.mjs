@@ -22,3 +22,10 @@ test("startup, no new entitlements and repeat completion have no queued announce
   queue.enqueue(["springy-bounce"]);
   assert.deepEqual(queue.take(),[]);
 });
+
+test("new weight and chamber milestones use the same ordered one-time celebration queue",()=>{
+  const queue=createRewardCelebrationQueue();
+  assert.equal(queue.enqueue(["clockmakers-workshop","polished-steel","dumbbell"]),3);
+  assert.deepEqual(queue.take().map(r=>r.id),["polished-steel","dumbbell","clockmakers-workshop"]);
+  assert.equal(queue.enqueue(["dumbbell"]),0);
+});

@@ -1,6 +1,6 @@
 import {CAMPAIGN_REGISTRY} from "../src/campaign-registry.mjs";
 import {blankCampaignRecords,campaignStarTotals} from "../src/campaign-records.mjs";
-import {COSMETIC_REWARDS,findCosmeticReward} from "../src/cosmetic-catalog.mjs";
+import {COSMETIC_REWARDS,findCosmeticReward,originalAppearance} from "../src/cosmetic-catalog.mjs";
 import {clickWithReferenceMove} from "./reference-move-helper.mjs";
 import {test,expect} from "@playwright/test";
 const saveKey="mathssprites.cosmetics.v1";
@@ -60,7 +60,7 @@ test("previous stars unlock art, students can equip and combine variants, and sa
   await page.goto("/");
   await open(page);
   await expect(page.locator("#atelier-stars")).toHaveText("12 / 720 ★");
-  await expect(page.locator("#atelier-owned")).toHaveText("2 / 29 unlocked");
+  await expect(page.locator("#atelier-owned")).toHaveText("4 / 57 unlocked");
   const before=await saves(page);
   await reward(page,"extra-fluffy").click();
   await expect(page.locator("#atelier-equip")).toBeEnabled();
@@ -88,7 +88,7 @@ test("previous stars unlock art, students can equip and combine variants, and sa
   await page.locator("#atelier-restore").click();
   await expect(page.locator("#atelier-equipped")).toHaveText("Original appearance");
   const saved=await snapshot(page);
-  expect(saved.unlockedRewards).toEqual(["curious-eyes","extra-fluffy"]);
+  expect(saved.unlockedRewards).toEqual(["curious-eyes","polished-steel","extra-fluffy","dumbbell"]);
   expect(Object.values(saved.equipped).every(v=>v===null)).toBe(true);
   const after=await saves(page);delete before[saveKey];delete after[saveKey];
   expect(after).toEqual(before);
@@ -240,11 +240,11 @@ test("719 to 720: actual final star unlocks the full outfit after replay, with s
   await page.goto("/");await open(page);
   const full=findCosmeticReward("grand-alchemist"),slots=Object.keys(full.loadout);
   await expect(page.locator("#atelier-stars")).toHaveText("719 / 720 ★");
-  await expect(page.locator("#atelier-owned")).toHaveText("28 / 29 unlocked");
+  await expect(page.locator("#atelier-owned")).toHaveText("56 / 57 unlocked");
   await page.locator("#atelier-filter").selectOption("set");
   await reward(page,full.id).click();
   await expect(page.locator("#atelier-equip")).toBeDisabled();
-  await expect(page.locator("#atelier-detail-status")).toContainText("1 more stars");
+  await expect(page.locator("#atelier-detail-status")).toContainText("1 more star");
   for(const slot of slots)await expect(page.locator("#atelier-preview")).toHaveAttribute("data-sprite-"+slot,full.loadout[slot]);
   await expect(page.locator("body")).toHaveAttribute("data-sprite-headwear","original");
   await expect(page.locator("#reward-celebration")).toBeHidden();
@@ -262,7 +262,7 @@ test("719 to 720: actual final star unlocks the full outfit after replay, with s
   await page.locator("#replay-close").click();await page.locator("#game-levels").click();
   await page.locator(".site-nav-links [data-screen='atelier']").click();
   await expect(page.locator("#atelier-stars")).toHaveText("720 / 720 ★");
-  await expect(page.locator("#atelier-owned")).toHaveText("29 / 29 unlocked");
+  await expect(page.locator("#atelier-owned")).toHaveText("57 / 57 unlocked");
   await expect(page.locator("#atelier-next-name")).toHaveText("Collection complete");
   await expect(page.locator("#atelier-next-copy")).toHaveText("All rewards unlocked");
   await page.locator("#atelier-filter").selectOption("set");
@@ -286,9 +286,53 @@ test("719 to 720: actual final star unlocks the full outfit after replay, with s
   await expect(page.locator("body")).toHaveAttribute("data-sprite-headwear","grand-alchemist-headwear");
   await page.locator("#atelier-filter").selectOption("set");
   await reward(page,full.id).click();await page.locator("#atelier-equip").click();
-  expect((await snapshot(page)).equipped).toEqual(full.loadout);
+  expect((await snapshot(page)).equipped).toEqual({...originalAppearance(),...full.loadout});
   await page.locator("#atelier-restore").click();
   await expect(page.locator("#atelier-equipped")).toHaveText("Original appearance");
   await expect(page.locator("#atelier-stars")).toHaveText("720 / 720 ★");
   expect((await snapshot(page)).unlockedRewards).toEqual(COSMETIC_REWARDS.map(r=>r.id));
+});
+
+test("the expanded Atelier has three independent collections, clear pending art and no preview save writes @quick @smoke",async({page},testInfo)=>{
+  await legacyStars(page,4);
+  await page.goto("/");await open(page);
+  const before=await saves(page);
+  await expect(page.locator("#atelier-owned")).toHaveText("4 / 57 unlocked");
+  const tab=key=>page.locator('[data-atelier-collection="'+key+'"]');
+  await expect(tab("sprites")).toHaveAttribute("aria-pressed","true");
+  await expect(visibleRewards(page)).toHaveCount(29);
+  await tab("weights").click();
+  await expect(tab("weights")).toHaveAttribute("aria-pressed","true");
+  await expect(page.locator("#atelier-preview")).toHaveAttribute("data-preview-type","weights");
+  await expect(page.locator(".atelier-weight-stage .weight")).toBeVisible();
+  await expect(visibleRewards(page)).toHaveCount(18);
+  await page.locator("#atelier-filter").selectOption("weight-material");
+  await expect(visibleRewards(page)).toHaveCount(7);
+  await reward(page,"polished-steel").click();
+  await expect(reward(page,"polished-steel")).toHaveAttribute("data-status","owned-coming");
+  await expect(page.locator("#atelier-equip")).toBeDisabled();
+  await expect(page.locator("#atelier-detail-copy")).toContainText("Artwork coming soon");
+  await page.locator("#atelier-owned-only").check();
+  await expect(visibleRewards(page)).toHaveCount(1);
+  await tab("chambers").click();
+  await expect(page.locator("#atelier-empty")).toBeVisible();
+  await page.locator("#atelier-owned-only").uncheck();
+  await expect(visibleRewards(page)).toHaveCount(10);
+  await expect(page.locator(".atelier-chamber-stage")).toBeVisible();
+  await reward(page,"clockmakers-workshop").click();
+  await expect(page.locator("#atelier-equip")).toBeDisabled();
+  await expect(page.locator("#atelier-detail-status")).toContainText("12 more stars");
+  await tab("sprites").click();
+  await expect(visibleRewards(page)).toHaveCount(29);
+  await expect(page.locator("#atelier-preview-label")).toHaveText("Equipped appearance");
+  expect(await saves(page)).toEqual(before);
+  for(const [width,height] of [[1092,540],[375,812]]){
+    await page.setViewportSize({width,height});
+    for(const key of ["weights","chambers"]){
+      await tab(key).click();
+      await expect(page.locator("#atelier-preview")).toHaveAttribute("data-preview-type",key);
+      expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+2)).toBe(true);
+      await testInfo.attach("atelier-"+key+"-"+width+".png",{body:await page.screenshot({fullPage:true}),contentType:"image/png"});
+    }
+  }
 });

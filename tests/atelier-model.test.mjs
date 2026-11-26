@@ -1,14 +1,14 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import {atelierCollection,atelierPreview,atelierRewardState,rewardArtReady,equipAtelierReward} from "../src/atelier-model.mjs";
-import {COSMETIC_REWARDS,findCosmeticReward,originalAppearance} from "../src/cosmetic-catalog.mjs";
+import {atelierCollection,atelierFilters,atelierPreview,atelierRewardState,rewardArtReady,equipAtelierReward} from "../src/atelier-model.mjs";
+import {COSMETIC_REWARDS,cosmeticCollection,findCosmeticReward,originalAppearance} from "../src/cosmetic-catalog.mjs";
 import {createCosmeticRewards,COSMETIC_SAVE_KEY} from "../src/cosmetic-rewards.mjs";
 import {blankCampaignRecords} from "../src/campaign-records.mjs";
 const reward=id=>findCosmeticReward(id);
 const snapshot=(earnedStars=0,unlockedRewards=[],equipped={})=>({earnedStars,unlockedRewards,equipped:{...originalAppearance(),...equipped}});
-test("all 29 milestones remain visible and category/owned filtering uses actual entitlements",()=>{
+test("all 57 milestones remain visible and category/owned filtering uses actual entitlements",()=>{
   const saved=snapshot(9,["curious-eyes","extra-fluffy"]);
-  assert.equal(atelierCollection(saved).length,29);
+  assert.equal(atelierCollection(saved).length,57);
   assert.deepEqual(atelierCollection(saved,{filter:"eyes"}).map(r=>r.id),["curious-eyes","sleepy-eyes","mischievous-eyes","distinguished-eyebrows"]);
   assert.deepEqual(atelierCollection(saved,{ownedOnly:true}).map(r=>r.id),["curious-eyes","extra-fluffy"]);
   assert.equal(atelierCollection(saved,{filter:"headwear",ownedOnly:true}).length,0);
@@ -28,7 +28,8 @@ test("owned, locked and equipped states cover the complete collection; missing-a
   assert.equal(atelierRewardState(saved,reward("knitted-beanie")).status,"locked");
   assert.equal(atelierRewardState(saved,reward("distinguished-eyebrows")).status,"locked");
   assert.equal(atelierRewardState(saved,reward("distinguished-eyebrows"),[]).status,"locked-coming");
-  assert.ok(COSMETIC_REWARDS.every(r=>rewardArtReady(r)));
+  assert.ok(COSMETIC_REWARDS.filter(r=>cosmeticCollection(r)==="sprites").every(r=>rewardArtReady(r)));
+  assert.ok(COSMETIC_REWARDS.filter(r=>cosmeticCollection(r)!=="sprites").every(r=>!rewardArtReady(r)));
   assert.equal(rewardArtReady(reward("grand-alchemist")),true);
   assert.equal(rewardArtReady(reward("grand-alchemist"),Object.values(reward("grand-alchemist").loadout)),true);
 });
@@ -87,14 +88,14 @@ test("the 720-star reward is one unlock and equips a coordinated seven-component
   const locked=snapshot(719,COSMETIC_REWARDS.slice(0,-1).map(r=>r.id));
   assert.equal(atelierRewardState(locked,set).canEquip,false);
   assert.equal(atelierRewardState(locked,set).starsNeeded,1);
-  assert.deepEqual(atelierPreview(locked,set.id),set.loadout);
+  assert.deepEqual(atelierPreview(locked,set.id),{...originalAppearance(),...set.loadout});
   assert.deepEqual(locked.equipped,originalAppearance());
   const map=new Map([[COSMETIC_SAVE_KEY,JSON.stringify({version:1,unlockedRewards:COSMETIC_REWARDS.map(r=>r.id),equipped:{}})]]);
   const storage={getItem:key=>map.get(key),setItem:(key,v)=>map.set(key,v)};
   let store=createCosmeticRewards(blankCampaignRecords(),{storage});
   assert.equal(equipAtelierReward(store,set.id).ok,true);
-  assert.deepEqual(store.getSnapshot().equipped,set.loadout);
-  assert.equal(store.getSnapshot().unlockedCount,29);
+  assert.deepEqual(store.getSnapshot().equipped,{...originalAppearance(),...set.loadout});
+  assert.equal(store.getSnapshot().unlockedCount,57);
   assert.equal(atelierRewardState(store.getSnapshot(),set).status,"equipped");
   assert.equal(equipAtelierReward(store,"curled-fur").ok,true);
   assert.equal(store.getSnapshot().equipped.headwear,set.loadout.headwear);
@@ -103,5 +104,24 @@ test("the 720-star reward is one unlock and equips a coordinated seven-component
   assert.equal(store.getSnapshot().equipped.fur,"curled-fur");
   assert.equal(equipAtelierReward(store,set.id).ok,true);
   assert.deepEqual(store.restoreOriginal().snapshot.equipped,originalAppearance());
-  assert.equal(store.getSnapshot().unlockedCount,29);
+  assert.equal(store.getSnapshot().unlockedCount,57);
+});
+
+test("three collections filter separately and forthcoming art is owned but cannot be equipped or previewed",()=>{
+  const saved=snapshot(24,["curious-eyes","polished-steel","extra-fluffy","dumbbell","little-bow-tie","clockmakers-workshop"],{fur:"extra-fluffy"});
+  for(const [collection,count] of [["sprites",29],["weights",18],["chambers",10]])assert.equal(atelierCollection(saved,{collection}).length,count);
+  assert.deepEqual(atelierFilters("weights").map(f=>f.id),["all","weight-shape","weight-material","weight-effect"]);
+  assert.deepEqual(atelierFilters("chambers").map(f=>f.id),["all","chamber-theme"]);
+  assert.deepEqual(atelierCollection(saved,{collection:"weights",ownedOnly:true}).map(r=>r.id),["polished-steel","dumbbell"]);
+  assert.equal(atelierCollection(saved,{collection:"weights",filter:"weight-material"}).length,7);
+  assert.equal(atelierRewardState(saved,reward("polished-steel")).status,"owned-coming");
+  assert.equal(atelierRewardState(saved,reward("copper")).status,"locked-coming");
+  assert.deepEqual(atelierPreview(saved,"dumbbell"),saved.equipped);
+  const map=new Map([[COSMETIC_SAVE_KEY,JSON.stringify({version:1,unlockedRewards:saved.unlockedRewards,equipped:saved.equipped})]]);
+  const store=createCosmeticRewards(blankCampaignRecords(),{storage:{getItem:key=>map.get(key),setItem:(key,v)=>map.set(key,v)}});
+  const before=map.get(COSMETIC_SAVE_KEY);
+  assert.equal(equipAtelierReward(store,"polished-steel").code,"art-unavailable");
+  assert.equal(equipAtelierReward(store,"clockmakers-workshop").code,"art-unavailable");
+  assert.equal(equipAtelierReward(store,"copper").code,"locked");
+  assert.equal(map.get(COSMETIC_SAVE_KEY),before);
 });

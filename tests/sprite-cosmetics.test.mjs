@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {readFileSync} from "node:fs";
 import {IMPLEMENTED_SPRITE_COSMETICS,resolveSpriteAppearance,applySpriteAppearance} from "../src/sprite-cosmetics.mjs";
-import {findCosmeticItem,COSMETIC_REWARDS,COSMETIC_ITEMS,findCosmeticReward} from "../src/cosmetic-catalog.mjs";
+import {findCosmeticItem,COSMETIC_REWARDS,COSMETIC_ITEMS,cosmeticCollection,findCosmeticReward} from "../src/cosmetic-catalog.mjs";
 import {spriteAssemblyMarkup,spritePartition} from "../src/fraction-sprites.mjs";
 import {spriteCreatureMarkup} from "../src/square-sprites.mjs";
 const wearSlots=["headwear","eyewear","neckwear"];
@@ -10,9 +10,9 @@ const wearableRewards=COSMETIC_REWARDS.filter(r=>wearSlots.includes(r.slot));
 const original={fur:"original",eyes:"original",headwear:"original",eyewear:"original",neckwear:"original",movement:"original",effect:"original"};
 test("all 35 cosmetic components match the 29 catalogue rewards and unknown art falls back to original",()=>{
   assert.equal(wearableRewards.length,14);
-  assert.equal(COSMETIC_REWARDS.length,29);
+  assert.equal(COSMETIC_REWARDS.filter(r=>cosmeticCollection(r)==="sprites").length,29);
   assert.equal(IMPLEMENTED_SPRITE_COSMETICS.length,35);
-  assert.deepEqual([...IMPLEMENTED_SPRITE_COSMETICS].sort(),COSMETIC_ITEMS.map(r=>r.id).sort());
+  assert.deepEqual([...IMPLEMENTED_SPRITE_COSMETICS].sort(),COSMETIC_ITEMS.filter(r=>cosmeticCollection(r)==="sprites").map(r=>r.id).sort());
   for(const id of IMPLEMENTED_SPRITE_COSMETICS){
     const item=findCosmeticItem(id);assert.equal(resolveSpriteAppearance({[item.slot]:id})[item.slot],id);
   }
@@ -102,3 +102,4 @@ test("all exclusive finale components have their own scoped art, with no additio
   assert.match(fragment,/class="fs-brows"/);
   assert.doesNotMatch(fragment,/sprite-wear-|sprite-cosmetic-effect/);
 });
+

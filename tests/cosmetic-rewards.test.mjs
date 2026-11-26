@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
-  COSMETIC_REWARDS,COSMETIC_ITEMS,COSMETIC_SLOTS,findCosmeticReward,findCosmeticItem,originalAppearance
+  COSMETIC_REWARDS,COSMETIC_ITEMS,COSMETIC_SLOTS,SPRITE_COSMETIC_SLOTS,cosmeticCollection,findCosmeticReward,findCosmeticItem,originalAppearance
 } from "../src/cosmetic-catalog.mjs";
 import {
   COSMETIC_SAVE_KEY,createCosmeticRewards,blankCosmeticProfile,normalizeCosmeticProfile,loadCosmeticProfile
@@ -37,10 +37,10 @@ function recordsForStars(stars){
   assert.equal(stars,0,"requested stars must exist");
   return records;
 }
-test("agreed 29 reward milestones, stable IDs, and final set are internally consistent",()=>{
+test("agreed 57 reward milestones, stable IDs, and final set are internally consistent",()=>{
   assert.deepEqual(COSMETIC_REWARDS.map(r=>r.stars),
-    [3,9,18,30,45,60,72,90,120,150,180,210,240,270,300,330,360,390,420,450,480,510,540,570,600,630,660,690,720]);
-  assert.equal(new Set(COSMETIC_REWARDS.map(r=>r.id)).size,29);
+    [3,6,9,12,18,24,30,36,45,54,60,66,72,81,90,105,120,135,150,165,180,195,210,225,240,255,270,285,300,315,330,345,360,375,390,405,420,435,450,465,480,495,510,525,540,555,570,585,600,615,630,645,660,675,690,705,720]);
+  assert.equal(new Set(COSMETIC_REWARDS.map(r=>r.id)).size,57);
   assert.equal(new Set(COSMETIC_ITEMS.map(r=>r.id)).size,COSMETIC_ITEMS.length);
   for(const item of COSMETIC_ITEMS){
     assert.ok(COSMETIC_SLOTS.includes(item.slot));
@@ -48,7 +48,7 @@ test("agreed 29 reward milestones, stable IDs, and final set are internally cons
     assert.ok(!["colour","color","sign","mass","shape","size"].includes(item.slot));
   }
   const finale=findCosmeticReward("grand-alchemist");
-  assert.deepEqual(Object.keys(finale.loadout),COSMETIC_SLOTS);
+  assert.deepEqual(Object.keys(finale.loadout),SPRITE_COSMETIC_SLOTS);
   for(const [slot,id] of Object.entries(finale.loadout)){
     assert.equal(findCosmeticItem(id).slot,slot);
     assert.equal(findCosmeticItem(id).unlockId,finale.id);
@@ -73,7 +73,7 @@ test("each threshold unlocks exactly on time, with useful next reward informatio
   }
   assert.equal(rewards.getSnapshot().nextReward,null);
   assert.equal(rewards.getSnapshot().starsToNext,0);
-  assert.equal(rewards.getSnapshot().unlockedCount,29);
+  assert.equal(rewards.getSnapshot().unlockedCount,57);
 });
 test("global star count uses all worlds and modes, not legacy ratings plus the same v2 records",()=>{
   const full=recordsForStars(720);
@@ -90,7 +90,7 @@ test("global star count uses all worlds and modes, not legacy ratings plus the s
   const original=store.map.get(CAMPAIGN_SAVE_KEY);
   const rewards=createCosmeticRewards(loadCampaignRecords(store),{storage:store});
   assert.equal(rewards.getSnapshot().earnedStars,9);
-  assert.deepEqual(rewards.getSnapshot().unlockedRewards,["curious-eyes","extra-fluffy"]);
+  assert.deepEqual(rewards.getSnapshot().unlockedRewards,["curious-eyes","polished-steel","extra-fluffy"]);
   assert.equal(store.map.get(CAMPAIGN_SAVE_KEY),original);
   assert.deepEqual(store.writes,[COSMETIC_SAVE_KEY]);
 });
@@ -136,7 +136,7 @@ test("equipping requires a matching unlocked item, supports eyewear and neckwear
     assert.equal(rewards.equip(slot,id).ok,true);
   const selected=rewards.getSnapshot();
   assert.equal(selected.earnedStars,72);
-  assert.equal(selected.unlockedCount,7);
+  assert.equal(selected.unlockedCount,13);
   assert.equal(selected.equipped.eyewear,"brass-spectacles");
   assert.equal(selected.equipped.neckwear,"little-bow-tie");
   rewards=createCosmeticRewards(campaign,{storage:store});
@@ -144,7 +144,7 @@ test("equipping requires a matching unlocked item, supports eyewear and neckwear
   assert.equal(rewards.equip("eyewear",null).ok,true);
   assert.equal(rewards.getSnapshot().equipped.neckwear,"little-bow-tie");
   assert.deepEqual(rewards.restoreOriginal().snapshot.equipped,originalAppearance());
-  assert.equal(rewards.getSnapshot().unlockedCount,7);
+  assert.equal(rewards.getSnapshot().unlockedCount,13);
   assert.equal(rewards.getSnapshot().earnedStars,72);
   assert.ok(store.writes.every(key=>key===COSMETIC_SAVE_KEY));
 });
@@ -154,8 +154,8 @@ test("already earned rewards and equipped appearance survive a later reduction i
   const changed=rewards.syncCampaign(recordsForStars(72));
   assert.deepEqual(changed.newlyUnlocked,[]);
   assert.equal(changed.snapshot.earnedStars,72);
-  assert.equal(changed.snapshot.nextReward.stars,120);
-  assert.equal(changed.snapshot.starsToNext,48);
+  assert.equal(changed.snapshot.nextReward.stars,105);
+  assert.equal(changed.snapshot.starsToNext,33);
   assert.equal(changed.snapshot.equipped.fur,"spiky-fur");
   const reloaded=createCosmeticRewards(recordsForStars(0),{storage:store});
   assert.equal(reloaded.isUnlocked("spiky-fur"),true);
@@ -167,10 +167,10 @@ test("the Grand Alchemist is one milestone with a coordinated loadout; changing 
   assert.equal(rewards.isUnlocked("grand-alchemist-fur"),false);
   assert.equal(rewards.equip("fur","grand-alchemist-fur").code,"locked");
   assert.deepEqual(rewards.syncCampaign(recordsForStars(720)).newlyUnlocked,["grand-alchemist"]);
-  assert.deepEqual(rewards.equipSet("grand-alchemist").snapshot.equipped,findCosmeticReward("grand-alchemist").loadout);
+  assert.deepEqual(rewards.equipSet("grand-alchemist").snapshot.equipped,{...originalAppearance(),...findCosmeticReward("grand-alchemist").loadout});
   assert.equal(rewards.equip("headwear",null).ok,true);
   assert.equal(rewards.isUnlocked("grand-alchemist"),true);
-  assert.equal(rewards.getSnapshot().rewardCount,29);
+  assert.equal(rewards.getSnapshot().rewardCount,57);
 });
 test("save validation ignores unknown, duplicate, locked and wrongly slotted data",()=>{
   const bad={version:1,unlockedRewards:["curious-eyes","curious-eyes","made-up"],
@@ -179,7 +179,7 @@ test("save validation ignores unknown, duplicate, locked and wrongly slotted dat
   assert.deepEqual(normalizeCosmeticProfile({version:999,unlockedRewards:["grand-alchemist"]}),blankCosmeticProfile());
   const store=storage({[COSMETIC_SAVE_KEY]:"{invalid"});
   assert.deepEqual(loadCosmeticProfile(store),blankCosmeticProfile());
-  assert.equal(createCosmeticRewards(recordsForStars(9),{storage:store}).getSnapshot().unlockedCount,2);
+  assert.equal(createCosmeticRewards(recordsForStars(9),{storage:store}).getSnapshot().unlockedCount,3);
 });
 test("a blocked storage browser keeps session unlocks and selections usable; reads and listeners cannot break the campaign",()=>{
   const blocked={getItem(){throw Error("blocked")},setItem(){throw Error("blocked")}};
@@ -187,7 +187,7 @@ test("a blocked storage browser keeps session unlocks and selections usable; rea
   const calls=[];
   const stop=rewards.subscribe(change=>calls.push(change.newlyUnlocked));
   rewards.subscribe(()=>{throw Error("a future celebration failed")});
-  assert.deepEqual(rewards.syncCampaign(recordsForStars(18)).newlyUnlocked,["curious-eyes","extra-fluffy","little-bow-tie"]);
+  assert.deepEqual(rewards.syncCampaign(recordsForStars(18)).newlyUnlocked,["curious-eyes","polished-steel","extra-fluffy","dumbbell","little-bow-tie"]);
   assert.equal(rewards.equip("neckwear","little-bow-tie").ok,true);
   stop();
   rewards.syncCampaign(recordsForStars(30));
@@ -206,5 +206,41 @@ test("an older open tab cannot erase rewards or an appearance saved in another t
   assert.equal(older.getSnapshot().equipped.neckwear,"little-bow-tie");
   older.equip("eyes","curious-eyes");
   assert.equal(loadCosmeticProfile(store).equipped.neckwear,"little-bow-tie");
-  assert.equal(loadCosmeticProfile(store).unlockedRewards.length,3);
+  assert.equal(loadCosmeticProfile(store).unlockedRewards.length,5);
+});
+
+test("expanded v1 migration keeps old entitlements and appearance, backfills earned milestones silently",()=>{
+  const legacy={version:1,unlockedRewards:["curious-eyes","extra-fluffy","little-bow-tie"],
+    equipped:{eyes:"curious-eyes",fur:"extra-fluffy",neckwear:"little-bow-tie"}};
+  const seed=storage({[COSMETIC_SAVE_KEY]:JSON.stringify(legacy)});
+  const records=recordsForStars(36),store=createCosmeticRewards(records,{storage:seed});
+  assert.equal(store.getSnapshot().earnedStars,36);
+  assert.deepEqual(store.getSnapshot().unlockedRewards,COSMETIC_REWARDS.filter(r=>r.stars<=36).map(r=>r.id));
+  assert.deepEqual(store.getSnapshot().equipped,{...originalAppearance(),...legacy.equipped});
+  assert.deepEqual(store.syncCampaign(records).newlyUnlocked,[]);
+  assert.equal(seed.writes.length,1);
+  const restored=createCosmeticRewards(records,{storage:seed});
+  assert.deepEqual(restored.getSnapshot(),store.getSnapshot());
+});
+test("weight and chamber slots are independent; finale equips only sprites and collection reset preserves the other collections",()=>{
+  const store=createCosmeticRewards(recordsForStars(720),{storage:storage()});
+  for(const [slot,id] of [["weight-shape","dumbbell"],["weight-material","copper"],["weight-effect","soft-glow"],["chamber-theme","clockmakers-workshop"]])
+    assert.equal(store.equip(slot,id).ok,true);
+  assert.equal(store.equip("fur","dumbbell").code,"wrong-slot");
+  const lab={...store.getSnapshot().equipped};
+  const finale=store.equipSet("grand-alchemist").snapshot;
+  assert.deepEqual(finale.equipped,{...lab,...findCosmeticReward("grand-alchemist").loadout});
+  const after=store.restoreOriginal("weights").snapshot;
+  assert.equal(after.equipped["weight-material"],null);
+  assert.equal(after.equipped["weight-shape"],null);
+  assert.equal(after.equipped["weight-effect"],null);
+  assert.equal(after.equipped["chamber-theme"],"clockmakers-workshop");
+  assert.equal(after.equipped.fur,"grand-alchemist-fur");
+  assert.equal(store.restoreOriginal("sprites").snapshot.equipped["chamber-theme"],"clockmakers-workshop");
+  assert.equal(store.restoreOriginal("unknown").code,"unknown-collection");
+  assert.equal(store.getSnapshot().unlockedCount,57);
+  assert.equal(store.getSnapshot().earnedStars,720);
+  assert.deepEqual(store.restoreOriginal().snapshot.equipped,originalAppearance());
+  for(const [group,count] of [["sprites",29],["weights",18],["chambers",10]])
+    assert.equal(COSMETIC_REWARDS.filter(r=>cosmeticCollection(r)===group).length,count);
 });
