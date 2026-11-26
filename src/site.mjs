@@ -18,7 +18,7 @@ import {createSignedWorkshopEquation,SIGNED_WORKSHOP_EXAMPLES} from "./signed-wo
 import {createFractionWorkshopEquation,FRACTION_WORKSHOP_EXAMPLES} from "./fraction-workshop.mjs";
 import {createSquareWorkshopEquation,SQUARE_WORKSHOP_EXAMPLES,SQUARE_BUILD_EXAMPLES} from "./square-workshop.mjs";
 import {createHomeHero} from "./home-hero.mjs?v=88";
-import {worldDemoMarkup,methodDemoMarkup,createMenuDemoPlayback} from "./menu-demonstrations.mjs?v=100";
+import {WORLD_DEMOS,METHOD_DEMOS,worldDemoMarkup,methodDemoMarkup,createMenuDemoPlayback} from "./menu-demonstrations.mjs?v=100";
 import {compactWorldProgress,compactStageProgress,briefStageIntro} from "./menu-copy.mjs";
 import {boardContinueLevel,spatialTileIndex,campaignMenuScreen,campaignHomeLabel} from "./navigation-journey.mjs?v=98";
 import {loadResume,saveResume,resumeDestination,resumeLabel,RESUME_STAGE_NUMBERS} from "./resume.mjs";
@@ -186,7 +186,7 @@ function renderWorlds() {
       '<div class="world-card-body"><div class="eyebrow">WORLD ' +
         String(world.number).padStart(2,"0") + '</div>' +
       '<h3>' + clean(world.title) + '</h3><p class="world-subtitle">' +
-        clean(world.subtitle) + '</p><p class="world-context">'+clean(world.description||"")+'</p>' +
+        clean(world.subtitle) + '</p><p class="world-context">'+clean(world.description||"")+'</p><p class="visually-hidden">'+clean(WORLD_DEMOS[world.id]||"")+'</p>' +
       '<div class="world-card-footer"><span class="world-progress">' + progressLine + ' · '+totals.earned+' / '+totals.available+' ★</span>' +
         (world.available
           ? '<button type="button" class="primary-btn" data-world-stages="'+clean(world.id)+'" aria-label="Choose '+clean(world.title)+' — '+clean(world.subtitle)+'">'+
@@ -219,7 +219,7 @@ function renderStages() {
       '</span></div><div class="stage-ornament" aria-hidden="true">'+
         portalStageArt(stage.id,stage.icon)+methodDemoMarkup(stage.id)+'</div>'+
       '<h2>'+clean(methodTitle)+'</h2>'+
-      '<p class="stage-tagline">'+clean(briefStageIntro(stage))+'</p>'+
+      '<p class="stage-tagline">'+clean(briefStageIntro(stage))+'</p><p class="visually-hidden">'+clean(METHOD_DEMOS[stage.id]||"")+'</p>'+
       '<div class="stage-card-bottom"><span class="stage-count">'+countText+'</span>'+
       (playable
         ? '<button type="button" class="primary-btn" data-stage-open="'+clean(stage.id)+'">Choose '+clean(methodTitle)+' →</button>'

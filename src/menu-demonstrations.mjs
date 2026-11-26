@@ -24,12 +24,12 @@ const pad=(x,y,w,txt,cls="")=>'<g class="md-pad '+cls+'"><rect x="'+x+'" y="'+y+
 const panel=(name,description,body)=>'<svg xmlns="http://www.w3.org/2000/svg" class="menu-demo" data-menu-demo="'+name+'" viewBox="0 0 280 156" role="img" aria-label="'+description+'" focusable="false"><rect class="md-board" x="3" y="3" width="274" height="150" rx="12"/>'+body+'</svg>';
 
 function balanceScene(method){
-  const isManual=method==="independent",isPaper=method==="notebook",isWorld=method==="workshop";
+  const isManual=method==="independent",isPaper=method==="notebook";
   const controls=isPaper
     ?'<g class="md-paper"><rect x="65" y="9" width="150" height="48" rx="5"/>'+label(140,24,"x + 1 = 4")+
-      label(140,38,"−1        −1","md-paper-operation")+label(140,51,"x = 3","md-paper-result")+'</g>'
+      label(113,38,"−1","md-paper-operation")+label(168,38,"−1","md-paper-operation")+label(140,51,"x = 3","md-paper-result")+'</g>'
     :isManual?pad(25,13,103,"Left −1","md-command-left")+pad(152,13,103,"Right −1","md-command-right")
-    :pad(86,13,108,isWorld?"−1 both":"−1 both","md-command-both");
+    :pad(86,13,108,"−1 both","md-command-both");
   return '<g class="md-balance '+(isManual?'md-manual':isPaper?'md-notebook':'md-mirror')+'">'+controls+
     '<path class="md-post" d="M140 116v27M111 145h58"/>'+
     '<g class="md-beam"><path d="M69 123h142"/><circle cx="140" cy="123" r="6"/></g>'+
@@ -84,7 +84,7 @@ export function createMenuDemoPlayback(){
     const reduced=isReduced()&&!manual;
     for(const screen of screens){
       const visible=screen.id==="site-"+active&&!screen.hidden&&!document.hidden;
-      screen.dataset.demoMotion=reduced?"reduced":!visible?"inactive":paused?"paused":"playing";
+      screen.dataset.demoMotion=!visible?"inactive":reduced?"reduced":paused?"paused":"playing";
       const button=screen.querySelector("[data-menu-demo-toggle]");
       button.textContent=reduced||paused?"Play previews":"Pause previews";
       button.setAttribute("aria-label",button.textContent+" on this menu");

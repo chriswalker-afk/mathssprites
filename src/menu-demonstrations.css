@@ -53,6 +53,9 @@
 .menu-demo .md-mirror .md-remove-right{animation-name:md-remove-mirror}
 .menu-demo .md-mirror .md-hand-left{animation-name:md-hand-early}
 .menu-demo .md-mirror .md-hand-right{animation-name:md-hand-mirror}
+.menu-demo .md-mirror .md-beam{animation-name:md-tilt-mirror}
+.menu-demo .md-mirror .md-left-pan{animation-name:md-up-mirror}
+.menu-demo .md-mirror .md-right-pan{animation-name:md-down-mirror}
 /* Independent: a visible unbalanced interval separates two commands. */
 .menu-demo .md-manual .md-command-left{animation-name:md-command-early}
 .menu-demo .md-manual .md-command-right{animation-name:md-command-late}
@@ -70,6 +73,9 @@
 .menu-demo .md-notebook .md-remove-right{animation-name:md-remove-late}
 .menu-demo .md-notebook .md-hand-left{animation-name:md-hand-paper-left}
 .menu-demo .md-notebook .md-hand-right{animation-name:md-hand-late}
+.menu-demo .md-notebook .md-beam{animation-name:md-tilt-paper}
+.menu-demo .md-notebook .md-left-pan{animation-name:md-up-paper}
+.menu-demo .md-notebook .md-right-pan{animation-name:md-down-paper}
 .menu-demo .md-zero-pair{animation-name:md-zero-rise}
 .menu-demo .md-pair-weight{animation-name:md-attach-weight}
 .menu-demo .md-zero-label{animation-name:md-show-zero}
@@ -95,9 +101,9 @@
 @keyframes md-pan-down{0%,25%,70%,100%{transform:translateY(0)}34%,59%{transform:translateY(9px)}}
 @keyframes md-write-operation{0%,9%,96%,100%{opacity:0}17%,90%{opacity:1}}
 @keyframes md-write-result{0%,22%,96%,100%{opacity:0}32%,90%{opacity:1}}
-@keyframes md-attach-weight{0%,14%{transform:translateY(0)}30%,100%{transform:translateY(-2px)}}
+@keyframes md-attach-weight{0%,12%{transform:translate(-55px,0)}28%,89%{transform:translate(0,-2px)}96%,100%{transform:translate(-55px,0)}}
 @keyframes md-zero-rise{0%,32%{opacity:1;transform:translateY(0)}62%,86%{opacity:0;transform:translateY(-66px)}96%,100%{opacity:1;transform:translateY(0)}}
-@keyframes md-show-zero{0%,18%,63%,100%{opacity:0}30%,42%{opacity:1}}
+@keyframes md-show-zero{0%,25%,53%,100%{opacity:0}30%,40%{opacity:1}}
 @keyframes md-whole-split{0%,26%,96%,100%{opacity:1}31%,90%{opacity:0}}
 @keyframes md-half-left{0%,25%,96%,100%{opacity:0;transform:translateX(0)}32%{opacity:1;transform:translateX(0)}43%,88%{opacity:1;transform:translateX(-10px)}}
 @keyframes md-half-right{0%,25%,96%,100%{opacity:0;transform:translateX(0)}32%{opacity:1;transform:translateX(0)}43%,88%{opacity:1;transform:translateX(10px)}}
@@ -121,3 +127,11 @@
   #site-worlds .menu-demo-toggle,#site-stages .menu-demo-toggle{min-height:44px;font-size:.65rem;padding:4px 7px}
   #site-worlds .world-card-scene{height:165px}
 }
+
+@keyframes md-tilt-mirror{0%,24%,43%,100%{transform:rotate(0)}32%,35%{transform:rotate(7deg)}}
+@keyframes md-up-mirror{0%,24%,43%,100%{transform:translateY(0)}32%,35%{transform:translateY(-9px)}}
+@keyframes md-down-mirror{0%,24%,43%,100%{transform:translateY(0)}32%,35%{transform:translateY(9px)}}
+@keyframes md-tilt-paper{0%,49%,70%,100%{transform:rotate(0)}57%,61%{transform:rotate(7deg)}}
+@keyframes md-up-paper{0%,49%,70%,100%{transform:translateY(0)}57%,61%{transform:translateY(-9px)}}
+@keyframes md-down-paper{0%,49%,70%,100%{transform:translateY(0)}57%,61%{transform:translateY(9px)}}
+@media(max-width:850px){#site-stages .world1-stage-grid{grid-auto-rows:auto}}
