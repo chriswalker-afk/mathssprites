@@ -7,19 +7,21 @@ import {initialState,visibleRooms,prepare,perform,undo,isSolved,equation,algebra
 import {rational,radd,rsub,rcompare,rtext} from "./rational.mjs";
 import {FRACTION_DENOMINATORS,FRACTION_FACTORS,fractionAction,fractionRoom} from "./fraction-engine.mjs";
 import {weightInventoryMarkup,weightGridMarkup} from "./fraction-weights.mjs";
-import {spriteInventoryMarkup,spriteGridMarkup} from "./fraction-sprites.mjs";
+import {spriteInventoryMarkup,spriteGridMarkup} from "./fraction-sprites.mjs?v=80";
 import {divisionBasketMarkup,resetHand} from "./division-baskets.mjs";
-import {gridRoom,roomChoreography,failureSpeech,fractionRefusalMarkup} from "./fraction-choreography.mjs";
+import {gridRoom,roomChoreography,failureSpeech,fractionRefusalMarkup} from "./fraction-choreography.mjs?v=80";
 const SIDES=["left","right"];
 const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 const frame=()=>new Promise(resolve=>requestAnimationFrame(resolve));
-const roomMarkup=room=>'<div class="fb-room-floor">'+spriteInventoryMarkup(room.posX)+weightInventoryMarkup(room.posOne)+'</div>';
-const gridMarkup=grid=>'<div class="fb-room-floor">'+spriteGridMarkup(grid.posX)+weightGridMarkup(grid.posOne)+'</div>';
+
 const summary=room=>rtext(room.posX)+" sprites, "+rtext(room.posOne)+" weights";
 const options=values=>values.map(v=>'<option value="'+v+'">'+v+'</option>').join("");
 
 export function mountFractionBalance(root,{level,mode="auto",reduced=false,onComplete=()=>{},onState=()=>{}}={}){
   const $=id=>root.querySelector("#"+id);
+  const spriteOptions={animatedWhole:root.classList.contains("fb-campaign")};
+  const roomMarkup=room=>'<div class="fb-room-floor">'+spriteInventoryMarkup(room.posX,spriteOptions)+weightInventoryMarkup(room.posOne)+'</div>';
+  const gridMarkup=grid=>'<div class="fb-room-floor">'+spriteGridMarkup(grid.posX,spriteOptions)+weightGridMarkup(grid.posOne)+'</div>';
   const scene=$("scene"),hand=$("hand"),cargo=$("hand-cargo"),speech=$("speech"),caption=$("action-caption");
   const abort=new AbortController();
   const listen=(el,type,fn)=>el.addEventListener(type,fn,{signal:abort.signal});
@@ -225,9 +227,11 @@ export function mountFractionBalance(root,{level,mode="auto",reduced=false,onCom
     const dx=to.left-from.left,dy=to.top-from.top;
     const animation=layer.animate([
       {transform:"translate(0,0)",offset:0},
-      {transform:"translate("+dx*.68+"px,"+(dy*.68-(phase==="drop"?12:4))+"px)",offset:.72},
+      // A short lift/drop arc is still visible when the hand reaches very
+      // close to the object. Do not collapse collection into a tiny slide.
+      {transform:"translate("+dx*.42+"px,"+(dy*.42-(phase==="drop"?18:32))+"px)",offset:.46},
       {transform:"translate("+dx+"px,"+dy+"px)",offset:1}
-    ],{duration:phase==="drop"?460:390,easing:"cubic-bezier(.26,.75,.24,1)",fill:"forwards"});
+    ],{duration:phase==="drop"?480:460,easing:"linear",fill:"forwards"});
     try{await animation.finished;}catch{}finally{layer.remove();}
     checkLive();
   }
@@ -284,7 +288,7 @@ export function mountFractionBalance(root,{level,mode="auto",reduced=false,onCom
     delete el.dataset.operation;await pause(120);
   }
   async function refusal(failure,side,rollback,action){
-    const el=$(side+"-items"),markup=fractionRefusalMarkup(failure,action,shown[side]);
+    const el=$(side+"-items"),markup=fractionRefusalMarkup(failure,action,shown[side],spriteOptions);
     el.dataset.refusal=failure.code||"invalid";
     if(markup){
       const trial=document.createElement("div");trial.className="fb-refusal-overlay";

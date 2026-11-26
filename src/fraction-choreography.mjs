@@ -5,7 +5,7 @@
 import {rational,radd,rmul,rsub,req,rtext} from "./rational.mjs";
 import {FRACTION_KINDS,FRACTION_DENOMINATORS,fractionRoom,fractionRoomCount,fractionParts} from "./fraction-engine.mjs";
 import {weightGrid,weightChangeStages,weightAssemblyMarkup} from "./fraction-weights.mjs";
-import {spriteGrid,spriteChangeStages,spriteAssemblyMarkup} from "./fraction-sprites.mjs";
+import {spriteGrid,spriteChangeStages,spriteAssemblyMarkup} from "./fraction-sprites.mjs?v=80";
 
 const gridFor=(kind,value,d)=>(kind==="posX"?spriteGrid:weightGrid)(value,d);
 export function gridValue(grid){
@@ -78,7 +78,7 @@ export function failureDiagram(failure){
  * requested equal subdivision; a small illustrative spill is deliberately
  * bounded even if the attempted overflow is large. Neither is a room or
  * counted object, and neither participates in engine state. */
-export function fractionRefusalMarkup(failure,action,room){
+export function fractionRefusalMarkup(failure,action,room,{animatedWhole=false}={}){
   const diagram=failureDiagram(failure);
   if(diagram.type==="grid"){
     const kind=failure.kind||action?.kind||"posOne";
@@ -95,7 +95,7 @@ export function fractionRefusalMarkup(failure,action,room){
       Array.from({length:n},(_,i)=>{
         const kind=kinds[i%kinds.length],art=kind==="posX"?spriteAssemblyMarkup:weightAssemblyMarkup;
         const value=room?.[kind],d=value?.d||1;
-        return '<span class="fb-spill-object" style="--spill-index:'+i+'">'+art(d,[0],{outline:false,label:false})+'</span>';
+        return '<span class="fb-spill-object" style="--spill-index:'+i+'">'+art(d,[0],{outline:false,label:false,animatedWhole})+'</span>';
       }).join("")+'</div>';
   }
   return "";

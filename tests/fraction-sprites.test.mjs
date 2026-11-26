@@ -107,3 +107,20 @@ test("sprite inventory data supports every settled state in the sixty reference 
     assert.equal(isSolved(s),true,level.id);
   }
 });
+
+test("campaign wholes emit only one animated actor while previews retain exact SVG sectors",()=>{
+  const whole=spriteAssemblyMarkup(1,[0],{animatedWhole:true});
+  assert.equal((whole.match(/fs-whole-actor/g)||[]).length,1);
+  assert.ok(!whole.includes("<svg"));
+  assert.ok(!whole.includes("fs-label"));
+  const preview=spriteAssemblyMarkup(1,[0]);
+  assert.ok(preview.includes("<svg"));
+  assert.ok(!preview.includes("fs-whole-actor"));
+  const mixed=spriteInventoryMarkup(q(8,3),{animatedWhole:true});
+  assert.equal((mixed.match(/fs-whole-actor/g)||[]).length,2);
+  assert.equal((mixed.match(/<svg/g)||[]).length,1);
+  assert.equal((mixed.match(/class="fs-piece"/g)||[]).length,2);
+  const grid=spriteGridMarkup({whole:1,units:3,denominator:1},{animatedWhole:true});
+  assert.equal((grid.match(/fs-whole-actor/g)||[]).length,4);
+  assert.ok(!grid.includes("<svg"));
+});

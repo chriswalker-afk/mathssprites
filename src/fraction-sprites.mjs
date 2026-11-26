@@ -99,13 +99,19 @@ function spriteArt(id){
     '<ellipse class="fs-pupil" cx="55" cy="56" rx="1.9" ry="2.7" fill="#1c2726"/>'+
     '<ellipse class="fs-pupil" cx="77" cy="56" rx="1.9" ry="2.7" fill="#1c2726"/></g></defs>';
 }
-export function spriteAssemblyMarkup(denominator,indices,{outline=true,label=true,separated=false,trial=false}={}){
+export function spriteAssemblyMarkup(denominator,indices,{outline=true,label=true,separated=false,trial=false,animatedWhole=false}={}){
   const partition=spritePartition(denominator,{trial});
   if(!Array.isArray(indices)||!indices.length||new Set(indices).size!==indices.length||
     indices.some(i=>!Number.isInteger(i)||i<0||i>=denominator))
     throw new RangeError("Select distinct pieces of one sprite");
   const ordered=[...indices].sort((a,b)=>a-b),complete=ordered.length===denominator;
   const id="fs-art-"+(++serial);
+  // A campaign whole is one actor, not an SVG plus a CSS-hidden actor.
+  // Keep the exact SVG for genuine partials and the standalone art previews.
+  if(denominator===1&&animatedWhole){
+    return '<span class="fs-assembly" data-complete="true" data-denominator="1" role="img" aria-label="One whole dark sprite">'+
+      '<span class="fs-whole-actor token sprite sprite-black" aria-hidden="true" style="--hop-delay:'+(-serial*173%1600)+'ms;--wiggle-delay:'+(-serial*193%1100)+'ms;--blink-delay:'+(-serial*331%6000)+'ms"><span class="sprite-ground-shadow"></span><span class="sprite-reaction-shell"><span class="sprite-motion"><span class="sprite-feet"></span><span class="sprite-body"><span class="sprite-eyes"><i></i><i></i></span></span></span></span></span>'+'</span>';
+  }
   const caption=denominator===1?"1":ordered.length+"/"+denominator;
   const description=denominator===1?"One whole dark sprite":caption+" of one dark sprite ("+ordered.length+" equal pieces)";
   const art=ordered.map(index=>{
@@ -125,27 +131,27 @@ export function spriteAssemblyMarkup(denominator,indices,{outline=true,label=tru
     '<ellipse class="fs-shadow" cx="64" cy="108" rx="30" ry="5" fill="#080f0e" opacity=".52"/>'+
     (outline&&denominator>1?'<circle class="fs-whole-outline" cx="64" cy="60" r="32" fill="none" stroke="currentColor" stroke-width="1.3" stroke-dasharray="3 3"/>':"")+
     art+(complete?'<g class="fs-joined-art"><use href="#'+id+'-art"/><circle cx="64" cy="60" r="32" fill="none" stroke="#a5b9a5" stroke-width=".9"/></g>':"")+
-    '</svg>'+(denominator===1?'<span class="fs-whole-actor token sprite sprite-black" aria-hidden="true" style="--hop-delay:'+(-serial*173%1600)+'ms;--wiggle-delay:'+(-serial*193%1100)+'ms;--blink-delay:'+(-serial*331%6000)+'ms"><span class="sprite-ground-shadow"></span><span class="sprite-reaction-shell"><span class="sprite-motion"><span class="sprite-feet"></span><span class="sprite-body"><span class="sprite-eyes"><i></i><i></i></span></span></span></span></span>':"")+
+    '</svg>'+
     (label?'<span class="fs-label" aria-hidden="true">'+caption+'</span>':"")+'</span>';
 }
-export function spriteInventoryMarkup(value){
+export function spriteInventoryMarkup(value,{animatedWhole=false}={}){
   const plan=spriteInventoryPlan(value);
-  const whole=Array.from({length:plan.whole},()=>spriteAssemblyMarkup(1,[0],{outline:false,label:false})).join("");
+  const whole=Array.from({length:plan.whole},()=>spriteAssemblyMarkup(1,[0],{outline:false,label:false,animatedWhole})).join("");
   const partial=plan.pieces.length?spriteAssemblyMarkup(plan.denominator,plan.pieces.map(p=>p.index)):"";
   return '<div class="fs-inventory" role="img" aria-label="'+rtext(plan.value)+' sprites"><div class="fs-inventory-objects" aria-hidden="true">'+
     whole+partial+(!plan.whole&&!plan.pieces.length?'<span class="fs-empty">No sprites</span>':"")+'</div></div>';
 }
 /** A temporary physical grid retains actual unreduced pieces. No extra
  * full sprite is rendered when a group contains d pieces. */
-export function spriteGridMarkup({whole,units,denominator}){
+export function spriteGridMarkup({whole,units,denominator},{animatedWhole=false}={}){
   if(!Number.isInteger(whole)||whole<0||!Number.isInteger(units)||units<0||
     !allowed(denominator)||whole+units>FRACTION_CAPACITY*2||whole>FRACTION_CAPACITY)
     throw new RangeError("Invalid sprite demonstration inventory");
-  const wholes=whole?spriteInventoryMarkup(whole):"";
+  const wholes=whole?spriteInventoryMarkup(whole,{animatedWhole}):"";
   const groups=[];
   for(let i=0;i<units;i+=denominator){
     groups.push(spriteAssemblyMarkup(denominator,
-      Array.from({length:Math.min(denominator,units-i)},(_,j)=>j),{separated:true}));
+      Array.from({length:Math.min(denominator,units-i)},(_,j)=>j),{separated:true,animatedWhole}));
   }
   return '<div class="fs-grid-inventory">'+wholes+groups.join("")+
     (!whole&&!units?'<span class="fs-empty">No sprites</span>':"")+'</div>';
