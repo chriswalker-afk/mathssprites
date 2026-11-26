@@ -11,6 +11,7 @@ import {
 } from "./campaign-records.mjs?v=84";
 import {createCosmeticRewards} from "./cosmetic-rewards.mjs?v=84";
 import {applySpriteAppearance} from "./sprite-cosmetics.mjs?v=85";
+import {mountSpriteAtelier} from "./sprite-atelier.mjs?v=86";
 import {createWorkshopEquation,WORKSHOP_EXAMPLES} from "./equation-workshop.mjs?v=82";
 import {createSignedWorkshopEquation,SIGNED_WORKSHOP_EXAMPLES} from "./signed-workshop.mjs?v=82";
 import {createFractionWorkshopEquation,FRACTION_WORKSHOP_EXAMPLES} from "./fraction-workshop.mjs";
@@ -59,8 +60,7 @@ let stage3Progress = loadStage3Progress();
 let ratings = loadRatings();
 let recent = loadResume();
 let campaign = loadCampaignRecords();
-// One authoritative reward session; later renderer/Atelier PRs can read
-// its snapshot and listen to changes. Do not equip or display any art yet.
+// One authoritative reward session shared by the renderer and Atelier.
 export const cosmeticRewards=createCosmeticRewards(campaign);
 applySpriteAppearance(document.body,cosmeticRewards.getSnapshot().equipped);
 cosmeticRewards.subscribe(change=>{
@@ -68,6 +68,7 @@ cosmeticRewards.subscribe(change=>{
   fractionCampaign?.setAppearance(change.snapshot.equipped);
   window.dispatchEvent(new CustomEvent("mathssprites:cosmetics-change",{detail:change}));
 });
+const atelier=mountSpriteAtelier({root:$("site-atelier"),homeSummary:$("home-atelier-stars"),store:cosmeticRewards});
 let campaignResume = loadCampaignResume();
 let teacher = loadTeacherSetting();
 let guideEnabled = readGuideEnabled();
@@ -81,6 +82,7 @@ let selectedWorld = campaignResume?.worldId||"workshop";
 let selectedStage = campaignResume?.stageId||"guided";
 let boardReturnScreen = "home";
 let workshopReturnScreen = "home";
+let atelierReturnScreen = "home";
 // Preserve each stage's chapter scroll position when returning from a game.
 const boardScrollPositions=new Map();
 let supportReturnScreen = "home";
@@ -99,7 +101,7 @@ function apprenticeUnlocked(number) {
   return stageCanOpen("notebook") &&
     isApprenticeUnlocked(number,stage3Progress.completed,teacher);
 }
-const screenNames = ["home","worlds","stages","levels","workshop","help","settings"];
+const screenNames = ["home","worlds","stages","levels","workshop","atelier","help","settings"];
 
 function clean(text) {
   return String(text).replace(/[&<>"']/g, ch =>
@@ -402,6 +404,11 @@ function showScreen(name,{focusHeading=true}={}) {
     workshopReturnScreen=currentScreen==="levels"?"levels":"home";
     if(currentScreen==="levels")setWorkshopQuantity(selectedWorld==="opposites"?"signed":["fractions","squares"].includes(selectedWorld)?selectedWorld:"positive");
   }
+  if(name==="atelier"&&currentScreen!=="atelier"){
+    if(["home","levels","workshop"].includes(currentScreen))atelierReturnScreen=currentScreen;
+    else if(["help","settings"].includes(currentScreen)&&supportReturnScreen!=="atelier")
+      atelierReturnScreen=["home","levels","workshop"].includes(supportReturnScreen)?supportReturnScreen:"home";
+  }
   if((name==="help"||name==="settings") &&
       !["help","settings"].includes(currentScreen) &&
       screenNames.includes(currentScreen))
@@ -420,6 +427,8 @@ function showScreen(name,{focusHeading=true}={}) {
   document.body.classList.remove("preview-mode");
   delete document.body.dataset.workshopChapter;
   for (const screen of screenNames) $("site-" + screen).hidden = screen !== name;
+  atelier.setActive(name==="atelier");
+  if(name==="atelier")$("atelier-back").textContent="← Back to "+atelierReturnScreen;
   if (name === "home") homeAction();
   if (name === "worlds") renderWorlds();
   if (name === "stages") renderStages();
@@ -434,7 +443,7 @@ function showScreen(name,{focusHeading=true}={}) {
   if (name === "settings") renderSettings();
   if(name==="help"||name==="settings"){
     const label=({home:"home",worlds:"worlds",stages:"stages",
-      levels:"levels",workshop:"workshop"})[supportReturnScreen]||"home";
+      levels:"levels",workshop:"workshop",atelier:"Atelier"})[supportReturnScreen]||"home";
     $(name+"-return").textContent="← Back to "+label;
   }
   const activeTopLevel=(name==="levels"||name==="stages")
@@ -622,6 +631,7 @@ function focusBoardSelection(groupId){
 $("site-shell").addEventListener("click", event => {
   const target = event.target.closest("button");
   if (!target || target.disabled) return;
+  if(target.id==="atelier-back")return showScreen(atelierReturnScreen);
   if(target.hasAttribute("data-support-return"))
     return showScreen(supportReturnScreen);
   if(target.id==="board-continue"){
@@ -732,7 +742,7 @@ document.addEventListener("keydown",event=>{
   if(editing)return;
   const previous={
     worlds:"home",stages:"levels",workshop:workshopReturnScreen,
-    levels:boardReturnScreen,help:supportReturnScreen,settings:supportReturnScreen
+    levels:boardReturnScreen,atelier:atelierReturnScreen,help:supportReturnScreen,settings:supportReturnScreen
   }[currentScreen];
   if(!previous)return;
   const page=$("site-"+currentScreen);

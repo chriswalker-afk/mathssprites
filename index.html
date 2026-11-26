@@ -33,8 +33,9 @@
   <link rel="stylesheet" href="./src/square-construction.css" />
   <link rel="stylesheet" href="./src/square-inspection.css" />
   <link rel="stylesheet" href="./src/sprite-cosmetics.css?v=85" />
+  <link rel="stylesheet" href="./src/sprite-atelier.css?v=86" />
   <script type="module" src="./src/app.mjs?v=82"></script>
-  <script type="module" src="./src/site.mjs?v=85"></script>
+  <script type="module" src="./src/site.mjs?v=86"></script>
 </head>
 <body>
   <div class="site-shell" id="site-shell">
@@ -54,6 +55,7 @@
       <nav class="site-nav-links" aria-label="Main menu">
         <button type="button" data-screen="home">Home</button>
         <button type="button" data-screen="levels" aria-label="Choose a world and level">Worlds</button>
+        <button type="button" data-screen="atelier" aria-label="Sprite Atelier">Atelier</button>
         <button type="button" data-screen="help" aria-label="How to play">Help</button>
         <button type="button" data-screen="settings">Settings</button>
       </nav>
@@ -68,6 +70,7 @@
             <button type="button" id="home-play" class="primary-btn">Start Stage 1 · Level 1 →</button>
             <button type="button" id="home-choose-level" class="secondary-btn">Choose a level →</button>
             <button type="button" class="secondary-btn" data-screen="workshop">Equation Workshop →</button>
+            <button type="button" id="home-atelier" class="secondary-btn atelier-entry" data-screen="atelier"><span>Sprite Atelier</span> <span id="home-atelier-stars" class="atelier-entry-stars">0 / 720 ★</span><span aria-hidden="true">›</span></button>
           </div>
           <span id="home-progress" class="landing-progress" aria-live="polite"></span>
         </div>
@@ -119,6 +122,58 @@
         </div>
       </section>
       <section id="home-stage-shortcuts" class="portal-features" aria-label="Quick play by learning stage"></section>
+    </main>
+    <main class="site-page" id="site-atelier" hidden>
+      <div class="atelier-heading">
+        <div>
+          <button type="button" id="atelier-back" class="site-back-link">← Back to home</button>
+          <div class="portal-kicker">THE LABORATORY · COLLECTION</div>
+          <h1 id="atelier-heading" tabindex="-1">The Sprite Atelier</h1>
+        </div>
+        <div class="atelier-star-tally" aria-label="Global campaign stars and rewards">
+          <strong id="atelier-stars">0 / 720 ★</strong>
+          <span id="atelier-owned">0 / 29 unlocked</span>
+        </div>
+      </div>
+      <div class="atelier-next" aria-label="Next cosmetic reward">
+        <span class="atelier-next-emblem" aria-hidden="true">✦</span>
+        <div class="atelier-next-info"><span class="atelier-eyebrow">NEXT REWARD</span><strong id="atelier-next-name"></strong></div>
+        <div class="atelier-next-meter"><span id="atelier-next-copy"></span><progress id="atelier-next-progress" value="0" max="3" aria-label="Progress towards next reward"></progress></div>
+      </div>
+      <div class="atelier-layout">
+        <section class="atelier-dressing" aria-label="Live sprite preview">
+          <div class="atelier-preview-header"><h2>Fitting room</h2><span id="atelier-preview-label">Equipped appearance</span></div>
+          <div id="atelier-preview" class="atelier-preview">
+            <div class="atelier-figure"><div id="atelier-black" class="atelier-stage" aria-hidden="true"></div><span>Black sprite · x</span></div>
+            <div class="atelier-figure"><div id="atelier-white" class="atelier-stage" aria-hidden="true"></div><span>White sprite · −x</span></div>
+          </div>
+          <div class="atelier-equipped-row"><span class="atelier-eyebrow">EQUIPPED</span><span id="atelier-equipped">Original appearance</span></div>
+          <div class="atelier-detail">
+            <div class="atelier-detail-heading"><h3 id="atelier-detail-title" tabindex="-1">Your sprite</h3><span id="atelier-detail-status"></span></div>
+            <p id="atelier-detail-copy">Select a reward to try it on.</p>
+            <div class="atelier-detail-actions">
+              <button type="button" id="atelier-equip" class="primary-btn" disabled>Equip</button>
+              <button type="button" id="atelier-remove" class="secondary-btn" hidden>Remove</button>
+              <button type="button" id="atelier-cancel-preview" class="secondary-btn" disabled>Clear preview</button>
+            </div>
+          </div>
+          <div class="atelier-bottom">
+            <button type="button" id="atelier-restore" class="site-back-link" disabled>Restore original</button>
+            <button type="button" id="atelier-browse" class="site-back-link">Browse rewards ↓</button>
+            <span>Stars are never spent.</span>
+          </div>
+          <p id="atelier-announcement" class="visually-hidden" role="status" aria-live="polite"></p>
+        </section>
+        <section class="atelier-collection-panel" aria-labelledby="atelier-collection-heading">
+          <div class="atelier-collection-header"><h2 id="atelier-collection-heading">Reward collection</h2><span id="atelier-result-count">29 rewards</span></div>
+          <div class="atelier-filters">
+            <label for="atelier-filter" class="visually-hidden">Reward category</label><select id="atelier-filter"></select>
+            <label class="atelier-check"><input id="atelier-owned-only" type="checkbox"> Unlocked only</label>
+          </div>
+          <div id="atelier-collection" class="atelier-collection" role="group" aria-label="Cosmetic rewards"></div>
+          <p id="atelier-empty" class="atelier-empty" hidden>No unlocked rewards in this category yet. Try another category or turn off Unlocked only.</p>
+        </section>
+      </div>
     </main>
     <main class="site-page" id="site-worlds" hidden>
       <div class="portal-heading"><div><div class="portal-kicker">THE HALL OF DOORS · CHOOSE A WORLD</div>

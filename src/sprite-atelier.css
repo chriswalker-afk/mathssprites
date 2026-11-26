@@ -1,0 +1,130 @@
+/* PR86 — the Atelier is a room in the same brass-and-green laboratory.
+   Keep menus viewport-first; only the reward shelf scrolls on laptops. */
+.atelier-entry{display:inline-flex;align-items:center;justify-content:center;gap:8px;white-space:nowrap;border-color:#aa9063!important;background:linear-gradient(125deg,#33453e,#263630)!important}
+.atelier-entry-stars{color:#efd29a;font-size:.85em;white-space:nowrap}
+#site-atelier{color:#e5ddc7}
+#site-atelier:not([hidden]){display:flex;flex-direction:column;gap:10px}
+#site-atelier .atelier-heading{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex:none}
+#site-atelier .atelier-heading h1{font-size:clamp(1.9rem,3.7vw,3.25rem);line-height:1.06;margin:3px 0 0}
+#site-atelier .atelier-heading .site-back-link{min-height:30px;padding:3px 1px;margin:0 0 4px;text-align:left;color:#e0cda5}
+.atelier-star-tally{min-width:0;display:flex;flex-direction:column;align-items:flex-end;gap:4px;padding:8px 13px;background:#293830;border:1px solid #998359;border-radius:9px;flex:none}
+.atelier-star-tally strong{font:700 clamp(1.08rem,2.3vw,1.65rem)/1 Georgia,serif;color:#f1d497;white-space:nowrap}
+.atelier-star-tally span{font-size:.74rem;color:#cad2c6;white-space:nowrap}
+.atelier-next{display:flex;align-items:center;gap:11px;flex:none;background:linear-gradient(120deg,#33423a,#24322d);border:1px solid #8d7854;border-radius:10px;padding:9px 14px}
+.atelier-next-emblem{font-size:1.45rem;color:#e2bf7f}
+.atelier-next-info{display:flex;flex-direction:column;gap:3px;flex:0 1 39%;min-width:0}
+.atelier-eyebrow{font-weight:700;font-size:.62rem;color:#c7ad7e;letter-spacing:.09em}
+.atelier-next-info strong{font:normal 1.04rem Georgia,serif;color:#f4e2bd}
+.atelier-next-meter{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex:1;min-width:0}
+.atelier-next-meter span{font-size:.73rem;color:#e5d6b9;text-align:right}
+.atelier-next-meter progress{width:100%;height:8px;border:none;border-radius:12px;overflow:hidden;appearance:none;background:#15231e;accent-color:#d7b677}
+.atelier-next-meter progress::-webkit-progress-bar{background:#15231e}
+.atelier-next-meter progress::-webkit-progress-value{background:linear-gradient(90deg,#ad8b50,#e5c98c);border-radius:12px}
+.atelier-next-meter progress::-moz-progress-bar{background:#d7b677;border-radius:12px}
+.atelier-layout{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:12px;min-height:0;min-width:0}
+.atelier-dressing,.atelier-collection-panel{min-width:0;min-height:0;border:1px solid #756443;border-radius:13px;padding:13px;background:linear-gradient(145deg,#263630,#1a2827);box-shadow:inset 0 0 0 3px #16242055;display:flex;flex-direction:column;gap:10px}
+.atelier-preview-header,.atelier-collection-header{display:flex;align-items:center;justify-content:space-between;gap:9px;flex:none}
+#site-atelier .atelier-preview-header h2,#site-atelier .atelier-collection-header h2{font:normal 1.23rem/1.2 Georgia,serif;color:#f1dfb9;margin:0}
+.atelier-preview-header span,.atelier-collection-header span{font-size:.72rem;color:#c6d0c0;text-align:right}
+.atelier-preview{--atelier-scale:2.05;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1px;border:1px solid #897650;border-radius:9px;background:radial-gradient(ellipse at 50% 45%,#54695875,transparent 65%),#152321;overflow:hidden;flex:none}
+.atelier-figure{display:flex;flex-direction:column;align-items:center;min-width:0;gap:0}
+.atelier-figure+.atelier-figure{border-left:1px solid #a18a5644}
+.atelier-stage{display:flex;justify-content:center;align-items:flex-end;position:relative;width:100%;height:clamp(152px,24dvh,222px);padding-bottom:15px;background:radial-gradient(ellipse at 50% 100%,#596e5c70,transparent 65%);isolation:isolate}
+.atelier-stage::before{content:"";position:absolute;bottom:10px;width:73%;height:12px;background:linear-gradient(#66563d,#3a382a);border:1px solid #b29b6b;border-radius:50%;z-index:-1}
+.atelier-stage>.sprite{transform:scale(var(--atelier-scale));transform-origin:center bottom}
+.atelier-figure>span{display:block;padding:8px 3px;font-size:.75rem;color:#e1d6b9;text-align:center}
+.atelier-equipped-row{display:flex;flex-direction:column;gap:3px;padding:0 2px;flex:none;min-width:0}
+#atelier-equipped{font-size:.78rem;color:#e7ddc6;overflow-wrap:anywhere}
+.atelier-detail{border-top:1px solid #a08a5e55;padding-top:10px;display:flex;flex-direction:column;gap:6px;flex:none}
+.atelier-detail-heading{display:flex;align-items:baseline;justify-content:space-between;gap:9px;flex-wrap:wrap}
+#site-atelier .atelier-detail h3{font:normal 1.15rem Georgia,serif;margin:0;color:#f3e2be}
+#atelier-detail-status{font-size:.72rem;font-weight:600;color:#e6c990}
+#site-atelier #atelier-detail-copy{font-size:.8rem;line-height:1.35;color:#cbd5c6;margin:0;min-height:1.35em}
+.atelier-detail-actions{display:flex;flex-wrap:wrap;gap:6px}
+#site-atelier .atelier-detail-actions button{min-height:39px;padding:8px 13px;font-size:.8rem}
+#atelier-equip{flex:1 1 96px}
+#atelier-cancel-preview{flex:1 1 100px}
+#atelier-remove{flex:0 1 auto}
+.atelier-bottom{margin-top:auto;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.atelier-bottom>span{font-size:.71rem;color:#c3ccbf}
+#site-atelier #atelier-restore{padding:4px 3px;min-height:32px;font-size:.78rem;text-decoration:underline;text-underline-offset:3px;color:#ead0a0}
+#site-atelier button:disabled{cursor:default;opacity:.5}
+.atelier-filters{display:flex;align-items:center;justify-content:space-between;gap:8px;flex:none}
+.atelier-filters select{flex:1 1 140px;max-width:240px;min-width:0;font-size:.83rem;padding:8px 9px;color:#f2e4c7;background:#172725;border:1px solid #9a845c;border-radius:7px;min-height:38px}
+.atelier-check{display:flex;align-items:center;gap:6px;font-size:.76rem;white-space:nowrap;color:#dce1d3}
+.atelier-check input{width:17px;height:17px;accent-color:#d8b879}
+.atelier-collection{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));align-content:start;gap:8px;min-height:0;min-width:0;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:#9e895f #1d2c27;padding:2px 4px 4px 2px}
+.atelier-reward{min-width:0;display:grid;grid-template-columns:1fr auto;align-items:center;align-content:start;gap:3px 4px;padding:8px;border:1px solid #756849;border-radius:8px;text-align:left;color:#e8ddc3;background:linear-gradient(145deg,#33443b,#26352f);cursor:pointer;min-height:105px}
+.atelier-reward[hidden]{display:none}
+.atelier-reward:hover{border-color:#c7ad74;background:#3a4e42}
+.atelier-reward[aria-pressed="true"]{border-color:#f1d493;box-shadow:inset 0 0 0 1px #f1d493;background:#3c5043}
+.atelier-reward[data-status="locked"],.atelier-reward[data-status="locked-coming"]{background:#22322e;border-color:#5c6555}
+.atelier-reward[aria-pressed="true"]{border-color:#f1d493}
+.atelier-reward-name{grid-column:1/-1;font-weight:650;font-size:.8rem;line-height:1.18;overflow-wrap:anywhere}
+.atelier-threshold{grid-column:2;grid-row:1;color:#f0cf91;font-weight:700;font-size:.72rem;white-space:nowrap;align-self:start}
+.atelier-thumb{grid-column:1;grid-row:1;display:flex;align-items:flex-end;justify-content:flex-start;width:34px;height:32px;position:relative}
+.atelier-thumb>.sprite{transform:scale(.62);transform-origin:left bottom}
+.atelier-thumb :is(.sprite-motion,.sprite-body,.sprite-eyes,.sprite-eyes i){animation:none!important;transform:none!important}
+.atelier-thumb .sprite-ground-shadow{animation:none!important;transform:translateX(-50%)!important}
+.atelier-thumb .sprite-ground-shadow::after{display:none}
+.atelier-thumb-placeholder{font:normal 1.5rem Georgia,serif;color:#b2b49e;justify-content:center;align-items:center}
+.atelier-reward-status{grid-column:1/-1;font-size:.64rem;line-height:1.22;color:#c7cec0}
+.atelier-reward[data-status="equipped"] .atelier-reward-status{color:#d4ebbc;font-weight:700}
+.atelier-reward[data-status="available"] .atelier-reward-status{color:#d4e5be}
+.atelier-empty{font-size:.85rem;color:#cbd5c9;margin:8px 4px!important}
+#site-atelier :is(button,select,input):focus-visible{outline:2px solid #f6dea8;outline-offset:2px}
+@media(min-width:900px) and (min-height:500px){
+  #site-atelier:not([hidden]){overflow:hidden;gap:8px}
+  #site-atelier .atelier-heading h1{font-size:clamp(1.6rem,3vw,2.5rem)}
+  .atelier-layout{flex:1 1 auto;overflow:hidden}
+  .atelier-dressing{overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:#9e895f #1d2c27}
+  .atelier-collection-panel{overflow:hidden}
+  .atelier-collection{flex:1 1 auto}
+}
+@media(min-width:900px) and (max-height:649px){
+  #site-atelier:not([hidden]){gap:5px}
+  #site-atelier .atelier-heading .site-back-link{min-height:22px;padding:1px 0;margin:0}
+  #site-atelier .atelier-heading h1{font-size:1.8rem}
+  .atelier-star-tally{padding:6px 10px}
+  .atelier-next{padding:6px 10px}
+  .atelier-layout{gap:8px}
+  .atelier-dressing,.atelier-collection-panel{padding:9px;gap:6px}
+  .atelier-preview{--atelier-scale:1.42}
+  .atelier-stage{height:112px;padding-bottom:10px}
+  .atelier-figure>span{padding:5px 2px}
+  .atelier-detail{padding-top:6px;gap:4px}
+  #site-atelier .atelier-detail-actions button{min-height:32px;padding:5px 9px}
+  .atelier-filters select{min-height:31px;padding:4px 8px}
+  #site-atelier #atelier-restore{min-height:26px}
+  .atelier-reward{min-height:92px}
+}
+@media(max-width:899px){
+  .atelier-layout{grid-template-columns:minmax(0,1fr)}
+  .atelier-collection{max-height:450px;grid-template-columns:repeat(3,minmax(0,1fr))}
+  .atelier-preview{--atelier-scale:1.85}
+  .atelier-stage{height:170px}
+  .atelier-dressing,.atelier-collection-panel{padding:12px}
+}
+@media(max-width:600px){
+  .site-nav-links{grid-template-columns:repeat(5,minmax(0,1fr))}
+  .site-nav-links button{font-size:.72rem;padding-inline:2px}
+  #site-atelier:not([hidden]){gap:8px;padding:12px 0}
+  #site-atelier .atelier-heading{align-items:flex-end}
+  #site-atelier .atelier-heading h1{font-size:1.65rem}
+  .atelier-star-tally{padding:7px 8px;gap:3px}
+  .atelier-star-tally strong{font-size:1rem}
+  .atelier-star-tally span{font-size:.62rem}
+  .atelier-next{padding:8px;gap:6px}
+  .atelier-next-info strong{font-size:.9rem}
+  .atelier-next-meter span{font-size:.65rem}
+  .atelier-preview{--atelier-scale:1.6}
+  .atelier-stage{height:142px}
+  .atelier-collection{grid-template-columns:repeat(2,minmax(0,1fr));max-height:clamp(236px,46dvh,420px)}
+  .atelier-reward{min-height:105px}
+  #site-atelier .atelier-detail-actions button,#site-atelier #atelier-restore{min-height:44px}
+  .atelier-filters select{min-height:44px}
+  .atelier-check{font-size:.73rem}
+}
+
+#site-atelier #atelier-browse{display:none;padding:4px 3px;color:#ead0a0;text-decoration:underline;text-underline-offset:3px;font-size:.78rem}
+@media(max-width:899px){#site-atelier #atelier-browse{display:inline-block;min-height:44px}}
