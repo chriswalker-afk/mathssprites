@@ -66,3 +66,12 @@ export function campaignHomeLabel(world,stage,number,completed=false){
   const worldName=({workshop:"Balance",opposites:"Opposites",fractions:"Fractions",squares:"Squares"})[world.id]||world.title;
   return (completed?"Replay: ":"Continue: ")+worldName+" · "+mode+" · Level "+number+" →";
 }
+
+/** Preserve the explicitly chosen learning method when changing worlds.
+ * A future world without that method returns to its choice screen. */
+export function quickBoardDestination(world,previous){
+  if(!world?.available||!previous)return null;
+  const available=world.stages.filter(s=>s.available);
+  return available.find(s=>s.id===previous.id&&s.method===previous.method)||
+    available.find(s=>s.method===previous.method)||null;
+}

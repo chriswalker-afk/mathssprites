@@ -2488,9 +2488,19 @@ $("guide-skip").addEventListener("click",()=>{
   guideWasActive=false;
   renderFirstGuide();
 });
+window.addEventListener("mathssprites:route-guide-seen",event=>{
+  const {worldId,stageId,seen}=event.detail||{};
+  if(worldId==="workshop"&&stageId==="guided")guideSeen=!!seen;
+  else if(worldId==="workshop"&&stageId==="independent")independentGuideSeen=!!seen;
+  else if(worldId==="opposites"&&["guided","independent"].includes(stageId))signedGuideSeen[stageId]=!!seen;
+});
 window.addEventListener("mathssprites:guide-setting",event=>{
   guideEnabled=!!event.detail.enabled;
-  if(event.detail.reset){
+  if(event.detail.resetAll){
+    guideSeen=false;independentGuideSeen=false;
+    signedGuideSeen.guided=false;signedGuideSeen.independent=false;
+    guideStep=0;guideDismissed=false;
+  }else if(event.detail.reset){
     if(event.detail.worldId==="opposites"&&
        ["guided","independent"].includes(event.detail.stage))
       signedGuideSeen[event.detail.stage]=writeOppositesGuideSeen(event.detail.stage,false);

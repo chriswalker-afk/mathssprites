@@ -1,5 +1,5 @@
 import { LEVELS } from "./engine.mjs";
-import {createFractionCampaignView} from "./fraction-campaign.mjs?v=102";
+import {createFractionCampaignView} from "./fraction-campaign.mjs?v=103";
 import {
   CAMPAIGN_REGISTRY,findCampaignWorld,findCampaignStage,findCampaignLevel,
   nextCampaignLevel,isCampaignPlayable,firstCampaignLevel
@@ -20,7 +20,8 @@ import {createSquareWorkshopEquation,SQUARE_WORKSHOP_EXAMPLES,SQUARE_BUILD_EXAMP
 import {createHomeHero} from "./home-hero.mjs?v=88";
 import {WORLD_DEMOS,METHOD_DEMOS,worldDemoMarkup,methodDemoMarkup,createMenuDemoPlayback} from "./menu-demonstrations.mjs?v=100";
 import {compactWorldProgress,compactStageProgress,briefStageIntro,worldChoiceIntro,methodChoiceIntro} from "./menu-copy.mjs?v=101";
-import {boardContinueLevel,spatialTileIndex,campaignMenuScreen,campaignHomeLabel} from "./navigation-journey.mjs?v=98";
+import {boardContinueLevel,spatialTileIndex,campaignMenuScreen,campaignHomeLabel,quickBoardDestination} from "./navigation-journey.mjs?v=103";
+import {mountRouteGuide,resetFirstVisitGuides,usesPhysicalFirstLesson} from "./route-guide.mjs?v=103";
 import {loadResume,saveResume,resumeDestination,resumeLabel,RESUME_STAGE_NUMBERS} from "./resume.mjs";
 import {
   WORLDS, WORLD1_CHAPTERS, WORLD1_LEVELS, findWorld1Level,
@@ -87,6 +88,8 @@ let playingNumber = null;
 let playingStage = null;
 let playingWorld = null;
 let fractionCampaign=null;
+let routeGuide=null;
+function closeRouteGuide(){routeGuide?.destroy();routeGuide=null;}
 // Synchronize cosmetics across tabs without repainting an active physical
 // experiment. Safe menu/level boundaries read the latest saved appearance.
 // Campaign progress retains its existing independent save lifecycle.
@@ -231,6 +234,33 @@ function renderStages() {
   $("stage-teacher-note").textContent=
     "All "+world.stages.reduce((n,stage)=>n+stage.levels.filter(slot=>slot.available).length,0)+" implemented levels are open; teacher tools add previews.";
 }
+const METHOD_LABELS={auto:"Guided",manual:"Independent",notebook:"Algebra Apprentice"};
+function renderBoardSwitchers(world,stage){
+  const worldSelect=$("board-world"),methodSelect=$("board-method");
+  worldSelect.replaceChildren(...CAMPAIGN_REGISTRY.map(w=>{
+    const option=new Option(w.subtitle||w.title,w.id,false,w.id===world.id);
+    option.disabled=!w.available;return option;
+  }));
+  methodSelect.replaceChildren(...world.stages.map(s=>{
+    const option=new Option(METHOD_LABELS[s.method]||s.title,s.id,false,s.id===stage.id);
+    option.disabled=!s.available;return option;
+  }));
+}
+function switchBoard(worldId,stageId){
+  if(currentScreen!=="levels")return;
+  const world=findCampaignWorld(worldId);
+  const requested=stageId&&findCampaignStage(worldId,stageId);
+  const prior=findCampaignStage(selectedWorld,selectedStage);
+  const stage=quickBoardDestination(world,requested||prior);
+  if(!world?.available)return;
+  if(worldId===selectedWorld&&stage?.id===selectedStage)return;
+  const board=$("level-sections");
+  if(board.dataset.boardKey)boardScrollPositions.set(board.dataset.boardKey,board.scrollTop);
+  selectedWorld=worldId;selectedStage=stage?.id||null;selectedLevelId=null;
+  showScreen(stage?"levels":"stages",{focusHeading:!stage});
+}
+$("board-world").addEventListener("change",event=>switchBoard(event.target.value,null));
+$("board-method").addEventListener("change",event=>switchBoard(selectedWorld,event.target.value));
 function renderLevels() {
   const world=findCampaignWorld(selectedWorld);
   const stage=findCampaignStage(selectedWorld,selectedStage);
@@ -243,6 +273,7 @@ function renderLevels() {
     campaignResume?.levelId===current.lastPlayed;
   const suggested=boardContinueLevel(stage,current,{resumed});
   const stageStars=campaignStarTotals(campaign,{worldId:world.id,stageId:stage.id});
+  renderBoardSwitchers(world,stage);
   $("site-levels").dataset.activeWorld=world.id;
   $("site-levels").dataset.activeStage=stage.id;
   $("levels-stage-kicker").textContent="WORLD "+String(world.number).padStart(2,"0")+
@@ -400,6 +431,7 @@ function showScreen(name,{focusHeading=true}={}) {
     window.dispatchEvent(new Event("mathssprites:notebook-close"));
   if(currentScreen==="workshop-game")
     window.dispatchEvent(new Event("mathssprites:workshop-close"));
+  closeRouteGuide();
   closeFractionCampaign();
   rewardCelebration.leaveReview();
   currentScreen = name;
@@ -419,7 +451,7 @@ function showScreen(name,{focusHeading=true}={}) {
   if (name === "stages") renderStages();
   if (name === "levels"){
     renderLevels();
-    $("site-back").textContent="← Change learning method";
+    $("site-back").textContent="Explore";
     announceBoardSelection();
   }
   if(name==="workshop"){
@@ -462,6 +494,7 @@ function launch(levelIdOrNumber,stageId=selectedStage,worldId=selectedWorld) {
   const slot=findCampaignLevel(worldId,stageId,levelIdOrNumber);
   const stage=findCampaignStage(worldId,stageId);
   if(!slot?.level||!stage)return false;
+  closeRouteGuide();
   closeFractionCampaign();
   rewardCelebration.leaveReview();
   cosmeticRewards.refreshAppearance();
@@ -508,6 +541,7 @@ function launch(levelIdOrNumber,stageId=selectedStage,worldId=selectedWorld) {
       onComplete:state=>window.dispatchEvent(new CustomEvent("mathssprites:solved",
         {detail:{worldId,stage:stageId,number:slot.number,levelId:slot.id,moves:state.history.length}}))
     });
+    routeGuide=mountRouteGuide(fractionCampaign.host.shadowRoot,{worldId,stageId,enabled:guideEnabled,notebook:stage.method==="notebook",fraction:true});
     window.scrollTo?.(0,0);
     return true;
   }
@@ -517,6 +551,8 @@ function launch(levelIdOrNumber,stageId=selectedStage,worldId=selectedWorld) {
   else
     window.dispatchEvent(new CustomEvent("mathssprites:launch",
       {detail:{...context,legacyIndex:slot.legacyIndex||0,level:slot.level}}));
+  if(!usesPhysicalFirstLesson(worldId,stageId,slot.number))
+    routeGuide=mountRouteGuide($("game-shell"),{worldId,stageId,enabled:guideEnabled,notebook:stage.method==="notebook"});
   $("level-title").setAttribute("tabindex","-1");
   $("level-title").focus({preventScroll:true});
   window.scrollTo?.(0,0);
@@ -754,10 +790,22 @@ $("teacher-unlock").addEventListener("change", event => {
   renderLevels();
   homeAction();
 });
+function rearmGuides(){
+  resetFirstVisitGuides(CAMPAIGN_REGISTRY);
+  window.dispatchEvent(new CustomEvent("mathssprites:guide-setting",
+    {detail:{enabled:true,resetAll:true}}));
+  $("site-guide-status").textContent="Guides will appear again on your next visit to each learning route.";
+}
 $("site-guided-help").addEventListener("change", event => {
   guideEnabled = writeGuideEnabled(event.target.checked);
-  window.dispatchEvent(new CustomEvent("mathssprites:guide-setting",
-    {detail:{enabled:guideEnabled}}));
+  if(guideEnabled)rearmGuides();
+  else window.dispatchEvent(new CustomEvent("mathssprites:guide-setting",
+    {detail:{enabled:false}}));
+  renderSettings();
+});
+$("site-reset-guides").addEventListener("click",()=>{
+  guideEnabled=writeGuideEnabled(true);
+  rearmGuides();
   renderSettings();
 });
 function restartFirstExperimentGuide() {
@@ -821,6 +869,7 @@ window.addEventListener("mathssprites:solved",event=>{
      (event.detail?.worldId&&event.detail.worldId!==playingWorld))return;
   const slot=findCampaignLevel(playingWorld,playingStage,playingNumber);
   if(!slot||event.detail?.levelId!==slot.id)return;
+  routeGuide?.complete();
   const worldId=playingWorld,stageId=playingStage;
   const moves=event.detail.moves;
   campaign=saveCampaignRecords(withCampaignCompleted(
