@@ -43,7 +43,8 @@
   <link rel="stylesheet" href="./src/chamber-themes.css?v=97" />
   <link rel="stylesheet" href="./src/campaign-path.css?v=98" />
   <script type="module" src="./src/app.mjs?v=92"></script>
-  <script type="module" src="./src/site.mjs?v=98"></script>
+  <script type="module" src="./src/site.mjs?v=99"></script>
+  <link rel="stylesheet" href="./src/compact-level-board.css?v=99" />
 </head>
 <body>
   <div class="site-shell" id="site-shell">
@@ -275,13 +276,13 @@
         <button type="button" id="site-back" class="site-back-link">← Change learning method</button>
         <span class="campaign-step">3 OF 3 · CHOOSE A LEVEL</span>
       </nav>
-      <p id="board-keyboard-note" class="visually-hidden">Use Tab or arrow keys to move between levels, then Enter to play. Change world or learning method using the links above.</p>
+      <p id="board-keyboard-note" class="visually-hidden">Use Tab or arrow keys to move between levels, then Enter to select. Tab to Play level to start. Change world or learning method using the links above.</p>
       <span id="board-selection-status" class="visually-hidden" role="status" aria-live="polite" aria-atomic="true"></span>
       <div class="portal-heading">
         <div><div id="levels-stage-kicker" class="portal-kicker">WORLD 01 · STAGE 1 · POSITIVE WHOLE NUMBERS</div>
           <h1 id="levels-stage-title" tabindex="-1">Guided Balance</h1>
           <p id="levels-stage-intro">Choose the operation. The hand automatically makes the same change to both rooms.</p></div>
-        <div class="level-board-actions"><span id="level-progress" class="landing-progress" aria-live="polite"></span><button type="button" class="secondary-btn" data-screen="workshop">Equation Workshop →</button><button type="button" class="primary-btn" id="board-continue">Play Level 1 →</button></div>
+        <div class="level-board-actions"><span id="level-progress" class="landing-progress" aria-live="polite"></span><button type="button" class="secondary-btn" data-screen="workshop">Equation Workshop →</button></div>
       </div>
       <div class="world1-progress-panel" aria-label="Selected stage completion">
         <div class="world1-progress-labels"><span id="world1-progress-description">Stage 1 · Guided Balance</span><span id="world1-progress-number">0 of 20 complete</span></div>
@@ -296,6 +297,16 @@
       </section>
       <details id="level-star-legend" class="level-star-legend"><summary>★ How stars work</summary><p>★★★ shortest route · ★★ one extra move · ★ two or more extra moves. Your best result is saved. Every available level is open.</p></details>
        <div id="level-sections" aria-describedby="board-keyboard-note"></div>
+      <section id="selected-level-details" class="selected-level-details" aria-label="Selected level">
+        <p id="selected-level-placeholder">Choose a level number to see its challenge.</p>
+        <div id="selected-level-content" hidden>
+          <div class="portal-kicker" id="selected-level-kicker"></div>
+          <h2 id="selected-level-title"></h2>
+          <p id="selected-level-description"></p>
+          <div class="selected-level-meta"><span id="selected-level-status"></span><span id="selected-level-rating"></span></div>
+        </div>
+        <button type="button" class="primary-btn" id="board-continue" disabled>Play level</button>
+      </section>
       <p id="teacher-note" class="teacher-note" hidden>Every implemented puzzle in this stage is open to students.</p>
     </main>
     <main class="site-page" id="site-help" hidden>
