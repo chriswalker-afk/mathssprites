@@ -12,7 +12,7 @@ export function spriteCreatureMarkup(levelId,side,kind,index){
     '<span class="sprite-ground-shadow"></span>'+
     '<span class="sprite-reaction-shell"><span class="sprite-motion">'+
     '<span class="sprite-feet"></span><span class="sprite-body">'+
-    '<span class="sprite-eyes"><i></i><i></i></span><span class="sprite-wear sprite-wear-headwear" aria-hidden="true"></span><span class="sprite-wear sprite-wear-eyewear" aria-hidden="true"></span><span class="sprite-wear sprite-wear-neckwear" aria-hidden="true"></span></span>'+
+    '<span class="sprite-eyes"><i></i><i></i></span><span class="sprite-wear sprite-wear-headwear" aria-hidden="true"></span><span class="sprite-wear sprite-wear-eyewear" aria-hidden="true"></span><span class="sprite-wear sprite-wear-neckwear" aria-hidden="true"></span><span class="sprite-cosmetic-effect" aria-hidden="true"></span></span>'+
     '</span></span></span>';
 }
 /** The isolated art preview can morph a single actor in place. This does

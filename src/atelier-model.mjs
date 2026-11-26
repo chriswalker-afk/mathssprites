@@ -1,7 +1,7 @@
 /** PR86 — a catalogue view, not a second reward system. Ownership and
  * selections always come from the PR84 store; trying on art is local. */
 import {COSMETIC_REWARDS,COSMETIC_SLOTS,findCosmeticReward,originalAppearance} from "./cosmetic-catalog.mjs";
-import {IMPLEMENTED_SPRITE_COSMETICS} from "./sprite-cosmetics.mjs?v=87";
+import {IMPLEMENTED_SPRITE_COSMETICS} from "./sprite-cosmetics.mjs?v=88";
 
 export const ATELIER_FILTERS=Object.freeze([
   ["all","All rewards"],["fur","Fur"],["eyes","Eyes"],["headwear","Headwear"],
@@ -30,7 +30,13 @@ const descriptions=Object.freeze({
   "clockwork-goggles":"Toothed clockwork rims around clear lenses.",
   "velvet-wizard-hat":"A violet pointed hat with a golden star.",
   "order-of-balance-medal":"A brass medal engraved with a balance.",
-  "crown-of-equilibrium":"A golden crown with a red jewel."
+  "crown-of-equilibrium":"A golden crown with a red jewel.",
+  "springy-bounce":"A lively double bounce within the normal sprite height.",
+  "magical-levitation":"A gentle floating idle motion; the balance weighs exactly the same.",
+  "stardust-footsteps":"Small pale stars gather at the feet.",
+  "golden-landing-sparkles":"A brief golden shimmer as the sprite settles.",
+  "celestial-particle-trail":"Tiny blue and violet motes follow the sprite.",
+  "constellation-aura":"A delicate ring of stars around the silhouette."
 });
 export function rewardArtReady(reward,implemented=IMPLEMENTED_SPRITE_COSMETICS){
   if(!reward)return false;

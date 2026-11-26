@@ -5,7 +5,7 @@
  * are presentation only. This module does not enable World 3.
  */
 import {rational,radd,rsub,rmul,req,rtext} from "./rational.mjs";
-import {spriteCreatureMarkup} from "./square-sprites.mjs?v=87";
+import {spriteCreatureMarkup} from "./square-sprites.mjs?v=88";
 import {FRACTION_DENOMINATORS,FRACTION_CAPACITY,fractionParts,fractionPieceCount} from "./fraction-engine.mjs";
 
 export const SPRITE_RADIUS=32;

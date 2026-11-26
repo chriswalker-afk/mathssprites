@@ -2,10 +2,10 @@
  * A shadow root isolates legacy app IDs, SVG clip IDs and event listeners.
  * Navigation and progress remain owned by site.mjs, not the physics renderer.
  */
-import {mountFractionBalance} from "./fraction-balance.mjs?v=87";
+import {mountFractionBalance} from "./fraction-balance.mjs?v=88";
 import {mountFractionNotebook} from "./fraction-notebook.mjs";
 import {FRACTION_CAMPAIGN_SCENE} from "./fraction-campaign-scene.mjs";
-import {spriteInventoryMarkup} from "./fraction-sprites.mjs?v=87";
+import {spriteInventoryMarkup} from "./fraction-sprites.mjs?v=88";
 import {weightInventoryMarkup} from "./fraction-weights.mjs";
 import {rational,req,rtext} from "./rational.mjs";
 import {isSolved} from "./engine.mjs";
@@ -13,9 +13,9 @@ import {isSolved} from "./engine.mjs";
 // Keep the separately fetched shadow-root assets on the same presentation
 // revision as their markup, including on a returning student's warm cache.
 // Bump this revision and the site entry/import URLs when presentation assets change.
-import {applySpriteAppearance} from "./sprite-cosmetics.mjs?v=87";
-export const FRACTION_PRESENTATION_REVISION="87";
-const STYLE_FILES=["styles.css","scene-polish.css","fraction-weights.css","fraction-sprites.css","fraction-balance.css","fraction-campaign.css","fraction-notebook.css","sprite-cosmetics.css","sprite-wearables.css"];
+import {applySpriteAppearance} from "./sprite-cosmetics.mjs?v=88";
+export const FRACTION_PRESENTATION_REVISION="88";
+const STYLE_FILES=["styles.css","scene-polish.css","fraction-weights.css","fraction-sprites.css","fraction-balance.css","fraction-campaign.css","fraction-notebook.css","sprite-cosmetics.css","sprite-wearables.css","sprite-effects.css"];
 const escape=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const mn=n=>"<mn>"+n+"</mn>";
 const mo=s=>"<mo>"+s+"</mo>";
@@ -53,7 +53,7 @@ export function fractionComicMarkup(transaction,index){
     '<div class="fb-comic-action"><span>Move '+(index+1)+'</span>'+fractionOperationMarkup(transaction.action)+'<span>on both rooms</span></div>'+
     comicPanel(transaction.after,"After")+'</div>';
 }
-export function createFractionCampaignView({slot,context,onLeave,onAdvance,onComplete,appearance={}}){
+export function createFractionCampaignView({slot,context,onLeave,onAdvance,onComplete,onReviewReady=()=>{},appearance={}}){
   const host=document.createElement("div");host.id="fraction-game-host";
   const shadow=host.attachShadow({mode:"open"});
   const links=STYLE_FILES.map(path=>{
@@ -77,7 +77,7 @@ export function createFractionCampaignView({slot,context,onLeave,onAdvance,onCom
   const root=document.createElement("main");root.className="fb-lab fb-campaign";root.id="fraction-lab";root.hidden=true;
   applySpriteAppearance(root,appearance);
   root.innerHTML='<header class="fb-header fb-campaign-header"><div class="identity fb-identity">'+
-    '<button type="button" id="fb-brand-home" class="game-sprite-home" aria-label="Return to Maths Sprites home" title="Home"><span class="brand-sprite-frame" aria-hidden="true"><span class="brand-sprite-actor token sprite sprite-black"><span class="sprite-ground-shadow"></span><span class="sprite-reaction-shell"><span class="sprite-motion"><span class="sprite-feet"></span><span class="sprite-body"><span class="sprite-eyes"><i></i><i></i></span><span class="sprite-wear sprite-wear-headwear" aria-hidden="true"></span><span class="sprite-wear sprite-wear-eyewear" aria-hidden="true"></span><span class="sprite-wear sprite-wear-neckwear" aria-hidden="true"></span></span></span></span></span></span></button>'+
+    '<button type="button" id="fb-brand-home" class="game-sprite-home" aria-label="Return to Maths Sprites home" title="Home"><span class="brand-sprite-frame" aria-hidden="true"><span class="brand-sprite-actor token sprite sprite-black"><span class="sprite-ground-shadow"></span><span class="sprite-reaction-shell"><span class="sprite-motion"><span class="sprite-feet"></span><span class="sprite-body"><span class="sprite-eyes"><i></i><i></i></span><span class="sprite-wear sprite-wear-headwear" aria-hidden="true"></span><span class="sprite-wear sprite-wear-eyewear" aria-hidden="true"></span><span class="sprite-wear sprite-wear-neckwear" aria-hidden="true"></span><span class="sprite-cosmetic-effect" aria-hidden="true"></span></span></span></span></span></span></button>'+
     '<h1>Maths Sprites<span class="title-dot">.</span></h1></div><div class="fb-game-meta">'+
     '<button type="button" id="fb-game-home" aria-label="Maths Sprites home">⌂ Home</button>'+
     '<button type="button" id="fb-game-levels">▦ Levels</button>'+
@@ -130,6 +130,7 @@ export function createFractionCampaignView({slot,context,onLeave,onAdvance,onCom
     $("fb-replay-step").textContent=(step+1)+" / "+completed.history.length;
     $("fb-replay-prev").disabled=step===0;
     $("fb-replay-next").disabled=step===completed.history.length-1;
+    if(!paperFirst&&!freePlay&&step===completed.history.length-1)onReviewReady();
   }
   function refresh(state){
     $("fb-review-link").hidden=!isSolved(state);
@@ -145,10 +146,16 @@ export function createFractionCampaignView({slot,context,onLeave,onAdvance,onCom
     // Same default and persistent explicit preference as the main renderer.
     reduced=saved==="reduced";
   }catch{reduced=document.body.classList.contains("reduce-motion");}
+  function completeReviewed(state){
+    onComplete(state);
+    // Notebook callback is after checked physical playback. Guided and
+    // independent reviews are static panels; signal at the last panel.
+    if(!freePlay&&(paperFirst||step===state.history.length-1))onReviewReady();
+  }
   const controller=mountFractionBalance(root,{level:slot.level,mode:paperFirst?"auto":context.method,reduced,
-    onState:refresh,onComplete:paperFirst?()=>{}:onComplete});
+    onState:refresh,onComplete:paperFirst?()=>{}:completeReviewed});
   if(paperFirst)notebook=mountFractionNotebook(root,{level:slot.level,controller,
-    equationMarkup:fractionEquationMarkup,operationMarkup:fractionOperationMarkup,onComplete});
+    equationMarkup:fractionEquationMarkup,operationMarkup:fractionOperationMarkup,onComplete:completeReviewed});
   const canLeave=()=>root.dataset.busy!=="true"&&root.dataset.notebookPlaying!=="true";
   const motionButton=$("fb-motion-toggle");
   function reflectMotion(){motionButton.setAttribute("aria-pressed",String(reduced));motionButton.textContent=reduced?"Motion: reduced":"Motion: on";}

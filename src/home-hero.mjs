@@ -1,4 +1,4 @@
-import {spriteCreatureMarkup} from "./square-sprites.mjs?v=87";
+import {spriteCreatureMarkup} from "./square-sprites.mjs?v=88";
 import {
   HERO_SCENES,HERO_STEP_MS,HERO_LANDING_MS,HERO_HOLD_MS,
   HERO_CHANGE_MS,emptyHeroCounts,heroMass,heroAngle
