@@ -159,7 +159,7 @@ test("returning visitors cannot combine new fraction markup with stale shadow CS
   const held=new Promise(resolve=>{unblock=resolve;});
   await page.route(/\/src\/fraction-(?:campaign|balance|weights|sprites|notebook)\.css(?:\?.*)?$/,async route=>{
     const url=new URL(route.request().url());
-    if(url.searchParams.get("v")!=="87"){
+    if(url.searchParams.get("v")!=="88"){
       stale.push(url.pathname);
       return route.fulfill({contentType:"text/css",body:".fb-campaign{max-width:1220px!important}.fb-board{display:block!important}"});
     }

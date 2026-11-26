@@ -71,7 +71,13 @@ test("two-step solution earns two stars; replaying optimally upgrades the best r
   const cosmetic=await page.evaluate(()=>JSON.parse(localStorage.getItem("mathssprites.cosmetics.v1")));
   expect(cosmetic.unlockedRewards).toEqual(["curious-eyes"]);
   expect(Object.values(cosmetic.equipped).every(value=>value===null)).toBe(true);
+  await expect(page.locator("#reward-celebration")).toBeHidden();
+  await page.locator("#replay-skip").click();
+  await expect(page.locator("#reward-celebration")).toBeVisible();
+  await expect(page.locator("#reward-celebration-names")).toContainText("Curious eyes");
+  await expect(page.locator("#next-level")).toBeEnabled();
   await page.reload();
+  await expect(page.locator("#reward-celebration")).toBeHidden();
   expect(await page.evaluate(()=>JSON.parse(localStorage.getItem("mathssprites.cosmetics.v1")))).toEqual(cosmetic);
   await stages(page);
   await page.locator('[data-map-stage="guided"]').click();

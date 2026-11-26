@@ -25,7 +25,7 @@ async function spriteMetrics(actor){
 test("all first cosmetics retain native body dimensions, sign contrast, square corners and exact fragments @quick @smoke",async({page},testInfo)=>{
   await page.goto("/sprite-cosmetic-preview.html");
   const before=await page.evaluate(()=>JSON.stringify(localStorage));
-  await expect(page.locator(".study-card")).toHaveCount(21);
+  await expect(page.locator(".study-card")).toHaveCount(27);
   for(const kind of ["sprite-black","sprite-white","sprite-square"]){
     const baseline=await spriteMetrics(card(page,"original").locator("."+kind));
     for(const name of ["curious","fluffy","sleepy","spiky","combined"]){
@@ -139,8 +139,8 @@ test("every wearable fits the native body envelope and keeps both signs and the 
       fragmentWear:c.querySelectorAll(".fs-assembly .sprite-wear").length}));
   });
   const baseline=report.find(c=>c.id==="original");
-  expect(report.length).toBe(21);
-  for(const entry of report.slice(6)){
+  expect(report.length).toBe(27);
+  for(const entry of report.slice(6,21)){
     expect(entry.fragmentWear).toBe(0);
     for(const actor of entry.actors){
       const reference=baseline.actors.find(a=>a.kind===actor.kind);
@@ -150,4 +150,27 @@ test("every wearable fits the native body envelope and keeps both signs and the 
     }
   }
   await testInfo.attach("combined-wearables.png",{body:await card(page,"wearable-combination").screenshot(),contentType:"image/png"});
+});
+
+test("motion and effect art study preserves each sign and has distinct variants",async({page},testInfo)=>{
+  await page.goto("/sprite-cosmetic-preview.html");
+  const effects=[["stardust-footsteps","cos-footsteps"],["golden-landing-sparkles","cos-landing"],["celestial-particle-trail","cos-celestial"],["constellation-aura","cos-aura"]];
+  const arts=[];
+  for(const [id] of effects){
+    const effect=card(page,id).locator(".sprite-black .sprite-cosmetic-effect");
+    await expect(effect).toBeVisible();
+    await expect(effect).toHaveCSS("animation-name","none");
+    arts.push(await effect.evaluate(el=>getComputedStyle(el).backgroundImage));
+    await expect(card(page,id).locator(".fs-assembly .sprite-cosmetic-effect")).toHaveCount(0);
+  }
+  expect(new Set(arts).size).toBe(4);
+  await page.locator("#study-motion").click();
+  await expect(card(page,"springy-bounce").locator(".sprite-black .sprite-motion")).toHaveCSS("animation-name","cos-spring-round");
+  await expect(card(page,"springy-bounce").locator(".sprite-white .sprite-motion")).toHaveCSS("animation-name","cos-spring-round");
+  await expect(card(page,"springy-bounce").locator(".sprite-square .sprite-motion")).toHaveCSS("animation-name","cos-spring-square");
+  for(const kind of ["sprite-black","sprite-white","sprite-square"])
+    await expect(card(page,"magical-levitation").locator("."+kind+" .sprite-motion")).toHaveCSS("animation-name","cos-levitate");
+  for(const [id,name] of effects)await expect(card(page,id).locator(".sprite-black .sprite-cosmetic-effect")).toHaveCSS("animation-name",name);
+  await page.locator("#study-motion").click();
+  await testInfo.attach("constellation-aura.png",{body:await card(page,"constellation-aura").screenshot(),contentType:"image/png"});
 });

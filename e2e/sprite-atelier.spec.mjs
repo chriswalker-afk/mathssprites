@@ -39,8 +39,8 @@ test("the Atelier shows all rewards and allows a locked preview without writing 
   await expect(page.locator("#atelier-black .sprite-wear-headwear")).toBeVisible();
   await expect(page.locator("#atelier-white .sprite-wear-headwear")).toBeVisible();
   await expect(page.locator("#atelier-equip")).toBeDisabled();
-  await page.locator("#atelier-filter").selectOption("movement");
-  await reward(page,"springy-bounce").click();
+  await page.locator("#atelier-filter").selectOption("fur");
+  await reward(page,"curled-fur").click();
   await expect(page.locator("#atelier-detail-copy")).toContainText("Artwork coming soon");
   await expect(page.locator("#atelier-equip")).toBeDisabled();
   await page.locator("#atelier-owned-only").check();
@@ -92,11 +92,11 @@ test("previous stars unlock art, students can equip and combine variants, and sa
 test("earned but unfinished effects cannot be equipped and a preview is discarded when leaving",async({page})=>{
   await page.addInitScript(key=>{
     if(!localStorage.getItem(key))localStorage.setItem(key,JSON.stringify({version:1,
-      unlockedRewards:["curious-eyes","extra-fluffy","springy-bounce"],equipped:{fur:"extra-fluffy"}}));
+      unlockedRewards:["curious-eyes","extra-fluffy","curled-fur"],equipped:{fur:"extra-fluffy"}}));
   },saveKey);
   await page.goto("/");await open(page);
-  await reward(page,"springy-bounce").click();
-  await expect(reward(page,"springy-bounce")).toHaveAttribute("data-status","owned-coming");
+  await reward(page,"curled-fur").click();
+  await expect(reward(page,"curled-fur")).toHaveAttribute("data-status","owned-coming");
   await expect(page.locator("#atelier-equip")).toBeDisabled();
   await expect(page.locator("#atelier-detail-copy")).toContainText("Artwork coming soon");
   await reward(page,"sleepy-eyes").click();
@@ -178,5 +178,34 @@ test("wearables can be tried on, combined, changed and removed in the Atelier wi
   await page.locator("#atelier-remove").click();
   await expect(page.locator("body")).toHaveAttribute("data-sprite-neckwear","original");
   await expect(page.locator("body")).toHaveAttribute("data-sprite-headwear","explorer-hat");
+  const after=await saves(page);delete before[saveKey];delete after[saveKey];expect(after).toEqual(before);
+});
+
+test("motion and effect rewards combine with wearables and respect reduced motion",async({page})=>{
+  await page.addInitScript(key=>{
+    if(!localStorage.getItem(key)){
+      localStorage.setItem(key,JSON.stringify({version:1,unlockedRewards:["springy-bounce","stardust-footsteps","knitted-beanie"],equipped:{headwear:"knitted-beanie"}}));
+      localStorage.setItem("mathssprites.motion-preference.v1","reduced");
+    }
+  },saveKey);
+  await page.goto("/");await open(page);
+  const before=await saves(page);
+  for(const [slot,id] of [["movement","springy-bounce"],["effect","stardust-footsteps"]]){
+    await page.locator("#atelier-filter").selectOption(slot);
+    await reward(page,id).click();
+    await expect(page.locator("#atelier-preview")).toHaveAttribute("data-sprite-"+slot,id);
+    await expect(page.locator("#atelier-equip")).toBeEnabled();
+    await page.locator("#atelier-equip").click();
+    await expect(page.locator("body")).toHaveAttribute("data-sprite-"+slot,id);
+  }
+  for(const side of ["black","white"]){
+    await expect(page.locator("#atelier-"+side+" .sprite-motion")).toHaveCSS("animation-name","none");
+    await expect(page.locator("#atelier-"+side+" .sprite-cosmetic-effect")).toBeVisible();
+    await expect(page.locator("#atelier-"+side+" .sprite-cosmetic-effect")).toHaveCSS("animation-name","none");
+    await expect(page.locator("#atelier-"+side+" .sprite-wear-headwear")).toBeVisible();
+  }
+  await page.locator("#atelier-back").click();await page.reload();await open(page);
+  await expect(page.locator("#atelier-equipped")).toContainText("Springy bounce");
+  await expect(page.locator("#atelier-equipped")).toContainText("Stardust footsteps");
   const after=await saves(page);delete before[saveKey];delete after[saveKey];expect(after).toEqual(before);
 });

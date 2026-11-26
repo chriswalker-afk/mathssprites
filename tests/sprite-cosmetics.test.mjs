@@ -7,10 +7,10 @@ import {spriteAssemblyMarkup,spritePartition} from "../src/fraction-sprites.mjs"
 import {spriteCreatureMarkup} from "../src/square-sprites.mjs";
 const wearSlots=["headwear","eyewear","neckwear"];
 const wearableRewards=COSMETIC_REWARDS.filter(r=>wearSlots.includes(r.slot));
-const original={fur:"original",eyes:"original",headwear:"original",eyewear:"original",neckwear:"original"};
-test("all eighteen visual rewards match their catalogue slots and unavailable art falls back to original",()=>{
+const original={fur:"original",eyes:"original",headwear:"original",eyewear:"original",neckwear:"original",movement:"original",effect:"original"};
+test("all twenty-four visual rewards match their catalogue slots and unavailable art falls back to original",()=>{
   assert.equal(wearableRewards.length,14);
-  assert.deepEqual([...IMPLEMENTED_SPRITE_COSMETICS].sort(),["curious-eyes","extra-fluffy","sleepy-eyes","spiky-fur",...wearableRewards.map(r=>r.id)].sort());
+  assert.deepEqual([...IMPLEMENTED_SPRITE_COSMETICS].sort(),["curious-eyes","extra-fluffy","sleepy-eyes","spiky-fur",...wearableRewards.map(r=>r.id),...COSMETIC_REWARDS.filter(r=>["movement","effect"].includes(r.slot)).map(r=>r.id)].sort());
   for(const id of IMPLEMENTED_SPRITE_COSMETICS){
     const item=findCosmeticItem(id);assert.equal(resolveSpriteAppearance({[item.slot]:id})[item.slot],id);
   }
@@ -24,7 +24,7 @@ test("appearance updates are local, idempotent and never recreate or resize nati
   const equipped={fur:"extra-fluffy",eyes:"curious-eyes"};
   assert.deepEqual(applySpriteAppearance(scope,equipped),{...original,...equipped});
   assert.deepEqual(applySpriteAppearance(scope,equipped),{...original,...equipped});
-  assert.equal(calls.length,5);
+  assert.equal(calls.length,7);
   assert.equal(spriteCreatureMarkup("test","left","negX",0),before);
   applySpriteAppearance(scope,{});
   assert.deepEqual([...attributes],Object.keys(original).map(slot=>["data-sprite-"+slot,"original"]));
@@ -65,4 +65,23 @@ test("each wearable has distinct decorative vector art, an isolated scope and a 
   assert.match(spriteAssemblyMarkup(1,[0],{animatedWhole:true}),/sprite-wear-headwear/);
   assert.doesNotMatch(css,/\.token\s*\{|\.sprite-body\s*\{|\.sprite-motion\s*\{/);
   assert.match(css,/pointer-events:none/);
+});
+
+test("motion and effects use the native actor and never create extra mathematical tokens",()=>{
+  const css=readFileSync(new URL("../src/sprite-effects.css",import.meta.url),"utf8");
+  for(const r of COSMETIC_REWARDS.filter(r=>["movement","effect"].includes(r.slot))){
+    assert.ok(css.includes('[data-sprite-'+r.slot+'="'+r.id+'"]'));
+    assert.equal(resolveSpriteAppearance({[r.slot]:r.id})[r.slot],r.id);
+  }
+  for(const kind of ["posX","negX","posX2"]){
+    const markup=spriteCreatureMarkup("test","left",kind,0);
+    assert.equal(markup.split('class="sprite-cosmetic-effect" aria-hidden="true"').length,2);
+    assert.equal((markup.match(/class="token sprite /g)||[]).length,1);
+  }
+  assert.doesNotMatch(spriteAssemblyMarkup(3,[0,1]),/sprite-cosmetic-effect/);
+  assert.match(spriteAssemblyMarkup(1,[0],{animatedWhole:true}),/sprite-cosmetic-effect/);
+  assert.match(css,/pointer-events:none/);
+  assert.match(css,/sprite-basket-bob/);
+  assert.match(css,/reduce-motion/);
+  assert.doesNotMatch(css,/\.token\s*\{|\.sprite-body\s*\{/);
 });
