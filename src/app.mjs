@@ -534,6 +534,10 @@ function renderNotebookPaper() {
     const step=notebookSession.steps[i];
     addLine(step.line,step.explanation,false,notebookSession.state.history[i].after);
   }
+  $("notebook-line-count").textContent=lines.children.length+" equation"+(lines.children.length===1?"":"s");
+  // Follow the latest full line inside the paper only. On stacked layouts
+  // the list expands naturally; do not jump the document away from the editor.
+  requestAnimationFrame(()=>{if(lines.clientHeight&&lines.scrollHeight>lines.clientHeight)lines.scrollTop=lines.scrollHeight;});
   const finished=isSolved(notebookSession.state);
   $("notebook-form").hidden=finished;
   $("notebook-replay").disabled=!finished||notebookPhase==="replaying";

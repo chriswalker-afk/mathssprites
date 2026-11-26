@@ -35,7 +35,7 @@ try{
     return {revision:el.dataset.presentationRevision,styles:el.dataset.styles,sidebar:panel.x>scene.right&&Math.abs(panel.y-scene.y)<3&&Math.abs(panel.height-scene.height)<3,
       labelled:!!plaque&&getComputedStyle(plaque).borderTopStyle==="solid",singleActor:!!whole?.querySelector(".fs-whole-actor")&&!whole.querySelector("svg")};
   });
-  verify(presentation.revision==="104"&&presentation.styles==="ready","Published fraction presentation uses current versioned assets");
+  verify(presentation.revision==="106"&&presentation.styles==="ready","Published fraction presentation uses current versioned assets");
   verify(presentation.sidebar,"Published desktop controls sit next to full-size scene");
   verify(presentation.labelled,"Published fractional quantity uses a physical plaque");
   verify(presentation.singleActor,"Published whole sprite is a single animated actor");
