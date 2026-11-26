@@ -5,7 +5,7 @@ import {initialState,perform,isSolved,balanceDifference,attachAvailablePairs} fr
 import {startNotebook,notebookReplayScript} from "../src/notebook-engine.mjs";
 import {tryNotebookOperation} from "../src/notebook-maths-editor.mjs";
 
-const examples=[...SIGNED_WORKSHOP_EXAMPLES,"3x - 2x + 3 - 5 = 6","x - (-3) = 8","-3x + 15 = 0","4x - 8 = -x + 12","0 = -2x + 10","x + 1 - 1 = 5","36x - 36 = 0","-24x + 24 = 24x - 24"];
+const examples=[...SIGNED_WORKSHOP_EXAMPLES,"3x - 2x + 3 - 5 = 6","x - (-3) = 8","-3x + 15 = 0","4x - 8 = -x + 12","0 = -2x + 10","x + 1 - 1 = 5","24x - 24 = 0","-24x + 24 = 24x - 24"];
 test("signed workshop parses actual objects, not only simplified coefficients",()=>{
   const result=parseSignedWorkshopEquation("3x − 2x + 3 − 5 = 6");
   assert.ok(result.ok);
