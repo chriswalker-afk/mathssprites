@@ -2,7 +2,7 @@
  * allow-lists only after all corresponding renderers support the art. */
 import {applySpriteAppearance} from "./sprite-cosmetics.mjs?v=89";
 import {ALTERNATIVE_WEIGHT_SHAPES} from "./weight-shapes.mjs?v=93";
-import {IMPLEMENTED_CHAMBER_THEMES} from "./chamber-themes.mjs?v=95";
+import {IMPLEMENTED_CHAMBER_THEMES} from "./chamber-themes.mjs?v=96";
 export const LABORATORY_VISUAL_VARIANTS=Object.freeze({
   "weight-shape":ALTERNATIVE_WEIGHT_SHAPES,"weight-material":Object.freeze(["polished-steel","copper","blue-enamel","gold","jade-enamel","cast-iron","violet-enamel"]),
   "weight-effect":Object.freeze(["soft-glow","frost-shimmer","ember-glow","pearlescent-shimmer","golden-halo"]),"chamber-theme":IMPLEMENTED_CHAMBER_THEMES

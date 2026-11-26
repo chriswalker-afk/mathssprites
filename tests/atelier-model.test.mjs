@@ -30,7 +30,8 @@ test("owned, locked and equipped states cover the complete collection; missing-a
   assert.equal(atelierRewardState(saved,reward("distinguished-eyebrows")).status,"locked");
   assert.equal(atelierRewardState(saved,reward("distinguished-eyebrows"),[]).status,"locked-coming");
   assert.ok(COSMETIC_REWARDS.filter(r=>cosmeticCollection(r)==="sprites").every(r=>rewardArtReady(r)));
-  assert.ok(COSMETIC_REWARDS.filter(r=>cosmeticCollection(r)!=="sprites"&&!["weight-material","weight-shape","weight-effect"].includes(r.slot)&&!IMPLEMENTED_CHAMBER_THEMES.includes(r.id)).every(r=>!rewardArtReady(r)));
+  assert.equal(COSMETIC_REWARDS.filter(r=>rewardArtReady(r)).length,57);
+  assert.equal(COSMETIC_REWARDS.filter(r=>cosmeticCollection(r)==="chambers").length,10);
   assert.equal(rewardArtReady(reward("grand-alchemist")),true);
   assert.equal(rewardArtReady(reward("grand-alchemist"),Object.values(reward("grand-alchemist").loadout)),true);
 });
@@ -108,7 +109,7 @@ test("the 720-star reward is one unlock and equips a coordinated seven-component
   assert.equal(store.getSnapshot().unlockedCount,57);
 });
 
-test("three collections filter separately and forthcoming art is owned but cannot be equipped or previewed",()=>{
+test("three complete collections filter separately and locked art cannot be equipped",()=>{
   const saved=snapshot(24,["curious-eyes","polished-steel","extra-fluffy","dumbbell","little-bow-tie","clockmakers-workshop"],{fur:"extra-fluffy"});
   for(const [collection,count] of [["sprites",29],["weights",18],["chambers",10]])assert.equal(atelierCollection(saved,{collection}).length,count);
   assert.deepEqual(atelierFilters("weights").map(f=>f.id),["all","weight-shape","weight-material","weight-effect"]);
@@ -140,7 +141,7 @@ test("three collections filter separately and forthcoming art is owned but canno
   assert.equal(store.getSnapshot().equipped["chamber-theme"],"clockmakers-workshop");
 });
 
-test("five weight effects are independent try-ons; unavailable chamber art remains guarded",()=>{
+test("five weight effects are independent try-ons",()=>{
   const saved=snapshot(81,["soft-glow","dumbbell","copper","clockmakers-workshop"],{"weight-shape":"dumbbell","weight-material":"copper"});
   assert.equal(atelierCollection(saved,{collection:"weights",filter:"weight-effect"}).length,5);
   for(const r of COSMETIC_REWARDS.filter(r=>r.slot==="weight-effect")){
@@ -159,26 +160,49 @@ test("five weight effects are independent try-ons; unavailable chamber art remai
   assert.deepEqual(store.getSnapshot().equipped,saved.equipped);
 });
 
-test("five chamber artworks are ready; remaining owned themes stay pending; restore is independent",()=>{
+test("all ten chamber artworks are ready, earned high-tier rewards become usable, and restore is independent",()=>{
   const equipped={fur:"extra-fluffy","weight-shape":"dumbbell","weight-material":"copper","weight-effect":"soft-glow"};
   const owned=["clockmakers-workshop","frostbound-vault","extra-fluffy","dumbbell","copper","soft-glow"];
   const saved=snapshot(24,owned,equipped);
   for(const id of IMPLEMENTED_CHAMBER_THEMES){
     assert.equal(rewardArtReady(reward(id)),true);
     assert.deepEqual(atelierPreview(saved,id),{...saved.equipped,"chamber-theme":id});
-    assert.equal(atelierRewardState(saved,reward(id)).canEquip,id==="clockmakers-workshop");
+    assert.equal(atelierRewardState(saved,reward(id)).canEquip,owned.includes(id));
   }
-  assert.equal(atelierRewardState(saved,reward("frostbound-vault")).status,"owned-coming");
-  assert.deepEqual(atelierPreview(saved,"frostbound-vault"),saved.equipped);
+  assert.equal(atelierRewardState(saved,reward("frostbound-vault")).status,"available");
+  assert.equal(atelierRewardState(saved,reward("astral-sanctuary")).status,"locked");
+  assert.deepEqual(atelierPreview(saved,"frostbound-vault"),{...saved.equipped,"chamber-theme":"frostbound-vault"});
+  // The defensive fallback remains covered without marking real art pending.
+  assert.equal(atelierRewardState(saved,reward("frostbound-vault"),[]).status,"owned-coming");
+  assert.deepEqual(atelierPreview(saved,"frostbound-vault",[]),saved.equipped);
   const map=new Map([[COSMETIC_SAVE_KEY,JSON.stringify({version:1,unlockedRewards:owned,equipped})]]);
   const storage={getItem:k=>map.get(k),setItem:(k,v)=>map.set(k,v)};
   let store=createCosmeticRewards(blankCampaignRecords(),{storage});
   const before=map.get(COSMETIC_SAVE_KEY);
-  assert.equal(equipAtelierReward(store,"frostbound-vault").code,"art-unavailable");
+  assert.equal(equipAtelierReward(store,"astral-sanctuary").code,"locked");
   assert.equal(map.get(COSMETIC_SAVE_KEY),before);
   assert.equal(equipAtelierReward(store,"clockmakers-workshop").ok,true);
+  assert.equal(equipAtelierReward(store,"frostbound-vault").ok,true);
   store=createCosmeticRewards(blankCampaignRecords(),{storage});
-  assert.deepEqual(store.getSnapshot().equipped,{...saved.equipped,"chamber-theme":"clockmakers-workshop"});
+  assert.deepEqual(store.getSnapshot().equipped,{...saved.equipped,"chamber-theme":"frostbound-vault"});
   assert.deepEqual(store.restoreOriginal("chambers").snapshot.equipped,saved.equipped);
   assert.deepEqual(new Set(store.getSnapshot().unlockedRewards),new Set(owned));
+});
+
+test("every reward can be equipped from a complete profile without a coming-soon state",()=>{
+  const owned=COSMETIC_REWARDS.map(r=>r.id);
+  const map=new Map([[COSMETIC_SAVE_KEY,JSON.stringify({version:1,unlockedRewards:owned,equipped:{}})]]);
+  const storage={getItem:k=>map.get(k),setItem:(k,v)=>map.set(k,v)};
+  const store=createCosmeticRewards(blankCampaignRecords(),{storage});
+  for(const r of COSMETIC_REWARDS){
+    const before=store.getSnapshot();
+    assert.equal(atelierRewardState(before,r).status,"available",r.id);
+    const result=equipAtelierReward(store,r.id);
+    assert.equal(result.ok,true,r.id);
+    assert.equal(atelierRewardState(store.getSnapshot(),r).status,"equipped",r.id);
+    assert.deepEqual(store.getSnapshot().equipped,atelierPreview(before,r.id),r.id);
+    assert.deepEqual(store.getSnapshot().unlockedRewards,owned);
+  }
+  assert.deepEqual(store.restoreOriginal().snapshot.equipped,originalAppearance());
+  assert.deepEqual(store.getSnapshot().unlockedRewards,owned);
 });
