@@ -144,12 +144,17 @@ export function weightAssemblyMarkup(denominator,indices,{outline=true,label=tru
       '<g clip-path="url(#'+clip+')">'+contour(profile.outer,profile.holes,'class="fw-weight-body" fill="url(#'+id+')"')+
       '<path class="fw-material-rim" d="'+profile.rim+'" fill="none" stroke="#d8b77b" stroke-width="2.5"/>'+
       '<path class="fw-material-shine" d="'+profile.shine+'" fill="none" stroke="#ffefb8" stroke-opacity=".30" stroke-width="8" stroke-linecap="round"/>'+
+      '<g class="fw-weight-effect" aria-hidden="true" style="pointer-events:none">'+
+      contour(profile.outer,profile.holes,'class="fw-effect-fill" fill="url(#'+id+'-effect)" fill-opacity="0"')+
+      contour(profile.outer,profile.holes,'class="fw-effect-rim" fill="none" stroke="transparent" stroke-width="5" stroke-linejoin="round"')+'</g>'+
       '</g>'+contour(p.polygon,p.holes,'class="fw-cut-edge" fill="none" stroke="#694921" stroke-width=".75" stroke-linejoin="round"'+(shape==="original"?"":' clip-path="url(#'+clip+')"'))+'</g>';
   }).join("");
   return '<span class="fw-assembly'+(separated?' is-separated':'')+'" data-complete="'+full+'" data-shape="'+shape+'" role="img" aria-label="'+description+'">'+
     '<svg aria-hidden="true" viewBox="-18 0 136 103" xmlns="http://www.w3.org/2000/svg">'+
     '<defs><linearGradient id="'+id+'" x1="8" y1="15" x2="90" y2="97" gradientUnits="userSpaceOnUse">'+
     '<stop class="fw-material-dark" stop-color="#7b592f"/><stop class="fw-material-light" offset=".32" stop-color="#d5b17c"/><stop class="fw-material-mid" offset=".70" stop-color="#8f6a3e"/><stop class="fw-material-deep" offset="1" stop-color="#5b412b"/>'+
+    '</linearGradient><linearGradient id="'+id+'-effect" x1="10" y1="15" x2="90" y2="97" gradientUnits="userSpaceOnUse">'+
+    '<stop class="fw-effect-a" stop-color="transparent" offset="0"/><stop class="fw-effect-b" stop-color="transparent" offset=".45"/><stop class="fw-effect-c" stop-color="transparent" offset="1"/>'+
     '</linearGradient></defs>'+
     (outline&&denominator>1?contour(profile.outer,profile.holes,'class="fw-whole-outline" fill="none" stroke="currentColor" stroke-width="1.4" stroke-dasharray="3 3"'):"")+
     art+(full?contour(profile.outer,profile.holes,'class="fw-joined-edge" fill="none" stroke="#694921" stroke-width=".75" stroke-linejoin="round"'):"")+'</svg>'+(label?'<span class="fw-label" aria-hidden="true">'+caption+'</span>':"")+'</span>';

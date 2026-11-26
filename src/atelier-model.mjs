@@ -2,7 +2,7 @@
  * selections always come from the PR84 store; trying on art is local. */
 import {COSMETIC_REWARDS,COSMETIC_SLOTS,COSMETIC_COLLECTIONS,cosmeticCollection,findCosmeticReward,originalAppearance} from "./cosmetic-catalog.mjs?v=91";
 import {IMPLEMENTED_SPRITE_COSMETICS} from "./sprite-cosmetics.mjs?v=89";
-import {IMPLEMENTED_LABORATORY_COSMETICS} from "./laboratory-cosmetics.mjs?v=93";
+import {IMPLEMENTED_LABORATORY_COSMETICS} from "./laboratory-cosmetics.mjs?v=94";
 export const IMPLEMENTED_COSMETICS=Object.freeze([...IMPLEMENTED_SPRITE_COSMETICS,...IMPLEMENTED_LABORATORY_COSMETICS]);
 
 export const ATELIER_FILTERS=Object.freeze([
@@ -19,6 +19,11 @@ export function atelierFilters(collection){
   return ATELIER_FILTERS.filter(f=>f.id==="all"||slots.includes(f.id)||(collection==="sprites"&&f.id==="set"));
 }
 const descriptions=Object.freeze({
+  "soft-glow":"A gentle warm light across the metal, softly brightening and dimming.",
+  "frost-shimmer":"Cool icy highlights with a pale blue sheen along the surface.",
+  "ember-glow":"A restrained amber glow concentrated near the base, like cooling embers.",
+  "pearlescent-shimmer":"An iridescent lavender, mint and pale-gold sheen over the selected metal.",
+  "golden-halo":"A luminous golden band and bright edge highlights, bounded by the weight's own outline.",
   "dumbbell":"Two solid ends joined by a short grip. Still one unit of weight.",
   "hexagonal-weight":"A bevelled six-sided metal weight.",
   "kettlebell":"A rounded weight with an open handle; the opening is excluded from fractional area.",

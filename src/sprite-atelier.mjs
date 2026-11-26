@@ -2,10 +2,10 @@
  * preview, scoped independently from the saved appearance on document.body. */
 import {COSMETIC_REWARDS,findCosmeticReward,findCosmeticItem,COSMETIC_COLLECTIONS,cosmeticCollection} from "./cosmetic-catalog.mjs?v=91";
 import {spriteCreatureMarkup} from "./square-sprites.mjs?v=88";
-import {weightAssemblyMarkup} from "./fraction-weights.mjs?v=93";
-import {applyLaboratoryAppearance} from "./laboratory-cosmetics.mjs?v=93";
+import {weightAssemblyMarkup} from "./fraction-weights.mjs?v=94";
+import {applyLaboratoryAppearance} from "./laboratory-cosmetics.mjs?v=94";
 import {atelierFilters,rewardArtReady,atelierRewardState,
-  atelierCollection,atelierPreview,atelierDescription,equipAtelierReward} from "./atelier-model.mjs?v=93";
+  atelierCollection,atelierPreview,atelierDescription,equipAtelierReward} from "./atelier-model.mjs?v=94";
 
 const icons=Object.freeze({fur:"✳",eyes:"◉",headwear:"⌂",eyewear:"∞",neckwear:"◇",
   movement:"↟",effect:"✦",set:"♛","weight-shape":"◆","weight-material":"▧","weight-effect":"✧","chamber-theme":"⌂"});
@@ -93,7 +93,7 @@ export function mountSpriteAtelier({root,homeSummary,store}){
     const preview=atelierPreview(snapshot,selected);
     const appearance=applyLaboratoryAppearance(scope,preview);
     updateWeightPreview(appearance);
-    $("atelier-weight-finish").textContent=(findCosmeticItem(preview["weight-shape"])?.name||"Traditional weight")+" · "+(findCosmeticItem(preview["weight-material"])?.name||"Original brass");
+    $("atelier-weight-finish").textContent=[findCosmeticItem(preview["weight-shape"])?.name||"Traditional weight",findCosmeticItem(preview["weight-material"])?.name||"Original brass",findCosmeticItem(preview["weight-effect"])?.name].filter(Boolean).join(" · ");
     const names=COSMETIC_COLLECTIONS[collection].map(slot=>findCosmeticItem(snapshot.equipped[slot])?.name).filter(Boolean);
     const fullSet=findCosmeticReward("grand-alchemist");
     const wearingSet=collection==="sprites"&&Object.entries(fullSet.loadout).every(([slot,id])=>snapshot.equipped[slot]===id);

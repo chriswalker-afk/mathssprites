@@ -1,5 +1,5 @@
 import { LEVELS } from "./engine.mjs";
-import {createFractionCampaignView} from "./fraction-campaign.mjs?v=93";
+import {createFractionCampaignView} from "./fraction-campaign.mjs?v=94";
 import {
   CAMPAIGN_REGISTRY,findCampaignWorld,findCampaignStage,findCampaignLevel,
   nextCampaignLevel,isCampaignPlayable,firstCampaignLevel
@@ -10,8 +10,8 @@ import {
   campaignStars,campaignStarTotals,campaignOptimalMoves,stageResumeLevel
 } from "./campaign-records.mjs?v=84";
 import {createCosmeticRewards} from "./cosmetic-rewards.mjs?v=91";
-import {applyLaboratoryAppearance} from "./laboratory-cosmetics.mjs?v=93";
-import {mountSpriteAtelier} from "./sprite-atelier.mjs?v=93";
+import {applyLaboratoryAppearance} from "./laboratory-cosmetics.mjs?v=94";
+import {mountSpriteAtelier} from "./sprite-atelier.mjs?v=94";
 import {mountRewardCelebration} from "./reward-celebration.mjs?v=91";
 import {createWorkshopEquation,WORKSHOP_EXAMPLES} from "./equation-workshop.mjs?v=82";
 import {createSignedWorkshopEquation,SIGNED_WORKSHOP_EXAMPLES} from "./signed-workshop.mjs?v=82";

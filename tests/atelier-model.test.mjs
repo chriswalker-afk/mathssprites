@@ -29,7 +29,7 @@ test("owned, locked and equipped states cover the complete collection; missing-a
   assert.equal(atelierRewardState(saved,reward("distinguished-eyebrows")).status,"locked");
   assert.equal(atelierRewardState(saved,reward("distinguished-eyebrows"),[]).status,"locked-coming");
   assert.ok(COSMETIC_REWARDS.filter(r=>cosmeticCollection(r)==="sprites").every(r=>rewardArtReady(r)));
-  assert.ok(COSMETIC_REWARDS.filter(r=>cosmeticCollection(r)!=="sprites"&&!["weight-material","weight-shape"].includes(r.slot)).every(r=>!rewardArtReady(r)));
+  assert.ok(COSMETIC_REWARDS.filter(r=>cosmeticCollection(r)!=="sprites"&&!["weight-material","weight-shape","weight-effect"].includes(r.slot)).every(r=>!rewardArtReady(r)));
   assert.equal(rewardArtReady(reward("grand-alchemist")),true);
   assert.equal(rewardArtReady(reward("grand-alchemist"),Object.values(reward("grand-alchemist").loadout)),true);
 });
@@ -134,4 +134,23 @@ test("three collections filter separately and forthcoming art is owned but canno
   assert.equal(store.getSnapshot().equipped["weight-shape"],"dumbbell");
   assert.equal(store.getSnapshot().equipped["weight-material"],"polished-steel");
   assert.equal(store.getSnapshot().equipped.fur,"extra-fluffy");
+});
+
+test("five weight effects are independent try-ons; unavailable chamber art remains guarded",()=>{
+  const saved=snapshot(81,["soft-glow","dumbbell","copper","clockmakers-workshop"],{"weight-shape":"dumbbell","weight-material":"copper"});
+  assert.equal(atelierCollection(saved,{collection:"weights",filter:"weight-effect"}).length,5);
+  for(const r of COSMETIC_REWARDS.filter(r=>r.slot==="weight-effect")){
+    assert.equal(rewardArtReady(r),true);
+    assert.deepEqual(atelierPreview(saved,r.id),{...saved.equipped,"weight-effect":r.id});
+    assert.equal(atelierRewardState(saved,r).canEquip,r.id==="soft-glow");
+  }
+  const map=new Map([[COSMETIC_SAVE_KEY,JSON.stringify({version:1,unlockedRewards:saved.unlockedRewards,equipped:saved.equipped})]]);
+  const store=createCosmeticRewards(blankCampaignRecords(),{storage:{getItem:key=>map.get(key),setItem:(key,v)=>map.set(key,v)}});
+  const before=map.get(COSMETIC_SAVE_KEY);
+  assert.equal(equipAtelierReward(store,"golden-halo").code,"locked");
+  assert.equal(map.get(COSMETIC_SAVE_KEY),before);
+  assert.equal(equipAtelierReward(store,"soft-glow").ok,true);
+  assert.deepEqual(store.getSnapshot().equipped,{...saved.equipped,"weight-effect":"soft-glow"});
+  assert.equal(store.equip("weight-effect",null).ok,true);
+  assert.deepEqual(store.getSnapshot().equipped,saved.equipped);
 });

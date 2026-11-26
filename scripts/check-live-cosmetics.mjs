@@ -13,7 +13,7 @@ const revision=process.env.GITHUB_SHA||"manual";
 const result={url,revision,checks:[],errors:[]};
 const note=message=>{result.checks.push(message);console.log(message);};
 const read=path=>readFileSync(new URL("../"+path,import.meta.url),"utf8");
-const files=["index.html","src/site.mjs","src/laboratory-cosmetics.mjs","src/weight-materials.css","src/weight-shapes.css","src/weight-shapes.mjs","src/fraction-weights.mjs","src/fraction-choreography.mjs","src/cosmetic-catalog.mjs","src/cosmetic-rewards.mjs","src/atelier-model.mjs",
+const files=["index.html","src/site.mjs","src/laboratory-cosmetics.mjs","src/weight-materials.css","src/weight-effects.css","src/weight-shapes.css","src/weight-shapes.mjs","src/fraction-weights.mjs","src/fraction-choreography.mjs","src/cosmetic-catalog.mjs","src/cosmetic-rewards.mjs","src/atelier-model.mjs",
   "src/sprite-atelier.mjs","src/sprite-atelier.css","src/sprite-cosmetics.mjs","src/sprite-cosmetics.css",
   "src/sprite-wearables.css","src/sprite-effects.css","src/reward-celebration.mjs","src/reward-celebration.css",
   "src/fraction-campaign.mjs","src/fraction-sprites.mjs","src/fraction-balance.mjs","src/square-sprites.mjs",
@@ -125,6 +125,12 @@ try{
   await page.locator("#atelier-equip").click();
   await expect(page.locator("body")).toHaveAttribute("data-weight-shape","dumbbell");
   await shot(page,"blue-dumbbell");
+  await reward(page,"golden-halo").click();
+  await expect(page.locator("#atelier-preview")).toHaveAttribute("data-weight-effect","golden-halo");
+  await page.locator("#atelier-equip").click();
+  await expect(page.locator("body")).toHaveAttribute("data-weight-effect","golden-halo");
+  await expect(page.locator("#atelier-weight-fraction .fw-weight-effect").first()).toHaveCSS("animation-name","none");
+  await shot(page,"blue-dumbbell-golden-halo");
   await page.reload();await page.locator("#home-atelier").click();
   await expect(page.locator("#atelier-equipped")).toContainText("The Grand Alchemist");
   await expect(page.locator("#reward-celebration")).toBeHidden();
@@ -155,6 +161,11 @@ try{
   await expect(host).toHaveAttribute("data-styles","ready");
   await expect(lab).toHaveAttribute("data-weight-material","blue-enamel");
   await expect(lab).toHaveAttribute("data-weight-shape","dumbbell");
+  await expect(lab).toHaveAttribute("data-weight-effect","golden-halo");
+  await expect(lab.locator("#left-items .fw-weight-effect")).toHaveCount(2);
+  await expect(lab.locator("#left-items .fw-weight-effect").first()).toHaveCSS("display","inline");
+  await expect(lab.locator("#left-items .fw-weight-effect").first()).toHaveCSS("animation-name","none");
+  await expect(lab.locator("#left-items .fw-effect-rim").first()).toHaveCSS("stroke","rgb(255, 233, 163)");
   await expect(lab.locator("#left-items .fw-assembly[data-shape='dumbbell']")).toHaveCount(1);
   await expect(lab.locator("#left-items .fw-material-light")).toHaveCSS("stop-color","rgb(169, 217, 244)");
   await expect(lab.locator("#left-items .fs-whole-actor")).toHaveCount(1);
@@ -189,6 +200,7 @@ try{
   await page.locator("#atelier-restore").click();
   await expect(page.locator("body")).toHaveAttribute("data-weight-material","original");
   await expect(page.locator("body")).toHaveAttribute("data-weight-shape","original");
+  await expect(page.locator("body")).toHaveAttribute("data-weight-effect","original");
   const restored=JSON.parse((await saves(page))[profileKey]);
   expect(restored.unlockedRewards).toEqual(COSMETIC_REWARDS.map(r=>r.id));
   expect(Object.values(restored.equipped).every(v=>v===null)).toBe(true);
