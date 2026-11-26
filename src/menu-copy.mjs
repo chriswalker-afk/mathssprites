@@ -28,3 +28,11 @@ export function briefStageIntro(stage={}){
   };
   return methodHints[stage.method]||stage.tagline||"Choose an experiment.";
 }
+
+// Short concept-led choice copy, independent of the world-specific level prompts.
+export function worldChoiceIntro(world={}){
+  return ({workshop:"Use whole sprites and weights to balance both rooms.",opposites:"Cancel opposite objects to make zero pairs.",fractions:"Share and combine exact parts of sprites and weights.",squares:"Build square areas and recover their sides."})[world.id]||world.description||"";
+}
+export function methodChoiceIntro(stage={}){
+  return ({auto:"Choose one move. The hand mirrors it.",manual:"Choose each side yourself to restore balance.",notebook:"Use the maths editor, then watch your moves replay."})[stage.method]||briefStageIntro(stage);
+}

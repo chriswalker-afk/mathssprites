@@ -19,7 +19,7 @@ import {createFractionWorkshopEquation,FRACTION_WORKSHOP_EXAMPLES} from "./fract
 import {createSquareWorkshopEquation,SQUARE_WORKSHOP_EXAMPLES,SQUARE_BUILD_EXAMPLES} from "./square-workshop.mjs";
 import {createHomeHero} from "./home-hero.mjs?v=88";
 import {WORLD_DEMOS,METHOD_DEMOS,worldDemoMarkup,methodDemoMarkup,createMenuDemoPlayback} from "./menu-demonstrations.mjs?v=100";
-import {compactWorldProgress,compactStageProgress,briefStageIntro} from "./menu-copy.mjs";
+import {compactWorldProgress,compactStageProgress,briefStageIntro,worldChoiceIntro,methodChoiceIntro} from "./menu-copy.mjs?v=101";
 import {boardContinueLevel,spatialTileIndex,campaignMenuScreen,campaignHomeLabel} from "./navigation-journey.mjs?v=98";
 import {loadResume,saveResume,resumeDestination,resumeLabel,RESUME_STAGE_NUMBERS} from "./resume.mjs";
 import {
@@ -186,7 +186,7 @@ function renderWorlds() {
       '<div class="world-card-body"><div class="eyebrow">WORLD ' +
         String(world.number).padStart(2,"0") + '</div>' +
       '<h3>' + clean(world.title) + '</h3><p class="world-subtitle">' +
-        clean(world.subtitle) + '</p><p class="world-context">'+clean(world.description||"")+'</p><p class="visually-hidden">'+clean(WORLD_DEMOS[world.id]||"")+'</p>' +
+        clean(world.subtitle) + '</p><p class="world-context">'+clean(worldChoiceIntro(world))+'</p><p class="visually-hidden">'+clean(WORLD_DEMOS[world.id]||"")+'</p>' +
       '<div class="world-card-footer"><span class="world-progress">' + progressLine + ' · '+totals.earned+' / '+totals.available+' ★</span>' +
         (world.available
           ? '<button type="button" class="primary-btn" data-world-stages="'+clean(world.id)+'" aria-label="Choose '+clean(world.title)+' — '+clean(world.subtitle)+'">'+
@@ -219,7 +219,7 @@ function renderStages() {
       '</span></div><div class="stage-ornament" aria-hidden="true">'+
         portalStageArt(stage.id,stage.icon)+methodDemoMarkup(stage.id)+'</div>'+
       '<h2>'+clean(methodTitle)+'</h2>'+
-      '<p class="stage-tagline">'+clean(briefStageIntro(stage))+'</p><p class="visually-hidden">'+clean(METHOD_DEMOS[stage.id]||"")+'</p>'+
+      '<p class="stage-tagline">'+clean(methodChoiceIntro(stage))+'</p><p class="visually-hidden">'+clean(METHOD_DEMOS[stage.id]||"")+'</p>'+
       '<div class="stage-card-bottom"><span class="stage-count">'+countText+'</span>'+
       (playable
         ? '<button type="button" class="primary-btn" data-stage-open="'+clean(stage.id)+'">Choose '+clean(methodTitle)+' →</button>'
@@ -261,6 +261,8 @@ function renderLevels() {
   $("stage-finale-title").textContent=stage.title+" mastered!";
   $("stage-finale-message").textContent=stage.finale||"You completed all experiments in this stage.";
   const sections=$("level-sections");
+  $("suggested-level-number").textContent=suggested?"Suggested: level "+suggested.number:"";
+  $("suggested-level-number").hidden=!suggested;
   // PR51: the sixth Guided chapter makes TWO rows. A whole chapter must
   // never be squeezed to half its readable height by the fixed-height board.
   // Its card grid scrolls internally; the header/navigation remain in place.
@@ -294,7 +296,7 @@ function renderLevels() {
         (highlighted?' level-next':'')+'" data-level="'+slot.number+
         '" data-level-id="'+clean(slot.id)+'"'+(open?"":" disabled")+
         (highlighted?' aria-current="step"':'')+
-        ' aria-pressed="false" aria-controls="selected-level-details"'+
+        ' tabindex="-1" aria-pressed="false" aria-controls="selected-level-details"'+
         ' aria-label="'+clean(world.title)+', '+clean(stage.title)+
         ', Level '+slot.number+': '+clean(slot.title)+'. '+tag+'. '+ratingLabel+'">'+
         '<span class="tile-number">'+String(slot.number).padStart(2,"0")+'</span>'+
@@ -320,9 +322,16 @@ function renderLevels() {
   }).join("");
   sections.scrollTop=priorScroll;
   renderSelectedLevel();
+  const focusTile=[...sections.querySelectorAll(".level-tile:not(:disabled)")].find(tile=>tile.dataset.levelId===selectedLevelId)||sections.querySelector(".level-next:not(:disabled)")||sections.querySelector(".level-tile:not(:disabled)");
+  setLevelTabStop(focusTile);
   $("teacher-note").hidden=!teacher;
   $("teacher-note").textContent="All "+total+" puzzles in "+stage.title+
     " are available. Teacher previews are separate from student progress.";
+}
+// One tab stop for the grid; spatial arrow navigation still visits every level.
+function setLevelTabStop(tile){
+  if(!tile||tile.disabled)return;
+  $("level-sections").querySelectorAll(".level-tile").forEach(item=>item.tabIndex=item===tile?0:-1);
 }
 // Selecting a level is deliberately a transient UI action, never a save.
 function renderSelectedLevel(){
@@ -371,6 +380,7 @@ function renderSettings() {
   $("site-motion").setAttribute("aria-pressed",String(motion === "Motion: reduced"));
 }
 function showScreen(name,{focusHeading=true}={}) {
+  const previousScreen=currentScreen;
   name=campaignMenuScreen(name,findCampaignWorld(selectedWorld),findCampaignStage(selectedWorld,selectedStage));
   if (!screenNames.includes(name)) return;
   if(name==="workshop" && currentScreen!=="workshop" && currentScreen!=="workshop-game"){
@@ -433,9 +443,19 @@ function showScreen(name,{focusHeading=true}={}) {
   const heading = $("site-" + name).querySelector("h1, h2");
   // Focus the usable input at the desk, and the heading elsewhere.
   // The initial home question receives no reload focus ring.
-  if(name==="workshop")$("workshop-equation").focus({preventScroll:true});
-  else if(heading&&focusHeading)heading.focus({preventScroll:true});
   window.scrollTo?.(0,0);
+  if(name==="workshop")$("workshop-equation").focus({preventScroll:true});
+  else if(focusHeading){
+    let returnTarget=null;
+    if(name==="worlds"&&["stages","levels"].includes(previousScreen))
+      returnTarget=[...$("world-cards").querySelectorAll("[data-world-stages]")].find(button=>button.dataset.worldStages===selectedWorld);
+    else if(name==="stages"&&previousScreen==="levels")
+      returnTarget=[...$("world1-stage-cards").querySelectorAll("[data-stage-open]")].find(button=>button.dataset.stageOpen===selectedStage);
+    else if(name==="levels"&&selectedLevelId)
+      returnTarget=[...$("level-sections").querySelectorAll(".level-tile")].find(tile=>tile.dataset.levelId===selectedLevelId);
+    if(returnTarget&&!returnTarget.disabled) returnTarget.focus({preventScroll:name==="levels"&&window.matchMedia("(min-width: 900px) and (min-height: 500px)").matches});
+    else heading?.focus({preventScroll:true});
+  }
 }
 function launch(levelIdOrNumber,stageId=selectedStage,worldId=selectedWorld) {
   if(!isCampaignPlayable(worldId,stageId,levelIdOrNumber))return false;
@@ -604,8 +624,9 @@ function announceBoardSelection(){
   const stage=findCampaignStage(selectedWorld,selectedStage);
   if(!world||!stage)return;
   const totals=campaignStarTotals(campaign,{worldId:world.id,stageId:stage.id});
+  const selected=selectedLevelId&&findCampaignLevel(world.id,stage.id,selectedLevelId);
   $("board-selection-status").textContent=world.title+", "+stage.title+
-    ". "+totals.completed+" of "+totals.count+" levels complete.";
+    ". "+totals.completed+" of "+totals.count+" levels complete."+(selected?" Selected level "+selected.number+": "+selected.title+".":"");
 }
 $("site-shell").addEventListener("click", event => {
   const target = event.target.closest("button");
@@ -649,6 +670,7 @@ $("site-shell").addEventListener("click", event => {
     const slot=findCampaignLevel(selectedWorld,selectedStage,target.dataset.levelId||Number(target.dataset.level));
     if(!slot||!isCampaignPlayable(selectedWorld,selectedStage,slot.id))return;
     selectedLevelId=slot.id;
+    setLevelTabStop(target);
     renderSelectedLevel();
     // On phones, the selected challenge is below the compact grid.
     if(window.matchMedia("(max-width: 899px)").matches&&event.detail>0)
@@ -688,6 +710,7 @@ $("site-levels").addEventListener("keydown",event=>{
   if(index<0)return;
   const next=spatialTileIndex(tiles.map(tile=>tile.getBoundingClientRect()),index,key);
   event.preventDefault();
+  setLevelTabStop(tiles[next]);
   tiles[next]?.focus();
 });
 // Escape goes back one portal space, but never abandons a live experiment
