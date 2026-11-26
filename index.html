@@ -43,9 +43,10 @@
   <link rel="stylesheet" href="./src/chamber-themes.css?v=97" />
   <link rel="stylesheet" href="./src/campaign-path.css?v=98" />
   <script type="module" src="./src/app.mjs?v=92"></script>
-  <script type="module" src="./src/site.mjs?v=100"></script>
+  <script type="module" src="./src/site.mjs?v=101"></script>
   <link rel="stylesheet" href="./src/compact-level-board.css?v=99" />
   <link rel="stylesheet" href="./src/menu-demonstrations.css?v=100" />
+  <link rel="stylesheet" href="./src/menu-usability.css?v=101" />
 </head>
 <body>
   <div class="site-shell" id="site-shell">
@@ -201,14 +202,14 @@
       </div>
     </main>
     <main class="site-page" id="site-worlds" hidden>
-      <button type="button" class="site-back-link" data-screen="home">← Back to home</button>
-      <div class="portal-heading"><div><div class="portal-kicker">THE HALL OF DOORS · 1 OF 3</div>
+      <nav class="menu-path" aria-label="Campaign selection"><button type="button" class="site-back-link" data-screen="home">← Back to home</button><span class="menu-path-steps"><span aria-current="step">1 World</span><span>2 Method</span><span>3 Level</span></span></nav>
+      <div class="portal-heading"><div><div class="portal-kicker">THE HALL OF DOORS</div>
         <h1 tabindex="-1">Choose a world</h1>
       </div><button type="button" class="secondary-btn menu-demo-toggle" data-menu-demo-toggle>Pause previews</button></div>
       <div id="world-cards" class="world-grid"></div>
     </main>
     <main class="site-page" id="site-stages" hidden>
-      <button type="button" id="stages-back" class="site-back-link">← Back to worlds</button>
+      <nav class="menu-path" aria-label="Campaign selection"><button type="button" id="stages-back" class="site-back-link">← Back to worlds</button><span class="menu-path-steps"><span>1 World</span><span aria-current="step">2 Method</span><span>3 Level</span></span></nav>
       <div class="portal-heading">
         <div><div class="portal-kicker" id="stages-world-kicker">WORLD 01 · THE BALANCE WORKSHOP</div>
           <h1 tabindex="-1">Choose how to learn</h1>
@@ -276,9 +277,9 @@
       <nav class="campaign-path" aria-label="Campaign selection">
         <button type="button" class="site-back-link" data-screen="worlds">← Change world</button>
         <button type="button" id="site-back" class="site-back-link">← Change learning method</button>
-        <span class="campaign-step">3 OF 3 · CHOOSE A LEVEL</span>
+        <span class="menu-path-steps campaign-step"><span>1 World</span><span>2 Method</span><span aria-current="step">3 Level</span></span>
       </nav>
-      <p id="board-keyboard-note" class="visually-hidden">Use Tab or arrow keys to move between levels, then Enter to select. Tab to Play level to start. Change world or learning method using the links above.</p>
+      <p id="board-keyboard-note" class="visually-hidden">Use Tab to enter the level grid, then arrow keys to move between numbers. Press Enter or Space to select a level, then Tab to Play level to start. Change world or learning method using the links above.</p>
       <span id="board-selection-status" class="visually-hidden" role="status" aria-live="polite" aria-atomic="true"></span>
       <div class="portal-heading">
         <div><div id="levels-stage-kicker" class="portal-kicker">WORLD 01 · STAGE 1 · POSITIVE WHOLE NUMBERS</div>
@@ -300,7 +301,7 @@
       <details id="level-star-legend" class="level-star-legend"><summary>★ How stars work</summary><p>★★★ shortest route · ★★ one extra move · ★ two or more extra moves. Your best result is saved. Every available level is open.</p></details>
        <div id="level-sections" aria-describedby="board-keyboard-note"></div>
       <section id="selected-level-details" class="selected-level-details" aria-label="Selected level">
-        <p id="selected-level-placeholder">Choose a level number to see its challenge.</p>
+        <div id="selected-level-placeholder"><p>Choose a level number to see its challenge.</p><span id="suggested-level-number" hidden></span></div>
         <div id="selected-level-content" hidden>
           <div class="portal-kicker" id="selected-level-kicker"></div>
           <h2 id="selected-level-title"></h2>

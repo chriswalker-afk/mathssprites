@@ -1,0 +1,71 @@
+/* PR101: consistent step rails, concise choice cards, and a readable compact board.
+   Existing scene, engine and persistence remain unchanged. */
+#site-worlds .menu-path,#site-stages .menu-path,#site-levels .campaign-path{
+  flex:none;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:4px 12px;
+  border-bottom:1px solid #b69a6852;padding-bottom:5px;
+}
+.menu-path .site-back-link{margin:0;min-height:30px;padding:4px 0}
+.menu-path-steps{display:flex;align-items:center;gap:5px;margin-left:auto;font-size:.67rem;font-weight:700;letter-spacing:.025em}
+.menu-path-steps span{display:block;padding:4px 8px;color:#b6c3b9;border:1px solid transparent;border-radius:6px;white-space:nowrap}
+.menu-path-steps span[aria-current="step"]{color:#f8dfac;background:#6f593848;border-color:#b69a68}
+#site-worlds .portal-heading,#site-stages .portal-heading,#site-levels .portal-heading{margin:3px 0 7px;min-width:0}
+#site-worlds .portal-heading>div,#site-stages .portal-heading>div{min-width:0}
+#site-worlds .world-card-body h3{font-size:clamp(1.05rem,1.55vw,1.5rem);margin:0;line-height:1.15}
+#site-worlds .world-card-body .world-subtitle{font-size:clamp(.87rem,1.1vw,1.05rem);color:#f1d8a5}
+#site-worlds .world-card-body .world-context{max-width:36ch;line-height:1.25}
+#site-stages .stage-card{display:flex;flex-direction:column;align-items:stretch}
+#site-stages .stage-top{order:0}
+#site-stages .stage-card h2{order:1;margin:0}
+#site-stages .stage-ornament{order:2;flex:none}
+#site-stages .stage-tagline{order:3;display:block;overflow:visible;-webkit-line-clamp:unset;min-height:2.4em;line-height:1.25;margin:0}
+#site-stages .stage-card-bottom{order:4;margin-top:auto}
+#site-levels #level-sections{padding:3px}
+#site-levels #level-sections .level-tile.level-next:not([aria-pressed="true"])::after{
+  content:"";position:absolute;left:5px;top:5px;width:0;height:0;border-left:6px solid #f9dda0;border-top:4px solid transparent;border-bottom:4px solid transparent
+}
+#site-levels #level-sections .level-tile.status-revised .tile-number::after{content:"↻";font:700 .65rem system-ui;position:absolute;top:2px;right:4px;color:#f9dda0}
+#site-levels .selected-level-details{--chapter-line:#9b8356;border-left:4px solid var(--chapter-line);min-height:76px}
+#site-levels .selected-level-details[data-chapter="1"]{--chapter-line:#8ebd9f}
+#site-levels .selected-level-details[data-chapter="2"]{--chapter-line:#90bfd6}
+#site-levels .selected-level-details[data-chapter="3"]{--chapter-line:#e1c17a}
+#site-levels .selected-level-details[data-chapter="4"]{--chapter-line:#cbb2df}
+#site-levels .selected-level-details[data-chapter="5"]{--chapter-line:#e0ae99}
+#site-levels .selected-level-details[data-chapter="6"]{--chapter-line:#a9b8e2}
+#site-levels #selected-level-kicker{color:var(--chapter-line)}
+#site-levels #selected-level-placeholder p{margin:0;line-height:1.25}
+#site-levels #suggested-level-number{display:block;font-size:.72rem;color:#ecd29a;margin-top:4px}
+#site-levels #suggested-level-number[hidden]{display:none}
+#site-levels #level-sections .level-tile:focus-visible{outline-offset:1px;z-index:1}
+#site-levels #level-sections .level-tile[aria-pressed="true"]{z-index:1}
+@media(min-width:900px) and (min-height:500px){
+  #site-worlds .world-grid{grid-auto-rows:minmax(148px,1fr);padding:3px}
+  #site-stages .world1-stage-grid{grid-auto-rows:minmax(255px,1fr);padding:3px}
+  #site-worlds .world-card-scene .menu-demo{max-height:220px}
+  #site-stages .stage-ornament{height:clamp(92px,22dvh,210px)}
+}
+@media(min-width:900px) and (max-height:649px){
+  #site-worlds .portal-heading,#site-stages .portal-heading,#site-levels .portal-heading{margin:0 0 3px}
+  #site-worlds .world-card-body h3{font-size:1.05rem}
+  #site-worlds .world-card-body .world-subtitle{font-size:.78rem}
+  #site-worlds .world-card-body .world-context{font-size:.70rem}
+  #site-levels .selected-level-details{min-height:64px}
+  .menu-path-steps span{padding:2px 6px}
+}
+@media(max-width:899px){
+  #site-worlds .menu-path,#site-stages .menu-path,#site-levels .campaign-path{gap:4px}
+  #site-worlds .world-grid,#site-stages .world1-stage-grid{overflow:visible}
+  .menu-path-steps{font-size:.64rem}
+}
+@media(max-width:600px){
+  .menu-path-steps{margin:0;width:100%;justify-content:space-between}
+  .menu-path-steps span{flex:1;text-align:center}
+  #site-levels .campaign-path .site-back-link,.menu-path .site-back-link{min-height:44px}
+  #site-levels #level-sections .level-tile{min-height:52px}
+  #site-levels .selected-level-details{scroll-margin-block:10px}
+  #site-worlds .world-card-body .world-subtitle{font-size:1rem}
+  #site-stages .stage-card .stage-tagline{min-height:0}
+}
+@media(prefers-reduced-motion:no-preference){
+  .menu-path-steps span[aria-current="step"]{animation:menu-step-reveal .18s ease-out}
+  @keyframes menu-step-reveal{from{opacity:.65}to{opacity:1}}
+}

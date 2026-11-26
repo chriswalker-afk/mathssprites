@@ -1,0 +1,66 @@
+import {test,expect} from "@playwright/test";
+import {openCampaignBoard} from "./campaign-menu-helper.mjs";
+const chosen=(page,screen)=>page.locator("#site-"+screen+' .menu-path-steps [aria-current="step"]');
+test("consistent three-step rail and back-navigation focus @quick @smoke",async({page})=>{
+  await page.goto("/");
+  await page.locator("#home-choose-level").click();
+  await expect(chosen(page,"worlds")).toHaveText("1 World");
+  await page.locator('[data-world-stages="opposites"]').click();
+  await expect(chosen(page,"stages")).toHaveText("2 Method");
+  await page.locator('[data-stage-open="independent"]').click();
+  await expect(chosen(page,"levels")).toHaveText("3 Level");
+  await page.locator("#site-back").click();
+  await expect(page.locator('[data-stage-open="independent"]')).toBeFocused();
+  await page.locator("#stages-back").click();
+  await expect(page.locator('[data-world-stages="opposites"]')).toBeFocused();
+});
+test("one level-grid tab stop, explicit select, then Tab to Play @quick @smoke",async({page})=>{
+  await page.emulateMedia({reducedMotion:"reduce"});
+  await page.goto("/");
+  await openCampaignBoard(page);
+  const first=page.locator('[data-level="1"]'),second=page.locator('[data-level="2"]');
+  await expect(page.locator('.level-tile[tabindex="0"]')).toHaveCount(1);
+  await expect(first).toHaveAttribute("tabindex","0");
+  await expect(page.locator("#suggested-level-number")).toHaveText("Suggested: level 1");
+  await expect(page.locator("#board-continue")).toBeDisabled();
+  const before=await page.evaluate(()=>Object.fromEntries(Object.entries(localStorage)));
+  await first.focus();
+  await page.keyboard.press("ArrowRight");
+  await expect(second).toBeFocused();
+  await expect(second).toHaveAttribute("tabindex","0");
+  await expect(first).toHaveAttribute("tabindex","-1");
+  await page.keyboard.press("Enter");
+  await expect(second).toHaveAttribute("aria-pressed","true");
+  await expect(page.locator("#game-shell")).toBeHidden();
+  expect(await page.evaluate(()=>Object.fromEntries(Object.entries(localStorage)))).toEqual(before);
+  await page.keyboard.press("Tab");
+  await expect(page.locator("#board-continue")).toBeFocused();
+  await page.keyboard.press("Enter");
+  await expect(page.locator("#level-title")).toHaveText("Three weights in the way");
+  await page.locator("#game-levels").click();
+  await expect(second).toBeFocused();
+  await expect(second).toHaveAttribute("aria-pressed","true");
+});
+for(const size of [{width:1092,height:540},{width:1366,height:768},{width:375,height:812}]){
+  test("menu polish keeps the selected challenge and Play accessible "+size.width+"x"+size.height+" @smoke",async({page},info)=>{
+    await page.setViewportSize(size);
+    await page.emulateMedia({reducedMotion:"reduce"});
+    await page.goto("/");
+    await page.locator("#home-choose-level").click();
+    await expect(chosen(page,"worlds")).toBeVisible();
+    await info.attach("worlds.png",{body:await page.screenshot(),contentType:"image/png"});
+    await page.locator('[data-world-stages="workshop"]').click();
+    await expect(chosen(page,"stages")).toBeVisible();
+    await info.attach("methods.png",{body:await page.screenshot(),contentType:"image/png"});
+    await page.locator('[data-stage-open="guided"]').click();
+    await page.locator('[data-level="24"]').click();
+    await expect(page.locator("#selected-level-details")).toHaveAttribute("data-chapter","6");
+    await expect(page.locator("#selected-level-title")).toHaveText("The hall of crates");
+    await expect(page.locator("#board-continue")).toBeInViewport();
+    expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+3)).toBe(true);
+    if(size.width>=900)expect(await page.evaluate(()=>document.documentElement.scrollHeight<=innerHeight+3)).toBe(true);
+    await info.attach("selected-level.png",{body:await page.screenshot(),contentType:"image/png"});
+    await page.locator("#board-continue").click();
+    await expect(page.locator("#level-title")).toHaveText("The hall of crates");
+  });
+}
