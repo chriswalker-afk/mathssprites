@@ -1,3 +1,4 @@
+import {assertGrounded} from "./scene-grounding-helper.mjs";
 import {playCampaignLevel} from "./campaign-menu-helper.mjs";
 import {openCampaignBoard} from "./campaign-menu-helper.mjs";
 import {test,expect} from "@playwright/test";
@@ -64,6 +65,11 @@ test("structured stacked fractions preview without committing, confirm, then ear
   await watch(page);
   await expect(page.locator("#reward-celebration-names")).toContainText("Curious eyes");
   await expect(h.locator("#scene")).toBeVisible();
+  const replayViewport=page.viewportSize();
+  await page.setViewportSize({width:1092,height:540});
+  await assertGrounded(h.locator("#scene"));
+  await page.setViewportSize(replayViewport);
+  await assertGrounded(h.locator("#scene"));
   await expect(h.locator(".fb-tools")).toBeHidden();
   await expect(h.locator("#right-items")).toHaveAttribute("aria-label","East chamber: 0 sprites, 7/5 weights");
   await expect(h.locator("#fb-rating")).toContainText("★★★");

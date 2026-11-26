@@ -1,3 +1,4 @@
+import {assertGrounded} from "./scene-grounding-helper.mjs";
 import {playCampaignLevel} from "./campaign-menu-helper.mjs";
 import {openCampaignBoard,chooseCampaignWorld,chooseCampaignStage} from "./campaign-menu-helper.mjs";
 import {test,expect} from "@playwright/test";
@@ -93,6 +94,12 @@ test("whole-expression squaring creates a genuine build goal; replay alone saves
   await expect(page.locator("#scene")).toBeVisible();
   await expect(page.locator("#notebook-workspace")).toBeHidden();
   await expect(page.locator("#notebook-next")).toBeVisible({timeout:35000});
+  // PR102: replay has less scene height than an ordinary experiment.
+  const replayViewport=page.viewportSize();
+  await page.setViewportSize({width:1092,height:540});
+  await assertGrounded(page.locator("#scene"));
+  await page.setViewportSize(replayViewport);
+  await assertGrounded(page.locator("#scene"));
   await expect(page.locator("#left-items .sprite-square")).toHaveCount(1);
   await expect(page.locator("#left-items .sprite-black")).toHaveCount(2);
   await expect(page.locator("#left-items .weight")).toHaveCount(1);
