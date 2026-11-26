@@ -94,21 +94,21 @@
   border-color:var(--wm-rim,#e8cc92);
 }
 :where([data-weight-material]) .hero-weight-handle{border-color:var(--wm-seam,#6c4e31)}
-:where([data-weight-material]) .tiny-weight{background:linear-gradient(100deg,var(--wm-dark,#977044),var(--wm-light,#e9c890),var(--wm-deep,#80603e))}
-:where([data-weight-material]) .fb-mini-weight{background:linear-gradient(100deg,var(--wm-dark,#926937),var(--wm-light,#d9b680),var(--wm-deep,#73522f))}
-:where([data-weight-material]) .overflow-piece.weight-spill{background:linear-gradient(95deg,var(--wm-dark,#835a32),var(--wm-light,#e1bb83),var(--wm-deep,#725131));border-color:var(--wm-rim,#c3a576)}
+:where([data-weight-material]) .tiny-weight{background:var(--we-static,)linear-gradient(100deg,var(--wm-dark,#977044),var(--wm-light,#e9c890),var(--wm-deep,#80603e))}
+:where([data-weight-material]) .fb-mini-weight{background:var(--we-static,)linear-gradient(100deg,var(--wm-dark,#926937),var(--wm-light,#d9b680),var(--wm-deep,#73522f))}
+:where([data-weight-material]) .overflow-piece.weight-spill{background:var(--we-static,)linear-gradient(95deg,var(--wm-dark,#835a32),var(--wm-light,#e1bb83),var(--wm-deep,#725131));border-color:var(--wm-rim,#c3a576)}
 :where([data-weight-material]) .overflow-piece.weight-spill:before{border-color:var(--wm-rim,#d4ad76)}
 :where([data-weight-material]) .sealed-crate .crate-mini-weight{
-  background:linear-gradient(110deg,var(--wm-light,#e5c78c),var(--wm-mid,#a9824a) 67%,var(--wm-deep,#725438));border-color:var(--wm-rim,#e1b97e)
+  background:var(--we-static,)linear-gradient(110deg,var(--wm-light,#e5c78c),var(--wm-mid,#a9824a) 67%,var(--wm-deep,#725438));border-color:var(--wm-rim,#e1b97e)
 }
 :where([data-weight-material]) .sealed-crate .crate-bay-weight{
-  background:linear-gradient(95deg,var(--wm-light,#f0d28d),var(--wm-mid,#c49a57) 44%,var(--wm-deep,#856039) 95%);border-color:var(--wm-rim,#e4bd80)
+  background:var(--we-static,)linear-gradient(95deg,var(--wm-light,#f0d28d),var(--wm-mid,#c49a57) 44%,var(--wm-deep,#856039) 95%);border-color:var(--wm-rim,#e4bd80)
 }
-:where([data-weight-material]) .comic-crate-story .comic-crate-weight{background:linear-gradient(110deg,var(--wm-light,#f2d693),var(--wm-deep,#a56f34))}
+:where([data-weight-material]) .comic-crate-story .comic-crate-weight{background:var(--we-static,)linear-gradient(110deg,var(--wm-light,#f2d693),var(--wm-deep,#a56f34))}
 :where([data-weight-material]) .box-actor.box-actor-weight{
-  background:linear-gradient(105deg,var(--wm-dark,#7d5937),var(--wm-light,#e6c895) 54%,var(--wm-deep,#825f3a));border-color:var(--wm-rim,#8d673d)
+  background:var(--we-static,)linear-gradient(105deg,var(--wm-dark,#7d5937),var(--wm-light,#e6c895) 54%,var(--wm-deep,#825f3a));border-color:var(--wm-rim,#8d673d)
 }
-:where([data-weight-material]) .box-edge-token.edge-weight:after{background:linear-gradient(90deg,var(--wm-dark,#7c5937),var(--wm-light,#edcf96),var(--wm-deep,#805f3b))}
+:where([data-weight-material]) .box-edge-token.edge-weight:after{background:var(--we-static,)linear-gradient(90deg,var(--wm-dark,#7c5937),var(--wm-light,#edcf96),var(--wm-deep,#805f3b))}
 /* SVG artwork shares the same paint palette. Never restyle the polygon
    points, clip paths, fractional labels or hidden joined seams. */
 .fw-material-dark{stop-color:var(--wm-dark,#7b592f)}
