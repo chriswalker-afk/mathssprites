@@ -39,13 +39,24 @@ test("unsupported cuts use the real sprite or weight geometry and rejoin without
 });
 test("large custom rooms pack into rows and overflow props leave no state or saved credit",async({page})=>{
   await page.emulateMedia({reducedMotion:"no-preference"});
+  await page.addInitScript(()=>{
+    localStorage.setItem("mathssprites.cosmetics.v1",JSON.stringify({version:1,unlockedRewards:["grand-alchemist"],
+      equipped:Object.fromEntries(["fur","eyes","headwear","eyewear","neckwear","movement","effect"].map(slot=>[slot,"grand-alchemist-"+slot]))}));
+  });
   await custom(page,"48x=48");
   const before=await page.evaluate(()=>JSON.stringify(localStorage));
   for(const viewport of [{width:1280,height:720},{width:360,height:640}]){
     await page.setViewportSize(viewport);
     await expect(root(page).locator("#left-items .fb-room-floor")).toHaveAttribute("data-wrap","true");
-    await expect(root(page).locator("#left-items .fs-piece")).toHaveCount(48);
+    await expect(root(page).locator("#left-items .fs-whole-actor")).toHaveCount(48);
+    await expect(root(page).locator("#left-items .fs-piece")).toHaveCount(0);
+    await expect(root(page).locator("#left-items .fs-assembly[data-denominator='1'] > svg")).toHaveCount(0);
+    await expect(root(page).locator("#left-items .sprite-wear-headwear")).toHaveCount(48);
     await expect(root(page).locator("#right-items .fw-pile-weight")).toHaveCount(48);
+    await expect.poll(()=>root(page).locator("#left-items").evaluate(room=>{
+      const b=room.getBoundingClientRect(),slots=[...room.querySelectorAll(".fs-assembly")].map(el=>el.getBoundingClientRect());
+      return slots.length===48&&new Set(slots.map(r=>Math.round(r.top))).size>1&&slots.every(r=>r.left>=b.left-3&&r.right<=b.right+3&&r.top>=b.top-3&&r.bottom<=b.bottom+3);
+    })).toBe(true);
     expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
     await shot(page,"crowded-"+viewport.width);
   }
@@ -54,7 +65,9 @@ test("large custom rooms pack into rows and overflow props leave no state or sav
   await expect(root(page).locator("#left-items .fb-spill-object")).toHaveCount(5);
   await shot(page,"overflow");
   await wait(page);
-  await expect(root(page).locator("#left-items .fs-piece")).toHaveCount(48);
+  await expect(root(page).locator("#left-items .fs-whole-actor")).toHaveCount(48);
+  await expect(root(page).locator("#left-items .fs-piece")).toHaveCount(0);
+  await expect(root(page).locator("#right-items .fw-pile-weight")).toHaveCount(48);
   await expect(root(page).locator(".fb-refusal-art")).toHaveCount(0);
   await expect(root(page).locator("#fb-moves")).toHaveText("0 moves");
   expect(await page.evaluate(()=>JSON.stringify(localStorage))).toBe(before);

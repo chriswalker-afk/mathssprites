@@ -81,21 +81,42 @@ async function amount(p,op,n,d){
   await r.locator("#fb-denominator").selectOption(String(d));
   await r.locator("#fb-numerator").selectOption(String(n));
 }
-async function actualMovement(locator){
-  await expect(locator).toBeVisible({timeout:12000});
-  const result=await locator.evaluate(async el=>{
-    const a=el.getBoundingClientRect();
-    const active=el.getAnimations().some(a=>a.playState==="running");
-    let distance=0;
-    for(let i=0;i<10&&el.isConnected;i++){
-      await new Promise(r=>setTimeout(r,20));
-      if(!el.isConnected)break;
-      const b=el.getBoundingClientRect();
-      distance=Math.max(distance,Math.hypot(b.x-a.x,b.y-a.y));
-    }
-    return {active,distance};
-  });
-  expect(result.active).toBe(true);expect(result.distance).toBeGreaterThan(2);
+async function recordTransfers(page,phase){
+  const r=lab(page);
+  await r.evaluate((root,phase)=>{
+    const selector='.fb-transfer[data-transfer="'+phase+'"]';
+    const records=[],seen=new WeakSet();
+    let running=true,frame=0;
+    const scan=()=>{
+      for(const el of root.querySelectorAll(selector)){
+        if(seen.has(el))continue;
+        seen.add(el);
+        const rect=el.getBoundingClientRect();
+        records.push({el,start:{x:rect.x,y:rect.y},active:false,distance:0,frames:0});
+      }
+      for(const item of records){
+        if(!item.el.isConnected)continue;
+        const animations=item.el.getAnimations();
+        if(animations.some(a=>a.playState==="running"))item.active=true;
+        const b=item.el.getBoundingClientRect();
+        item.distance=Math.max(item.distance,Math.hypot(b.x-item.start.x,b.y-item.start.y));
+        item.frames++;
+      }
+    };
+    const observer=new MutationObserver(scan);
+    observer.observe(root,{childList:true,subtree:true});
+    function tick(){if(!running)return;scan();frame=requestAnimationFrame(tick);}
+    frame=requestAnimationFrame(tick);
+    root.__transferProbe={finish(){
+      running=false;observer.disconnect();cancelAnimationFrame(frame);
+      return records.map(({active,distance,frames})=>({active,distance,frames}));
+    }};
+  },phase);
+}
+async function assertRecordedTransfers(page){
+  const records=await lab(page).evaluate(root=>{const result=root.__transferProbe.finish();delete root.__transferProbe;return result;});
+  expect(records.length,"real cargo transfers were inserted").toBeGreaterThan(0);
+  expect(records.some(r=>r.active&&r.distance>2&&r.frames>=2),JSON.stringify(records)).toBe(true);
 }
 test("motion on really animates the original actor and moving exact cargo, including with the device preference reduced",async({page})=>{
   test.setTimeout(75000);
@@ -108,19 +129,19 @@ test("motion on really animates the original actor and moving exact cargo, inclu
   await expect(r.locator("#fb-motion-toggle")).toHaveText("Motion: on");
   await expect(r.locator("#left-items .fs-whole-actor .sprite-motion")).toHaveCSS("animation-name","sprite-hop");
   await expect(r.locator("#hand")).not.toHaveCSS("transition-duration","0s");
-  await amount(page,"remove",2,3);await r.locator("#fb-apply").click();
+  await amount(page,"remove",2,3);await recordTransfers(page,"collect");await r.locator("#fb-apply").click();
   await expect(r).toHaveAttribute("data-busy","true");
   await expect(r.locator("#fb-reset")).toBeDisabled();
-  await actualMovement(r.locator('.fb-transfer[data-transfer="collect"]').first());
   await ready(page);
+  await assertRecordedTransfers(page);
   await expect(r).toHaveAttribute("data-solved","true");
   await expect(r.locator(".fb-transfer")).toHaveCount(0);
   await expect(r.locator("#right-items")).toHaveAttribute("aria-label","East chamber: 0 sprites, 4 weights");
   await expect(r.locator("#fb-moves")).toHaveText("1 move");
   await r.locator("#fb-undo").click();
-  await amount(page,"add",1,3);await r.locator("#fb-apply").click();
-  await actualMovement(r.locator('.fb-transfer[data-transfer="drop"]').first());
+  await amount(page,"add",1,3);await recordTransfers(page,"drop");await r.locator("#fb-apply").click();
   await ready(page);
+  await assertRecordedTransfers(page);
   await expect(r.locator("#left-items")).toHaveAttribute("aria-label","West chamber: 1 sprites, 1 weights");
   await expect(r.locator("#right-items")).toHaveAttribute("aria-label","East chamber: 0 sprites, 5 weights");
   await expect(r.locator(".fb-transfer")).toHaveCount(0);
