@@ -1,19 +1,34 @@
-/* A lightweight acknowledgement, not a second modal or a requirement
-   to open the Atelier. Never capture pointer or keyboard input. */
+/* Non-modal unlock celebration. Only its own controls capture input. */
 .reward-celebration{
   position:fixed;z-index:100;top:12px;left:50%;transform:translateX(-50%);
-  display:flex;align-items:center;gap:10px;max-width:min(480px,calc(100vw - 24px));
+  display:flex;align-items:flex-start;gap:10px;max-width:min(520px,calc(100vw - 24px));
   width:max-content;padding:10px 15px;border:1px solid #bda26c;border-radius:10px;
   background:linear-gradient(125deg,#34483e,#202e2b);box-shadow:0 6px 24px #0008;
   color:#f2e1b8;pointer-events:none;text-align:left;
 }
 .reward-celebration[hidden]{display:none!important}
 .reward-celebration-emblem{flex:none;font:normal 1.65rem Georgia,serif;color:#ebc987}
-.reward-celebration-copy{min-width:0;display:flex;flex-direction:column;gap:3px}
-.reward-celebration-copy strong{font:700 .84rem Georgia,serif;color:#f3d99f}
+.reward-celebration-copy{min-width:0;display:flex;flex-direction:column;gap:6px;flex:1}
+.reward-celebration-copy strong{font:700 .9rem Georgia,serif;color:#f3d99f}
 .reward-celebration-copy span{font-size:.78rem;color:#f4e9d3;overflow-wrap:anywhere}
-.reward-celebration-copy small{font-size:.69rem;color:#c7d1c1}
+.reward-celebration-copy small{font-size:.72rem;color:#c7d1c1}
+#reward-celebration-names{display:grid;gap:5px;max-height:min(34dvh,210px);overflow:auto;pointer-events:auto;scrollbar-color:#8d7952 #253b33}
+.reward-celebration-row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.reward-celebration-row>span{flex:1;min-width:0}
+.reward-celebration button{pointer-events:auto;cursor:pointer;min-height:32px;padding:5px 10px;border-radius:6px;font:700 .72rem/1.2 system-ui,sans-serif}
+.reward-celebration .reward-celebration-apply{flex:none;color:#282a21;background:linear-gradient(#edcf96,#c6a46b);border:1px solid #e5c58a}
+.reward-celebration .reward-celebration-apply[aria-disabled="true"]{cursor:default;background:#30483e;border-color:#829688;color:#cfdfcc}
+.reward-celebration .reward-celebration-apply[data-applied="true"]{border-color:#95b29a;color:#e2efd8}
+.reward-celebration-footer{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.reward-celebration .reward-celebration-dismiss{background:transparent;color:#e8d8b9;border:1px solid #879386;flex:none}
+.reward-celebration button:focus-visible{outline:2px solid #fff1b9;outline-offset:2px}
 .reward-celebration-enter{animation:reward-notice-enter .36s ease-out both}
 @keyframes reward-notice-enter{from{opacity:0;transform:translate(-50%,-8px)}to{opacity:1;transform:translate(-50%,0)}}
 .reduce-motion .reward-celebration{animation:none!important}
-@media(max-width:600px){.reward-celebration{top:8px;gap:8px;padding:8px 12px}.reward-celebration-copy span{font-size:.72rem}}
+@media(max-width:600px){
+  .reward-celebration{top:8px;gap:7px;padding:8px 10px;max-width:calc(100vw - 16px)}
+  .reward-celebration-emblem{font-size:1.25rem}
+  .reward-celebration-copy span{font-size:.72rem}
+  .reward-celebration-row{gap:6px}
+  .reward-celebration button{min-height:44px;padding:5px 8px;font-size:.69rem}
+}

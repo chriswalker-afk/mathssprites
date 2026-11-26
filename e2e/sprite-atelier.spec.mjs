@@ -257,6 +257,10 @@ test("719 to 720: actual final star unlocks the full outfit after replay, with s
   await page.locator("#replay-skip").click();
   await expect(page.locator("#reward-celebration-names")).toContainText("The Grand Alchemist");
   await expect(page.locator("#reward-celebration")).toBeVisible();
+  await page.locator('[data-apply-reward="grand-alchemist"]').click();
+  await expect(page.locator('[data-apply-reward="grand-alchemist"]')).toHaveText("Applied ✓");
+  for(const slot of slots)await expect(page.locator("body")).toHaveAttribute("data-sprite-"+slot,full.loadout[slot]);
+  await page.locator("#reward-celebration-dismiss").click();
   await page.locator("#replay-close").click();await page.locator("#game-levels").click();
   await page.locator(".site-nav-links [data-screen='atelier']").click();
   await expect(page.locator("#atelier-stars")).toHaveText("720 / 720 ★");
@@ -265,8 +269,8 @@ test("719 to 720: actual final star unlocks the full outfit after replay, with s
   await expect(page.locator("#atelier-next-copy")).toHaveText("All rewards unlocked");
   await page.locator("#atelier-filter").selectOption("set");
   await reward(page,full.id).click();
-  await expect(page.locator("#atelier-equip")).toHaveText("Equip full set");
-  await page.locator("#atelier-equip").click();
+  await expect(page.locator("#atelier-equip")).toHaveText("Equipped");
+  await expect(page.locator("#atelier-equip")).toBeDisabled();
   await expect(page.locator("#atelier-equipped")).toContainText("The Grand Alchemist");
   for(const slot of slots)await expect(page.locator("body")).toHaveAttribute("data-sprite-"+slot,full.loadout[slot]);
   for(const side of ["black","white"]){
@@ -378,4 +382,30 @@ test("all seven material swatches and exact fractional previews match; locked tr
   await expect(page.locator("body")).toHaveAttribute("data-weight-material","original");
   expect((await snapshot(page)).equipped["weight-material"]).toBeNull();
   expect((await snapshot(page)).unlockedRewards).toEqual(["curious-eyes","polished-steel","extra-fluffy","dumbbell"]);
+});
+
+test("a weight unlock can be applied on the review without changing the sprite or spending stars @smoke",async({page})=>{
+  await legacyStars(page,1);
+  await page.goto("/");
+  await openCampaignBoard(page,"workshop","guided");
+  await playCampaignLevel(page,page.locator('[data-level="2"]'));
+  await clickWithReferenceMove(page,"#do-both");
+  await expect(page.locator("#replay-backdrop")).toBeVisible({timeout:25000});
+  await page.locator("#replay-skip").click();
+  const button=page.locator('[data-apply-reward="polished-steel"]');
+  await expect(button).toBeVisible();
+  const before=await saves(page);
+  await page.setViewportSize({width:390,height:844});
+  await expect(button).toBeInViewport();
+  await button.focus();await page.keyboard.press("Enter");
+  await expect(button).toHaveText("Applied ✓");
+  await expect(button).toBeFocused();
+  await expect(page.locator("body")).toHaveAttribute("data-weight-material","polished-steel");
+  await expect(page.locator("body")).toHaveAttribute("data-sprite-eyes","original");
+  const after=await saves(page);
+  for(const key of Object.keys(before))if(key!==saveKey)expect(after[key]).toEqual(before[key]);
+  expect((await snapshot(page)).equipped["weight-material"]).toBe("polished-steel");
+  await page.locator("#reward-celebration-dismiss").click();
+  await expect(page.locator("#reward-celebration")).toBeHidden();
+  await expect(page.locator("#next-level")).toBeEnabled();
 });

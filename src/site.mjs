@@ -12,7 +12,7 @@ import {
 import {createCosmeticRewards,COSMETIC_SAVE_KEY} from "./cosmetic-rewards.mjs?v=97";
 import {applyLaboratoryAppearance} from "./laboratory-cosmetics.mjs?v=96";
 import {mountSpriteAtelier} from "./sprite-atelier.mjs?v=96";
-import {mountRewardCelebration} from "./reward-celebration.mjs?v=91";
+import {mountRewardCelebration} from "./reward-celebration.mjs?v=105";
 import {createWorkshopEquation,WORKSHOP_EXAMPLES} from "./equation-workshop.mjs?v=82";
 import {createSignedWorkshopEquation,SIGNED_WORKSHOP_EXAMPLES} from "./signed-workshop.mjs?v=82";
 import {createFractionWorkshopEquation,FRACTION_WORKSHOP_EXAMPLES} from "./fraction-workshop.mjs";
@@ -74,7 +74,7 @@ cosmeticRewards.subscribe(change=>{
   window.dispatchEvent(new CustomEvent("mathssprites:cosmetics-change",{detail:change}));
 });
 const atelier=mountSpriteAtelier({root:$("site-atelier"),homeSummary:$("home-atelier-stars"),store:cosmeticRewards});
-const rewardCelebration=mountRewardCelebration();
+const rewardCelebration=mountRewardCelebration({store:cosmeticRewards});
 window.addEventListener("mathssprites:reward-review-ready",()=>{
   const replay=$("replay-backdrop");
   rewardCelebration.reveal({anchor:replay.hidden?document.body:replay.querySelector(".replay-card")});
