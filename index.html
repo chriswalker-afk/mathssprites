@@ -42,8 +42,8 @@
   <link rel="stylesheet" href="./src/weight-effects.css?v=94" />
   <link rel="stylesheet" href="./src/chamber-themes.css?v=97" />
   <link rel="stylesheet" href="./src/campaign-path.css?v=98" />
-  <script type="module" src="./src/app.mjs?v=106"></script>
-  <script type="module" src="./src/site.mjs?v=107"></script>
+  <script type="module" src="./src/app.mjs?v=108"></script>
+  <script type="module" src="./src/site.mjs?v=108"></script>
   <link rel="stylesheet" href="./src/compact-level-board.css?v=99" />
   <link rel="stylesheet" href="./src/menu-demonstrations.css?v=100" />
   <link rel="stylesheet" href="./src/menu-usability.css?v=101" />
@@ -51,7 +51,7 @@
   <link rel="stylesheet" href="./src/route-guide.css?v=103" />
   <link rel="stylesheet" href="./src/board-switchers.css?v=103" />
   <link rel="stylesheet" href="./src/completion-story.css?v=104" />
-  <link rel="stylesheet" href="./src/apprentice-workspace.css?v=106" />
+  <link rel="stylesheet" href="./src/apprentice-workspace.css?v=108" />
   <link rel="stylesheet" href="./src/workshop-builder.css?v=107" />
 </head>
 <body>
@@ -477,16 +477,21 @@
                 <button type="button" data-notebook-symbol="÷" aria-label="Divide both sides">÷</button>
               </div>
               <div id="notebook-square-operations" class="notebook-signed-operations" role="group" aria-label="Square Laboratory operations" hidden>
-                <button type="button" data-notebook-area-operation="square" aria-label="Square both entire expressions" aria-pressed="false">(&nbsp;□&nbsp;)²</button>
-                <button type="button" data-notebook-area-operation="sqrt" aria-label="Take the principal square root of both entire expressions" aria-pressed="false">√</button>
+                <span class="notebook-area-label">Whole-expression operations</span>
+                <button type="button" data-notebook-area-operation="square" aria-label="Square both entire expressions" aria-pressed="false"><span aria-hidden="true">(□)²</span> Square both sides</button>
+                <button type="button" data-notebook-area-operation="sqrt" aria-label="Take the principal square root of both entire expressions" aria-pressed="false"><span aria-hidden="true">√□</span> Square root both sides</button>
               </div>
               <div class="notebook-input-row">
                 <div class="notebook-math-field">
-                  <input id="notebook-operation" type="text" inputmode="text" maxlength="24" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="e.g. −3, +x or ÷2" aria-describedby="notebook-feedback notebook-operation-tip" />
+                  <input id="notebook-operation" type="text" inputmode="text" maxlength="24" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="e.g. −3, +x or ÷2" aria-describedby="notebook-inline-message notebook-feedback notebook-operation-tip" />
                   <output id="notebook-operation-typeset" class="notebook-operation-typeset" aria-hidden="true"></output>
                 </div>
                 <button id="notebook-apply" type="submit" class="primary-btn" disabled>Apply to both sides →</button>
               </div>
+              <div id="notebook-area-proposal" class="notebook-area-proposal" hidden>
+                <small>Apply to each entire side</small><output id="notebook-area-applied-math"></output>
+              </div>
+              <p id="notebook-inline-message" class="notebook-inline-message" hidden></p>
               <div class="notebook-maths-keypad" role="group" aria-label="Mathematical keypad">
                 <button type="button" data-notebook-key="1">1</button>
                 <button type="button" data-notebook-key="2">2</button>

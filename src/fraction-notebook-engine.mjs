@@ -3,7 +3,7 @@
 import {initialState,validInitialLevel,perform,undo,isSolved,equation} from "./engine.mjs";
 import {rational,rtext} from "./rational.mjs";
 import {fractionAction,FRACTION_MODE} from "./fraction-engine.mjs";
-import {NOTEBOOK_MAX_STEPS} from "./notebook-engine.mjs";
+import {NOTEBOOK_MAX_STEPS,notebookFailureMessage} from "./notebook-engine.mjs?v=108";
 
 const failure=(code,message)=>({ok:false,code,message});
 const syntax="Write one operation, e.g. −1/2, −2x/3, ×4 or ÷2.";
@@ -69,7 +69,7 @@ export function previewFractionNotebookOperation(session,input){
   const parsed=parseFractionNotebookOperation(input);
   if(!parsed.ok)return parsed;
   const result=perform(session.state,parsed.action,"auto");
-  if(!result.ok)return failure(result.code,result.reason);
+  if(!result.ok)return failure(result.code,notebookFailureMessage(result,session.state,parsed.action));
   return {...parsed,state:result.state,line:equation(result.state),solved:isSolved(result.state)};
 }
 export function tryFractionNotebookOperation(session,input){

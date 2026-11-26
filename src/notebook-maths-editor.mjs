@@ -4,10 +4,12 @@
  * Pure helpers render real MathML, preview the unchanged engine and commit
  * one mathematically legal, two-sided action only when the learner applies it.
  *
- * No eval, dynamic math parser, CDN, guessed shortcuts or changed game rules.
+ * Signed notebook subtraction may replay as adding opposite objects when
+ * literal removal is unavailable. The written operation stays exactly as chosen.
+ * No eval, dynamic math parser, CDN, or invented symbolic solutions.
  */
 import {canonical,equation,perform,isSolved,algebraOperation} from "./engine.mjs";
-import {NOTEBOOK_MAX_STEPS} from "./notebook-engine.mjs";
+import {NOTEBOOK_MAX_STEPS,notebookFailureMessage} from "./notebook-engine.mjs?v=108";
 
 function failure(code,message){return {ok:false,code,message};}
 const OP_SYMBOLS=Object.freeze({add:"+",remove:"−",multiply:"×",divide:"÷"});
@@ -18,8 +20,8 @@ export function parseNotebookOperation(expression,options={}){
     .replace(/[−–—]/g,"-").replace(/[⋅·*]/g,"×").replace(/\//g,"÷");
   // Whole-expression operations, not an arbitrary expression parser.
   const squareMode=options?.squareLaboratory===true;
-  const wholeSquare=/^(?:square|²|\^2)$/i.test(compact);
-  const wholeRoot=/^(?:sqrt|√)$/i.test(compact);
+  const wholeSquare=/^(?:square(?:bothsides)?|²|\^2)$/i.test(compact);
+  const wholeRoot=/^(?:sqrt(?:bothsides)?|squareroot(?:bothsides)?|√)$/i.test(compact);
   const squareTerm=/^([+\-])([1-9][0-9]*|)x(?:²|\^2)$/i.exec(compact);
   if(wholeSquare||wholeRoot||squareTerm){
     if(!squareMode)return failure("locked-operation","Square operations and square sprites belong to the Square Laboratory.");
@@ -42,11 +44,11 @@ export function parseNotebookOperation(expression,options={}){
     return failure("incomplete","Choose +, −, × or ÷, then an object or a factor.");
   // Explicit brackets preserve the physical difference between subtracting
   // a negative object and subtracting a positive object.
-  const match=/^([+\-×÷])(?:\(-(\d{1,3}x?|x)\)|(\d{1,3}x?|x))$/.exec(compact);
+  const match=/^([+\-×÷])(?:\(([+\-]?)(\d{1,3}x?|x)\)|(\d{1,3}x?|x))$/i.exec(compact);
   if(!match)
     return failure("syntax","Use one operation, such as +3, −x, +(−x), −(−2) or ÷3.");
-  const [,sign,negativeOperand,positiveOperand]=match;
-  const signed=negativeOperand!==undefined,operand=negativeOperand||positiveOperand;
+  const [,sign,operandSign,bracketedOperand,plainOperand]=match;
+  const signed=operandSign==="-",operand=(bracketedOperand||plainOperand).toLowerCase();
   if(sign==="+"||sign==="-"){
     const sprite=operand.endsWith("x");
     const digits=sprite?operand.slice(0,-1):operand;
@@ -118,6 +120,38 @@ export function notebookEquationMathML(state){
     "<mrow>"+expressionMarkup(state.left)+"<mo>=</mo>"+
     expressionMarkup(state.right)+"</mrow></math>";
 }
+/** Display the actual two expressions being squared/rooted, not x²
+ * as a shortcut for a whole-expression transformation. The simplified
+ * result is still produced by the physical engine. */
+export function notebookAreaOperationMathML(state,action){
+  if(!state?.left||!state?.right||!["square","sqrt"].includes(action?.op))return "";
+  const wrap=room=>{
+    const body="<mrow>"+expressionMarkup(room)+"</mrow>";
+    return action.op==="sqrt"?"<msqrt>"+body+"</msqrt>":
+      "<msup><mrow><mo>(</mo>"+body+"<mo>)</mo></mrow><mn>2</mn></msup>";
+  };
+  return '<math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><mrow>'+
+    wrap(state.left)+"<mo>=</mo>"+wrap(state.right)+"</mrow></math>";
+}
+const OPPOSITE_KIND=Object.freeze({posOne:"negOne",negOne:"posOne",posX:"negX",negX:"posX"});
+const OBJECT_NAMES=Object.freeze({posOne:["weight","weights"],negOne:["balloon","balloons"],posX:["dark sprite","dark sprites"],negX:["white sprite","white sprites"]});
+
+/** Direct removal remains the preferred physical replay. When a signed
+ * chamber lacks the requested objects, subtraction is equivalent to
+ * adding their opposites to BOTH rooms and cancelling zero pairs.
+ * Re-run the real engine: no bypass of permissions, capacity or crates. */
+function checkedNotebookMove(state,action){
+  const direct=perform(state,action,"auto");
+  if(direct.ok||state.quantityMode!=="signed"||action.op!=="remove"||
+     !["missing","locked-crate"].includes(direct.code)||!OPPOSITE_KIND[action.kind])
+    return {changed:direct};
+  const physicalAction={op:"add",kind:OPPOSITE_KIND[action.kind],count:action.count};
+  const changed=perform(state,physicalAction,"auto");
+  if(!changed.ok)return {changed};
+  const name=OBJECT_NAMES[physicalAction.kind][action.count===1?0:1];
+  return {changed,physicalAction,representation:
+    "Replay: add "+action.count+" "+name+" to each chamber, then cancel any zero pairs."};
+}
 export function notebookOperationMathML(action){
   if(action?.op==="unpack"){
     if(!["left","right"].includes(action.side))
@@ -159,22 +193,23 @@ export function previewNotebookOperation(session,expression){
   if((parsed.action.kind==="negX"||parsed.action.kind==="negOne") &&
       session.level.quantityMode!=="signed")
     return failure("locked-negative","White sprites and balloons belong to the Opposite Chambers.");
-  const changed=perform(session.state,parsed.action,"auto");
+  const {changed,physicalAction,representation}=checkedNotebookMove(session.state,parsed.action);
   if(!changed.ok)
-    return failure(changed.code||"illegal",changed.reason||
-      "That cannot be done with whole objects on both sides right now.");
+    return failure(changed.code||"illegal",notebookFailureMessage(changed,session.state,parsed.action));
   const action=parsed.action;
   if(session.level.squareLaboratory&&equation(changed.state)===equation(session.state))
     return failure("unchanged","That operation leaves both expressions unchanged. Choose a different move.");
   return {ok:true,action,display:parsed.display,
     line:equation(changed.state),state:changed.state,
-    explanation:algebraOperation(action),solved:isSolved(changed.state)};
+    explanation:algebraOperation(action),solved:isSolved(changed.state),
+    ...(physicalAction?{physicalAction,representation}:{})};
 }
 export function tryNotebookOperation(session,expression){
   const preview=previewNotebookOperation(session,expression);
   if(!preview.ok)return preview;
   const step={line:preview.line,action:{...preview.action},
-    explanation:preview.explanation};
+    explanation:preview.explanation,
+    ...(preview.representation?{representation:preview.representation}:{})};
   return {...preview,session:{level:session.level,state:preview.state,
     steps:[...session.steps,step]}};
 }
