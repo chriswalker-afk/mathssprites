@@ -6,6 +6,7 @@ import {setTimeout as pause} from "node:timers/promises";
 import {COSMETIC_REWARDS,findCosmeticReward} from "../src/cosmetic-catalog.mjs";
 import {CAMPAIGN_REGISTRY} from "../src/campaign-registry.mjs";
 import {blankCampaignRecords,campaignStarTotals} from "../src/campaign-records.mjs";
+import {clickWithReferenceMove} from "../e2e/reference-move-helper.mjs";
 const url=process.env.SPRITES_RELEASE_URL||"https://balance.mrwalkermaths.com/";
 const revision=process.env.GITHUB_SHA||"manual";
 const result={url,revision,checks:[],errors:[]};
@@ -96,14 +97,7 @@ try{
   await page.locator('[data-map-world="workshop"]').click();
   await page.locator('[data-map-stage="guided"]').click();
   await page.locator('[data-level="1"]').click();
-  await page.locator('.operation-picker [data-operation="remove"]').click();
-  await page.locator('#object-picker [data-kind="posOne"]').click();
-  // Use the initial reference amount (two weights) explicitly if necessary.
-  const quantity=page.locator("#amount-value");
-  const current=Number(await quantity.innerText());
-  for(let i=current;i<2;i++)await page.locator("#amount-up").click();
-  for(let i=current;i>2;i--)await page.locator("#amount-down").click();
-  await page.locator("#do-both").click();
+  await clickWithReferenceMove(page,"#do-both");
   await expect(page.locator("#replay-star-summary")).toContainText("3 stars",{timeout:25000});
   await expect(page.locator("#reward-celebration")).toBeHidden();
   await page.locator("#replay-skip").click();
