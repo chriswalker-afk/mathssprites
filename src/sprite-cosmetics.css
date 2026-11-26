@@ -1,0 +1,96 @@
+/* PR85 — the exact native sprite, with presentation-only fur/face layers.
+   No token size, body size, transform, animation, hitbox or sign changes.
+   The original values reset inherited cosmetics for nested Atelier previews.
+   Keep the outer fur footprint at the existing 5px art boundary. */
+[data-sprite-fur]{
+  --cos-round-clip:initial;--cos-square-clip:initial;
+  --cos-dark-fur:initial;--cos-pale-fur:initial;
+  --cos-fur-radius:initial;--cos-fur-filter:initial;
+  --cos-fragment-original:inline;--cos-fragment-fluffy:none;--cos-fragment-spiky:none;
+}
+[data-sprite-fur="extra-fluffy"]{
+  --cos-round-clip:polygon(50% 2%,53.06% 3.27%,55.74% 6.38%,58.03% 9.62%,60.35% 11.36%,63.23% 11.01%,66.84% 9.35%,70.71% 8%,74% 8.43%,76.02% 11.06%,76.79% 15.09%,77.15% 19.05%,78.28% 21.72%,80.95% 22.85%,84.91% 23.21%,88.94% 23.98%,91.57% 26%,92% 29.29%,90.65% 33.16%,88.99% 36.77%,88.64% 39.65%,90.38% 41.97%,93.62% 44.26%,96.73% 46.94%,98% 50%,96.73% 53.06%,93.62% 55.74%,90.38% 58.03%,88.64% 60.35%,88.99% 63.23%,90.65% 66.84%,92% 70.71%,91.57% 74%,88.94% 76.02%,84.91% 76.79%,80.95% 77.15%,78.28% 78.28%,77.15% 80.95%,76.79% 84.91%,76.02% 88.94%,74% 91.57%,70.71% 92%,66.84% 90.65%,63.23% 88.99%,60.35% 88.64%,58.03% 90.38%,55.74% 93.62%,53.06% 96.73%,50% 98%,46.94% 96.73%,44.26% 93.62%,41.97% 90.38%,39.65% 88.64%,36.77% 88.99%,33.16% 90.65%,29.29% 92%,26% 91.57%,23.98% 88.94%,23.21% 84.91%,22.85% 80.95%,21.72% 78.28%,19.05% 77.15%,15.09% 76.79%,11.06% 76.02%,8.43% 74%,8% 70.71%,9.35% 66.84%,11.01% 63.23%,11.36% 60.35%,9.62% 58.03%,6.38% 55.74%,3.27% 53.06%,2% 50%,3.27% 46.94%,6.38% 44.26%,9.62% 41.97%,11.36% 39.65%,11.01% 36.77%,9.35% 33.16%,8% 29.29%,8.43% 26%,11.06% 23.98%,15.09% 23.21%,19.05% 22.85%,21.72% 21.72%,22.85% 19.05%,23.21% 15.09%,23.98% 11.06%,26% 8.43%,29.29% 8%,33.16% 9.35%,36.77% 11.01%,39.65% 11.36%,41.97% 9.62%,44.26% 6.38%,46.94% 3.27%);
+  --cos-square-clip:polygon(2% 2%,4% 3.4%,6% 6.2%,8% 7.6%,10% 6.2%,12% 3.4%,14% 2%,16% 3.4%,18% 6.2%,20% 7.6%,22% 6.2%,24% 3.4%,26% 2%,28% 3.4%,30% 6.2%,32% 7.6%,34% 6.2%,36% 3.4%,38% 2%,40% 3.4%,42% 6.2%,44% 7.6%,46% 6.2%,48% 3.4%,50% 2%,52% 3.4%,54% 6.2%,56% 7.6%,58% 6.2%,60% 3.4%,62% 2%,64% 3.4%,66% 6.2%,68% 7.6%,70% 6.2%,72% 3.4%,74% 2%,76% 3.4%,78% 6.2%,80% 7.6%,82% 6.2%,84% 3.4%,86% 2%,88% 3.4%,90% 6.2%,92% 7.6%,94% 6.2%,96% 3.4%,98% 2%,96.6% 4%,93.8% 6%,92.4% 8%,93.8% 10%,96.6% 12%,98% 14%,96.6% 16%,93.8% 18%,92.4% 20%,93.8% 22%,96.6% 24%,98% 26%,96.6% 28%,93.8% 30%,92.4% 32%,93.8% 34%,96.6% 36%,98% 38%,96.6% 40%,93.8% 42%,92.4% 44%,93.8% 46%,96.6% 48%,98% 50%,96.6% 52%,93.8% 54%,92.4% 56%,93.8% 58%,96.6% 60%,98% 62%,96.6% 64%,93.8% 66%,92.4% 68%,93.8% 70%,96.6% 72%,98% 74%,96.6% 76%,93.8% 78%,92.4% 80%,93.8% 82%,96.6% 84%,98% 86%,96.6% 88%,93.8% 90%,92.4% 92%,93.8% 94%,96.6% 96%,98% 98%,96% 96.6%,94% 93.8%,92% 92.4%,90% 93.8%,88% 96.6%,86% 98%,84% 96.6%,82% 93.8%,80% 92.4%,78% 93.8%,76% 96.6%,74% 98%,72% 96.6%,70% 93.8%,68% 92.4%,66% 93.8%,64% 96.6%,62% 98%,60% 96.6%,58% 93.8%,56% 92.4%,54% 93.8%,52% 96.6%,50% 98%,48% 96.6%,46% 93.8%,44% 92.4%,42% 93.8%,40% 96.6%,38% 98%,36% 96.6%,34% 93.8%,32% 92.4%,30% 93.8%,28% 96.6%,26% 98%,24% 96.6%,22% 93.8%,20% 92.4%,18% 93.8%,16% 96.6%,14% 98%,12% 96.6%,10% 93.8%,8% 92.4%,6% 93.8%,4% 96.6%,2% 98%,3.4% 96%,6.2% 94%,7.6% 92%,6.2% 90%,3.4% 88%,2% 86%,3.4% 84%,6.2% 82%,7.6% 80%,6.2% 78%,3.4% 76%,2% 74%,3.4% 72%,6.2% 70%,7.6% 68%,6.2% 66%,3.4% 64%,2% 62%,3.4% 60%,6.2% 58%,7.6% 56%,6.2% 54%,3.4% 52%,2% 50%,3.4% 48%,6.2% 46%,7.6% 44%,6.2% 42%,3.4% 40%,2% 38%,3.4% 36%,6.2% 34%,7.6% 32%,6.2% 30%,3.4% 28%,2% 26%,3.4% 24%,6.2% 22%,7.6% 20%,6.2% 18%,3.4% 16%,2% 14%,3.4% 12%,6.2% 10%,7.6% 8%,6.2% 6%,3.4% 4%,2% 2%);
+  --cos-dark-fur:radial-gradient(circle at 29% 23%,#53605b,#263031 45%,#151d20 83%);
+  --cos-pale-fur:radial-gradient(circle at 28% 20%,#fffdf4,#e4e9e4 58%,#c8d1d0 91%);
+  --cos-fur-radius:0;--cos-fur-filter:blur(.45px);
+  --cos-fragment-original:none;--cos-fragment-fluffy:inline;
+}
+[data-sprite-fur="spiky-fur"]{
+  --cos-round-clip:polygon(50% 1%,57.22% 13.71%,68.75% 4.73%,70.56% 19.24%,84.65% 15.35%,80.76% 29.44%,95.27% 31.25%,86.29% 42.78%,99% 50%,86.29% 57.22%,95.27% 68.75%,80.76% 70.56%,84.65% 84.65%,70.56% 80.76%,68.75% 95.27%,57.22% 86.29%,50% 99%,42.78% 86.29%,31.25% 95.27%,29.44% 80.76%,15.35% 84.65%,19.24% 70.56%,4.73% 68.75%,13.71% 57.22%,1% 50%,13.71% 42.78%,4.73% 31.25%,19.24% 29.44%,15.35% 15.35%,29.44% 19.24%,31.25% 4.73%,42.78% 13.71%);
+  --cos-square-clip:polygon(2% 2%,8.86% 11%,15.71% 2%,22.57% 11%,29.43% 2%,36.29% 11%,43.14% 2%,50% 11%,56.86% 2%,63.71% 11%,70.57% 2%,77.43% 11%,84.29% 2%,91.14% 11%,98% 2%,89% 8.86%,98% 15.71%,89% 22.57%,98% 29.43%,89% 36.29%,98% 43.14%,89% 50%,98% 56.86%,89% 63.71%,98% 70.57%,89% 77.43%,98% 84.29%,89% 91.14%,98% 98%,91.14% 89%,84.29% 98%,77.43% 89%,70.57% 98%,63.71% 89%,56.86% 98%,50% 89%,43.14% 98%,36.29% 89%,29.43% 98%,22.57% 89%,15.71% 98%,8.86% 89%,2% 98%,11% 91.14%,2% 84.29%,11% 77.43%,2% 70.57%,11% 63.71%,2% 56.86%,11% 50%,2% 43.14%,11% 36.29%,2% 29.43%,11% 22.57%,2% 15.71%,11% 8.86%,2% 2%);
+  --cos-dark-fur:repeating-conic-gradient(from -5deg,#41504d 0deg 8deg,#182123 9deg 22.5deg);
+  --cos-pale-fur:repeating-conic-gradient(from -5deg,#fffaf0 0deg 8deg,#d0dbd8 9deg 22.5deg);
+  --cos-fur-radius:0;--cos-fur-filter:blur(.12px);
+  --cos-fragment-original:none;--cos-fragment-spiky:inline;
+}
+[data-sprite-eyes]{
+  --cos-eye-left:11px;--cos-eye-top:10px;--cos-eye-gap:9px;
+  --cos-eye-w:7px;--cos-eye-h:11px;--cos-eye-radius:50%;
+  --cos-pupil-left:3px;--cos-pupil-top:5px;--cos-pupil-w:2.5px;--cos-pupil-h:3px;
+  --cos-frag-eye-rx:5.3px;--cos-frag-eye-ry:8px;--cos-frag-eye-cy:54px;
+  --cos-frag-pupil-rx:1.9px;--cos-frag-pupil-ry:2.7px;--cos-frag-pupil-cy:56px;
+}
+[data-sprite-eyes="curious-eyes"]{
+  --cos-eye-left:8px;--cos-eye-top:7px;--cos-eye-gap:7px;
+  --cos-eye-w:10px;--cos-eye-h:14px;--cos-pupil-left:4px;--cos-pupil-top:6px;
+  --cos-pupil-w:3.5px;--cos-pupil-h:4.5px;
+  --cos-frag-eye-rx:7px;--cos-frag-eye-ry:10px;--cos-frag-eye-cy:53px;
+  --cos-frag-pupil-rx:2.5px;--cos-frag-pupil-ry:3.5px;--cos-frag-pupil-cy:55px;
+}
+[data-sprite-eyes="sleepy-eyes"]{
+  --cos-eye-left:9px;--cos-eye-top:14px;--cos-eye-gap:8px;
+  --cos-eye-w:9px;--cos-eye-h:5px;--cos-eye-radius:20% 20% 55% 55%;
+  --cos-pupil-left:4px;--cos-pupil-top:1.5px;--cos-pupil-w:2.5px;--cos-pupil-h:2.5px;
+  --cos-frag-eye-rx:6.6px;--cos-frag-eye-ry:3.8px;--cos-frag-eye-cy:57px;
+  --cos-frag-pupil-rx:1.9px;--cos-frag-pupil-ry:1.8px;--cos-frag-pupil-cy:57.5px;
+}
+/* The original body gradient, eyes' light/dark polarity, feet, shadows
+   and reaction/idle animation are untouched. The same declarations also
+   work in baskets, the foyer and the isolated World 3 stylesheet scope. */
+:where([data-sprite-fur]) .sprite-black .sprite-body::before{
+  clip-path:var(--cos-round-clip,none);
+  border-radius:var(--cos-fur-radius,48%);
+  background:var(--cos-dark-fur,repeating-conic-gradient(from 5deg,#192022 0deg 17deg,transparent 19deg 27deg));
+  filter:var(--cos-fur-filter,blur(.3px));
+}
+:where([data-sprite-fur]) .sprite-white .sprite-body::before{
+  clip-path:var(--cos-round-clip,polygon(49% 0%,61% 17%,76% 3%,82% 24%,98% 22%,90% 43%,100% 62%,86% 74%,85% 96%,64% 90%,51% 100%,35% 89%,16% 98%,17% 76%,0 66%,9% 45%,1% 22%,22% 23%,28% 3%,41% 18%));
+  border-radius:var(--cos-fur-radius,48%);
+  background:var(--cos-pale-fur,repeating-conic-gradient(#e7ece8 0deg 16deg,transparent 18deg 27deg));
+  filter:var(--cos-fur-filter,drop-shadow(0 0 2px #e6eeed));
+}
+:where([data-sprite-fur]) .sprite-square .sprite-body::before{
+  clip-path:var(--cos-square-clip,var(--sq-fur-square));
+  border-radius:0;
+  background:var(--cos-dark-fur,linear-gradient(145deg,#303a37,#192022 54%,#101719));
+  filter:var(--cos-fur-filter,blur(.25px));
+}
+/* During the established square/root morph use its native animated rim.
+   Resume the equipped fur when the contact animation has finished. */
+:where([data-sprite-fur]) .area-after-sqrt .sprite-black .sprite-body::before,
+:where([data-sprite-fur]) .sprite[data-square-morph="round"] .sprite-body::before{
+  border-radius:0;
+  background:var(--cos-dark-fur,linear-gradient(145deg,#303a37,#192022 54%,#101719));
+}
+:where([data-sprite-eyes]) .sprite-eyes{
+  left:var(--cos-eye-left);top:var(--cos-eye-top);gap:var(--cos-eye-gap);
+}
+:where([data-sprite-eyes]) .sprite-eyes i{
+  width:var(--cos-eye-w);height:var(--cos-eye-h);border-radius:var(--cos-eye-radius);
+}
+:where([data-sprite-eyes]) .sprite-eyes i::after{
+  left:var(--cos-pupil-left);top:var(--cos-pupil-top);
+  width:var(--cos-pupil-w);height:var(--cos-pupil-h);
+}
+/* All fractional cosmetics are inside the existing exact sector clips.
+   Change eye geometry, never the measured radius, labels or cut paths. */
+.fs-fur-original{display:var(--cos-fragment-original,inline)}
+.fs-fur-fluffy{display:var(--cos-fragment-fluffy,none)}
+.fs-fur-spiky{display:var(--cos-fragment-spiky,none)}
+:where([data-sprite-eyes]) .fs-eye{
+  rx:var(--cos-frag-eye-rx);ry:var(--cos-frag-eye-ry);cy:var(--cos-frag-eye-cy);
+}
+:where([data-sprite-eyes]) .fs-pupil{
+  rx:var(--cos-frag-pupil-rx);ry:var(--cos-frag-pupil-ry);cy:var(--cos-frag-pupil-cy);
+}

@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Maths Sprites — Cosmetic art study</title>
+<link rel="stylesheet" href="./src/styles.css?v=83">
+<link rel="stylesheet" href="./src/square-sprites.css">
+<link rel="stylesheet" href="./src/fraction-sprites.css?v=85">
+<link rel="stylesheet" href="./src/sprite-cosmetics.css?v=85">
+<style>
+body{margin:0;background:#151e20;color:#eee1c5;font-family:system-ui,sans-serif}
+main{max-width:1100px;margin:auto;padding:clamp(16px,3vw,36px)}
+h1{font:normal clamp(1.8rem,4vw,2.8rem) Georgia,serif;margin:14px 0 5px}
+p{color:#c5d4ca;margin:0 0 22px;line-height:1.5}
+.study-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:14px}
+.study-card{background:linear-gradient(145deg,#273733,#1c2928);border:1px solid #a58c60;border-radius:12px;padding:15px}
+.study-card h2{font:normal 1.3rem Georgia,serif;margin:0 0 5px;color:#f0dcb6}
+.study-card small{color:#c5b089}
+.study-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;text-align:center;padding:12px 0 7px}
+.study-cell{min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:end;gap:14px}
+.study-stage{width:100%;height:110px;display:flex;align-items:flex-end;justify-content:center;padding-bottom:10px;background:radial-gradient(ellipse at 50% 85%,#4c61553b,transparent 70%);border-bottom:1px solid #8b7755}
+.study-stage .sprite{transform:scale(1.3)}
+.study-cell span.study-caption{font-size:.77rem;color:#cecfbd}
+.study-fragment{display:flex;justify-content:center;align-items:center;gap:14px;border-top:1px solid #89745255;margin-top:12px;padding-top:10px;font-size:.77rem;color:#cecfbd}
+.study-fragment .fs-assembly{width:75px}
+.study-toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.study-toolbar a{color:#e1c798}
+.study-toolbar button{border:1px solid #ae986c;color:#f1dfbe;background:#2b3c36;padding:8px 12px;border-radius:6px;cursor:pointer}
+</style>
+<script type="module" src="./src/sprite-cosmetic-preview.mjs?v=85"></script>
+</head>
+<body>
+<main>
+<div class="study-toolbar"><a href="./">← Maths Sprites</a><button type="button" id="study-motion" aria-pressed="true">Motion: reduced</button></div>
+<h1>Sprite cosmetic art study</h1>
+<p>Development preview · Original and first four rewards, with both signs, square form and exact fragments. Nothing here earns stars, equips a reward or changes your save.</p>
+<div id="study-grid" class="study-grid"></div>
+</main>
+</body>
+</html>

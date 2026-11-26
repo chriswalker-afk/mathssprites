@@ -2,10 +2,10 @@
  * A shadow root isolates legacy app IDs, SVG clip IDs and event listeners.
  * Navigation and progress remain owned by site.mjs, not the physics renderer.
  */
-import {mountFractionBalance} from "./fraction-balance.mjs?v=80";
+import {mountFractionBalance} from "./fraction-balance.mjs?v=85";
 import {mountFractionNotebook} from "./fraction-notebook.mjs";
 import {FRACTION_CAMPAIGN_SCENE} from "./fraction-campaign-scene.mjs";
-import {spriteInventoryMarkup} from "./fraction-sprites.mjs?v=80";
+import {spriteInventoryMarkup} from "./fraction-sprites.mjs?v=85";
 import {weightInventoryMarkup} from "./fraction-weights.mjs";
 import {rational,req,rtext} from "./rational.mjs";
 import {isSolved} from "./engine.mjs";
@@ -13,8 +13,9 @@ import {isSolved} from "./engine.mjs";
 // Keep the separately fetched shadow-root assets on the same presentation
 // revision as their markup, including on a returning student's warm cache.
 // Bump this revision and the site entry/import URLs when presentation assets change.
-export const FRACTION_PRESENTATION_REVISION="80";
-const STYLE_FILES=["styles.css","scene-polish.css","fraction-weights.css","fraction-sprites.css","fraction-balance.css","fraction-campaign.css","fraction-notebook.css"];
+import {applySpriteAppearance} from "./sprite-cosmetics.mjs?v=85";
+export const FRACTION_PRESENTATION_REVISION="85";
+const STYLE_FILES=["styles.css","scene-polish.css","fraction-weights.css","fraction-sprites.css","fraction-balance.css","fraction-campaign.css","fraction-notebook.css","sprite-cosmetics.css"];
 const escape=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const mn=n=>"<mn>"+n+"</mn>";
 const mo=s=>"<mo>"+s+"</mo>";
@@ -52,7 +53,7 @@ export function fractionComicMarkup(transaction,index){
     '<div class="fb-comic-action"><span>Move '+(index+1)+'</span>'+fractionOperationMarkup(transaction.action)+'<span>on both rooms</span></div>'+
     comicPanel(transaction.after,"After")+'</div>';
 }
-export function createFractionCampaignView({slot,context,onLeave,onAdvance,onComplete}){
+export function createFractionCampaignView({slot,context,onLeave,onAdvance,onComplete,appearance={}}){
   const host=document.createElement("div");host.id="fraction-game-host";
   const shadow=host.attachShadow({mode:"open"});
   const links=STYLE_FILES.map(path=>{
@@ -74,6 +75,7 @@ export function createFractionCampaignView({slot,context,onLeave,onAdvance,onCom
   host.dataset.presentationRevision=FRACTION_PRESENTATION_REVISION;
   host.dataset.styles="loading";
   const root=document.createElement("main");root.className="fb-lab fb-campaign";root.id="fraction-lab";root.hidden=true;
+  applySpriteAppearance(root,appearance);
   root.innerHTML='<header class="fb-header fb-campaign-header"><div class="identity fb-identity">'+
     '<button type="button" id="fb-brand-home" class="game-sprite-home" aria-label="Return to Maths Sprites home" title="Home"><span class="brand-sprite-frame" aria-hidden="true"><span class="brand-sprite-actor token sprite sprite-black"><span class="sprite-ground-shadow"></span><span class="sprite-reaction-shell"><span class="sprite-motion"><span class="sprite-feet"></span><span class="sprite-body"><span class="sprite-eyes"><i></i><i></i></span></span></span></span></span></span></button>'+
     '<h1>Maths Sprites<span class="title-dot">.</span></h1></div><div class="fb-game-meta">'+
@@ -182,6 +184,6 @@ export function createFractionCampaignView({slot,context,onLeave,onAdvance,onCom
     const back=document.createElement("button");back.type="button";back.textContent="Return to levels";
     back.addEventListener("click",()=>onLeave("levels"),{once:true});loading.append(back);
   });
-  return {controller,host,setRating(message){$("fb-rating").textContent=message;},
+  return {controller,host,setAppearance(equipped){applySpriteAppearance(root,equipped);},setRating(message){$("fb-rating").textContent=message;},
     destroy(){observer.disconnect();abort.abort();notebook?.destroy();controller.destroy();host.remove();}};
 }
