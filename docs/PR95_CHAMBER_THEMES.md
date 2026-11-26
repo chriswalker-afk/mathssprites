@@ -1,0 +1,11 @@
+# PR95 — Chamber designs, part one
+
+Five agreed milestones are now implemented: Clockmaker's Workshop (24), Scholar's Library (66), Midnight Observatory (105), Botanical Laboratory (195), Clockwork Foundry (285). 52 of 57 cosmetic milestones have artwork. The original chamber remains free. All five are independently selectable in the Chambers collection; locked previews never equip or write saves. The remaining five themes are still marked artwork coming soon.
+
+Original local vector illustrations depict clocks and drawers; bookcases and reading alcove; a star window, telescope and armillary sphere; greenhouse glazing, vines and planters; steel panels, gears, pipework and furnace. Each has a muted lower wall and deliberate fade to avoid clutter behind counted objects. Both rooms use identical artwork. A shared CSS palette extends to room trim, floor, balance pan and bench. The existing hand-contact, success and failure outlines, room dimensions, floor positions, clipping, mathematical engine, action targets, and controls are unchanged. The original native and fraction renderer artwork remains the default. Themes are static and decorative. No third-party assets or network services required.
+
+The Atelier uses the actual SVG backgrounds and palette in its chamber pair and thumbnails, with sample black/white sprites and weights using the player's other cosmetic selections. The miniature is an intentionally simplified scale model rather than a full interactive scene. Themes are versioned 95; all fraction styles, including chamber CSS, participate in the existing shadow-root loading gate. Strict published verification includes the five SVG assets, native and shadow backgrounds and independent restore.
+
+Added readiness, pending-art guard, save/restore, SVG palette and no-geometry-change tests, real gallery image decoding, compact viewport, paired native/shadow scene, signed cancellation and fractional/square count checks. PR94 unit and diagnostic checks passed; browser QA was pending at merge. PR95 CI and manual visual review remain outstanding.
+
+Next PR96: Frostbound Vault (375), Ember Forge (465), Royal Treasury (525), Arcane Laboratory (585), Astral Sanctuary (675). Extend the same artwork system. PR97 final release QA, including dense rooms, all visual combinations, motion, mobile and deployed cache checks.
