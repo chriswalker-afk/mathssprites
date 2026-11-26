@@ -20,11 +20,8 @@
 /* The exact clipped SVG remains the reference artwork for every piece.
  * A settled whole in the campaign uses the established animated actor;
  * there is only one visible representation of that one sprite. */
-.fs-whole-actor{display:none}
-.fb-campaign .fs-assembly[data-denominator="1"]{width:46px;min-width:46px;height:47px;justify-content:flex-end}
-.fb-campaign .fs-assembly[data-denominator="1"]>svg{display:none}
-.fb-campaign .fs-assembly[data-denominator="1"]>.fs-whole-actor{display:inline-block}
-.fb-campaign .fs-assembly[data-denominator="1"]>.fs-label{display:none}
+.fs-whole-actor{display:inline-block}
+.fb-campaign .fs-assembly[data-denominator="1"]{width:46px;min-width:46px;height:47px;justify-content:flex-end;overflow:visible}
 .fb-campaign .fs-assembly:not([data-denominator="1"]):has(>.fs-label){width:max-content;flex-direction:row;align-items:flex-end;gap:0;max-width:none}
 .fb-campaign .fs-assembly:not([data-denominator="1"])>svg{width:88px;max-width:none;flex:none;margin-bottom:-5px}
 .fb-campaign .fs-assembly:not([data-denominator="1"]):not(.is-separated)>svg{animation:fb-fragment-breathe 3s ease-in-out infinite}

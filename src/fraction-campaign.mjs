@@ -2,14 +2,18 @@
  * A shadow root isolates legacy app IDs, SVG clip IDs and event listeners.
  * Navigation and progress remain owned by site.mjs, not the physics renderer.
  */
-import {mountFractionBalance} from "./fraction-balance.mjs";
+import {mountFractionBalance} from "./fraction-balance.mjs?v=80";
 import {mountFractionNotebook} from "./fraction-notebook.mjs";
 import {FRACTION_CAMPAIGN_SCENE} from "./fraction-campaign-scene.mjs";
-import {spriteInventoryMarkup} from "./fraction-sprites.mjs";
+import {spriteInventoryMarkup} from "./fraction-sprites.mjs?v=80";
 import {weightInventoryMarkup} from "./fraction-weights.mjs";
 import {rational,req,rtext} from "./rational.mjs";
 import {isSolved} from "./engine.mjs";
 
+// Keep the separately fetched shadow-root assets on the same presentation
+// revision as their markup, including on a returning student's warm cache.
+// Bump this revision and the site entry/import URLs when presentation assets change.
+export const FRACTION_PRESENTATION_REVISION="80";
 const STYLE_FILES=["styles.css","scene-polish.css","fraction-weights.css","fraction-sprites.css","fraction-balance.css","fraction-campaign.css","fraction-notebook.css"];
 const escape=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const mn=n=>"<mn>"+n+"</mn>";
@@ -36,7 +40,7 @@ export function fractionOperationMarkup(action){
   return math(mo(s)+(action.kind?term(action.count,action.kind):mn(action.factor)));
 }
 function comicRoom(r){
-  return '<div class="fb-comic-room">'+spriteInventoryMarkup(r.posX)+weightInventoryMarkup(r.posOne)+'</div>';
+  return '<div class="fb-comic-room">'+spriteInventoryMarkup(r.posX,{animatedWhole:true})+weightInventoryMarkup(r.posOne)+'</div>';
 }
 function comicPanel(pair,title){
   return '<article class="fb-comic-panel"><h3>'+escape(title)+'</h3><div class="fb-comic-scale">'+
@@ -52,9 +56,24 @@ export function createFractionCampaignView({slot,context,onLeave,onAdvance,onCom
   const host=document.createElement("div");host.id="fraction-game-host";
   const shadow=host.attachShadow({mode:"open"});
   const links=STYLE_FILES.map(path=>{
-    const link=document.createElement("link");link.rel="stylesheet";link.href=new URL("./"+path,import.meta.url).href;return link;
+    const link=document.createElement("link");link.rel="stylesheet";
+    const url=new URL("./"+path,import.meta.url);
+    url.searchParams.set("v",FRACTION_PRESENTATION_REVISION);
+    link.href=url.href;return link;
   });
-  const root=document.createElement("main");root.className="fb-lab fb-campaign";root.id="fraction-lab";
+  // Shadow-root links are not render blocking. Never reveal the legacy
+  // preview layout, even on a slow connection or a partial asset failure.
+  const stylesReady=Promise.all(links.map(link=>new Promise((resolve,reject)=>{
+    link.addEventListener("load",resolve,{once:true});
+    link.addEventListener("error",()=>reject(new Error("Could not load "+link.href)),{once:true});
+  })));
+  const loading=document.createElement("p");
+  loading.setAttribute("role","status");
+  loading.style.cssText="padding:20px;text-align:center;font:1rem Georgia,serif;color:#eee6d5";
+  loading.textContent="Preparing the balance chambers…";
+  host.dataset.presentationRevision=FRACTION_PRESENTATION_REVISION;
+  host.dataset.styles="loading";
+  const root=document.createElement("main");root.className="fb-lab fb-campaign";root.id="fraction-lab";root.hidden=true;
   root.innerHTML='<header class="fb-header fb-campaign-header"><div class="identity fb-identity">'+
     '<button type="button" id="fb-brand-home" class="game-sprite-home" aria-label="Return to Maths Sprites home" title="Home"><span class="brand-sprite-frame" aria-hidden="true"><span class="brand-sprite-actor token sprite sprite-black"><span class="sprite-ground-shadow"></span><span class="sprite-reaction-shell"><span class="sprite-motion"><span class="sprite-feet"></span><span class="sprite-body"><span class="sprite-eyes"><i></i><i></i></span></span></span></span></span></span></button>'+
     '<h1>Maths Sprites<span class="title-dot">.</span></h1></div><div class="fb-game-meta">'+
@@ -80,7 +99,7 @@ export function createFractionCampaignView({slot,context,onLeave,onAdvance,onCom
   bottom.querySelector("#fb-apply").textContent="Do it to both rooms →";
   const review=document.createElement("button");review.id="fb-review-link";review.type="button";review.textContent="Review your algebra →";review.hidden=true;bottom.append(review);
   review.addEventListener("click",()=>root.querySelector("#fb-review").scrollIntoView({block:"start",behavior:"instant"}));
-  shadow.append(...links,root);document.body.append(host);
+  shadow.append(...links,loading,root);document.body.append(host);
   const $=id=>root.querySelector("#"+id);
   const abort=new AbortController();
   const listen=(el,type,fn)=>el.addEventListener(type,fn,{signal:abort.signal});
@@ -151,7 +170,18 @@ export function createFractionCampaignView({slot,context,onLeave,onAdvance,onCom
     $("fb-game-home").disabled=busy;$("fb-brand-home").disabled=busy;$("fb-game-levels").disabled=busy;motionButton.disabled=busy;
   });
   observer.observe(root,{attributes:true,attributeFilter:["data-busy","data-notebook-playing"]});
-  $("fb-level-title").focus({preventScroll:true});
+  stylesReady.then(()=>{
+    if(!host.isConnected)return;
+    host.dataset.styles="ready";loading.remove();root.hidden=false;
+    controller.refit();
+    requestAnimationFrame(()=>{if(host.isConnected){controller.refit();$("fb-level-title").focus({preventScroll:true});}});
+  }).catch(()=>{
+    if(!host.isConnected)return;
+    host.dataset.styles="error";
+    loading.textContent="The chamber artwork could not load. ";
+    const back=document.createElement("button");back.type="button";back.textContent="Return to levels";
+    back.addEventListener("click",()=>onLeave("levels"),{once:true});loading.append(back);
+  });
   return {controller,host,setRating(message){$("fb-rating").textContent=message;},
     destroy(){observer.disconnect();abort.abort();notebook?.destroy();controller.destroy();host.remove();}};
 }

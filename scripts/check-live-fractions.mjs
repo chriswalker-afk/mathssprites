@@ -22,6 +22,24 @@ try{
     verify(await page.locator(".level-tile:disabled").count()===0,"Published "+stage+" is fully selectable");
   }
   await page.screenshot({path:"artifacts/live-world3-board.png",fullPage:true});
+  // Verify the deployed UI as seen by a returning student, not only engine outputs.
+  await page.setViewportSize({width:1838,height:891});
+  await page.locator('[data-map-stage="guided"]').click();
+  await page.locator('.level-tile[data-level-id="frac-g-06"]').click();
+  const host=page.locator("#fraction-game-host");
+  await host.locator("#fraction-lab").waitFor({state:"visible"});
+  const presentation=await host.evaluate(el=>{
+    const r=el.shadowRoot,box=s=>r.querySelector(s).getBoundingClientRect(),scene=box("#scene"),panel=box(".fb-tools");
+    const plaque=r.querySelector("#left-items .fw-label"),whole=r.querySelector("#left-items .fs-assembly[data-denominator='1']");
+    return {revision:el.dataset.presentationRevision,styles:el.dataset.styles,sidebar:panel.x>scene.right&&Math.abs(panel.y-scene.y)<3&&Math.abs(panel.height-scene.height)<3,
+      labelled:!!plaque&&getComputedStyle(plaque).borderTopStyle==="solid",singleActor:!!whole?.querySelector(".fs-whole-actor")&&!whole.querySelector("svg")};
+  });
+  verify(presentation.revision==="80"&&presentation.styles==="ready","Published fraction presentation uses current versioned assets");
+  verify(presentation.sidebar,"Published desktop controls sit next to full-size scene");
+  verify(presentation.labelled,"Published fractional quantity uses a physical plaque");
+  verify(presentation.singleActor,"Published whole sprite is a single animated actor");
+  await page.screenshot({path:"artifacts/live-world3-presentation.png",fullPage:true});
+  await page.setViewportSize({width:1280,height:720});
   await page.goto(url+"?workshop=2x%3D5&workshopWorld=fractions&workshopMode=auto",{waitUntil:"networkidle"});
   verify(await page.locator("#workshop-quantity-mode").inputValue()==="fractions","Published fractional workshop deep link");
   const before=await page.evaluate(()=>JSON.stringify(localStorage));
