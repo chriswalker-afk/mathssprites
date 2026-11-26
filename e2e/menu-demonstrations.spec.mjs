@@ -7,7 +7,7 @@ async function chooseWorlds(page){
   await expect(page.locator(worlds)).toBeVisible();
 }
 async function animationNames(page,selector){
-  return page.locator(selector).evaluate(el=>el.getAnimations({subtree:true}).map(a=>a.animationName));
+  return page.locator(selector).evaluate(el=>el.getAnimations({subtree:true}).map(a=>a.animationName).filter(name=>name?.startsWith("md-")));
 }
 async function seek(page,selector,time){
   await page.locator(selector).evaluate((el,ms)=>{
@@ -92,6 +92,10 @@ test("system reduced motion defaults to still previews, with explicit opt in @qu
   await page.locator("#settings-return").click();
   await expect(page.locator(methods)).toHaveAttribute("data-demo-motion","reduced");
   expect(await animationNames(page,methods)).toEqual([]);
+  await page.locator(motion(methods)).click();
+  await expect(page.locator(methods)).toHaveAttribute("data-demo-motion","playing");
+  const duration=await page.locator(methods+' [data-menu-demo="guided"] .md-remove-left').evaluate(el=>getComputedStyle(el).animationDuration);
+  expect(duration).toBe("7.2s");
 });
 for(const size of [{width:1092,height:540},{width:375,height:812},{width:1920,height:1080}]){
   test("animated previews and menu actions remain reachable at "+size.width+"x"+size.height+" @smoke",async({page},info)=>{

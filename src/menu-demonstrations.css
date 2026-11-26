@@ -135,3 +135,9 @@
 @keyframes md-up-paper{0%,49%,70%,100%{transform:translateY(0)}57%,61%{transform:translateY(-9px)}}
 @keyframes md-down-paper{0%,49%,70%,100%{transform:translateY(0)}57%,61%{transform:translateY(9px)}}
 @media(max-width:850px){#site-stages .world1-stage-grid{grid-auto-rows:auto}}
+
+/* The global reduced-motion stylesheet compresses other game animations.
+   A deliberate preview-only Play restores the proper slow cycle here, and
+   leaves all gameplay animations untouched. */
+.reduce-motion [data-demo-motion="playing"] .menu-demo *,
+.reduce-motion [data-demo-motion="paused"] .menu-demo *{animation-duration:var(--demo-duration)!important}
