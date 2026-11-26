@@ -1,3 +1,4 @@
+import {playCampaignLevel} from "./campaign-menu-helper.mjs";
 import {openCampaignBoard} from "./campaign-menu-helper.mjs";
 import {clickWithReferenceMove} from "./reference-move-helper.mjs";
 import {test,expect} from "@playwright/test";
@@ -8,7 +9,7 @@ test.beforeEach(async({page})=>{
 });
 async function openBrackets(page){
   await openCampaignBoard(page,"workshop","guided");
-  await page.locator('[data-level="19"]').click();
+  await playCampaignLevel(page,page.locator('[data-level="19"]'));
   await expect(page.locator("#level-title")).toHaveText("Sealed Crates");
   await expect(page.locator("#chapter-status")).toContainText("WORLD 1 · STAGE 1 · LEVEL 19");
   await expect(page.locator("#crate-controls")).toBeVisible();

@@ -1,3 +1,4 @@
+import {playCampaignLevel} from "./campaign-menu-helper.mjs";
 import {openCampaignBoard} from "./campaign-menu-helper.mjs";
 import {test,expect} from "@playwright/test";
 
@@ -7,7 +8,7 @@ test.beforeEach(async({page})=>{
 });
 async function openGuided(page,number){
   await openCampaignBoard(page,"workshop","guided");
-  await page.locator('[data-level="'+number+'"]').click();
+  await playCampaignLevel(page,page.locator('[data-level="'+number+'"]'));
   await expect(page.locator("#chapter-status")).toContainText(
     "WORLD 1 · STAGE 1 · LEVEL "+number);
 }
@@ -38,7 +39,7 @@ test("six Guided chapters include four playable crate levels with neutral, non-s
   for(const [number,crates,looseX,eastX] of [
     [21,2,0,0],[22,3,0,0],[23,2,0,1],[24,3,2,1]
   ]){
-    await page.locator('[data-level="'+number+'"]').click();
+    await playCampaignLevel(page,page.locator('[data-level="'+number+'"]'));
     await expect(page.locator("#left-items .sealed-crate")).toHaveCount(crates);
     await expect(page.locator("#left-items .sprite-black")).toHaveCount(looseX);
     await expect(page.locator("#right-items .sprite-black")).toHaveCount(eastX);

@@ -1,3 +1,4 @@
+import {playCampaignLevel} from "./campaign-menu-helper.mjs";
 import {openCampaignBoard,chooseCampaignStage} from "./campaign-menu-helper.mjs";
 import {clickWithReferenceMove} from "./reference-move-helper.mjs";
 import {test,expect} from "@playwright/test";
@@ -12,7 +13,7 @@ async function openStage2(page,{teacher=true,level=1}={}){
     await page.locator("#teacher-unlock").check();
   }
   await openCampaignBoard(page,"workshop","independent");
-  await page.locator('[data-level="'+level+'"]').click();
+  await playCampaignLevel(page,page.locator('[data-level="'+level+'"]'));
   await expect(page.locator("#chapter-status")).toContainText("STAGE 2");
 }
 test("Stage 2 and Stage 3 are selectable before Stage 1 is completed",async({page})=>{
@@ -153,7 +154,7 @@ test("Stage 2 chapter handovers and independent final mastery stay separate from
   await expect(page.locator("#world1-progress-bar")).toHaveJSProperty("value",20);
   await expect(page.locator(".chapter-complete")).toHaveCount(5);
   await expect(page.locator(".level-tile.status-complete")).toHaveCount(20);
-  await page.locator('[data-level="13"]').click();
+  await playCampaignLevel(page,page.locator('[data-level="13"]'));
   await expect(page.locator("#chapter-briefing")).toContainText("Dark sprites appear in both rooms");
   await expect(page.locator("#chapter-status")).toContainText("LEVEL 13 / 20");
   await expect(page.locator('[data-operation="square"]')).toBeHidden();

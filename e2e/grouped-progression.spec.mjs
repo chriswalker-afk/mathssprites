@@ -1,3 +1,4 @@
+import {playCampaignLevel} from "./campaign-menu-helper.mjs";
 import {openCampaignBoard} from "./campaign-menu-helper.mjs";
 import {test,expect} from "@playwright/test";
 
@@ -7,7 +8,7 @@ test.beforeEach(async({page})=>{
 });
 async function openStage(page,stage,level){
   await openCampaignBoard(page,"workshop",stage);
-  await page.locator('[data-level="'+level+'"]').click();
+  await playCampaignLevel(page,page.locator('[data-level="'+level+'"]'));
   await expect(page.locator("#chapter-status")).toContainText("LEVEL "+String(level).padStart(2,"0"));
 }
 async function chooseDivide(page,factor){
