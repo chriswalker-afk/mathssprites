@@ -14,8 +14,8 @@ import {isSolved} from "./engine.mjs";
 // revision as their markup, including on a returning student's warm cache.
 // Bump this revision and the site entry/import URLs when presentation assets change.
 import {applyLaboratoryAppearance} from "./laboratory-cosmetics.mjs?v=96";
-export const FRACTION_PRESENTATION_REVISION="103";
-const STYLE_FILES=["styles.css","scene-polish.css","fraction-weights.css","fraction-sprites.css","fraction-balance.css","fraction-campaign.css","fraction-notebook.css","sprite-cosmetics.css","sprite-wearables.css","sprite-effects.css","weight-materials.css","weight-shapes.css","weight-effects.css","chamber-themes.css","scene-grounding.css","route-guide.css"];
+export const FRACTION_PRESENTATION_REVISION="104";
+const STYLE_FILES=["styles.css","scene-polish.css","fraction-weights.css","fraction-sprites.css","fraction-balance.css","fraction-campaign.css","fraction-notebook.css","sprite-cosmetics.css","sprite-wearables.css","sprite-effects.css","weight-materials.css","weight-shapes.css","weight-effects.css","chamber-themes.css","scene-grounding.css","route-guide.css","completion-story.css"];
 const escape=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const mn=n=>"<mn>"+n+"</mn>";
 const mo=s=>"<mo>"+s+"</mo>";
@@ -99,13 +99,13 @@ export function createFractionCampaignView({slot,context,onLeave,onAdvance,onCom
   bottom.prepend(actions);
   bottom.querySelector("#fb-reset").textContent="Reset";
   bottom.querySelector("#fb-apply").textContent="Do it to both rooms →";
-  const review=document.createElement("button");review.id="fb-review-link";review.type="button";review.textContent="Review your algebra →";review.hidden=true;bottom.append(review);
-  review.addEventListener("click",()=>root.querySelector("#fb-review").scrollIntoView({block:"start",behavior:"instant"}));
+  const review=document.createElement("button");review.id="fb-review-link";review.type="button";review.textContent="Watch the story of your moves →";review.hidden=true;bottom.append(review);
   shadow.append(...links,loading,root);document.body.append(host);
   const $=id=>root.querySelector("#"+id);
   const abort=new AbortController();
   const listen=(el,type,fn)=>el.addEventListener(type,fn,{signal:abort.signal});
-  let completed=null,step=0,notebook=null;
+  let completed=null,notebook=null,celebrationTimer=null,dead=false;
+  root.dataset.sharedStory="true";
   const paperFirst=context.method==="notebook",freePlay=context.freePlay===true;
   root.dataset.freePlay=String(freePlay);
   if(paperFirst)root.dataset.notebookPhase="paper";
@@ -123,22 +123,31 @@ export function createFractionCampaignView({slot,context,onLeave,onAdvance,onCom
     dot.title=l.title;return dot;
   }));
   $("fb-next-level").textContent=freePlay?"Build another equation →":slot.number===context.stageLength?"Return to levels →":"Next level →";
-  function showComic(){
-    if(!completed?.history.length)return;
-    step=Math.max(0,Math.min(step,completed.history.length-1));
-    $("fb-comic-page").innerHTML=fractionComicMarkup(completed.history[step],step,{shape:root.dataset.weightShape});
-    $("fb-replay-step").textContent=(step+1)+" / "+completed.history.length;
-    $("fb-replay-prev").disabled=step===0;
-    $("fb-replay-next").disabled=step===completed.history.length-1;
-    if(!paperFirst&&!freePlay&&step===completed.history.length-1)onReviewReady();
+  $("fb-review").querySelector(".fb-review-header h2").textContent="Balance restored!";
+  const storyButton=document.createElement("button");storyButton.id="fb-story-again";storyButton.type="button";storyButton.textContent="Story of your moves →";$("fb-review").querySelector(".fb-comic-bottom").prepend(storyButton);
+  function cancelCelebration(){clearTimeout(celebrationTimer);celebrationTimer=null;$("level-clear").hidden=true;}
+  function showStory(){
+    if(dead||!completed||!isSolved(completed)||!completed.history.length)return;
+    cancelCelebration();
+    window.dispatchEvent(new CustomEvent("mathssprites:review-fraction",{detail:{
+      state:completed,level:slot.level,context:{...context,number:slot.number},
+      rating:$("fb-rating").textContent,
+      advance:onAdvance,restoreFocus:()=>{if(!dead)storyButton.focus();}
+    }}));
   }
   function refresh(state){
-    $("fb-review-link").hidden=!isSolved(state);
-    if(isSolved(state)){
-      completed=state;step=0;showComic();
-    }else{
-      completed=null;$("fb-comic-page").replaceChildren();$("fb-rating").textContent="";
+    const solved=isSolved(state);
+    $("fb-review-link").hidden=!solved||paperFirst;
+    if(!solved){
+      cancelCelebration();completed=null;$("fb-rating").textContent="";
+      $("level-clear-rating").hidden=true;
+      window.dispatchEvent(new Event("mathssprites:clear-fraction-review"));
+    }else if(!paperFirst){
+      completed=state;
     }
+    // A paper draft may be solved before its physical replay is verified.
+    // The story cannot be opened until completeReviewed runs.
+    if(paperFirst) $("fb-review").hidden=!completed;
   }
   let reduced;
   try{
@@ -147,10 +156,20 @@ export function createFractionCampaignView({slot,context,onLeave,onAdvance,onCom
     reduced=saved==="reduced";
   }catch{reduced=document.body.classList.contains("reduce-motion");}
   function completeReviewed(state){
-    onComplete(state);
-    // Notebook callback is after checked physical playback. Guided and
-    // independent reviews are static panels; signal at the last panel.
-    if(!freePlay&&(paperFirst||step===state.history.length-1))onReviewReady();
+    if(dead||!isSolved(state))return;
+    completed=state;onComplete(state);
+    $("fb-review").hidden=false;
+    $("level-clear-title").textContent=paperFirst?"Your algebra came to life!":"Balance restored!";
+    $("level-clear-subtitle").textContent=paperFirst?"Your checked steps came to life in the chambers.":"Let's discover the algebra behind those moves.";
+    cancelCelebration();$("level-clear").hidden=false;
+    celebrationTimer=setTimeout(()=>{
+      celebrationTimer=null;if(dead)return;
+      $("level-clear").hidden=true;
+      if(!completed)return;
+      // Paper-first retains the notebook finish and an optional story.
+      if(paperFirst){if(!freePlay)onReviewReady();}
+      else showStory();
+    },reduced?1100:1800);
   }
   const controller=mountFractionBalance(root,{level:slot.level,mode:paperFirst?"auto":context.method,reduced,
     onState:refresh,onComplete:paperFirst?()=>{}:completeReviewed});
@@ -172,8 +191,8 @@ export function createFractionCampaignView({slot,context,onLeave,onAdvance,onCom
   listen($("fb-brand-home"),"click",()=>{if(canLeave())onLeave("home")});
   listen($("fb-game-levels"),"click",()=>{if(canLeave())onLeave("levels")});
   listen($("fb-next-level"),"click",()=>{if(completed&&canLeave())onAdvance()});
-  listen($("fb-replay-prev"),"click",()=>{step--;showComic()});
-  listen($("fb-replay-next"),"click",()=>{step++;showComic()});
+  listen(review,"click",showStory);
+  listen(storyButton,"click",showStory);
   const observer=new MutationObserver(()=>{
     const busy=!canLeave();
     $("fb-game-home").disabled=busy;$("fb-brand-home").disabled=busy;$("fb-game-levels").disabled=busy;motionButton.disabled=busy;
@@ -191,6 +210,6 @@ export function createFractionCampaignView({slot,context,onLeave,onAdvance,onCom
     const back=document.createElement("button");back.type="button";back.textContent="Return to levels";
     back.addEventListener("click",()=>onLeave("levels"),{once:true});loading.append(back);
   });
-  return {controller,host,setAppearance(equipped){const prior=root.dataset.weightShape;applyLaboratoryAppearance(root,equipped);if(prior!==root.dataset.weightShape){controller.refreshAppearance();if(completed)showComic();}},setRating(message){$("fb-rating").textContent=message;},
-    destroy(){observer.disconnect();abort.abort();notebook?.destroy();controller.destroy();host.remove();}};
+  return {controller,host,setAppearance(equipped){const prior=root.dataset.weightShape;applyLaboratoryAppearance(root,equipped);if(prior!==root.dataset.weightShape)controller.refreshAppearance();},setRating(message){$("fb-rating").textContent=message;$("level-clear-rating").textContent=message;$("level-clear-rating").hidden=false;},
+    destroy(){dead=true;cancelCelebration();window.dispatchEvent(new Event("mathssprites:clear-fraction-review"));observer.disconnect();abort.abort();notebook?.destroy();controller.destroy();host.remove();}};
 }

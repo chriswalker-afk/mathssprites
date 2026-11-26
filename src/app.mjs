@@ -1,4 +1,5 @@
 import {neutralToolSelection,actionFromToolSelection,stepToolQuantity} from "./action-selection.mjs";
+import {fractionStoryItems,squareStoryMarkup,storyEntries} from "./completion-story.mjs?v=104";
 import {
   LEVELS, TOKEN_KINDS, initialState, visibleRooms, evaluate, levelQuantityMode, normalize, room,
   perform, previewRoomAction, attachAvailablePairs, undo, isSolved, equation, operationDescription, algebraOperation, areaArrangement
@@ -109,6 +110,9 @@ let replayFrame = null;
 let replayPaused = true;
 let replayIndex = 0;
 let replayEntries = [];
+// Fractions use the same journal, not the hidden legacy physical game state.
+let externalReview=null;
+const reviewLevel=()=>externalReview?.level||currentLevel();
 let replayTimeline = null;
 let replayElapsed = 0;
 let replayLastFrame = null;
@@ -426,6 +430,7 @@ function renderNotebookVisibility() {
   $("mode-wrapper").hidden=true;
   $("notebook-back-paper").hidden=notebookPhase!=="complete";
   $("notebook-watch-again").hidden=notebookPhase!=="complete";
+  $("notebook-story").hidden=notebookPhase!=="complete"||!notebookReplaySuccessful||!currentLevel().squareLaboratory;
   $("notebook-next").hidden=(!campaign&&!workshopActive)||notebookPhase!=="complete"||
     !notebookReplaySuccessful;
   $("notebook-next").textContent=workshopActive?"Build another equation →":campaignLevelNumber>=campaignStageLevelCount
@@ -1938,6 +1943,8 @@ async function manualMove(side) {
 function startLevel(index, quantityMode, levelOverride=null, campaignNumber=null,
   stage="guided",campaignInfo={}) {
   stopReplay();
+  externalReview=null;
+  $("replay-backdrop").removeAttribute("data-story-world");
   replayEntries = [];
   notebookSession=null;
   notebookPhase="idle";
@@ -2022,6 +2029,7 @@ function startLevel(index, quantityMode, levelOverride=null, campaignNumber=null
   render();
 }
 function miniItems(r) {
+  if(r.quantityMode==="fractions")return fractionStoryItems(r);
   let out = crateCount(r)
     ?Array.from({length:crateCount(r)},()=>'<span class="mini-token mini-crate" aria-label="sealed wooden crate">▣</span>').join("")
     :"";
@@ -2070,12 +2078,13 @@ function crateComicStory(before){
 }
 function panelHTML(entry, index, active) {
   const zeroPairs=recordedZeroEvents(entry);
-  const isCrate=currentLevel().groupedPrototype;
+  const isCrate=reviewLevel().groupedPrototype;
   const opened=entry.action?.op==="unpack";
   const title = index === 0 ? "Before the hand began" : "Move " + index;
   const subtitle = index === 0 ? "Every object has a hidden value..." :
     operationDescription(entry.action);
-  const story=opened?crateComicStory(entry.before[entry.action.side]):"";
+  const story=opened?crateComicStory(entry.before[entry.action.side]):
+    reviewLevel().squareLaboratory?squareStoryMarkup(entry):"";
   const footnote = opened?"":zeroPairs.length
     ? "The same operation on both sides; "+neutralPairSummary(zeroPairs)+
       " cancelled inside their rooms (each pair has value zero)."
@@ -2103,7 +2112,7 @@ function notebookLines(entry, index) {
   // This particular discovery puzzle has a picture-first comic. The paper
   // framework needs a short line to pace the pencil but must not narrate the
   // equation or write out the multiplication in front of the students.
-  if(currentLevel().groupedPrototype){
+  if(reviewLevel().groupedPrototype){
     const cue=index===0?"▣":entry.action?.op==="unpack"
       ?"▣    ●    ◆":"⚖";
     return [{type:"operation",text:cue}];
@@ -2235,7 +2244,7 @@ function processReplayEvent(event) {
       updateReplayEndNote();
       break;
   }
-  if(currentLevel().groupedPrototype)$("writing-status").textContent="";
+  if(reviewLevel().groupedPrototype)$("writing-status").textContent="";
 }
 function tickReplay(timestamp) {
   replayFrame = null;
@@ -2273,15 +2282,22 @@ function tickReplay(timestamp) {
 function updateReplayEndNote() {
   const ready = replayIndex === replayEntries.length - 1 &&
     (replayPanelFinished || reducedMotion);
-  if(ready&&campaignLevelNumber!==null&&!$("replay-backdrop").hidden)
+  if(ready&&(externalReview?!externalReview.context.freePlay:campaignLevelNumber!==null)&&!$("replay-backdrop").hidden)
     window.dispatchEvent(new Event("mathssprites:reward-review-ready"));
   const note = $("replay-end-note");
+  if(externalReview){
+    const context=externalReview.context;
+    note.hidden=!ready;
+    if(ready)note.textContent=context.freePlay?"Your equation balanced · exact fractions, no campaign credit.":
+      "Level "+context.number+" solved · keep exploring!";
+    return;
+  }
   note.hidden = !ready || campaignLevelNumber === null;
   if(ready&&currentLevel().squareLaboratory){
     note.hidden=false;
     const built=state.goal==="area";
     const rootUsed=state.history.some(tx=>tx.action?.op==="sqrt");
-    note.textContent=(built?"Both entire expressions were squared. ":
+    note.textContent=(campaignLevelNumber!==null?"Level "+campaignLevelNumber+" solved · ":"")+(built?"Both entire expressions were squared. ":
       "The isolated round sprite gives its weight. ")+
       (rootUsed?"Sprite weights are nonnegative, so the hand takes the principal square root. ":"")+
       (campaignLevelNumber===24&&campaignStage==="guided"?"Return to the board to review your Guided Squares progress.":
@@ -2333,7 +2349,7 @@ function drawReplay(index, { animate = !reducedMotion, complete = false } = {}) 
     ? buildWritingTimeline(lines, { opening: replayIndex === 0,pace })
     : { events: [], durationMs: complete ? 0 : 3900 };
   $("pencil").hidden = true;
-  $("writing-status").textContent = currentLevel().groupedPrototype?"":complete
+  $("writing-status").textContent = reviewLevel().groupedPrototype?"":complete
     ? "This panel's algebra is fully written."
     : reducedMotion ? "Complete algebra shown, without animation."
     : replayIndex === 0 ? "The pencil is about to reveal the hidden equation..."
@@ -2341,7 +2357,7 @@ function drawReplay(index, { animate = !reducedMotion, complete = false } = {}) 
   $("replay-progress").textContent = "Panel " + (replayIndex + 1) + " of " + replayEntries.length;
   $("replay-back").disabled = replayIndex === 0;
   $("replay-next").disabled = replayIndex >= replayEntries.length - 1;
-  $("next-level").textContent = squarePreviewActive?"Back to levels →":workshopActive?"Build another equation →":
+  $("next-level").textContent = externalReview?(externalReview.context.freePlay?"Build another equation →":externalReview.context.number===externalReview.context.stageLength?"Back to level map →":"Next level →"):squarePreviewActive?"Back to levels →":workshopActive?"Build another equation →":
     campaignLevelNumber !== null
     ? (campaignLevelNumber===campaignStageLevelCount
         ?"Back to level map →":"Next level →")
@@ -2360,8 +2376,9 @@ function drawReplay(index, { animate = !reducedMotion, complete = false } = {}) 
 function showReplay() {
   if (!isSolved(state)) return;
   stopReplay();
-  replayEntries = [{ after: state.history[0]?.before || { left: state.left, right: state.right } },
-    ...state.history.map(entry => ({ ...entry }))];
+  externalReview=null;
+  replayEntries=storyEntries(state);
+  $("replay-backdrop").removeAttribute("data-story-world");
   $("replay-level-stamp").textContent = workshopActive?"YOUR EQUATION · FREE PLAY":
     campaignLevelNumber===null
     ? "THE EXPERIMENT REVEALED"
@@ -2377,14 +2394,42 @@ function showReplay() {
   setReplayPaused(false);
   $("replay-close").focus();
 }
-function hideReplay() {
+function hideReplay({restoreFocus=true}={}) {
   stopReplay();
   $("replay-backdrop").hidden = true;
   $("pencil").hidden = true;
   setReplayPaused(true);
-  $("watch-again")?.focus();
+  if(restoreFocus){
+    if(externalReview)externalReview.restoreFocus?.();
+    else if(notebookSession&&notebookPhase==="complete")$("notebook-story").focus();
+    else $("watch-again")?.focus();
+  }
   window.dispatchEvent(new Event("mathssprites:reward-review-closed"));
 }
+// A verified fractional transaction log is already exact. Do not import
+// it into the main scene, or dispatch another solved event while reviewing.
+window.addEventListener("mathssprites:review-fraction",event=>{
+  const detail=event.detail;
+  if(!detail?.state||!isSolved(detail.state)||!detail.state.history.length)return;
+  stopReplay();externalReview=detail;
+  replayEntries=storyEntries(detail.state);
+  const {context}=detail;
+  $("replay-backdrop").dataset.storyWorld="fractions";
+  $("replay-level-stamp").textContent=context.freePlay?"YOUR EQUATION · FREE PLAY":
+    "WORLD "+context.worldNumber+" · STAGE "+context.stageNumber+" · LEVEL "+
+    String(context.number).padStart(2,"0")+" / "+context.stageLength+" · BALANCE RESTORED";
+  $("journal-legend").textContent="● whole sprite = x   ·   ◆ whole weight = 1   ·   equal pieces show exact fractions";
+  $("replay-star-summary").textContent=detail.rating||"";
+  $("replay-star-summary").hidden=!detail.rating;
+  $("replay-backdrop").hidden=false;
+  setReplayPaused(true);drawReplay(0);setReplayPaused(false);
+  $("replay-close").focus();
+});
+window.addEventListener("mathssprites:clear-fraction-review",()=>{
+  if(!externalReview)return;
+  if(!$("replay-backdrop").hidden)hideReplay({restoreFocus:false});
+  externalReview=null;$("replay-backdrop").removeAttribute("data-story-world");
+});
 function replaySeek(offset) {
   setReplayPaused(true);
   // Manual next/previous shows a *complete* panel so students can study it.
@@ -2615,6 +2660,7 @@ $("replay-speed").addEventListener("change", event => {
 });
 document.addEventListener("visibilitychange", () => { replayLastFrame = null; });
 $("next-level").addEventListener("click", () => {
+  if(externalReview){const advance=externalReview.advance;hideReplay({restoreFocus:false});advance?.();return;}
   if(squarePreviewActive){leaveGame("levels");return;}
   if(workshopActive){
     hideReplay();
@@ -2804,6 +2850,7 @@ $("notebook-back-paper").addEventListener("click",()=>{
   $("notebook-replay").focus({preventScroll:true});
 });
 $("notebook-watch-again").addEventListener("click",replayNotebookWithSprites);
+$("notebook-story").addEventListener("click",()=>{if(!busy&&notebookReplaySuccessful&&notebookPhase==="complete")showReplay();});
 $("notebook-next").addEventListener("click",()=>{
   if(busy||!notebookReplaySuccessful||notebookPhase!=="complete")return;
   if(workshopActive){window.dispatchEvent(new Event("mathssprites:workshop-another"));return;}
@@ -2865,7 +2912,7 @@ $("game-levels").addEventListener("click", () => leaveGame("levels"));
 document.addEventListener("keydown", event => {
   if(event.key==="Escape"&&inspectionSession){event.preventDefault();closeSquareInspection({focus:true});return;}
   if (event.key === "Escape" && !$("replay-backdrop").hidden) { hideReplay(); return; }
-  if (event.altKey && event.key.toLowerCase() === "z" && !notebookSession && !busy && $("replay-backdrop").hidden) {
+  if (event.altKey && event.key.toLowerCase() === "z" && !$("game-shell").hidden && !notebookSession && !busy && $("replay-backdrop").hidden) {
     state = undo(state); render();
   }
 });
