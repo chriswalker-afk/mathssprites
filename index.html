@@ -42,12 +42,14 @@
   <link rel="stylesheet" href="./src/weight-effects.css?v=94" />
   <link rel="stylesheet" href="./src/chamber-themes.css?v=97" />
   <link rel="stylesheet" href="./src/campaign-path.css?v=98" />
-  <script type="module" src="./src/app.mjs?v=92"></script>
-  <script type="module" src="./src/site.mjs?v=102"></script>
+  <script type="module" src="./src/app.mjs?v=103"></script>
+  <script type="module" src="./src/site.mjs?v=103"></script>
   <link rel="stylesheet" href="./src/compact-level-board.css?v=99" />
   <link rel="stylesheet" href="./src/menu-demonstrations.css?v=100" />
   <link rel="stylesheet" href="./src/menu-usability.css?v=101" />
   <link rel="stylesheet" href="./src/scene-grounding.css?v=102" />
+  <link rel="stylesheet" href="./src/route-guide.css?v=103" />
+  <link rel="stylesheet" href="./src/board-switchers.css?v=103" />
 </head>
 <body>
   <div class="site-shell" id="site-shell">
@@ -276,11 +278,13 @@
     </main>
     <main class="site-page" id="site-levels" hidden>
       <nav class="campaign-path" aria-label="Campaign selection">
-        <button type="button" class="site-back-link" data-screen="worlds">← Change world</button>
-        <button type="button" id="site-back" class="site-back-link">← Change learning method</button>
+        <div class="board-switchers">
+          <div class="board-choice"><label for="board-world">World</label><select id="board-world"></select><button type="button" class="site-back-link" data-screen="worlds" aria-label="Explore world introductions">Explore</button></div>
+          <div class="board-choice"><label for="board-method">Learn</label><select id="board-method"></select><button type="button" id="site-back" class="site-back-link" aria-label="Explore learning method introductions">Explore</button></div>
+        </div>
         <span class="menu-path-steps campaign-step"><span>1 World</span><span>2 Method</span><span aria-current="step">3 Level</span></span>
       </nav>
-      <p id="board-keyboard-note" class="visually-hidden">Use Tab to enter the level grid, then arrow keys to move between numbers. Press Enter or Space to select a level, then Tab to Play level to start. Change world or learning method using the links above.</p>
+      <p id="board-keyboard-note" class="visually-hidden">Use Tab to enter the level grid, then arrow keys to move between numbers. Press Enter or Space to select a level, then Tab to Play level to start. Change world or learning method using the selectors above. Explore opens the introductory choices.</p>
       <span id="board-selection-status" class="visually-hidden" role="status" aria-live="polite" aria-atomic="true"></span>
       <div class="portal-heading">
         <div><div id="levels-stage-kicker" class="portal-kicker">WORLD 01 · STAGE 1 · POSITIVE WHOLE NUMBERS</div>
@@ -349,11 +353,13 @@
         <h2 tabindex="-1">Settings</h2>
         <div class="settings-list" role="group" aria-label="Learning preferences">
           <label class="settings-option"><input id="site-guided-help" type="checkbox" checked />
-            <span><strong>First-visit guide</strong><small>Show step-by-step help on the first level.</small></span></label>
+            <span><strong>First-visit guide</strong><small>Show help on your first visit to each world and learning method. Switching this back on resets your guide history.</small></span></label>
           <label class="settings-option"><input id="teacher-unlock" type="checkbox" />
             <span><strong>Teacher tools</strong><small>Extra previews; all student levels are already open.</small></span></label>
         </div>
         <div class="settings-actions" role="group" aria-label="Replay stage introductions">
+          <button type="button" class="secondary-btn" id="site-reset-guides">Show all guides again on next visit</button>
+          <span id="site-guide-status" class="visually-hidden" role="status" aria-live="polite"></span>
           <button type="button" class="secondary-btn" id="site-replay-intro">Replay Guided introduction</button>
           <button type="button" class="secondary-btn" id="site-replay-independent" hidden>Replay Independent introduction</button>
         </div>

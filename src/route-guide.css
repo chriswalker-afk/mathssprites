@@ -1,0 +1,14 @@
+/* Small, inline route help; the existing physical coach is unchanged. */
+.route-guide{min-width:0;max-width:100%;font-family:"Trebuchet MS","Segoe UI",sans-serif}
+.route-guide [hidden]{display:none!important}
+.route-guide .route-guide-content{border:1px solid #a98e60;border-left:3px solid #dcc28a;border-radius:7px;background:#223832;padding:7px 9px;color:#ece3cd}
+.route-guide .route-guide-heading{display:flex;justify-content:space-between;align-items:baseline;gap:6px;line-height:1.2}
+.route-guide .route-guide-title{color:#f1d7a2;font:600 .8rem/1.2 system-ui,sans-serif}
+.route-guide .route-guide-step{color:#b5c9bd;font-size:.65rem;white-space:nowrap}
+.route-guide .route-guide-message{font:400 .72rem/1.35 system-ui,sans-serif!important;margin:4px 0!important;color:#e0e7dc}
+.route-guide .route-guide-actions{display:flex;justify-content:flex-end;flex-wrap:wrap;gap:5px}
+.route-guide button,.fb-campaign .fb-tools .route-guide button,.fb-campaign .route-guide button{min-height:28px!important;padding:3px 8px!important;font-size:.7rem!important;line-height:1.15;border:1px solid #82978a;border-radius:5px;background:#30463e;color:#eadfca;cursor:pointer}
+.route-guide [data-guide-action="next"]{border-color:#d3b278;background:#615334;color:#fff0c9}
+.route-guide .route-guide-reopen{font-size:.67rem!important;min-height:26px!important;padding:2px 6px!important}
+.route-guide button:focus-visible{outline:2px solid #f1d5a0;outline-offset:2px}
+@media(max-width:760px){.route-guide button,.fb-campaign .route-guide button{min-height:44px!important}}
