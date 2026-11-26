@@ -45,6 +45,11 @@ test("menu artwork is separated from the engine and its required controls",()=>{
   assert.match(html,/id="workshop-equation"/);
   for(const name of ["foyer-ambient","board-etching"])
     assert.match(css,new RegExp(name+"\\.svg"));
-  assert.ok(html.includes("inventors-desk.svg"));
+  // PR107 replaces the static desk illustration with a live chamber preview.
+  assert.match(html,/workshop-builder\.css\?v=107/);
+  for(const id of ["workshop-west-inventory","workshop-east-inventory","workshop-create"])
+    assert.ok(html.includes('id="'+id+'"'),"Workshop preview and build controls remain present");
+  const builderCss=readFileSync(new URL("../src/workshop-builder.css",import.meta.url),"utf8");
+  assert.doesNotMatch(builderCss,/#(?:scene|rooms-row|scale-beam|left-action|right-action)\b/);
   assert.doesNotMatch(css,/#(?:scene|rooms-row|scale-beam|left-action|right-action)\b/);
 });

@@ -14,6 +14,7 @@ import {applyLaboratoryAppearance} from "./laboratory-cosmetics.mjs?v=96";
 import {mountSpriteAtelier} from "./sprite-atelier.mjs?v=96";
 import {mountRewardCelebration} from "./reward-celebration.mjs?v=105";
 import {createWorkshopEquation,WORKSHOP_EXAMPLES} from "./equation-workshop.mjs?v=82";
+import {workshopPreview,workshopInventoryMarkup} from "./workshop-preview.mjs?v=107";
 import {createSignedWorkshopEquation,SIGNED_WORKSHOP_EXAMPLES} from "./signed-workshop.mjs?v=82";
 import {createFractionWorkshopEquation,FRACTION_WORKSHOP_EXAMPLES} from "./fraction-workshop.mjs";
 import {createSquareWorkshopEquation,SQUARE_WORKSHOP_EXAMPLES,SQUARE_BUILD_EXAMPLES} from "./square-workshop.mjs";
@@ -456,6 +457,7 @@ function showScreen(name,{focusHeading=true}={}) {
   }
   if(name==="workshop"){
     $("workshop-back").textContent="← Back to "+(workshopReturnScreen==="levels"?"levels":"home");
+    syncWorkshopChoices();renderWorkshopPreview();
   }
   if (name === "settings") renderSettings();
   if(name==="help"||name==="settings"){
@@ -575,8 +577,6 @@ function setWorkshopQuantity(quantity){
   const build=squares&&$("workshop-square-goal").value==="area";
   $("workshop-lesson-copy").textContent=signed?"Black sprite = x, white sprite = −x, weight = +1, balloon = −1. Opposite objects cancel.":squares?"Round sprites represent x and square sprites represent x².":fractions?"Sprites and weights can be divided into exact fractional pieces.":"x means a sprite; each number counts brass weights. The hand acts on both rooms.";
   $("workshop-equation").placeholder=squares?(build?"e.g. x + 1 = 4":"e.g. x² + 4x = 21"):fractions?"e.g. (2/3)x = 4":signed?"e.g. 2x − 3 = x + 4":"e.g. 3x + 5 = 20";
-  $("workshop-west-example").textContent=squares?(build?"1 round sprite + 1 weight":"1 square sprite + 4 round sprites"):fractions?"2 sprites":signed?"2 black sprites + 3 balloons":"3 sprites + 5 weights";
-  $("workshop-east-example").textContent=squares?(build?"4 weights":"21 weights"):fractions?"5 weights":signed?"1 black sprite + 4 weights":"20 weights";
   $("workshop-rule-copy").textContent=squares
     ?(build?"Enter a positive whole-object linear balance with at most six markers on each side. Square the whole expression in each chamber. The mystery weight must be a unique positive integer from 1 to 48."
       :"Use whole nonnegative terms such as x², 2x and 3. The equation must have a unique positive integer weight from 1 to 48 on x ≥ 0. Each room holds at most 48 objects; square roots must recover complete whole sides. A route of at most 16 legal moves must be verified.")
@@ -591,9 +591,33 @@ function setWorkshopQuantity(quantity){
     button.dataset.workshopExample=value;button.textContent=value;return button;
   }));
   workshopStatus("Enter an equation to check it.");
+  syncWorkshopChoices();renderWorkshopPreview();
 }
 $("workshop-quantity-mode").addEventListener("change",()=>setWorkshopQuantity($("workshop-quantity-mode").value));
 $("workshop-square-goal").addEventListener("change",()=>setWorkshopQuantity("squares"));
+function syncWorkshopChoices(){
+  const quantity=$("workshop-quantity-mode").value,method=$("workshop-hand-mode").value;
+  $("site-workshop").dataset.quantityMode=quantity;
+  for(const button of $("site-workshop").querySelectorAll("[data-workshop-choice]"))
+    button.setAttribute("aria-pressed",String(button.dataset.workshopChoice===quantity));
+  for(const button of $("site-workshop").querySelectorAll("[data-workshop-method]")){
+    const value=button.dataset.workshopMethod,option=$("workshop-hand-mode").querySelector('option[value="'+value+'"]');
+    button.hidden=!!option?.disabled;button.disabled=!!option?.disabled;
+    button.setAttribute("aria-pressed",String(value===method));
+  }
+}
+function renderWorkshopPreview(){
+  const result=workshopPreview($("workshop-equation").value,$("workshop-quantity-mode").value,$("workshop-square-goal").value);
+  const board=$("site-workshop").querySelector(".workshop-preview-board");
+  board.dataset.previewState=result.status;
+  $("workshop-preview-caption").textContent=result.status==="example"?"Example balance · type your own equation":result.status==="draft"?"Chamber preview · checked when you build":"Waiting for a complete equation";
+  for(const [side,name] of [["left","west"],["right","east"]]){
+    const items=result[side]||[];
+    $("workshop-"+name+"-inventory").innerHTML=workshopInventoryMarkup(items);
+    $("workshop-"+name+"-example").textContent=result.status==="incomplete"?"—":items.length?items.map(i=>i.label).join(" + "):"Empty chamber";
+  }
+}
+$("workshop-hand-mode").addEventListener("change",syncWorkshopChoices);
 function launchWorkshopScene(level,handMode){
   const fractions=level?.quantityMode==="fractions";
   const signed=level?.quantityMode==="signed"&&!level.lockPositive;
@@ -644,14 +668,20 @@ $("workshop-form").addEventListener("submit",event=>{
   launchWorkshopScene(result.level,$("workshop-hand-mode").value);
 });
 $("workshop-form").addEventListener("click",event=>{
+  const choice=event.target.closest("[data-workshop-choice]");
+  if(choice){setWorkshopQuantity(choice.dataset.workshopChoice);return;}
+  const method=event.target.closest("[data-workshop-method]");
+  if(method&&!method.disabled){$("workshop-hand-mode").value=method.dataset.workshopMethod;syncWorkshopChoices();return;}
   const example=event.target.closest("[data-workshop-example]");
   if(!example)return;
   $("workshop-equation").value=example.dataset.workshopExample;
   workshopStatus("Example ready. Choose how the hand moves.");
+  renderWorkshopPreview();
   $("workshop-equation").focus();
 });
 $("workshop-equation").addEventListener("input",()=>{
-  $("workshop-equation").setAttribute("aria-invalid","false");
+  workshopStatus("Enter an equation to check it.");
+  renderWorkshopPreview();
 });
 window.addEventListener("mathssprites:workshop-another",()=>showScreen("workshop"));
 

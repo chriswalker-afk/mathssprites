@@ -14,7 +14,7 @@ export const GROUP_SPECS=Object.freeze({
   visual:Object.freeze(["e2e/menu-demonstrations.spec.mjs","e2e/cosmetic-release-qa.spec.mjs","e2e/chamber-themes.spec.mjs","e2e/weight-effects.spec.mjs","e2e/weight-shapes.spec.mjs","e2e/weight-materials.spec.mjs","e2e/sprite-cosmetics.spec.mjs","e2e/fraction-sprite-preview.spec.mjs","e2e/fraction-weight-preview.spec.mjs","e2e/menu-polish-visual.spec.mjs","e2e/portal-art.spec.mjs","e2e/home-hero.spec.mjs"]),
   notebook:Object.freeze(["e2e/apprentice-workspace.spec.mjs","e2e/fraction-workshop.spec.mjs","e2e/fraction-notebook-campaign.spec.mjs","e2e/notebook-operation-editor.spec.mjs","e2e/notebook-first.spec.mjs","e2e/equation-workshop.spec.mjs","e2e/apprentice-campaign.spec.mjs","e2e/square-notebook-campaign.spec.mjs","e2e/square-workshop.spec.mjs","e2e/replay-writing.spec.mjs"]),
   signed:Object.freeze(["e2e/opposites-world.spec.mjs","e2e/world2-difficulty-pass.spec.mjs","e2e/signed-objects.spec.mjs","e2e/starting-zero-pairs.spec.mjs","e2e/future-world-runtime.spec.mjs"]),
-  layout:Object.freeze(["e2e/scene-grounding.spec.mjs","e2e/adaptive-viewport.spec.mjs","e2e/viewport-fit.spec.mjs","e2e/six-chapter-layout.spec.mjs","e2e/weight-piles.spec.mjs","e2e/motion-notice.spec.mjs","e2e/scene-polish.spec.mjs","e2e/fraction-presentation.spec.mjs"]),
+  layout:Object.freeze(["e2e/workshop-builder.spec.mjs","e2e/scene-grounding.spec.mjs","e2e/adaptive-viewport.spec.mjs","e2e/viewport-fit.spec.mjs","e2e/six-chapter-layout.spec.mjs","e2e/weight-piles.spec.mjs","e2e/motion-notice.spec.mjs","e2e/scene-polish.spec.mjs","e2e/fraction-presentation.spec.mjs"]),
   physics:Object.freeze(["e2e/fraction-balance-preview.spec.mjs","e2e/division-baskets.spec.mjs","e2e/multiplication-baskets.spec.mjs","e2e/star-ratings.spec.mjs","e2e/independent-balance.spec.mjs"]),
   controls:Object.freeze(["e2e/neutral-starting-controls.spec.mjs","e2e/operation-first-zero-pair.spec.mjs"]),
   motion:Object.freeze(["e2e/animations.spec.mjs","e2e/sprite-idle.spec.mjs","e2e/sprite-reactions.spec.mjs","e2e/hand-art.spec.mjs"]),
@@ -26,6 +26,7 @@ const ALL=Object.freeze(Object.keys(GROUP_SPECS));
 // Keep source dependencies here; a spec belongs to exactly one primary
 // group, with deliberately broader routing for cross-feature weight piles.
 const RULES=Object.freeze([
+  [/^src\/workshop-(?:builder\.css|preview\.mjs)$/,["layout","navigation","notebook"]],
   [/^src\/apprentice-workspace\.css$/ ,["notebook","layout"]],
   [/^src\/completion-story\.(?:mjs|css)$/,["area","layout","navigation","notebook"]],
   [/^src\/(?:route-guide\.mjs|route-guide\.css|board-switchers\.css)$/,["navigation","layout","notebook"]],
