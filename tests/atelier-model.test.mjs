@@ -4,6 +4,7 @@ import {atelierCollection,atelierFilters,atelierPreview,atelierRewardState,rewar
 import {COSMETIC_REWARDS,cosmeticCollection,findCosmeticReward,originalAppearance} from "../src/cosmetic-catalog.mjs";
 import {createCosmeticRewards,COSMETIC_SAVE_KEY} from "../src/cosmetic-rewards.mjs";
 import {blankCampaignRecords} from "../src/campaign-records.mjs";
+import {IMPLEMENTED_CHAMBER_THEMES} from "../src/chamber-themes.mjs";
 const reward=id=>findCosmeticReward(id);
 const snapshot=(earnedStars=0,unlockedRewards=[],equipped={})=>({earnedStars,unlockedRewards,equipped:{...originalAppearance(),...equipped}});
 test("all 57 milestones remain visible and category/owned filtering uses actual entitlements",()=>{
@@ -29,7 +30,7 @@ test("owned, locked and equipped states cover the complete collection; missing-a
   assert.equal(atelierRewardState(saved,reward("distinguished-eyebrows")).status,"locked");
   assert.equal(atelierRewardState(saved,reward("distinguished-eyebrows"),[]).status,"locked-coming");
   assert.ok(COSMETIC_REWARDS.filter(r=>cosmeticCollection(r)==="sprites").every(r=>rewardArtReady(r)));
-  assert.ok(COSMETIC_REWARDS.filter(r=>cosmeticCollection(r)!=="sprites"&&!["weight-material","weight-shape","weight-effect"].includes(r.slot)).every(r=>!rewardArtReady(r)));
+  assert.ok(COSMETIC_REWARDS.filter(r=>cosmeticCollection(r)!=="sprites"&&!["weight-material","weight-shape","weight-effect"].includes(r.slot)&&!IMPLEMENTED_CHAMBER_THEMES.includes(r.id)).every(r=>!rewardArtReady(r)));
   assert.equal(rewardArtReady(reward("grand-alchemist")),true);
   assert.equal(rewardArtReady(reward("grand-alchemist"),Object.values(reward("grand-alchemist").loadout)),true);
 });
@@ -124,7 +125,8 @@ test("three collections filter separately and forthcoming art is owned but canno
   const before=map.get(COSMETIC_SAVE_KEY);
   assert.ok(COSMETIC_REWARDS.filter(r=>r.slot==="weight-shape").every(r=>rewardArtReady(r)));
   assert.equal(equipAtelierReward(store,"kettlebell").code,"locked");
-  assert.equal(equipAtelierReward(store,"clockmakers-workshop").code,"art-unavailable");
+  assert.equal(atelierRewardState(saved,reward("clockmakers-workshop")).status,"available");
+  assert.equal(equipAtelierReward(store,"scholars-library").code,"locked");
   assert.equal(equipAtelierReward(store,"copper").code,"locked");
   assert.equal(map.get(COSMETIC_SAVE_KEY),before);
   assert.deepEqual(atelierPreview(saved,"copper"),{...saved.equipped,"weight-material":"copper"});
@@ -134,6 +136,8 @@ test("three collections filter separately and forthcoming art is owned but canno
   assert.equal(store.getSnapshot().equipped["weight-shape"],"dumbbell");
   assert.equal(store.getSnapshot().equipped["weight-material"],"polished-steel");
   assert.equal(store.getSnapshot().equipped.fur,"extra-fluffy");
+  assert.equal(equipAtelierReward(store,"clockmakers-workshop").ok,true);
+  assert.equal(store.getSnapshot().equipped["chamber-theme"],"clockmakers-workshop");
 });
 
 test("five weight effects are independent try-ons; unavailable chamber art remains guarded",()=>{
@@ -153,4 +157,28 @@ test("five weight effects are independent try-ons; unavailable chamber art remai
   assert.deepEqual(store.getSnapshot().equipped,{...saved.equipped,"weight-effect":"soft-glow"});
   assert.equal(store.equip("weight-effect",null).ok,true);
   assert.deepEqual(store.getSnapshot().equipped,saved.equipped);
+});
+
+test("five chamber artworks are ready; remaining owned themes stay pending; restore is independent",()=>{
+  const equipped={fur:"extra-fluffy","weight-shape":"dumbbell","weight-material":"copper","weight-effect":"soft-glow"};
+  const owned=["clockmakers-workshop","frostbound-vault","extra-fluffy","dumbbell","copper","soft-glow"];
+  const saved=snapshot(24,owned,equipped);
+  for(const id of IMPLEMENTED_CHAMBER_THEMES){
+    assert.equal(rewardArtReady(reward(id)),true);
+    assert.deepEqual(atelierPreview(saved,id),{...saved.equipped,"chamber-theme":id});
+    assert.equal(atelierRewardState(saved,reward(id)).canEquip,id==="clockmakers-workshop");
+  }
+  assert.equal(atelierRewardState(saved,reward("frostbound-vault")).status,"owned-coming");
+  assert.deepEqual(atelierPreview(saved,"frostbound-vault"),saved.equipped);
+  const map=new Map([[COSMETIC_SAVE_KEY,JSON.stringify({version:1,unlockedRewards:owned,equipped})]]);
+  const storage={getItem:k=>map.get(k),setItem:(k,v)=>map.set(k,v)};
+  let store=createCosmeticRewards(blankCampaignRecords(),{storage});
+  const before=map.get(COSMETIC_SAVE_KEY);
+  assert.equal(equipAtelierReward(store,"frostbound-vault").code,"art-unavailable");
+  assert.equal(map.get(COSMETIC_SAVE_KEY),before);
+  assert.equal(equipAtelierReward(store,"clockmakers-workshop").ok,true);
+  store=createCosmeticRewards(blankCampaignRecords(),{storage});
+  assert.deepEqual(store.getSnapshot().equipped,{...saved.equipped,"chamber-theme":"clockmakers-workshop"});
+  assert.deepEqual(store.restoreOriginal("chambers").snapshot.equipped,saved.equipped);
+  assert.deepEqual(new Set(store.getSnapshot().unlockedRewards),new Set(owned));
 });

@@ -325,6 +325,8 @@ test("the expanded Atelier has three independent collections, clear pending art 
   await expect(visibleRewards(page)).toHaveCount(10);
   await expect(page.locator(".atelier-chamber-stage")).toBeVisible();
   await reward(page,"clockmakers-workshop").click();
+  await expect(page.locator("#atelier-preview")).toHaveAttribute("data-chamber-theme","clockmakers-workshop");
+  await expect(reward(page,"clockmakers-workshop").locator(".atelier-chamber-thumbnail")).toBeVisible();
   await expect(page.locator("#atelier-equip")).toBeDisabled();
   await expect(page.locator("#atelier-detail-status")).toContainText("12 more stars");
   await tab("sprites").click();

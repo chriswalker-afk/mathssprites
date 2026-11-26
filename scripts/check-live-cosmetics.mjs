@@ -5,6 +5,7 @@ import {readFileSync,mkdirSync,writeFileSync} from "node:fs";
 import {setTimeout as pause} from "node:timers/promises";
 import {COSMETIC_REWARDS,findCosmeticReward,originalAppearance,cosmeticCollection} from "../src/cosmetic-catalog.mjs";
 import {rewardArtReady} from "../src/atelier-model.mjs";
+import {IMPLEMENTED_CHAMBER_THEMES} from "../src/chamber-themes.mjs";
 import {CAMPAIGN_REGISTRY} from "../src/campaign-registry.mjs";
 import {blankCampaignRecords,campaignStarTotals} from "../src/campaign-records.mjs";
 import {clickWithReferenceMove} from "../e2e/reference-move-helper.mjs";
@@ -13,7 +14,7 @@ const revision=process.env.GITHUB_SHA||"manual";
 const result={url,revision,checks:[],errors:[]};
 const note=message=>{result.checks.push(message);console.log(message);};
 const read=path=>readFileSync(new URL("../"+path,import.meta.url),"utf8");
-const files=["index.html","src/site.mjs","src/laboratory-cosmetics.mjs","src/weight-materials.css","src/weight-effects.css","src/weight-shapes.css","src/weight-shapes.mjs","src/fraction-weights.mjs","src/fraction-choreography.mjs","src/cosmetic-catalog.mjs","src/cosmetic-rewards.mjs","src/atelier-model.mjs",
+const files=[...IMPLEMENTED_CHAMBER_THEMES.map(id=>"assets/chambers/"+id+".svg"),"src/chamber-themes.mjs","src/chamber-themes.css","index.html","src/site.mjs","src/laboratory-cosmetics.mjs","src/weight-materials.css","src/weight-effects.css","src/weight-shapes.css","src/weight-shapes.mjs","src/fraction-weights.mjs","src/fraction-choreography.mjs","src/cosmetic-catalog.mjs","src/cosmetic-rewards.mjs","src/atelier-model.mjs",
   "src/sprite-atelier.mjs","src/sprite-atelier.css","src/sprite-cosmetics.mjs","src/sprite-cosmetics.css",
   "src/sprite-wearables.css","src/sprite-effects.css","src/reward-celebration.mjs","src/reward-celebration.css",
   "src/fraction-campaign.mjs","src/fraction-sprites.mjs","src/fraction-balance.mjs","src/square-sprites.mjs",
@@ -131,6 +132,13 @@ try{
   await expect(page.locator("body")).toHaveAttribute("data-weight-effect","golden-halo");
   await expect(page.locator("#atelier-weight-fraction .fw-weight-effect").first()).toHaveCSS("animation-name","none");
   await shot(page,"blue-dumbbell-golden-halo");
+  await page.locator('[data-atelier-collection="chambers"]').click();
+  await reward(page,"midnight-observatory").click();
+  await expect(page.locator("#atelier-preview")).toHaveAttribute("data-chamber-theme","midnight-observatory");
+  await expect(page.locator(".atelier-mini-room").first()).toHaveCSS("background-image",/midnight-observatory\.svg/);
+  await page.locator("#atelier-equip").click();
+  await expect(page.locator("body")).toHaveAttribute("data-chamber-theme","midnight-observatory");
+  await shot(page,"midnight-observatory-gallery");
   await page.reload();await page.locator("#home-atelier").click();
   await expect(page.locator("#atelier-equipped")).toContainText("The Grand Alchemist");
   await expect(page.locator("#reward-celebration")).toBeHidden();
@@ -149,6 +157,8 @@ try{
   };
   await custom("3x-2x+3-5=6","signed");
   await expect(page.locator("#left-items .sprite-black")).toHaveCount(3);
+  await expect(page.locator("#left-chamber .room-interior")).toHaveCSS("background-image",/midnight-observatory\.svg/);
+  await expect(page.locator("#right-chamber .room-interior")).toHaveCSS("background-image",/midnight-observatory\.svg/);
   await expect(page.locator("#left-items .sprite-white")).toHaveCount(2);
   await expect(page.locator("#left-items .sprite-white .sprite-wear-headwear").first()).toBeVisible();
   await shot(page,"signed");
@@ -162,6 +172,9 @@ try{
   await expect(lab).toHaveAttribute("data-weight-material","blue-enamel");
   await expect(lab).toHaveAttribute("data-weight-shape","dumbbell");
   await expect(lab).toHaveAttribute("data-weight-effect","golden-halo");
+  await expect(lab).toHaveAttribute("data-chamber-theme","midnight-observatory");
+  await expect(lab.locator("#left-chamber .room-interior")).toHaveCSS("background-image",/midnight-observatory\.svg/);
+  await expect(lab.locator("#right-chamber .room-interior")).toHaveCSS("background-image",/midnight-observatory\.svg/);
   await expect(lab.locator("#left-items .fw-weight-effect")).toHaveCount(2);
   await expect(lab.locator("#left-items .fw-weight-effect").first()).toHaveCSS("display","inline");
   await expect(lab.locator("#left-items .fw-weight-effect").first()).toHaveCSS("animation-name","none");
@@ -201,6 +214,10 @@ try{
   await expect(page.locator("body")).toHaveAttribute("data-weight-material","original");
   await expect(page.locator("body")).toHaveAttribute("data-weight-shape","original");
   await expect(page.locator("body")).toHaveAttribute("data-weight-effect","original");
+  await expect(page.locator("body")).toHaveAttribute("data-chamber-theme","midnight-observatory");
+  await page.locator('[data-atelier-collection="chambers"]').click();
+  await page.locator("#atelier-restore").click();
+  await expect(page.locator("body")).toHaveAttribute("data-chamber-theme","original");
   const restored=JSON.parse((await saves(page))[profileKey]);
   expect(restored.unlockedRewards).toEqual(COSMETIC_REWARDS.map(r=>r.id));
   expect(Object.values(restored.equipped).every(v=>v===null)).toBe(true);

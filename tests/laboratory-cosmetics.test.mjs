@@ -5,22 +5,24 @@ import {applyLaboratoryAppearance,resolveLaboratoryAppearance,IMPLEMENTED_LABORA
 import {COSMETIC_REWARDS} from "../src/cosmetic-catalog.mjs";
 import {weightAssemblyMarkup,weightPartition,polygonArea,WEIGHT_BODY} from "../src/fraction-weights.mjs";
 import {ALTERNATIVE_WEIGHT_SHAPES} from "../src/weight-shapes.mjs";
+import {IMPLEMENTED_CHAMBER_THEMES} from "../src/chamber-themes.mjs";
 const effects=["soft-glow","frost-shimmer","ember-glow","pearlescent-shimmer","golden-halo"];
 const materials=["polished-steel","copper","blue-enamel","gold","jade-enamel","cast-iron","violet-enamel"];
 test("seven weight materials are ready while other future lab art defaults safely",()=>{
   const attrs=new Map(),scope={getAttribute:k=>attrs.get(k),setAttribute:(k,v)=>attrs.set(k,v)};
   const selected={fur:"extra-fluffy","weight-shape":"dumbbell","weight-material":"copper","weight-effect":"soft-glow","chamber-theme":"clockmakers-workshop"};
-  assert.deepEqual(IMPLEMENTED_LABORATORY_COSMETICS,[...ALTERNATIVE_WEIGHT_SHAPES,...materials,...effects]);
-  assert.deepEqual(resolveLaboratoryAppearance(selected),{"weight-shape":"dumbbell","weight-material":"copper","weight-effect":"soft-glow","chamber-theme":"original"});
+  assert.deepEqual(IMPLEMENTED_LABORATORY_COSMETICS,[...ALTERNATIVE_WEIGHT_SHAPES,...materials,...effects,...IMPLEMENTED_CHAMBER_THEMES]);
+  assert.deepEqual(resolveLaboratoryAppearance(selected),{"weight-shape":"dumbbell","weight-material":"copper","weight-effect":"soft-glow","chamber-theme":"clockmakers-workshop"});
   applyLaboratoryAppearance(scope,selected);
   assert.equal(attrs.get("data-sprite-fur"),"extra-fluffy");
   assert.equal(attrs.get("data-weight-material"),"copper");
   assert.equal(attrs.get("data-weight-shape"),"dumbbell");
   assert.equal(attrs.get("data-weight-effect"),"soft-glow");
-  for(const slot of ["chamber-theme"])assert.equal(attrs.get("data-"+slot),"original");
+  assert.equal(attrs.get("data-chamber-theme"),"clockmakers-workshop");
   applyLaboratoryAppearance(scope,{"weight-material":"unknown"});
   assert.equal(attrs.get("data-weight-material"),"original");
   assert.equal(attrs.get("data-weight-effect"),"original");
+  assert.equal(attrs.get("data-chamber-theme"),"original");
 });
 test("all seven finishes have distinct complete paint palettes; no layout or animation properties",()=>{
   const css=readFileSync(new URL("../src/weight-materials.css",import.meta.url),"utf8");

@@ -1,0 +1,91 @@
+/* PR95: shared architectural artwork, never geometry.
+   Variables reset at every independent scope (body, shadow lab, preview,
+   thumbnail). The original main/fraction artwork is untouched. */
+:where([data-chamber-theme]){
+  --ct-wall:initial;--ct-frame:initial;--ct-top:initial;--ct-trim:initial;
+  --ct-floor:initial;--ct-deep:initial;--ct-ambient:initial;--ct-old-decor:visible;
+}
+[data-chamber-theme="clockmakers-workshop"]{
+  --ct-wall:url("../assets/chambers/clockmakers-workshop.svg?v=95");
+  --ct-frame:#76573a;--ct-top:#b59360;--ct-trim:#ccae7d;
+  --ct-floor:#967349;--ct-deep:#50402e;--ct-ambient:#34362d;
+  --ct-old-decor:hidden;
+}
+[data-chamber-theme="scholars-library"]{
+  --ct-wall:url("../assets/chambers/scholars-library.svg?v=95");
+  --ct-frame:#62483b;--ct-top:#9c7957;--ct-trim:#c7aa7c;
+  --ct-floor:#8b7255;--ct-deep:#483b31;--ct-ambient:#333e35;
+  --ct-old-decor:hidden;
+}
+[data-chamber-theme="midnight-observatory"]{
+  --ct-wall:url("../assets/chambers/midnight-observatory.svg?v=95");
+  --ct-frame:#4b506b;--ct-top:#828cab;--ct-trim:#b0badd;
+  --ct-floor:#78839a;--ct-deep:#3b465b;--ct-ambient:#242c43;
+  --ct-old-decor:hidden;
+}
+[data-chamber-theme="botanical-laboratory"]{
+  --ct-wall:url("../assets/chambers/botanical-laboratory.svg?v=95");
+  --ct-frame:#48634c;--ct-top:#8fae85;--ct-trim:#b7cca0;
+  --ct-floor:#89946f;--ct-deep:#485a42;--ct-ambient:#2c4236;
+  --ct-old-decor:hidden;
+}
+[data-chamber-theme="clockwork-foundry"]{
+  --ct-wall:url("../assets/chambers/clockwork-foundry.svg?v=95");
+  --ct-frame:#57504b;--ct-top:#99897a;--ct-trim:#c0a080;
+  --ct-floor:#827368;--ct-deep:#413a36;--ct-ambient:#383332;
+  --ct-old-decor:hidden;
+}
+/* Specificity covers the separate fraction-campaign background rules.
+   No changes to dimensions, positions, transforms, room z-index or
+   contact/success/failure outlines and shadows. */
+[data-chamber-theme]:not([data-chamber-theme="original"]) .playfield .room-interior,
+.fb-campaign[data-chamber-theme]:not([data-chamber-theme="original"]) .playfield .room-interior{
+  background:var(--ct-wall) center / 100% 100% no-repeat;
+  background-color:var(--ct-ambient);
+  border-color:var(--ct-frame);border-top-color:var(--ct-top);
+}
+:where([data-chamber-theme]) .playfield :is(.room-window,.tiny-shelf){
+  visibility:var(--ct-old-decor,visible);
+}
+[data-chamber-theme]:not([data-chamber-theme="original"]) .playfield .room-arch,
+[data-chamber-theme]:not([data-chamber-theme="original"]) .playfield .room-interior:before{
+  border-color:var(--ct-trim);
+  opacity:.18;
+}
+[data-chamber-theme]:not([data-chamber-theme="original"]) .playfield .room-floor{
+  background:repeating-linear-gradient(90deg,transparent 0 30px,#161a1838 31px 33px),linear-gradient(var(--ct-floor),var(--ct-deep));
+  border-top-color:var(--ct-trim);
+}
+[data-chamber-theme]:not([data-chamber-theme="original"]) :is(.playfield,.fb-board .playfield){
+  background:radial-gradient(ellipse at 50% 25%,var(--ct-frame),transparent 72%),linear-gradient(var(--ct-ambient),#17201e);
+  border-color:var(--ct-frame);
+}
+[data-chamber-theme]:not([data-chamber-theme="original"]) .playfield :is(.scale-pan,.beam-body){
+  background:linear-gradient(var(--ct-top),var(--ct-deep) 43%,var(--ct-frame) 75%,var(--ct-deep));
+  border-color:var(--ct-trim);
+}
+[data-chamber-theme]:not([data-chamber-theme="original"]) .playfield .scale-base{
+  background:linear-gradient(120deg,var(--ct-frame),var(--ct-top) 30%,var(--ct-deep) 75%);
+}
+[data-chamber-theme]:not([data-chamber-theme="original"]) .playfield .workbench{
+  background:repeating-linear-gradient(90deg,transparent 0 165px,#161a1845 166px 169px),linear-gradient(var(--ct-floor),var(--ct-deep) 80%);
+  border-top-color:var(--ct-top);
+}
+[data-chamber-theme]:not([data-chamber-theme="original"]) .playfield .room-name{
+  color:#fff1d0;text-shadow:0 1px 3px #17201e,0 1px 6px #111a18;
+}
+[data-chamber-theme]:not([data-chamber-theme="original"]) .playfield .room-index{color:#e1d5be}
+:where([data-chamber-theme]) .fb-comic-room{border-bottom-color:var(--ct-top,#a47e4b)}
+/* The preview and thumbnail use the exact same SVG and paint tokens, not
+   separate interpretations of the themes. Original keeps its native miniature. */
+:where([data-chamber-theme]) :is(.atelier-mini-room,.atelier-chamber-thumbnail){
+  background:var(--ct-wall,linear-gradient(#466153,#283d34)) center / 100% 100% no-repeat;
+  background-color:var(--ct-ambient,#283d34);
+  border-color:var(--ct-frame,#786347);border-top-color:var(--ct-top,#b09566);
+}
+:where([data-chamber-theme]) .atelier-mini-room>i{visibility:var(--ct-old-decor,visible)}
+:where([data-chamber-theme]) .atelier-mini-room>b{background:linear-gradient(var(--ct-floor,#a18b62),var(--ct-deep,#62563e))}
+:where([data-chamber-theme]) .atelier-mini-beam{background:linear-gradient(var(--ct-top,#cfb281),var(--ct-deep,#765733))}
+:where([data-chamber-theme]) .atelier-chamber-stage{
+  background:radial-gradient(ellipse at 50% 55%,var(--ct-ambient,transparent),transparent 75%);
+}
