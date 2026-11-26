@@ -1,3 +1,4 @@
+import {playCampaignLevel} from "./campaign-menu-helper.mjs";
 import {openCampaignBoard,chooseCampaignStage} from "./campaign-menu-helper.mjs";
 import {test,expect} from "@playwright/test";
 
@@ -7,7 +8,7 @@ test.beforeEach(async({page})=>{
 });
 async function open(page,stage,level){
   await openCampaignBoard(page,"opposites",stage);
-  await page.locator('[data-level="'+level+'"]').click();
+  await playCampaignLevel(page,page.locator('[data-level="'+level+'"]'));
   await expect(page.locator("#chapter-status"))
     .toContainText("LEVEL "+String(level).padStart(2,"0"));
 }
@@ -98,7 +99,7 @@ test("World 2 Apprentice 15 offers a RIGHT expression expansion; new stages keep
   await chooseCampaignStage(page,"notebook");
   await expect(page.locator(".chapter-group")).toHaveCount(4);
   await expect(page.locator(".level-tile")).toHaveCount(16);
-  await page.locator('[data-level="15"]').click();
+  await playCampaignLevel(page,page.locator('[data-level="15"]'));
   await expect(page.locator('[data-notebook-expand="right"]')).toBeVisible();
   await expect(page.locator('[data-notebook-expand="left"]')).toBeHidden();
   await page.locator('[data-notebook-expand="right"]').click();
