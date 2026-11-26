@@ -36,6 +36,6 @@ test("ten chamber architectures have separate local SVG artwork and agreed miles
   // colours; no changes to physical room or hand geometry.
   assert.doesNotMatch(css,/(?:^|[;{]\s*)(?:width|height|top|bottom|left|right|position|transform|translate|padding|margin|border-width|border-radius|animation|z-index|overflow)\s*:/m);
   assert.doesNotMatch(css,/\.room-items|\.giant-hand|\.hand-cargo/);
-  assert.match(read("index.html"),/chamber-themes\.css\?v=96/);
+  assert.match(read("index.html"),/chamber-themes\.css\?v=97/);
   assert.match(read("src/fraction-campaign.mjs"),/"chamber-themes\.css"/);
 });

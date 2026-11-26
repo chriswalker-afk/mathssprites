@@ -105,6 +105,14 @@ export function createCosmeticRewards(initialCampaign,{
     persist(saved);
     return publish(before,newlyUnlocked);
   }
+  // A storage event is an appearance refresh, not a campaign completion.
+  // Merge permanent entitlements and read the latest valid selection;
+  // never write back or enqueue a celebration in response to another tab.
+  function refreshAppearance(){
+    const before=getSnapshot();
+    refreshSaved();
+    return publish(before);
+  }
   function isUnlocked(id){
     const reward=findCosmeticReward(id);
     const item=findCosmeticItem(id);
@@ -152,5 +160,5 @@ export function createCosmeticRewards(initialCampaign,{
   // No subscribers exist at startup: returning students get all earned
   // rewards without a backlog of celebrations or changes to their appearance.
   syncCampaign(initialCampaign);
-  return Object.freeze({getSnapshot,syncCampaign,isUnlocked,equip,equipSet,restoreOriginal,subscribe});
+  return Object.freeze({getSnapshot,syncCampaign,refreshAppearance,isUnlocked,equip,equipSet,restoreOriginal,subscribe});
 }

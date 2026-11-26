@@ -66,15 +66,19 @@ try{
   page.on("pageerror",error=>result.errors.push(String(error)));
   // Also validate the exact versioned dependencies actually requested by
   // this browser, not just individually cache-busted diagnostics.
-  const responses=[];
+  const responses=[],requested=new Set();
+  page.on("requestfailed",req=>{
+    if(new URL(req.url()).origin===new URL(url).origin&&req.failure()?.errorText!=="net::ERR_ABORTED")result.errors.push("Request failed: "+req.url()+" "+req.failure()?.errorText);
+  });
   page.on("response",res=>{
     const u=new URL(res.url());
     if(u.origin!==new URL(url).origin)return;
     const basePath=new URL(url).pathname;
     const f=u.pathname.startsWith(basePath)?u.pathname.slice(basePath.length):u.pathname.slice(1);
-    if(expected.has(f)&&res.status()===200)responses.push(res.text().then(body=>{
+    if(expected.has(f)&&res.status()>=400)result.errors.push("Asset response "+res.status()+": "+f+u.search);
+    if(expected.has(f)&&res.status()===200){requested.add(f);responses.push(res.text().then(body=>{
       if(body!==expected.get(f))result.errors.push("Browser loaded stale asset: "+f+u.search);
-    }).catch(error=>result.errors.push("Could not inspect "+f+": "+error)));
+    }).catch(error=>result.errors.push("Could not inspect "+f+": "+error)));}
   });
   await context.addInitScript(records=>{
     if(localStorage.getItem("mathssprites.campaign.v2")===null)localStorage.setItem("mathssprites.campaign.v2",JSON.stringify(records));
@@ -238,6 +242,7 @@ try{
   expect(restored.unlockedRewards).toEqual(COSMETIC_REWARDS.map(r=>r.id));
   expect(Object.values(restored.equipped).every(v=>v===null)).toBe(true);
   await Promise.all(responses);
+  for(const f of ["src/site.mjs","src/cosmetic-rewards.mjs","src/laboratory-cosmetics.mjs","src/chamber-themes.css","src/fraction-campaign.mjs","src/fraction-weights.mjs",...IMPLEMENTED_CHAMBER_THEMES.map(id=>"assets/chambers/"+id+".svg")])expect(requested.has(f),"Browser actually loaded "+f).toBe(true);
   expect(result.errors).toEqual([]);
   note("Restore preserves stars and entitlements; versioned browser assets match and no uncaught errors");
   await context.close();
