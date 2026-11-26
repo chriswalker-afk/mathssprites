@@ -56,7 +56,7 @@ test("real baskets fall EMPTY, receive the original tokens, and are carried away
 test("five-basket division on a phone keeps every basket inside its moving chamber",async({page})=>{
   test.setTimeout(75000);
   await page.setViewportSize({width:390,height:844});
-  await page.evaluate(()=>localStorage.setItem("mathssprites.cosmetics.v1",JSON.stringify({version:1,unlockedRewards:["copper"],equipped:{"weight-material":"copper"}})));
+  await page.evaluate(()=>localStorage.setItem("mathssprites.cosmetics.v1",JSON.stringify({version:1,unlockedRewards:["copper","dumbbell"],equipped:{"weight-material":"copper","weight-shape":"dumbbell"}})));
   await page.goto("/?preview=five-baskets");
   await clickWithReferenceMove(page,"#do-both");
   const west=page.locator("#left-items .division-stage");
@@ -78,6 +78,7 @@ test("five-basket division on a phone keeps every basket inside its moving chamb
     weights:n.querySelectorAll(".weight").length
   })))).toEqual(Array.from({length:5},()=>({sprites:1,weights:2})));
   await expect(west.locator(".basket-contents .weight").first()).toHaveCSS("background-image",/rgb\(242, 185, 142\)/);
+  await expect(west.locator(".basket-contents .weight").first()).toHaveCSS("clip-path",/polygon\(evenodd,/);
   await page.screenshot({path:"artifacts/pr25-five-baskets-phone.png"});
   await expect(page.locator("#left-items .floor-track > .sprite-black")).toHaveCount(1,{timeout:23000});
   await expect(page.locator("#left-items .floor-track > .weight")).toHaveCount(2);

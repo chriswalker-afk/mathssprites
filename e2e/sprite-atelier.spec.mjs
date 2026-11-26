@@ -314,9 +314,9 @@ test("the expanded Atelier has three independent collections, clear pending art 
   await expect(page.locator("#atelier-preview")).toHaveAttribute("data-weight-material","polished-steel");
   await page.locator("#atelier-filter").selectOption("weight-shape");
   await reward(page,"dumbbell").click();
-  await expect(reward(page,"dumbbell")).toHaveAttribute("data-status","owned-coming");
-  await expect(page.locator("#atelier-equip")).toBeDisabled();
-  await expect(page.locator("#atelier-detail-copy")).toContainText("Artwork coming soon");
+  await expect(reward(page,"dumbbell")).toHaveAttribute("data-status","available");
+  await expect(page.locator("#atelier-equip")).toBeEnabled();
+  await expect(page.locator("#atelier-preview")).toHaveAttribute("data-weight-shape","dumbbell");
   await page.locator("#atelier-owned-only").check();
   await expect(visibleRewards(page)).toHaveCount(1);
   await tab("chambers").click();
@@ -372,7 +372,7 @@ test("all seven material swatches and exact fractional previews match; locked tr
   await expect(page.locator("#atelier-equipped")).toContainText("Polished steel");
   await page.locator("#atelier-back").click();await page.reload();await open(page);
   await page.locator('[data-atelier-collection="weights"]').click();
-  await expect(page.locator("#atelier-weight-finish")).toHaveText("Polished steel");
+  await expect(page.locator("#atelier-weight-finish")).toContainText("Polished steel");
   await page.locator("#atelier-restore").click();
   await expect(page.locator("body")).toHaveAttribute("data-weight-material","original");
   expect((await snapshot(page)).equipped["weight-material"]).toBeNull();
