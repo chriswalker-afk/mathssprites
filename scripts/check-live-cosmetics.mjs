@@ -103,6 +103,7 @@ try{
   await page.locator("#atelier-back").click();
   await openCampaignBoard(page,"workshop","guided");
   await page.locator('[data-level="1"]').click();
+  if(await page.locator("#selected-level-details").isVisible())await page.locator("#board-continue").click();
   await clickWithReferenceMove(page,"#do-both");
   await expect(page.locator("#replay-star-summary")).toContainText("3 stars",{timeout:25000});
   await expect(page.locator("#reward-celebration")).toBeHidden();

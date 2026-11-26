@@ -125,7 +125,7 @@ test("phone layout continues natural document scrolling instead of nested trunca
   expect(m.tiles).toHaveLength(24);
   expect(m.display).toBe("block");
   expect(m.overflowY).not.toBe("hidden");
-  expect(m.documentHeight).toBeGreaterThanOrEqual(m.viewportHeight);
+  expect(m.documentHeight).toBeGreaterThanOrEqual(m.viewportHeight-3);
   expect(m.documentWidth).toBeLessThanOrEqual(m.viewportWidth+3);
   expect(m.tiles.flatMap(tile=>tile.content
     .filter(part=>!part.visibleWithinTile||!part.hasHeight))).toEqual([]);

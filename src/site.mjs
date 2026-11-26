@@ -645,7 +645,7 @@ $("site-shell").addEventListener("click", event => {
     selectedLevelId=slot.id;
     renderSelectedLevel();
     // On phones, the selected challenge is below the compact grid.
-    if(window.matchMedia("(max-width: 899px)").matches)
+    if(window.matchMedia("(max-width: 899px)").matches&&event.detail>0)
       $("selected-level-details").scrollIntoView({block:"nearest",behavior:"instant"});
     return;
   }

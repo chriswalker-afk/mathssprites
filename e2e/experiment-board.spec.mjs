@@ -119,3 +119,46 @@ test("single-screen level board stays reachable at 1024×720 and 1092×540 @smok
     await page.locator("#site-back").click();
   }
 });
+
+test("selection is transient, moves the pressed state, and clears when the learning method changes @quick @smoke",async({page})=>{
+  await openCampaignBoard(page);
+  const before=await page.evaluate(()=>Object.fromEntries(Object.entries(localStorage)));
+  const play=page.locator("#board-continue");
+  const first=page.locator('[data-level="1"]');
+  const second=page.locator('[data-level="2"]');
+  await expect(page.locator("#selected-level-content")).toBeHidden();
+  await expect(play).toBeDisabled();
+  await first.click();
+  await expect(first).toHaveAttribute("aria-pressed","true");
+  await expect(page.locator("#selected-level-title")).toHaveText("One little resident");
+  await expect(page.locator("#selected-level-description")).not.toBeEmpty();
+  await expect(play).toHaveText("Play Level 1 →");
+  await second.click();
+  await expect(first).toHaveAttribute("aria-pressed","false");
+  await expect(second).toHaveAttribute("aria-pressed","true");
+  await expect(page.locator("#selected-level-title")).toHaveText("Three weights in the way");
+  await expect(play).toHaveText("Play Level 2 →");
+  await expect(page.locator("#game-shell")).toBeHidden();
+  await page.locator('.site-nav-links [data-screen="help"]').click();
+  await page.locator("#help-return").click();
+  await expect(second).toHaveAttribute("aria-pressed","true");
+  await chooseCampaignStage(page,"notebook");
+  await expect(play).toBeDisabled();
+  await expect(page.locator("#selected-level-content")).toBeHidden();
+  await expect(page.locator('.level-tile[aria-pressed="true"]')).toHaveCount(0);
+  expect(await page.evaluate(()=>Object.fromEntries(Object.entries(localStorage)))).toEqual(before);
+});
+test("a previously completed level displays saved achievement and offers Replay @smoke",async({page})=>{
+  await page.evaluate(()=>{
+    localStorage.setItem("mathssprites.progress.v1",JSON.stringify({completed:[1],lastPlayed:1}));
+    localStorage.setItem("mathssprites.stars.v1",JSON.stringify({guided:{"1":1},independent:{},notebook:{}}));
+  });
+  await page.reload();
+  await openCampaignBoard(page);
+  const before=await page.evaluate(()=>Object.fromEntries(Object.entries(localStorage)));
+  await page.locator('[data-level="1"]').click();
+  await expect(page.locator("#selected-level-status")).toHaveText("Completed");
+  await expect(page.locator("#selected-level-rating")).toContainText("3 of 3 stars");
+  await expect(page.locator("#board-continue")).toHaveText("Replay Level 1 →");
+  expect(await page.evaluate(()=>Object.fromEntries(Object.entries(localStorage)))).toEqual(before);
+});

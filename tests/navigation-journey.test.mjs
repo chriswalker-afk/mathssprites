@@ -11,7 +11,7 @@ const html=readFileSync(new URL("../index.html",import.meta.url),"utf8");
 const site=readFileSync(new URL("../src/site.mjs",import.meta.url),"utf8");
 const css=readFileSync(new URL("../src/navigation-journey.css",import.meta.url),"utf8");
 
-test("first-time learner can start the selected stage in one board click",()=>{
+test("first-time learner has a recommended first level",()=>{
   assert.deepEqual(boardContinueLevel(guided,{completed:[],lastPlayed:null}),
     {id:guided.levels[0].id,number:1,action:"Play"});
   assert.deepEqual(boardContinueLevel(independent,{}),
@@ -50,7 +50,7 @@ test("future worlds can use different level counts and availability",()=>{
   assert.equal(boardContinueLevel({levels:[]},{}),null);
 });
 const tile=(x,y)=>({left:x,top:y,width:90,height:32});
-test("arrow navigation follows the five-column desktop sheets",()=>{
+test("arrow navigation follows supplied spatial coordinates",()=>{
   const grid=Array.from({length:20},(_,i)=>tile(Math.floor(i/4)*100,(i%4)*40));
   assert.equal(spatialTileIndex(grid,0,"ArrowRight"),4);
   assert.equal(spatialTileIndex(grid,4,"ArrowDown"),5);
@@ -60,7 +60,7 @@ test("arrow navigation follows the five-column desktop sheets",()=>{
   assert.equal(spatialTileIndex(grid,11,"Home"),0);
   assert.equal(spatialTileIndex(grid,11,"End"),19);
 });
-test("arrow navigation follows the phone's two-column tile layout",()=>{
+test("arrow navigation handles a wrapped tile layout",()=>{
   const grid=[tile(0,0),tile(100,0),tile(0,48),tile(100,48),tile(0,130)];
   assert.equal(spatialTileIndex(grid,0,"ArrowRight"),1);
   assert.equal(spatialTileIndex(grid,0,"ArrowDown"),2);
