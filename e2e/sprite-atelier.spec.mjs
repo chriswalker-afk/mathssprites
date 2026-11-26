@@ -309,7 +309,12 @@ test("the expanded Atelier has three independent collections, clear pending art 
   await page.locator("#atelier-filter").selectOption("weight-material");
   await expect(visibleRewards(page)).toHaveCount(7);
   await reward(page,"polished-steel").click();
-  await expect(reward(page,"polished-steel")).toHaveAttribute("data-status","owned-coming");
+  await expect(reward(page,"polished-steel")).toHaveAttribute("data-status","available");
+  await expect(page.locator("#atelier-equip")).toBeEnabled();
+  await expect(page.locator("#atelier-preview")).toHaveAttribute("data-weight-material","polished-steel");
+  await page.locator("#atelier-filter").selectOption("weight-shape");
+  await reward(page,"dumbbell").click();
+  await expect(reward(page,"dumbbell")).toHaveAttribute("data-status","owned-coming");
   await expect(page.locator("#atelier-equip")).toBeDisabled();
   await expect(page.locator("#atelier-detail-copy")).toContainText("Artwork coming soon");
   await page.locator("#atelier-owned-only").check();
@@ -335,4 +340,41 @@ test("the expanded Atelier has three independent collections, clear pending art 
       await testInfo.attach("atelier-"+key+"-"+width+".png",{body:await page.screenshot({fullPage:true}),contentType:"image/png"});
     }
   }
+});
+
+test("all seven material swatches and exact fractional previews match; locked try-on never writes saves @quick @smoke",async({page},testInfo)=>{
+  await legacyStars(page,4);await page.goto("/");await open(page);
+  await page.locator('[data-atelier-collection="weights"]').click();
+  await page.locator("#atelier-filter").selectOption("weight-material");
+  const preview=page.locator("#atelier-preview"),whole=preview.locator(".atelier-weight-stage .weight"),fraction=preview.locator("#atelier-weight-fraction");
+  const measure=el=>el.evaluate(el=>{const c=getComputedStyle(el);return {width:c.width,height:c.height,clip:c.clipPath,background:c.backgroundImage};});
+  const baseline=await measure(whole),before=await saves(page),colors=[];
+  const cuts=await fraction.locator(".fw-cut-edge").evaluateAll(els=>els.map(el=>el.getAttribute("points")));
+  for(const id of ["polished-steel","copper","blue-enamel","gold","jade-enamel","cast-iron","violet-enamel"]){
+    await reward(page,id).click();
+    await expect(preview).toHaveAttribute("data-weight-material",id);
+    await expect(reward(page,id).locator(".atelier-thumb .weight")).toBeVisible();
+    const variant=await measure(whole);
+    expect(variant.width).toBe(baseline.width);expect(variant.height).toBe(baseline.height);expect(variant.clip).toBe(baseline.clip);
+    expect(variant.background).not.toBe(baseline.background);
+    const light=await fraction.locator(".fw-material-light").evaluate(el=>getComputedStyle(el).stopColor);
+    expect(variant.background).toContain(light);colors.push(light);
+    expect(await fraction.locator(".fw-cut-edge").evaluateAll(els=>els.map(el=>el.getAttribute("points")))).toEqual(cuts);
+    await expect(fraction.locator(".fw-label")).toHaveText("2/3");
+    await expect(fraction.locator(".fw-piece")).toHaveCount(2);
+    await expect(page.locator("body")).toHaveAttribute("data-weight-material","original");
+    if(id!=="polished-steel")await expect(page.locator("#atelier-equip")).toBeDisabled();
+    await testInfo.attach("weight-"+id+".png",{body:await preview.screenshot(),contentType:"image/png"});
+  }
+  expect(new Set(colors).size).toBe(7);expect(await saves(page)).toEqual(before);
+  await reward(page,"polished-steel").click();await page.locator("#atelier-equip").click();
+  await expect(page.locator("body")).toHaveAttribute("data-weight-material","polished-steel");
+  await expect(page.locator("#atelier-equipped")).toContainText("Polished steel");
+  await page.locator("#atelier-back").click();await page.reload();await open(page);
+  await page.locator('[data-atelier-collection="weights"]').click();
+  await expect(page.locator("#atelier-weight-finish")).toHaveText("Polished steel");
+  await page.locator("#atelier-restore").click();
+  await expect(page.locator("body")).toHaveAttribute("data-weight-material","original");
+  expect((await snapshot(page)).equipped["weight-material"]).toBeNull();
+  expect((await snapshot(page)).unlockedRewards).toEqual(["curious-eyes","polished-steel","extra-fluffy","dumbbell"]);
 });

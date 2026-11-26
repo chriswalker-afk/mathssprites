@@ -10,6 +10,7 @@ on:
       - 'src/sprite-*.css'
       - 'src/atelier-model.mjs'
       - 'src/laboratory-cosmetics.mjs'
+      - 'src/weight-materials.css'
       - 'src/site.mjs'
       - 'src/fraction-*.mjs'
       - 'src/fraction-*.css'

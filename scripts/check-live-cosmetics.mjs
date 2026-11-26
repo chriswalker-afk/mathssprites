@@ -4,6 +4,7 @@ import {chromium,expect} from "@playwright/test";
 import {readFileSync,mkdirSync,writeFileSync} from "node:fs";
 import {setTimeout as pause} from "node:timers/promises";
 import {COSMETIC_REWARDS,findCosmeticReward,originalAppearance,cosmeticCollection} from "../src/cosmetic-catalog.mjs";
+import {rewardArtReady} from "../src/atelier-model.mjs";
 import {CAMPAIGN_REGISTRY} from "../src/campaign-registry.mjs";
 import {blankCampaignRecords,campaignStarTotals} from "../src/campaign-records.mjs";
 import {clickWithReferenceMove} from "../e2e/reference-move-helper.mjs";
@@ -12,7 +13,7 @@ const revision=process.env.GITHUB_SHA||"manual";
 const result={url,revision,checks:[],errors:[]};
 const note=message=>{result.checks.push(message);console.log(message);};
 const read=path=>readFileSync(new URL("../"+path,import.meta.url),"utf8");
-const files=["index.html","src/site.mjs","src/laboratory-cosmetics.mjs","src/cosmetic-catalog.mjs","src/cosmetic-rewards.mjs","src/atelier-model.mjs",
+const files=["index.html","src/site.mjs","src/laboratory-cosmetics.mjs","src/weight-materials.css","src/fraction-weights.mjs","src/fraction-choreography.mjs","src/cosmetic-catalog.mjs","src/cosmetic-rewards.mjs","src/atelier-model.mjs",
   "src/sprite-atelier.mjs","src/sprite-atelier.css","src/sprite-cosmetics.mjs","src/sprite-cosmetics.css",
   "src/sprite-wearables.css","src/sprite-effects.css","src/reward-celebration.mjs","src/reward-celebration.css",
   "src/fraction-campaign.mjs","src/fraction-sprites.mjs","src/fraction-balance.mjs","src/square-sprites.mjs",
@@ -83,7 +84,7 @@ try{
   await expect(page.locator("#atelier-stars")).toHaveText("719 / 720 ★");
   await expect(page.locator("#atelier-owned")).toHaveText("56 / 57 unlocked");
   await expect(page.locator("#atelier-collection .atelier-reward")).toHaveCount(57);
-  await expect(page.locator("#atelier-collection [data-status$='coming']")).toHaveCount(COSMETIC_REWARDS.filter(r=>cosmeticCollection(r)!=="sprites").length);
+  await expect(page.locator("#atelier-collection [data-status$='coming']")).toHaveCount(COSMETIC_REWARDS.filter(r=>!rewardArtReady(r)).length);
   const before=await saves(page);
   await page.locator("#atelier-filter").selectOption("set");
   await reward(page,"grand-alchemist").click();
@@ -113,6 +114,12 @@ try{
   await page.locator("#atelier-equip").click();
   expect(JSON.parse((await saves(page))[profileKey]).equipped).toEqual({...originalAppearance(),...outfit});
   await shot(page,"complete-desktop");
+  await page.locator('[data-atelier-collection="weights"]').click();
+  await reward(page,"blue-enamel").click();
+  await expect(page.locator("#atelier-preview")).toHaveAttribute("data-weight-material","blue-enamel");
+  await page.locator("#atelier-equip").click();
+  await expect(page.locator("body")).toHaveAttribute("data-weight-material","blue-enamel");
+  await shot(page,"blue-enamel");
   await page.reload();await page.locator("#home-atelier").click();
   await expect(page.locator("#atelier-equipped")).toContainText("The Grand Alchemist");
   await expect(page.locator("#reward-celebration")).toBeHidden();
@@ -141,6 +148,8 @@ try{
   const host=page.locator("#fraction-game-host"),lab=host.locator("#fraction-lab");
   await expect(host).toHaveAttribute("data-presentation-revision",revisionMatch[1]);
   await expect(host).toHaveAttribute("data-styles","ready");
+  await expect(lab).toHaveAttribute("data-weight-material","blue-enamel");
+  await expect(lab.locator("#left-items .fw-material-light")).toHaveCSS("stop-color","rgb(169, 217, 244)");
   await expect(lab.locator("#left-items .fs-whole-actor")).toHaveCount(1);
   for(const slot of slotKeys)await expect(lab).toHaveAttribute("data-sprite-"+slot,outfit[slot]);
   await expect(lab.locator("#left-items .fs-whole-actor .sprite-wear-headwear")).toBeVisible();
@@ -169,6 +178,9 @@ try{
   await page.locator("#atelier-restore").click();
   await expect(page.locator("#atelier-equipped")).toHaveText("Original appearance");
   await expect(page.locator("#atelier-stars")).toHaveText("720 / 720 ★");
+  await page.locator('[data-atelier-collection="weights"]').click();
+  await page.locator("#atelier-restore").click();
+  await expect(page.locator("body")).toHaveAttribute("data-weight-material","original");
   const restored=JSON.parse((await saves(page))[profileKey]);
   expect(restored.unlockedRewards).toEqual(COSMETIC_REWARDS.map(r=>r.id));
   expect(Object.values(restored.equipped).every(v=>v===null)).toBe(true);

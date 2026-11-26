@@ -24,7 +24,7 @@ const descriptions=Object.freeze({
   "blue-enamel":"Deep blue enamel with a glossy pale-blue highlight.",
   "gold":"Bright polished gold with warm yellow highlights.",
   "jade-enamel":"Glossy jade-green enamel and a softly lit edge.",
-  "cast-iron":"Textured charcoal-grey iron with bright bevels, distinct from dark sprites.",
+  "cast-iron":"Satin charcoal-grey iron with bright bevels, distinct from dark sprites.",
   "violet-enamel":"Glossy violet enamel with a lilac highlight.",
   "curious-eyes":"Big, inquisitive eyes for an eager explorer.",
   "extra-fluffy":"Soft, rounded tufts of fur.",

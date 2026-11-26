@@ -135,7 +135,7 @@ test("existing stars silently unlock cosmetics on reload, without spending stars
   await page.evaluate(value=>localStorage.setItem("mathssprites.stars.v1",value),legacy);
   await page.reload();
   const profile=await page.evaluate(()=>JSON.parse(localStorage.getItem("mathssprites.cosmetics.v1")));
-  expect(profile.unlockedRewards).toEqual(["curious-eyes","extra-fluffy"]);
+  expect(profile.unlockedRewards).toEqual(["curious-eyes","polished-steel","extra-fluffy"]);
   expect(Object.values(profile.equipped).every(value=>value===null)).toBe(true);
   expect(await page.evaluate(()=>localStorage.getItem("mathssprites.stars.v1"))).toBe(legacy);
   await stages(page);
