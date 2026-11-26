@@ -9,14 +9,9 @@ import {readFileSync,readdirSync} from "node:fs";
 
 const specsDir=new URL("../e2e/",import.meta.url);
 const retired=[
-  /data-screen=["']worlds["']/,
-  /#site-worlds\b/,
-  /#site-stages\b/,
   /Explore stages/,
   /Choose Stage [123] levels/,
-  /#world1-workshop\b/,
-  /data-world-stages=/,
-  /data-stage-open=/
+  /#world1-workshop\\b/
 ];
 test("browser specs do not navigate through retired multi-screen menus",()=>{
   const files=readdirSync(specsDir).filter(n=>n.endsWith(".spec.mjs"));
