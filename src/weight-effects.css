@@ -8,16 +8,18 @@
   --we-a-soft:transparent;--we-b-soft:transparent;--we-c-soft:transparent;
   --we-rim:transparent;--we-period:5s;--we-animation:none;
   --we-gradient-opacity:0;--we-rim-opacity:0;
+  --we-alpha-a:0;--we-alpha-b:0;--we-alpha-c:0;
 }
 [data-weight-effect="soft-glow"]{
   --we-content:"";--we-display:inline;--we-animation:weight-effect-glimmer;
   --we-a:#fff2c0;--we-b:#e5c57a;--we-c:#ffdd9b;
   --we-a-soft:#fff2c088;--we-b-soft:#e5c57a80;--we-c-soft:#ffdd9b88;
   --we-rim:#ffeac1;--we-period:4.8s;
-  --we-paint:radial-gradient(ellipse at 47% 57%,var(--we-a) 0%,var(--we-b-soft) 24%,transparent 69%);
+  --we-paint:radial-gradient(ellipse at 47% 57%,var(--we-a-soft) 0%,var(--we-b-soft) 24%,transparent 69%);
   --we-static:var(--we-paint),;
   --we-gradient-opacity:.42;
   --we-rim-opacity:.22;
+  --we-alpha-a:0.08;--we-alpha-b:0.85;--we-alpha-c:0.12;
 }
 [data-weight-effect="frost-shimmer"]{
   --we-content:"";--we-display:inline;--we-animation:weight-effect-glimmer;
@@ -28,16 +30,18 @@
   --we-static:var(--we-paint),;
   --we-gradient-opacity:.40;
   --we-rim-opacity:.50;
+  --we-alpha-a:0.9;--we-alpha-b:0.18;--we-alpha-c:0.7;
 }
 [data-weight-effect="ember-glow"]{
   --we-content:"";--we-display:inline;--we-animation:weight-effect-glimmer;
   --we-a:#ffda8a;--we-b:#ef7a42;--we-c:#ffb35d;
   --we-a-soft:#ffda8a88;--we-b-soft:#ef7a4280;--we-c-soft:#ffb35d88;
   --we-rim:#ffb66c;--we-period:4.2s;
-  --we-paint:radial-gradient(ellipse at 50% 96%,var(--we-a) 0%,var(--we-b-soft) 29%,transparent 72%),radial-gradient(circle at 23% 72%,var(--we-c-soft) 0 6%,transparent 19%);
+  --we-paint:radial-gradient(ellipse at 50% 96%,var(--we-a-soft) 0%,var(--we-b-soft) 29%,transparent 72%),radial-gradient(circle at 23% 72%,var(--we-c-soft) 0 6%,transparent 19%);
   --we-static:var(--we-paint),;
   --we-gradient-opacity:.40;
   --we-rim-opacity:.22;
+  --we-alpha-a:0.04;--we-alpha-b:0.35;--we-alpha-c:1;
 }
 [data-weight-effect="pearlescent-shimmer"]{
   --we-content:"";--we-display:inline;--we-animation:weight-effect-glimmer;
@@ -48,16 +52,18 @@
   --we-static:var(--we-paint),;
   --we-gradient-opacity:.40;
   --we-rim-opacity:.22;
+  --we-alpha-a:0.8;--we-alpha-b:0.6;--we-alpha-c:0.8;
 }
 [data-weight-effect="golden-halo"]{
   --we-content:"";--we-display:inline;--we-animation:weight-effect-glimmer;
   --we-a:#fff4bc;--we-b:#e5ba57;--we-c:#fff0a1;
   --we-a-soft:#fff4bc88;--we-b-soft:#e5ba5780;--we-c-soft:#fff0a188;
   --we-rim:#ffe9a3;--we-period:5.2s;
-  --we-paint:radial-gradient(ellipse at 50% 55%,transparent 33%,var(--we-b-soft) 48%,var(--we-a) 57%,var(--we-c-soft) 64%,transparent 79%);
+  --we-paint:radial-gradient(ellipse at 50% 55%,transparent 33%,var(--we-b-soft) 48%,var(--we-a-soft) 57%,var(--we-c-soft) 64%,transparent 79%);
   --we-static:var(--we-paint),;
   --we-gradient-opacity:.36;
   --we-rim-opacity:.85;
+  --we-alpha-a:0.35;--we-alpha-b:0.12;--we-alpha-c:0.35;
 }
 /* The original shadow, metal, bevel, geometry and native animation are
    untouched. Existing clip-path clips the surface light, including the
@@ -74,9 +80,9 @@
   display:var(--we-display,none);opacity:.66;pointer-events:none;
   animation:var(--we-animation,none) var(--we-period,5s) ease-in-out infinite;
 }
-.fw-effect-a{stop-color:var(--we-a,transparent)}
-.fw-effect-b{stop-color:var(--we-b,transparent)}
-.fw-effect-c{stop-color:var(--we-c,transparent)}
+.fw-effect-a{stop-color:var(--we-a,transparent);stop-opacity:var(--we-alpha-a,0)}
+.fw-effect-b{stop-color:var(--we-b,transparent);stop-opacity:var(--we-alpha-b,0)}
+.fw-effect-c{stop-color:var(--we-c,transparent);stop-opacity:var(--we-alpha-c,0)}
 .fw-effect-fill{fill-opacity:var(--we-gradient-opacity,0)}
 .fw-effect-rim{stroke:var(--we-rim,transparent);stroke-opacity:var(--we-rim-opacity,0)}
 /* Gentle, slow luminance modulation only. No translation, transform,
