@@ -19,7 +19,7 @@ import {createFractionWorkshopEquation,FRACTION_WORKSHOP_EXAMPLES} from "./fract
 import {createSquareWorkshopEquation,SQUARE_WORKSHOP_EXAMPLES,SQUARE_BUILD_EXAMPLES} from "./square-workshop.mjs";
 import {createHomeHero} from "./home-hero.mjs?v=88";
 import {compactWorldProgress,compactStageProgress,briefStageIntro} from "./menu-copy.mjs";
-import {boardContinueLevel,spatialTileIndex} from "./navigation-journey.mjs";
+import {boardContinueLevel,spatialTileIndex,campaignMenuScreen,campaignHomeLabel} from "./navigation-journey.mjs?v=98";
 import {loadResume,saveResume,resumeDestination,resumeLabel,RESUME_STAGE_NUMBERS} from "./resume.mjs";
 import {
   WORLDS, WORLD1_CHAPTERS, WORLD1_LEVELS, findWorld1Level,
@@ -93,9 +93,9 @@ window.addEventListener("storage",event=>{
   if(screenNames.includes(currentScreen))cosmeticRewards.refreshAppearance();
 });
 function closeFractionCampaign(){fractionCampaign?.destroy();fractionCampaign=null;}
-let selectedWorld = campaignResume?.worldId||"workshop";
-let selectedStage = campaignResume?.stageId||"guided";
-let boardReturnScreen = "home";
+// Browsing is independent of the stored resume. No automatic method choice.
+let selectedWorld = null;
+let selectedStage = null;
 let workshopReturnScreen = "home";
 let atelierReturnScreen = "home";
 // Preserve each stage's chapter scroll position when returning from a game.
@@ -138,62 +138,31 @@ function unlocked(number) {
 function homeDestination() {
   const fallback=resumeDestination(recent,progress,stage2Progress,stage3Progress);
   const old=findCampaignLevel("workshop",fallback.stage,fallback.number);
-  const selected=findCampaignWorld(selectedWorld);
-  const fresh=selected?.available&&selected.id!=="workshop"
-    ?firstCampaignLevel(selected.id,selected.stages[0]?.id):null;
-  const target=campaignResume||
-    (fresh?{worldId:selected.id,stageId:fresh.stageId,levelId:fresh.id}:
-      {worldId:"workshop",stageId:fallback.stage,levelId:old?.id});
-  const slot=findCampaignLevel(target.worldId,target.stageId,target.levelId)||
+  const target=campaignResume||{worldId:"workshop",stageId:fallback.stage,levelId:old?.id};
+  const slot=(isCampaignPlayable(target.worldId,target.stageId,target.levelId)?
+    findCampaignLevel(target.worldId,target.stageId,target.levelId):null)||
     firstCampaignLevel("workshop","guided");
   return {worldId:slot.worldId,stageId:slot.stageId,levelId:slot.id,
     stage:slot.stageId,number:slot.number};
 }
-function renderHomeQuickStages(){
-  const world=findCampaignWorld(selectedWorld)?.available
-    ?findCampaignWorld(selectedWorld):findCampaignWorld("workshop");
-  const stages=world.stages.filter(stage=>stage.available&&world.available);
-  $("home-stage-shortcuts").innerHTML=stages.map(stage=>{
-    const slot=stageResumeLevel(campaign,world.id,stage.id);
-    const meta=campaignStarTotals(campaign,{worldId:world.id,stageId:stage.id});
-    return '<article class="portal-feature home-quick-feature">'+
-      '<button type="button" class="home-stage-quick" data-home-stage="'+
-        clean(stage.id)+'" data-home-world="'+clean(world.id)+'"'+
-        (!slot?' disabled':'')+
-        ' aria-label="Play '+clean(stage.title)+' from level '+(slot?.number||1)+'">'+
-        '<span class="feature-icon" aria-hidden="true">'+
-          portalStageArt(stage.id,stage.icon||"⚖")+'</span>'+
-        '<span class="home-stage-details"><strong>'+clean(stage.title)+'</strong>'+
-        '<small>Level '+(slot?.number||1)+' · '+meta.completed+'/'+meta.count+' complete</small>'+
-        '</span><span class="quick-arrow" aria-hidden="true">›</span></button></article>';
-  }).join("");
-  $("home-stage-shortcuts").dataset.activeWorld=world.id;
-  $("home-stage-shortcuts").hidden=stages.length===0;
+function hasCampaignHistory(){
+  return !!recent||!!campaignResume||campaignStarTotals(campaign).completed>0||
+    progress.lastPlayed>1||stage2Progress.lastPlayed>1||stage3Progress.lastPlayed>1;
 }
 function homeAction() {
+  const played=hasCampaignHistory();
+  $("home-play").hidden=!played;
+  $("home-choose-level").classList.toggle("primary-btn",!played);
+  $("home-choose-level").classList.toggle("secondary-btn",played);
   const destination=homeDestination();
   const world=findCampaignWorld(destination.worldId);
   const stage=findCampaignStage(destination.worldId,destination.stageId);
-  const current=destination.worldId==="workshop"
-    ?destination.stage==="independent"?stage2Progress:
-      destination.stage==="notebook"?stage3Progress:progress
-    :null;
   const record=campaignStageRecord(campaign,destination.worldId,destination.stageId);
-  const played=!!recent || !!campaignResume ||
-    campaignStarTotals(campaign).completed>0 ||
-    progress.lastPlayed>1||stage2Progress.lastPlayed>1||stage3Progress.lastPlayed>1;
-  $("home-play").textContent=destination.worldId==="workshop"
-    ?resumeLabel(destination,{played,completed:current.completed})
-    :(record?.completed.includes(destination.levelId)?"Replay ":
-      campaignResume?.worldId===destination.worldId?"Continue ":"Start ")+
-      stage.title+" · Level "+destination.number+" →";
-  // The heading names one world; its completion and stars must use that world.
+  $("home-play").textContent=campaignHomeLabel(world,stage,destination.number,record.completed.includes(destination.levelId));
   const totals=campaignStarTotals(campaign,{worldId:destination.worldId});
-  $("home-progress").textContent=
-    (world?.title||"Balance Workshop")+" · "+
-    totals.completed+"/"+totals.count+" levels · "+totals.earned+"/"+totals.available+
-    " ★ · saved here";
-  renderHomeQuickStages();
+  $("home-progress").textContent=played?
+    world.title+" · "+totals.completed+"/"+totals.count+" levels · "+totals.earned+"/"+totals.available+" ★":
+    "Four worlds · Choose how you learn";
 }
 
 function renderWorlds() {
@@ -213,11 +182,11 @@ function renderWorlds() {
       '<div class="world-card-body"><div class="eyebrow">WORLD ' +
         String(world.number).padStart(2,"0") + '</div>' +
       '<h3>' + clean(world.title) + '</h3><p class="world-subtitle">' +
-        clean(world.subtitle) + '</p>' +
-      '<div class="world-card-footer"><span class="world-progress">' + progressLine + '</span>' +
+        clean(world.subtitle) + '</p><p class="world-context">'+clean(world.description||"")+'</p>' +
+      '<div class="world-card-footer"><span class="world-progress">' + progressLine + ' · '+totals.earned+' / '+totals.available+' ★</span>' +
         (world.available
           ? '<button type="button" class="primary-btn" data-world-stages="'+clean(world.id)+'">'+
-            (world.id==="workshop"?"Explore stages →":world.id==="fractions"?"Explore Fractions →":"Explore Opposites →")+'</button>'
+            "Choose world →"+'</button>'
           : '<span class="soon-lock" aria-label="This world is not available yet">◇ Locked</span>') +
       '</div></div></article>';
   }).join("");
@@ -236,75 +205,32 @@ function renderStages() {
     const score=campaignStarTotals(campaign,{worldId:world.id,stageId:stage.id});
     const playable=stage.available,finished=score.count>0&&score.completed===score.count;
     const countText=compactStageProgress(score.completed,stage.count,score.earned,score.available);
+    const recommended=stage.method==="auto"&&score.completed===0;
+    const methodTitle=stage.method==="auto"?"Guided":stage.method==="manual"?"Independent":stage.method==="notebook"?"Algebra Apprentice":stage.title;
     return '<article class="stage-card '+(playable?"stage-ready":"stage-planned")+
       '" data-stage="'+clean(stage.id)+'" aria-label="Stage '+stage.number+
       ': '+clean(stage.title)+(playable?", available":", unavailable")+'">'+
       '<div class="stage-top"><span class="stage-no">STAGE '+String(stage.number).padStart(2,"0")+
-      '</span><span class="stage-tag">'+(finished?"Stage mastered":playable?"Ready to play":"Coming soon")+
+      '</span><span class="stage-tag">'+(finished?"Method mastered":!playable?"Coming soon":recommended?"Recommended start":"Available")+
       '</span></div><div class="stage-ornament" aria-hidden="true">'+
         portalStageArt(stage.id,stage.icon)+'</div>'+
-      '<h2>'+clean(stage.title)+'</h2>'+
-      '<p class="stage-tagline">'+clean(stage.tagline||"Explore this learning approach.")+'</p>'+
+      '<h2>'+clean(methodTitle)+'</h2>'+
+      '<p class="stage-tagline">'+clean(briefStageIntro(stage))+'</p>'+
       '<div class="stage-card-bottom"><span class="stage-count">'+countText+'</span>'+
       (playable
-        ? '<button type="button" class="primary-btn" data-stage-open="'+clean(stage.id)+'">Choose Stage '+
-          stage.number+' levels →</button>'
+        ? '<button type="button" class="primary-btn" data-stage-open="'+clean(stage.id)+'">Choose '+clean(methodTitle)+' →</button>'
         : '<span class="stage-coming">◇ In development</span>')+
       '</div></article>';
   }).join("");
-  $("world1-workshop").hidden=world.id!=="workshop";
-  if(world.id==="workshop"){
-    $("world1-workshop").innerHTML=
-      '<div class="workshop-glyph" aria-hidden="true">'+EQUATION_WORKSHOP.icon+'</div>'+
-      '<div class="workshop-content"><div class="portal-kicker">FREE PLAY · AVAILABLE TO EVERYONE</div>'+
-      '<h2>'+clean(EQUATION_WORKSHOP.title)+'</h2>'+
-      '<p>Create your own balance without changing campaign progress.</p>'+
-      '<button type="button" class="primary-btn" data-screen="workshop">Create your own equation →</button></div>';
-  }
+  // Free play is a separate Home entry (and optional utility link on levels).
   $("stage-teacher-note").hidden=!teacher||world.id!=="workshop";
   $("stage-teacher-note").textContent=
-    "All 48 implemented World 1 levels are open to students; teacher tools add previews.";
-}
-/** One Experiment Board, regardless of world or the number of stages.
- * World and stage switches update the SAME map rather than opening menus. */
-function renderExperimentBoardControls(){
-  $("map-world-tabs").innerHTML=CAMPAIGN_REGISTRY.map(world=>{
-    const active=world.id===selectedWorld;
-    return '<button type="button" class="map-world-button'+(active?' is-active':'')+
-      '" data-map-world="'+clean(world.id)+'" aria-pressed="'+active+'"'+
-      (world.available?'':' disabled title="In development"')+
-      ' aria-label="'+clean(world.title)+(world.available?'':', in development')+'">'+
-      '<span aria-hidden="true">'+clean(world.icon||"✦")+'</span>'+
-      '<span class="map-world-label">'+clean(world.id==="workshop"?"Balance":
-        world.id==="opposites"?"Opposites":world.id==="fractions"?"Fractions":
-        world.id==="squares"?"Squares":world.title)+'</span></button>';
-  }).join("");
-  const world=findCampaignWorld(selectedWorld);
-  $("map-stage-tabs").innerHTML=world.stages.map(stage=>{
-    const active=stage.id===selectedStage;
-    const count=campaignStageRecord(campaign,world.id,stage.id)?.completed.length||0;
-    const short=stage.id==="guided"?"Guided":stage.id==="independent"?"Independent":
-      stage.id==="notebook"?"Apprentice":stage.title;
-    return '<button type="button" class="map-stage-button'+(active?' is-active':'')+
-      '" data-map-stage="'+clean(stage.id)+'" aria-pressed="'+active+'"'+
-      (stage.available?'':' disabled')+' aria-label="'+clean(stage.title)+
-      ' · '+count+' of '+stage.levels.length+' complete">'+
-      '<span class="map-stage-icon" aria-hidden="true">'+clean(stage.icon||"✦")+
-      '</span><span>'+clean(short)+'</span></button>';
-  }).join("");
-  $("map-world-tabs").setAttribute("aria-label","Choose a mathematical world");
-  $("map-stage-tabs").setAttribute("aria-label","Choose how to learn");
+    "All "+world.stages.reduce((n,stage)=>n+stage.levels.filter(slot=>slot.available).length,0)+" implemented levels are open; teacher tools add previews.";
 }
 function renderLevels() {
-  let world=findCampaignWorld(selectedWorld);
-  if(!world?.available)world=CAMPAIGN_REGISTRY.find(w=>w.available);
-  if(!world)return;
-  selectedWorld=world.id;
-  let stage=findCampaignStage(world.id,selectedStage);
-  if(!stage?.available)stage=world.stages.find(s=>s.available);
-  if(!stage)return;
-  selectedStage=stage.id;
-  renderExperimentBoardControls();
+  const world=findCampaignWorld(selectedWorld);
+  const stage=findCampaignStage(selectedWorld,selectedStage);
+  if(!world?.available||!stage?.available)return;
   const levels=stage.levels,chapters=stage.chapters;
   const current=campaignStageRecord(campaign,world.id,stage.id);
   const total=levels.filter(x=>x.available).length,completed=current.completed.length;
@@ -412,17 +338,16 @@ function renderSettings() {
   $("site-motion").setAttribute("aria-pressed",String(motion === "Motion: reduced"));
 }
 function showScreen(name,{focusHeading=true}={}) {
-  // PR53: legacy world/stage routes now lead to the single Experiment Board.
-  if(name==="worlds"||name==="stages")name="levels";
+  name=campaignMenuScreen(name,findCampaignWorld(selectedWorld),findCampaignStage(selectedWorld,selectedStage));
   if (!screenNames.includes(name)) return;
   if(name==="workshop" && currentScreen!=="workshop" && currentScreen!=="workshop-game"){
     workshopReturnScreen=currentScreen==="levels"?"levels":"home";
     if(currentScreen==="levels")setWorkshopQuantity(selectedWorld==="opposites"?"signed":["fractions","squares"].includes(selectedWorld)?selectedWorld:"positive");
   }
   if(name==="atelier"&&currentScreen!=="atelier"){
-    if(["home","levels","workshop"].includes(currentScreen))atelierReturnScreen=currentScreen;
+    if(["home","worlds","stages","levels","workshop"].includes(currentScreen))atelierReturnScreen=currentScreen;
     else if(["help","settings"].includes(currentScreen)&&supportReturnScreen!=="atelier")
-      atelierReturnScreen=["home","levels","workshop"].includes(supportReturnScreen)?supportReturnScreen:"home";
+      atelierReturnScreen=["home","worlds","stages","levels","workshop"].includes(supportReturnScreen)?supportReturnScreen:"home";
   }
   if((name==="help"||name==="settings") &&
       !["help","settings"].includes(currentScreen) &&
@@ -451,8 +376,8 @@ function showScreen(name,{focusHeading=true}={}) {
   if (name === "stages") renderStages();
   if (name === "levels"){
     renderLevels();
-    $("site-back").textContent="← Back to "+
-      ({stages:"stages",worlds:"worlds",home:"home"}[boardReturnScreen]||"home");
+    $("site-back").textContent="← Change learning method";
+    announceBoardSelection();
   }
   if(name==="workshop"){
     $("workshop-back").textContent="← Back to "+(workshopReturnScreen==="levels"?"levels":"home");
@@ -463,8 +388,8 @@ function showScreen(name,{focusHeading=true}={}) {
       levels:"levels",workshop:"workshop",atelier:"Atelier"})[supportReturnScreen]||"home";
     $(name+"-return").textContent="← Back to "+label;
   }
-  const activeTopLevel=(name==="levels"||name==="stages")
-    ?"levels":name;
+  const activeTopLevel=(name==="levels"||name==="stages"||name==="worlds")
+    ?"worlds":name;
   document.querySelectorAll(".site-nav-links button[data-screen]").forEach(button=>{
     if(button.dataset.screen===activeTopLevel)
       button.setAttribute("aria-current","page");
@@ -645,10 +570,6 @@ function announceBoardSelection(){
   $("board-selection-status").textContent=world.title+", "+stage.title+
     ". "+totals.completed+" of "+totals.count+" levels complete.";
 }
-function focusBoardSelection(groupId){
-  $(groupId).querySelector('button[aria-pressed="true"]')?.focus({preventScroll:true});
-  announceBoardSelection();
-}
 $("site-shell").addEventListener("click", event => {
   const target = event.target.closest("button");
   if (!target || target.disabled) return;
@@ -656,61 +577,33 @@ $("site-shell").addEventListener("click", event => {
   if(target.hasAttribute("data-support-return"))
     return showScreen(supportReturnScreen);
   if(target.id==="board-continue"){
+    if(currentScreen!=="levels")return;
     const levelId=target.dataset.levelId;
     if(levelId)return launch(levelId,selectedStage,selectedWorld);
     return;
   }
-  if(target.id==="home-choose-level"){
-    boardReturnScreen="home";
-    return showScreen("levels");
-  }
+  if(target.id==="home-choose-level")return showScreen("worlds");
   if(target.dataset.worldStages){
+    if(currentScreen!=="worlds")return;
     const world=findCampaignWorld(target.dataset.worldStages);
     if(!world?.available)return;
     selectedWorld=world.id;
+    selectedStage=null;
     return showScreen("stages");
   }
-  if(target.dataset.homeStage){
-    const worldId=target.dataset.homeWorld;
-    const slot=stageResumeLevel(campaign,worldId,target.dataset.homeStage);
-    if(slot)launch(slot.id,target.dataset.homeStage,worldId);
-    return;
-  }
-  if(target.dataset.mapWorld){
-    const world=findCampaignWorld(target.dataset.mapWorld);
-    if(!world?.available)return;
-    selectedWorld=world.id;
-    if(!findCampaignStage(world.id,selectedStage)?.available)
-      selectedStage=world.stages.find(stage=>stage.available)?.id||"guided";
-    if(currentScreen==="levels"){
-      renderLevels();
-      focusBoardSelection("map-world-tabs");
-      return;
-    }
-    boardReturnScreen=currentScreen==="worlds"?"worlds":"home";
-    return showScreen("levels");
-  }
-  if(target.dataset.mapStage){
-    if(!findCampaignStage(selectedWorld,target.dataset.mapStage)?.available)return;
-    if(selectedStage===target.dataset.mapStage)return;
-    selectedStage=target.dataset.mapStage;
-    renderLevels();
-    focusBoardSelection("map-stage-tabs");
-    return;
-  }
   if (target.dataset.stageOpen) {
+    if(currentScreen!=="stages")return;
     const stage=findCampaignStage(selectedWorld,target.dataset.stageOpen);
     if(!findCampaignWorld(selectedWorld)?.available||!stage?.available)return;
     selectedStage=stage.id;
-    boardReturnScreen="stages";
     return showScreen("levels");
   }
   if (target.dataset.screen){
-    if(target.dataset.screen==="levels")boardReturnScreen="home";
     if(target.id==="workshop-back")return showScreen(workshopReturnScreen);
     return showScreen(target.dataset.screen);
   }
   if (target.dataset.level){
+    if(currentScreen!=="levels")return;
     const board=$("level-sections");
     if(board.dataset.boardKey)
       boardScrollPositions.set(board.dataset.boardKey,board.scrollTop);
@@ -724,24 +617,26 @@ $("level-sections").addEventListener("scroll",event=>{
   if(currentScreen==="levels"&&!$("site-levels").hidden&&board.dataset.boardKey)
     boardScrollPositions.set(board.dataset.boardKey,board.scrollTop);
 });
+// Arrows move focus, Enter/Space explicitly selects the world or method.
+for(const [pageId,selector] of [["site-worlds","[data-world-stages]"],["site-stages","[data-stage-open]"]]){
+  $(pageId).addEventListener("keydown",event=>{
+    if(event.altKey||event.ctrlKey||event.metaKey||event.shiftKey)return;
+    if(!["ArrowLeft","ArrowRight","ArrowUp","ArrowDown","Home","End"].includes(event.key))return;
+    const button=event.target;
+    if(!(button instanceof HTMLButtonElement)||!button.matches(selector)||button.disabled)return;
+    const items=[...$(pageId).querySelectorAll(selector+":not(:disabled)")];
+    const index=items.indexOf(button);
+    if(index<0)return;
+    const next=spatialTileIndex(items.map(item=>item.getBoundingClientRect()),index,event.key);
+    event.preventDefault();items[next]?.focus();
+  });
+}
 // Keep the native Tab order, with spatial arrow keys as a shortcut.
 $("site-levels").addEventListener("keydown",event=>{
   if(event.altKey||event.ctrlKey||event.metaKey||event.shiftKey)return;
   const button=event.target,key=event.key;
   if(!(button instanceof HTMLButtonElement)||button.disabled)return;
   if(!["ArrowLeft","ArrowRight","ArrowUp","ArrowDown","Home","End"].includes(key))return;
-  const group=button.closest("#map-world-tabs,#map-stage-tabs");
-  if(group){
-    const enabled=[...group.querySelectorAll("button:not(:disabled)")];
-    const index=enabled.indexOf(button);
-    if(index<0)return;
-    const next=key==="Home"?0:key==="End"?enabled.length-1:
-      Math.max(0,Math.min(enabled.length-1,index+
-        (key==="ArrowRight"||key==="ArrowDown"?1:-1)));
-    event.preventDefault();
-    if(next!==index)enabled[next].click();
-    return;
-  }
   if(!button.matches(".level-tile"))return;
   const tiles=[...$("level-sections").querySelectorAll(".level-tile:not(:disabled)")];
   const index=tiles.indexOf(button);
@@ -762,8 +657,8 @@ document.addEventListener("keydown",event=>{
         !["checkbox","radio","button"].includes(active.type)));
   if(editing)return;
   const previous={
-    worlds:"home",stages:"levels",workshop:workshopReturnScreen,
-    levels:boardReturnScreen,atelier:atelierReturnScreen,help:supportReturnScreen,settings:supportReturnScreen
+    worlds:"home",stages:"worlds",workshop:workshopReturnScreen,
+    levels:"stages",atelier:atelierReturnScreen,help:supportReturnScreen,settings:supportReturnScreen
   }[currentScreen];
   if(!previous)return;
   const page=$("site-"+currentScreen);
@@ -780,6 +675,7 @@ document.addEventListener("keydown",event=>{
   showScreen(previous);
 });
 $("home-play").addEventListener("click", () => {
+  if(!hasCampaignHistory())return showScreen("worlds");
   const destination=homeDestination();
   launch(destination.levelId,destination.stageId,destination.worldId);
 });
@@ -848,7 +744,7 @@ $("site-motion").addEventListener("click", () => {
   $("motion-toggle").click();
   renderSettings();
 });
-$("site-back").addEventListener("click", () => showScreen("home"));
+$("site-back").addEventListener("click", () => showScreen("stages"));
 $("stages-back").addEventListener("click", () => showScreen("worlds"));
 window.addEventListener("mathssprites:solved",event=>{
   if(playingNumber===null||!playingWorld||

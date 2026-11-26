@@ -50,3 +50,19 @@ export function spatialTileIndex(rectangles,index,key){
   });
   return best;
 }
+
+/** Guard incomplete menu selections; browsing never changes progress. */
+export function campaignMenuScreen(requested,world,stage){
+  if(requested==="levels"){
+    if(!world?.available)return "worlds";
+    if(!stage?.available||!world.stages.some(s=>s.id===stage.id&&s.available))return "stages";
+  }
+  if(requested==="stages"&&!world?.available)return "worlds";
+  return requested;
+}
+export function campaignHomeLabel(world,stage,number,completed=false){
+  const mode=stage.method==="auto"?"Guided":stage.method==="manual"?"Independent":
+    stage.method==="notebook"?"Algebra Apprentice":stage.title;
+  const worldName=({workshop:"Balance",opposites:"Opposites",fractions:"Fractions",squares:"Squares"})[world.id]||world.title;
+  return (completed?"Replay: ":"Continue: ")+worldName+" · "+mode+" · Level "+number+" →";
+}

@@ -41,8 +41,9 @@
   <link rel="stylesheet" href="./src/weight-shapes.css?v=93" />
   <link rel="stylesheet" href="./src/weight-effects.css?v=94" />
   <link rel="stylesheet" href="./src/chamber-themes.css?v=97" />
+  <link rel="stylesheet" href="./src/campaign-path.css?v=98" />
   <script type="module" src="./src/app.mjs?v=92"></script>
-  <script type="module" src="./src/site.mjs?v=97"></script>
+  <script type="module" src="./src/site.mjs?v=98"></script>
 </head>
 <body>
   <div class="site-shell" id="site-shell">
@@ -61,7 +62,7 @@
       </button>
       <nav class="site-nav-links" aria-label="Main menu">
         <button type="button" data-screen="home">Home</button>
-        <button type="button" data-screen="levels" aria-label="Choose a world and level">Worlds</button>
+        <button type="button" data-screen="worlds" aria-label="Choose a world">Worlds</button>
         <button type="button" data-screen="atelier" aria-label="The Atelier">Atelier</button>
         <button type="button" data-screen="help" aria-label="How to play">Help</button>
         <button type="button" data-screen="settings">Settings</button>
@@ -74,8 +75,8 @@
           <h1 id="home-title" tabindex="-1">How much does the sprite weigh?</h1>
           <p>Balance the rooms. Discover the algebra.</p>
           <div class="landing-actions">
-            <button type="button" id="home-play" class="primary-btn">Start Stage 1 · Level 1 →</button>
-            <button type="button" id="home-choose-level" class="secondary-btn">Choose a level →</button>
+            <button type="button" id="home-play" class="primary-btn" hidden>Continue</button>
+            <button type="button" id="home-choose-level" class="primary-btn">Choose a world →</button>
             <button type="button" class="secondary-btn" data-screen="workshop">Equation Workshop →</button>
             <button type="button" id="home-atelier" class="secondary-btn atelier-entry" data-screen="atelier"><span>The Atelier</span> <span id="home-atelier-stars" class="atelier-entry-stars">0 / 720 ★</span><span aria-hidden="true">›</span></button>
           </div>
@@ -128,7 +129,6 @@
           </div>
         </div>
       </section>
-      <section id="home-stage-shortcuts" class="portal-features" aria-label="Quick play by learning stage"></section>
     </main>
     <main class="site-page" id="site-atelier" hidden>
       <div class="atelier-heading">
@@ -199,7 +199,8 @@
       </div>
     </main>
     <main class="site-page" id="site-worlds" hidden>
-      <div class="portal-heading"><div><div class="portal-kicker">THE HALL OF DOORS · CHOOSE A WORLD</div>
+      <button type="button" class="site-back-link" data-screen="home">← Back to home</button>
+      <div class="portal-heading"><div><div class="portal-kicker">THE HALL OF DOORS · 1 OF 3</div>
         <h1 tabindex="-1">Choose a world</h1>
       </div></div>
       <div id="world-cards" class="world-grid"></div>
@@ -212,7 +213,6 @@
         </div>
       </div>
       <div id="world1-stage-cards" class="world1-stage-grid" aria-label="World 1 learning stages"></div>
-      <section id="world1-workshop" class="workshop-card" aria-label="Equation Workshop"></section>
       <p id="stage-teacher-note" class="teacher-note" hidden>Teacher tools include extra previews; all implemented student levels are open.</p>
     </main>
     <main class="site-page" id="site-workshop" hidden>
@@ -270,19 +270,12 @@
       </div>
     </main>
     <main class="site-page" id="site-levels" hidden>
-      <button type="button" id="site-back" class="site-back-link">← Home</button>
-      <div class="experiment-board-nav" aria-label="Experiment Board selection">
-        <span class="board-brass-seal" aria-hidden="true">✥</span>
-        <div class="map-selector">
-          <span class="map-selector-label">WORLD</span>
-          <div id="map-world-tabs" class="map-world-tabs" role="group" aria-label="Choose a mathematical world" aria-describedby="board-keyboard-note"></div>
-        </div>
-        <div class="map-selector">
-          <span class="map-selector-label">HOW TO LEARN</span>
-          <div id="map-stage-tabs" class="map-stage-tabs" role="group" aria-label="Choose how to learn" aria-describedby="board-keyboard-note"></div>
-        </div>
-      </div>
-      <p id="board-keyboard-note" class="visually-hidden">Use the arrow keys to change a world or stage, then Tab to reach the levels. On a level, use the arrow keys to move between tiles and Enter to play.</p>
+      <nav class="campaign-path" aria-label="Campaign selection">
+        <button type="button" class="site-back-link" data-screen="worlds">← Change world</button>
+        <button type="button" id="site-back" class="site-back-link">← Change learning method</button>
+        <span class="campaign-step">3 OF 3 · CHOOSE A LEVEL</span>
+      </nav>
+      <p id="board-keyboard-note" class="visually-hidden">Use Tab or arrow keys to move between levels, then Enter to play. Change world or learning method using the links above.</p>
       <span id="board-selection-status" class="visually-hidden" role="status" aria-live="polite" aria-atomic="true"></span>
       <div class="portal-heading">
         <div><div id="levels-stage-kicker" class="portal-kicker">WORLD 01 · STAGE 1 · POSITIVE WHOLE NUMBERS</div>
@@ -302,7 +295,7 @@
         </div>
       </section>
       <details id="level-star-legend" class="level-star-legend"><summary>★ How stars work</summary><p>★★★ shortest route · ★★ one extra move · ★ two or more extra moves. Your best result is saved. Every available level is open.</p></details>
-       <div id="level-sections"></div>
+       <div id="level-sections" aria-describedby="board-keyboard-note"></div>
       <p id="teacher-note" class="teacher-note" hidden>Every implemented puzzle in this stage is open to students.</p>
     </main>
     <main class="site-page" id="site-help" hidden>
