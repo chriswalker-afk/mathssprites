@@ -1,3 +1,4 @@
+import {playCampaignLevel} from "./campaign-menu-helper.mjs";
 import {openCampaignBoard} from "./campaign-menu-helper.mjs";
 import {test,expect} from "@playwright/test";
 
@@ -7,7 +8,7 @@ test.beforeEach(async({page})=>{
 });
 async function openGuided(page,n){
   await openCampaignBoard(page,"opposites","guided");
-  await page.locator('[data-level="'+n+'"]').click();
+  await playCampaignLevel(page,page.locator('[data-level="'+n+'"]'));
 }
 async function divideBy(page,n){
   await page.locator('[data-operation="divide"]').click();
