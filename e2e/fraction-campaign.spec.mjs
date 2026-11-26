@@ -71,6 +71,20 @@ test("solve a Guided fraction level, reveal exact comic and stars, advance and r
   const store=await page.evaluate(()=>JSON.parse(localStorage.getItem("mathssprites.campaign.v2")));
   expect(store.worlds.fractions.stages.guided.completed).toEqual(["frac-g-01"]);
   expect(store.worlds.fractions.stages.guided.bestMoves["frac-g-01"]).toBe(1);
+  // Explicit apply updates both the main document and the separate fraction scene.
+  const apply=page.locator('[data-apply-reward="curious-eyes"]');
+  await expect(apply).toHaveText("Apply cosmetic now");
+  await expect(root.locator("#fraction-lab")).toHaveAttribute("data-sprite-eyes","original");
+  await apply.click();
+  await expect(apply).toHaveText("Applied ✓");
+  await expect(apply).toHaveAttribute("aria-disabled","true");
+  await expect(page.locator("#reward-celebration-detail")).toHaveText("Curious eyes applied!");
+  await expect(page.locator("body")).toHaveAttribute("data-sprite-eyes","curious-eyes");
+  await expect(root.locator("#fraction-lab")).toHaveAttribute("data-sprite-eyes","curious-eyes");
+  await expect(page.locator("#replay-backdrop")).toBeVisible();
+  expect(await page.evaluate(()=>JSON.parse(localStorage.getItem("mathssprites.campaign.v2")))).toEqual(store);
+  await page.locator("#reward-celebration-dismiss").click();
+  await expect(page.locator("#reward-celebration")).toBeHidden();
   expect(await page.evaluate(()=>Object.fromEntries(Object.entries(localStorage).filter(([k])=>!k.endsWith(".v2")&&k!=="mathssprites.cosmetics.v1"&&!k.startsWith("mathssprites.route-guide."))))).toEqual(legacy);
   await page.locator("#next-level").click();
   await expect(lab(page).locator("#fb-chapter-status")).toContainText("LEVEL 02 / 24");
@@ -79,6 +93,8 @@ test("solve a Guided fraction level, reveal exact comic and stars, advance and r
   await page.reload();
   await page.locator("#home-play").click();
   await expect(lab(page).locator("#fb-chapter-status")).toContainText("LEVEL 02 / 24");
+  await expect(lab(page).locator("#fraction-lab")).toHaveAttribute("data-sprite-eyes","curious-eyes");
+  await expect(page.locator("#reward-celebration")).toBeHidden();
   await lab(page).locator("#fb-game-levels").click();
   await expect(page.locator('[data-level="1"] .tile-stars')).toHaveAttribute("data-stars","3");
   await chooseCampaignWorld(page,"workshop");

@@ -78,6 +78,11 @@ test("two-step solution earns two stars; replaying optimally upgrades the best r
   await expect(page.locator("#reward-celebration")).toBeVisible();
   await expect(page.locator("#reward-celebration-names")).toContainText("Curious eyes");
   await expect(page.locator("#next-level")).toBeEnabled();
+  await expect(page.locator('[data-apply-reward="curious-eyes"]')).toHaveText("Apply cosmetic now");
+  await expect(page.locator("body")).toHaveAttribute("data-sprite-eyes","original");
+  await page.locator("#reward-celebration-dismiss").click();
+  await expect(page.locator("#reward-celebration")).toBeHidden();
+  await expect(page.locator("#replay-backdrop")).toBeVisible();
   await page.reload();
   await expect(page.locator("#reward-celebration")).toBeHidden();
   expect(await page.evaluate(()=>JSON.parse(localStorage.getItem("mathssprites.cosmetics.v1")))).toEqual(cosmetic);
