@@ -129,14 +129,14 @@ export function weightAssemblyMarkup(denominator,indices,{outline=true,label=tru
       '" data-value="1/'+denominator+'" style="--fw-spread:'+spread+'px">'+
       '<clipPath id="'+clip+'"><polygon points="'+coords(p.polygon)+'"/></clipPath>'+
       '<g clip-path="url(#'+clip+')"><polygon points="'+body+'" fill="url(#'+id+')"/>'+
-      '<path d="M12 89H88 M13 94H86" fill="none" stroke="#d8b77b" stroke-width="2.5"/>'+
-      '<path d="M36 31L31 72" stroke="#ffefb8" stroke-opacity=".30" stroke-width="8" stroke-linecap="round"/>'+
+      '<path class="fw-material-rim" d="M12 89H88 M13 94H86" fill="none" stroke="#d8b77b" stroke-width="2.5"/>'+
+      '<path class="fw-material-shine" d="M36 31L31 72" stroke="#ffefb8" stroke-opacity=".30" stroke-width="8" stroke-linecap="round"/>'+
       '</g><polygon class="fw-cut-edge" points="'+coords(p.polygon)+'" fill="none" stroke="#694921" stroke-width=".75" stroke-linejoin="round"/></g>';
   }).join("");
   return '<span class="fw-assembly'+(separated?' is-separated':'')+'" data-complete="'+full+'" role="img" aria-label="'+description+'">'+
     '<svg aria-hidden="true" viewBox="-18 0 136 103" xmlns="http://www.w3.org/2000/svg">'+
     '<defs><linearGradient id="'+id+'" x1="8" y1="15" x2="90" y2="97" gradientUnits="userSpaceOnUse">'+
-    '<stop stop-color="#7b592f"/><stop offset=".32" stop-color="#d5b17c"/><stop offset=".70" stop-color="#8f6a3e"/><stop offset="1" stop-color="#5b412b"/>'+
+    '<stop class="fw-material-dark" stop-color="#7b592f"/><stop class="fw-material-light" offset=".32" stop-color="#d5b17c"/><stop class="fw-material-mid" offset=".70" stop-color="#8f6a3e"/><stop class="fw-material-deep" offset="1" stop-color="#5b412b"/>'+
     '</linearGradient></defs>'+
     (outline&&denominator>1?'<polygon class="fw-whole-outline" points="'+body+'" fill="none" stroke="currentColor" stroke-width="1.4" stroke-dasharray="3 3"/>':"")+
     art+(full?'<polygon class="fw-joined-edge" points="'+body+'" fill="none" stroke="#694921" stroke-width=".75" stroke-linejoin="round"/>':"")+'</svg>'+(label?'<span class="fw-label" aria-hidden="true">'+caption+'</span>':"")+'</span>';

@@ -11,7 +11,7 @@ import {readFileSync} from "node:fs";
 export const GROUP_SPECS=Object.freeze({
   crates:Object.freeze(["e2e/crate-expansion.spec.mjs","e2e/crate-stack.spec.mjs","e2e/crate-division.spec.mjs","e2e/group-crates.spec.mjs","e2e/grouped-progression.spec.mjs","e2e/guided-crate-chapter.spec.mjs","e2e/signed-crate-physics.spec.mjs","e2e/signed-crate-chapter.spec.mjs","e2e/world2-other-mode-crates.spec.mjs"]),
   navigation:Object.freeze(["e2e/sprite-atelier.spec.mjs","e2e/fraction-independent-campaign.spec.mjs","e2e/fraction-campaign.spec.mjs","e2e/experiment-board.spec.mjs","e2e/navigation-journey.spec.mjs","e2e/menu-polish.spec.mjs","e2e/site-navigation.spec.mjs","e2e/onboarding-polish.spec.mjs"]),
-  visual:Object.freeze(["e2e/sprite-cosmetics.spec.mjs","e2e/fraction-sprite-preview.spec.mjs","e2e/fraction-weight-preview.spec.mjs","e2e/menu-polish-visual.spec.mjs","e2e/portal-art.spec.mjs","e2e/home-hero.spec.mjs"]),
+  visual:Object.freeze(["e2e/weight-materials.spec.mjs","e2e/sprite-cosmetics.spec.mjs","e2e/fraction-sprite-preview.spec.mjs","e2e/fraction-weight-preview.spec.mjs","e2e/menu-polish-visual.spec.mjs","e2e/portal-art.spec.mjs","e2e/home-hero.spec.mjs"]),
   notebook:Object.freeze(["e2e/fraction-workshop.spec.mjs","e2e/fraction-notebook-campaign.spec.mjs","e2e/notebook-operation-editor.spec.mjs","e2e/notebook-first.spec.mjs","e2e/equation-workshop.spec.mjs","e2e/apprentice-campaign.spec.mjs","e2e/square-notebook-campaign.spec.mjs","e2e/square-workshop.spec.mjs","e2e/replay-writing.spec.mjs"]),
   signed:Object.freeze(["e2e/opposites-world.spec.mjs","e2e/world2-difficulty-pass.spec.mjs","e2e/signed-objects.spec.mjs","e2e/starting-zero-pairs.spec.mjs","e2e/future-world-runtime.spec.mjs"]),
   layout:Object.freeze(["e2e/adaptive-viewport.spec.mjs","e2e/viewport-fit.spec.mjs","e2e/six-chapter-layout.spec.mjs","e2e/weight-piles.spec.mjs","e2e/motion-notice.spec.mjs","e2e/scene-polish.spec.mjs","e2e/fraction-presentation.spec.mjs"]),
@@ -30,6 +30,7 @@ const RULES=Object.freeze([
   [/^src\/(?:sprite-effects\.css|reward-celebration\.(?:mjs|css))$/ ,["visual","motion","physics","navigation","notebook","layout","area","signed"]],
   [/^src\/sprite-wearables\.css$/ ,["navigation","visual","layout","signed","physics","area"]],
   [/^src\/sprite-cosmetics\.(?:mjs|css)$|^sprite-cosmetic-preview\.html$|^src\/sprite-cosmetic-preview\.mjs$/ ,["visual","layout","signed","physics","area"]],
+  [/^src\/weight-materials\.css$/,["visual","layout","physics","signed","crates","area","navigation","attempts"]],
   [/^src\/laboratory-cosmetics\.mjs$/,["navigation","visual","layout","physics"]],
   [/^src\/cosmetic-(?:catalog|rewards)\.mjs$/,["navigation","notebook","signed","physics","area"]],
   [/^src\/square-(?:workshop|route-search)\.mjs$/ ,["notebook","area","navigation"]],

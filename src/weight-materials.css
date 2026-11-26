@@ -1,0 +1,120 @@
+/* PR92: weight paint only, not layout or mathematical state.
+   A scope always resets all inherited paint tokens. Native brass defaults
+   deliberately differ slightly across renderers and are retained exactly. */
+:where([data-weight-material]){
+  --wm-dark:initial;
+  --wm-light:initial;
+  --wm-mid:initial;
+  --wm-deep:initial;
+  --wm-rim:initial;
+  --wm-seam:initial;
+  --wm-shine:initial;
+  --wm-shine-soft:initial;
+}
+[data-weight-material="polished-steel"]{
+  --wm-dark:#6a7b85;
+  --wm-light:#e7f0f4;
+  --wm-mid:#9daeb7;
+  --wm-deep:#43515b;
+  --wm-rim:#e5eef1;
+  --wm-seam:#35434c;
+  --wm-shine:#effbff;
+  --wm-shine-soft:#effbff61;
+}
+[data-weight-material="copper"]{
+  --wm-dark:#8a4c30;
+  --wm-light:#f2b98e;
+  --wm-mid:#b97751;
+  --wm-deep:#633523;
+  --wm-rim:#f2c4a0;
+  --wm-seam:#5a301f;
+  --wm-shine:#ffe3ca;
+  --wm-shine-soft:#ffe3ca61;
+}
+[data-weight-material="blue-enamel"]{
+  --wm-dark:#284f7e;
+  --wm-light:#a9d9f4;
+  --wm-mid:#508abb;
+  --wm-deep:#203d63;
+  --wm-rim:#c3e4f5;
+  --wm-seam:#182c48;
+  --wm-shine:#e4f6ff;
+  --wm-shine-soft:#e4f6ff61;
+}
+[data-weight-material="gold"]{
+  --wm-dark:#9f7529;
+  --wm-light:#fff0a1;
+  --wm-mid:#dcb54b;
+  --wm-deep:#7a5517;
+  --wm-rim:#ffdf82;
+  --wm-seam:#684513;
+  --wm-shine:#fff5ce;
+  --wm-shine-soft:#fff5ce61;
+}
+[data-weight-material="jade-enamel"]{
+  --wm-dark:#315e4c;
+  --wm-light:#bee6cc;
+  --wm-mid:#6da689;
+  --wm-deep:#254736;
+  --wm-rim:#c5e9d0;
+  --wm-seam:#203c30;
+  --wm-shine:#e8fff0;
+  --wm-shine-soft:#e8fff061;
+}
+[data-weight-material="cast-iron"]{
+  --wm-dark:#495257;
+  --wm-light:#b0bbbf;
+  --wm-mid:#626e73;
+  --wm-deep:#303a3f;
+  --wm-rim:#a7b3b9;
+  --wm-seam:#202a2e;
+  --wm-shine:#dce4e6;
+  --wm-shine-soft:#dce4e661;
+}
+[data-weight-material="violet-enamel"]{
+  --wm-dark:#604579;
+  --wm-light:#e0c4ef;
+  --wm-mid:#a07cbd;
+  --wm-deep:#44305b;
+  --wm-rim:#e9cff5;
+  --wm-seam:#392648;
+  --wm-shine:#f7eaff;
+  --wm-shine-soft:#f7eaff61;
+}
+:where([data-weight-material]) .weight{
+  background:linear-gradient(108deg,var(--wm-dark,#7b592f) 0%,var(--wm-light,#d5b17c) 32%,var(--wm-mid,#8f6a3e) 70%,var(--wm-deep,#5b412b));
+}
+:where([data-weight-material]) .weight:after{background:var(--wm-seam,#4b311e);box-shadow:0 -3px var(--wm-rim,#d8b77b)}
+:where([data-weight-material]) .weight-handle{border-color:var(--wm-rim,#e1c085);background:var(--wm-dark,#846139)}
+:where([data-weight-material]) .weight-shine{background:var(--wm-shine-soft,rgba(255,239,184,.25))}
+/* The home scene, tiny tool icons, overflow, crate interiors and square
+   construction already use simplified forms. Keep their native outlines. */
+:where([data-weight-material]) .hero-weight{
+  background:linear-gradient(110deg,var(--wm-light,#e3c990) 6%,var(--wm-mid,#b18b53) 47%,var(--wm-deep,#80603d) 95%);
+  border-color:var(--wm-rim,#e8cc92);
+}
+:where([data-weight-material]) .hero-weight-handle{border-color:var(--wm-seam,#6c4e31)}
+:where([data-weight-material]) .tiny-weight{background:linear-gradient(100deg,var(--wm-dark,#977044),var(--wm-light,#e9c890),var(--wm-deep,#80603e))}
+:where([data-weight-material]) .fb-mini-weight{background:linear-gradient(100deg,var(--wm-dark,#926937),var(--wm-light,#d9b680),var(--wm-deep,#73522f))}
+:where([data-weight-material]) .overflow-piece.weight-spill{background:linear-gradient(95deg,var(--wm-dark,#835a32),var(--wm-light,#e1bb83),var(--wm-deep,#725131));border-color:var(--wm-rim,#c3a576)}
+:where([data-weight-material]) .overflow-piece.weight-spill:before{border-color:var(--wm-rim,#d4ad76)}
+:where([data-weight-material]) .sealed-crate .crate-mini-weight{
+  background:linear-gradient(110deg,var(--wm-light,#e5c78c),var(--wm-mid,#a9824a) 67%,var(--wm-deep,#725438));border-color:var(--wm-rim,#e1b97e)
+}
+:where([data-weight-material]) .sealed-crate .crate-bay-weight{
+  background:linear-gradient(95deg,var(--wm-light,#f0d28d),var(--wm-mid,#c49a57) 44%,var(--wm-deep,#856039) 95%);border-color:var(--wm-rim,#e4bd80)
+}
+:where([data-weight-material]) .comic-crate-story .comic-crate-weight{background:linear-gradient(110deg,var(--wm-light,#f2d693),var(--wm-deep,#a56f34))}
+:where([data-weight-material]) .box-actor.box-actor-weight{
+  background:linear-gradient(105deg,var(--wm-dark,#7d5937),var(--wm-light,#e6c895) 54%,var(--wm-deep,#825f3a));border-color:var(--wm-rim,#8d673d)
+}
+:where([data-weight-material]) .box-edge-token.edge-weight:after{background:linear-gradient(90deg,var(--wm-dark,#7c5937),var(--wm-light,#edcf96),var(--wm-deep,#805f3b))}
+/* SVG artwork shares the same paint palette. Never restyle the polygon
+   points, clip paths, fractional labels or hidden joined seams. */
+.fw-material-dark{stop-color:var(--wm-dark,#7b592f)}
+.fw-material-light{stop-color:var(--wm-light,#d5b17c)}
+.fw-material-mid{stop-color:var(--wm-mid,#8f6a3e)}
+.fw-material-deep{stop-color:var(--wm-deep,#5b412b)}
+.fw-material-rim{stroke:var(--wm-rim,#d8b77b)}
+.fw-material-shine{stroke:var(--wm-shine,#ffefb8)}
+.fw-cut-edge,.fw-joined-edge{stroke:var(--wm-seam,#694921)}

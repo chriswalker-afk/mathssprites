@@ -155,3 +155,15 @@
 @media(min-width:900px) and (max-height:649px){#site-atelier .atelier-collections button{min-height:27px;padding:3px 6px}.atelier-chamber-stage{height:112px}}
 @media(max-width:899px){.atelier-chamber-stage{height:170px}}
 @media(max-width:600px){#site-atelier .atelier-collections button{min-height:42px;gap:4px;font-size:.77rem}.atelier-chamber-stage{height:142px}}
+
+/* Native weight thumbnails and exact 2/3 SVG reference share the scene paint. */
+.atelier-thumb>.weight{position:relative;flex:none;transform:scale(.76);transform-origin:left bottom}
+.atelier-weight-comparison{width:100%;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));min-width:0}
+.atelier-weight-comparison .atelier-stage{height:clamp(112px,21dvh,185px)}
+.atelier-fraction-stage .fw-assembly{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;width:min(100%,calc(52px * var(--atelier-scale)));max-width:100%;flex:none;color:#ad956e;padding-bottom:2px}
+.atelier-fraction-stage .fw-assembly svg{display:block;width:100%;height:auto;overflow:visible}
+.atelier-fraction-stage .fw-label{color:#fff0c6;font:700 .8rem/1.2 system-ui,sans-serif}
+.atelier-fraction-stage .fw-joined-edge{display:none}
+.atelier-weight-comparison .atelier-figure>span{font-size:.69rem}
+#atelier-weight-finish{font-weight:700;color:#f0d39e}
+@media(min-width:900px) and (max-height:649px){.atelier-weight-comparison .atelier-stage{height:95px}}
