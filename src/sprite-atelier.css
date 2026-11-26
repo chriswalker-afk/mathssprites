@@ -167,3 +167,13 @@
 .atelier-weight-comparison .atelier-figure>span{font-size:.69rem}
 #atelier-weight-finish{font-weight:700;color:#f0d39e}
 @media(min-width:900px) and (max-height:649px){.atelier-weight-comparison .atelier-stage{height:95px}}
+
+/* Real theme miniature uses the same actor appearance as the fitting room.
+   Sample actors are static, and never belong to a gameplay inventory. */
+.atelier-chamber-thumbnail{display:block;width:34px;height:31px;border:2px solid #786347;border-top-width:3px;border-radius:12px 12px 3px 3px;overflow:hidden;box-shadow:inset 0 -3px #362c24}
+.atelier-chamber-sample{position:absolute;left:0;right:0;bottom:13%;display:flex;justify-content:center;align-items:flex-end;gap:1px;pointer-events:none;transform:scale(.68);transform-origin:center bottom}
+.atelier-chamber-sample>.token{flex:none;margin:0}
+.atelier-chamber-sample :is(.sprite-motion,.sprite-body,.sprite-ground-shadow,.sprite-eyes,.sprite-eyes i,.sprite-cosmetic-effect),.atelier-chamber-sample .weight::before{animation:none!important}
+.atelier-chamber-sample .sprite-ground-shadow::after{display:none}
+#atelier-chamber-name{font-weight:700;color:#f0d39e}
+@media(max-width:600px),(max-height:649px){.atelier-chamber-sample{transform:scale(.47)}}
