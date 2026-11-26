@@ -2,10 +2,10 @@
  * A shadow root isolates legacy app IDs, SVG clip IDs and event listeners.
  * Navigation and progress remain owned by site.mjs, not the physics renderer.
  */
-import {mountFractionBalance} from "./fraction-balance.mjs?v=85";
+import {mountFractionBalance} from "./fraction-balance.mjs?v=87";
 import {mountFractionNotebook} from "./fraction-notebook.mjs";
 import {FRACTION_CAMPAIGN_SCENE} from "./fraction-campaign-scene.mjs";
-import {spriteInventoryMarkup} from "./fraction-sprites.mjs?v=85";
+import {spriteInventoryMarkup} from "./fraction-sprites.mjs?v=87";
 import {weightInventoryMarkup} from "./fraction-weights.mjs";
 import {rational,req,rtext} from "./rational.mjs";
 import {isSolved} from "./engine.mjs";
@@ -13,9 +13,9 @@ import {isSolved} from "./engine.mjs";
 // Keep the separately fetched shadow-root assets on the same presentation
 // revision as their markup, including on a returning student's warm cache.
 // Bump this revision and the site entry/import URLs when presentation assets change.
-import {applySpriteAppearance} from "./sprite-cosmetics.mjs?v=85";
-export const FRACTION_PRESENTATION_REVISION="85";
-const STYLE_FILES=["styles.css","scene-polish.css","fraction-weights.css","fraction-sprites.css","fraction-balance.css","fraction-campaign.css","fraction-notebook.css","sprite-cosmetics.css"];
+import {applySpriteAppearance} from "./sprite-cosmetics.mjs?v=87";
+export const FRACTION_PRESENTATION_REVISION="87";
+const STYLE_FILES=["styles.css","scene-polish.css","fraction-weights.css","fraction-sprites.css","fraction-balance.css","fraction-campaign.css","fraction-notebook.css","sprite-cosmetics.css","sprite-wearables.css"];
 const escape=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const mn=n=>"<mn>"+n+"</mn>";
 const mo=s=>"<mo>"+s+"</mo>";
@@ -77,7 +77,7 @@ export function createFractionCampaignView({slot,context,onLeave,onAdvance,onCom
   const root=document.createElement("main");root.className="fb-lab fb-campaign";root.id="fraction-lab";root.hidden=true;
   applySpriteAppearance(root,appearance);
   root.innerHTML='<header class="fb-header fb-campaign-header"><div class="identity fb-identity">'+
-    '<button type="button" id="fb-brand-home" class="game-sprite-home" aria-label="Return to Maths Sprites home" title="Home"><span class="brand-sprite-frame" aria-hidden="true"><span class="brand-sprite-actor token sprite sprite-black"><span class="sprite-ground-shadow"></span><span class="sprite-reaction-shell"><span class="sprite-motion"><span class="sprite-feet"></span><span class="sprite-body"><span class="sprite-eyes"><i></i><i></i></span></span></span></span></span></span></button>'+
+    '<button type="button" id="fb-brand-home" class="game-sprite-home" aria-label="Return to Maths Sprites home" title="Home"><span class="brand-sprite-frame" aria-hidden="true"><span class="brand-sprite-actor token sprite sprite-black"><span class="sprite-ground-shadow"></span><span class="sprite-reaction-shell"><span class="sprite-motion"><span class="sprite-feet"></span><span class="sprite-body"><span class="sprite-eyes"><i></i><i></i></span><span class="sprite-wear sprite-wear-headwear" aria-hidden="true"></span><span class="sprite-wear sprite-wear-eyewear" aria-hidden="true"></span><span class="sprite-wear sprite-wear-neckwear" aria-hidden="true"></span></span></span></span></span></span></button>'+
     '<h1>Maths Sprites<span class="title-dot">.</span></h1></div><div class="fb-game-meta">'+
     '<button type="button" id="fb-game-home" aria-label="Maths Sprites home">⌂ Home</button>'+
     '<button type="button" id="fb-game-levels">▦ Levels</button>'+

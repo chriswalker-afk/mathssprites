@@ -9,7 +9,7 @@ import { divisionBasketMarkup, playDivisionBaskets } from "./division-baskets.mj
 import {
   multiplicationBasketMarkup,multiplicationHandProp,playMultiplicationBaskets
 } from "./multiplication-baskets.mjs";
-import {spriteCreatureMarkup,heldSpriteMarkup,miniSpriteMarkup} from "./square-sprites.mjs";
+import {spriteCreatureMarkup,heldSpriteMarkup,miniSpriteMarkup} from "./square-sprites.mjs?v=87";
 import { pickSpriteHandReaction, dodgeOffsetPx } from "./sprite-reactions.mjs";
 import { floorScaleToFit, inRoomBoxPlan, areaMathLabel } from "./area-layout.mjs";
 import {mountSquareConstruction,squareOverflowPlan,squareOverflowMarkup} from "./square-construction.mjs";
