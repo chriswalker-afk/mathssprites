@@ -59,7 +59,7 @@ test("large custom rooms pack into rows and overflow props leave no state or sav
   await expect(root(page).locator("#fb-moves")).toHaveText("0 moves");
   expect(await page.evaluate(()=>JSON.stringify(localStorage))).toBe(before);
 });
-test("fraction scene has an accessible local reduced-motion setting and keeps free play isolated",async({page})=>{
+test("fraction scene persists the common motion preference and keeps free play progress isolated",async({page})=>{
   await page.emulateMedia({reducedMotion:"no-preference"});
   await custom(page,"2x=5");
   const before=await page.evaluate(()=>JSON.stringify(localStorage));
@@ -68,9 +68,12 @@ test("fraction scene has an accessible local reduced-motion setting and keeps fr
   await toggle.click();
   await expect(toggle).toHaveAttribute("aria-pressed","true");
   await expect(root(page)).toHaveAttribute("data-reduced","true");
+  expect(await page.evaluate(()=>localStorage.getItem("mathssprites.motion-preference.v1"))).toBe("reduced");
+  const afterPreference=await page.evaluate(()=>JSON.stringify(localStorage));
+  expect(await page.evaluate(()=>{const copy=Object.fromEntries(Object.entries(localStorage));delete copy["mathssprites.motion-preference.v1"];return copy;})).toEqual(JSON.parse(before));
   await scale(page,"divide",2);await wait(page);
   await expect(root(page)).toHaveAttribute("data-solved","true");
   await expect(root(page).locator("#fb-rating")).toContainText("no stars awarded");
   await shot(page,"solved-reduced");
-  expect(await page.evaluate(()=>JSON.stringify(localStorage))).toBe(before);
+  expect(await page.evaluate(()=>JSON.stringify(localStorage))).toBe(afterPreference);
 });

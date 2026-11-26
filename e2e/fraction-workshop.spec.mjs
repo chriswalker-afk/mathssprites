@@ -4,7 +4,8 @@ const root=page=>host(page).locator("#fraction-lab");
 const ready=page=>expect(root(page)).toHaveAttribute("data-busy","false",{timeout:25000});
 const saves=page=>page.evaluate(()=>Object.fromEntries(Object.entries(localStorage)));
 async function open(page){
-  await page.emulateMedia({reducedMotion:"reduce"});await page.goto("/");
+  await page.emulateMedia({reducedMotion:"reduce"});
+  await page.addInitScript(()=>localStorage.setItem("mathssprites.motion-preference.v1","reduced"));await page.goto("/");
   await page.locator("#home-choose-level").click();
   await page.locator('#site-levels [data-screen="workshop"]').click();
   await expect(page.locator("#site-workshop")).toBeVisible();

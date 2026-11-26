@@ -1,6 +1,7 @@
 import {test,expect} from "@playwright/test";
 async function board(page){
   await page.emulateMedia({reducedMotion:"reduce"});
+  await page.addInitScript(()=>localStorage.setItem("mathssprites.motion-preference.v1","reduced"));
   await page.goto("/");
   await page.locator("#home-choose-level").click();
   await page.locator('[data-map-world="fractions"]').click();

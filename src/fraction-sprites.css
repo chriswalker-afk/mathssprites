@@ -16,3 +16,21 @@
 .fs-inventory-objects > .fs-assembly,.fs-grid-inventory > .fs-assembly{width:70px}
 .fs-empty{color:#d8c8aa;font-style:italic;align-self:center}
 @media(prefers-reduced-motion:reduce){.fs-piece,.fs-joined-art{transition:none!important}.fs-fragment-motion{animation:none!important}}
+
+/* The exact clipped SVG remains the reference artwork for every piece.
+ * A settled whole in the campaign uses the established animated actor;
+ * there is only one visible representation of that one sprite. */
+.fs-whole-actor{display:none}
+.fb-campaign .fs-assembly[data-denominator="1"]{width:46px;min-width:46px;height:47px;justify-content:flex-end}
+.fb-campaign .fs-assembly[data-denominator="1"]>svg{display:none}
+.fb-campaign .fs-assembly[data-denominator="1"]>.fs-whole-actor{display:inline-block}
+.fb-campaign .fs-assembly[data-denominator="1"]>.fs-label{display:none}
+.fb-campaign .fs-assembly:not([data-denominator="1"]):has(>.fs-label){width:max-content;flex-direction:row;align-items:flex-end;gap:0;max-width:none}
+.fb-campaign .fs-assembly:not([data-denominator="1"])>svg{width:88px;max-width:none;flex:none;margin-bottom:-5px}
+.fb-campaign .fs-assembly:not([data-denominator="1"]):not(.is-separated)>svg{animation:fb-fragment-breathe 3s ease-in-out infinite}
+@keyframes fb-fragment-breathe{0%,100%{transform:translateY(0)}45%{transform:translateY(-3px)}}
+.fb-campaign .fb-comic-room .fs-assembly[data-denominator="1"]{height:32px;width:32px;min-width:32px;overflow:visible}
+.fb-campaign .fb-comic-room .fs-whole-actor{transform:scale(.7);transform-origin:center bottom}
+.fb-campaign .fb-comic-room .fs-assembly:not([data-denominator="1"])>svg{width:48px;margin-bottom:-3px}
+.fb-campaign .fb-refusal-art .fs-assembly:not([data-denominator="1"])>svg{width:100%;margin:0}
+.fb-campaign[data-reduced="true"] .fs-assembly>svg{animation:none!important}

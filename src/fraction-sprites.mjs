@@ -125,7 +125,8 @@ export function spriteAssemblyMarkup(denominator,indices,{outline=true,label=tru
     '<ellipse class="fs-shadow" cx="64" cy="108" rx="30" ry="5" fill="#080f0e" opacity=".52"/>'+
     (outline&&denominator>1?'<circle class="fs-whole-outline" cx="64" cy="60" r="32" fill="none" stroke="currentColor" stroke-width="1.3" stroke-dasharray="3 3"/>':"")+
     art+(complete?'<g class="fs-joined-art"><use href="#'+id+'-art"/><circle cx="64" cy="60" r="32" fill="none" stroke="#a5b9a5" stroke-width=".9"/></g>':"")+
-    '</svg>'+(label?'<span class="fs-label" aria-hidden="true">'+caption+'</span>':"")+'</span>';
+    '</svg>'+(denominator===1?'<span class="fs-whole-actor token sprite sprite-black" aria-hidden="true" style="--hop-delay:'+(-serial*173%1600)+'ms;--wiggle-delay:'+(-serial*193%1100)+'ms;--blink-delay:'+(-serial*331%6000)+'ms"><span class="sprite-ground-shadow"></span><span class="sprite-reaction-shell"><span class="sprite-motion"><span class="sprite-feet"></span><span class="sprite-body"><span class="sprite-eyes"><i></i><i></i></span></span></span></span></span>':"")+
+    (label?'<span class="fs-label" aria-hidden="true">'+caption+'</span>':"")+'</span>';
 }
 export function spriteInventoryMarkup(value){
   const plan=spriteInventoryPlan(value);

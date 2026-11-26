@@ -43,7 +43,7 @@ export function fractionWrittenOperationMarkup(entry,operationMarkup){
 }
 export function mountFractionNotebook(root,{level,controller,equationMarkup,operationMarkup,onComplete=()=>{}}){
   const $=id=>root.querySelector("#"+id);
-  $("scene").insertAdjacentHTML("beforebegin",paperMarkup);
+  (root.querySelector(".fb-board")||$("scene")).insertAdjacentHTML("beforebegin",paperMarkup);
   const abort=new AbortController(),listen=(el,type,fn)=>el.addEventListener(type,fn,{signal:abort.signal});
   let session=startFractionNotebook(level),sign="",fraction=false,variable=false,source="builder",preview=null,dead=false,playing=false;
   const factor=()=>sign==="×"||sign==="÷";

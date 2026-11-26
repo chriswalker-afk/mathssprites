@@ -2516,6 +2516,17 @@ $("level-select").addEventListener("change", event => {
   if (notebookSession || workshopActive || squarePreviewActive || campaignLevelNumber !== null) return render();
   startLevel(Number(event.target.value));
 });
+// A fraction campaign uses the same explicit preference; sync the hidden
+// main controller so returning to another world never restores a stale mode.
+window.addEventListener("mathssprites:motion-change",event=>{
+  const next=event.detail?.reduced;
+  if(typeof next==="boolean"&&next!==reducedMotion){
+    reducedMotion=next;
+    document.body.classList.toggle("reduce-motion",next);
+    // The next normal level launch renders its visible controls. Do not
+    // redraw the hidden main scene while the fraction controller is active.
+  }
+});
 $("motion-toggle").addEventListener("click", () => chooseMotion(!reducedMotion));
 $("motion-enable").addEventListener("click", () => chooseMotion(false));
 $("undo").addEventListener("click", () => {

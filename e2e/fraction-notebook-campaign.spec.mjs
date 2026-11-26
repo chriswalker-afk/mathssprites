@@ -3,7 +3,8 @@ const lab=page=>page.locator("#fraction-game-host");
 const root=page=>lab(page).locator("#fraction-lab");
 const saved=page=>page.evaluate(()=>JSON.parse(localStorage.getItem("mathssprites.campaign.v2")));
 async function board(page){
-  await page.emulateMedia({reducedMotion:"reduce"});await page.goto("/");
+  await page.emulateMedia({reducedMotion:"reduce"});
+  await page.addInitScript(()=>localStorage.setItem("mathssprites.motion-preference.v1","reduced"));await page.goto("/");
   await page.locator("#home-choose-level").click();await page.locator('[data-map-world="fractions"]').click();
   await page.locator('[data-map-stage="notebook"]').click();
   await expect(page.locator("#site-levels")).toHaveAttribute("data-active-stage","notebook");
