@@ -125,9 +125,9 @@ export function createFractionCampaignView({slot,context,onLeave,onAdvance,onCom
   $("fb-next-level").textContent=freePlay?"Build another equation →":slot.number===context.stageLength?"Return to levels →":"Next level →";
   $("fb-review").querySelector(".fb-review-header h2").textContent="Balance restored!";
   const storyButton=document.createElement("button");storyButton.id="fb-story-again";storyButton.type="button";storyButton.textContent="Story of your moves →";$("fb-review").querySelector(".fb-comic-bottom").prepend(storyButton);
-  function cancelCelebration(){clearTimeout(celebrationTimer);celebrationTimer=null;$("level-clear").hidden=true;}
+  function cancelCelebration(){clearTimeout(celebrationTimer);celebrationTimer=null;$("level-clear").hidden=true;delete root.dataset.completing;}
   function showStory(){
-    if(dead||!completed||!isSolved(completed)||!completed.history.length)return;
+    if(dead||celebrationTimer!==null||!completed||!isSolved(completed)||!completed.history.length)return;
     cancelCelebration();
     window.dispatchEvent(new CustomEvent("mathssprites:review-fraction",{detail:{
       state:completed,level:slot.level,context:{...context,number:slot.number},
@@ -161,10 +161,10 @@ export function createFractionCampaignView({slot,context,onLeave,onAdvance,onCom
     $("fb-review").hidden=false;
     $("level-clear-title").textContent=paperFirst?"Your algebra came to life!":"Balance restored!";
     $("level-clear-subtitle").textContent=paperFirst?"Your checked steps came to life in the chambers.":"Let's discover the algebra behind those moves.";
-    cancelCelebration();$("level-clear").hidden=false;
+    cancelCelebration();root.dataset.completing="true";$("level-clear").hidden=false;
     celebrationTimer=setTimeout(()=>{
       celebrationTimer=null;if(dead)return;
-      $("level-clear").hidden=true;
+      $("level-clear").hidden=true;delete root.dataset.completing;
       if(!completed)return;
       // Paper-first retains the notebook finish and an optional story.
       if(paperFirst){if(!freePlay)onReviewReady();}
@@ -190,7 +190,7 @@ export function createFractionCampaignView({slot,context,onLeave,onAdvance,onCom
   listen($("fb-game-home"),"click",()=>{if(canLeave())onLeave("home")});
   listen($("fb-brand-home"),"click",()=>{if(canLeave())onLeave("home")});
   listen($("fb-game-levels"),"click",()=>{if(canLeave())onLeave("levels")});
-  listen($("fb-next-level"),"click",()=>{if(completed&&canLeave())onAdvance()});
+  listen($("fb-next-level"),"click",()=>{if(completed&&celebrationTimer===null&&canLeave())onAdvance()});
   listen(review,"click",showStory);
   listen(storyButton,"click",showStory);
   const observer=new MutationObserver(()=>{

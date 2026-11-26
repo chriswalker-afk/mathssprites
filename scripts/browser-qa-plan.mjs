@@ -26,7 +26,7 @@ const ALL=Object.freeze(Object.keys(GROUP_SPECS));
 // Keep source dependencies here; a spec belongs to exactly one primary
 // group, with deliberately broader routing for cross-feature weight piles.
 const RULES=Object.freeze([
-  [/^src\/completion-story\.(?:mjs|css)$/,["replay","area","layout","navigation","notebook"]],
+  [/^src\/completion-story\.(?:mjs|css)$/,["area","layout","navigation","notebook"]],
   [/^src\/(?:route-guide\.mjs|route-guide\.css|board-switchers\.css)$/,["navigation","layout","notebook"]],
   [/^src\/scene-grounding\.css$/,["layout","motion","physics","area","signed","crates","notebook"]],
   [/^src\/menu-usability\.css$/ ,["navigation","visual","layout"]],

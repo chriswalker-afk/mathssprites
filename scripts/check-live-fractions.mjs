@@ -48,7 +48,9 @@ try{
   const root=page.locator("#fraction-game-host #fraction-lab");
   await root.locator('[data-fb-op="divide"]').click();await root.locator('[data-fb-factor="2"]').click();
   await root.locator("#fb-apply").click();
-  await root.locator("#fb-next-level").waitFor({state:"visible",timeout:30000});
+  await page.locator("#replay-backdrop").waitFor({state:"visible",timeout:30000});
+  await page.locator("#replay-skip").click();
+  verify((await page.locator("#pencil-lines").textContent()).includes("x = 5/2"),"Shared journal shows the exact fractional solution");
   verify(await root.getAttribute("data-solved")==="true","Published physical fraction division solves 2x=5");
   verify((await root.locator("#right-items").getAttribute("aria-label")).includes("5/2 weights"),"Published result is exactly five halves");
   verify((await page.evaluate(()=>JSON.stringify(localStorage)))===before,"Published custom play leaves saves unchanged");

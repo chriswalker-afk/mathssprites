@@ -2387,7 +2387,7 @@ function showReplay() {
       campaignStageLevelCount+" · "+
       (guideWasActive && campaignLevelNumber===1
         ? (campaignStage==="independent"?"FIRST INDEPENDENT DISCOVERY":"FIRST DISCOVERY")
-        : "BALANCE RESTORED");
+        : currentLevel().squareLaboratory&&state.goal==="area"?"SQUARES CONSTRUCTED":"BALANCE RESTORED");
   $("replay-backdrop").hidden = false;
   setReplayPaused(true);
   drawReplay(0);
@@ -2401,7 +2401,7 @@ function hideReplay({restoreFocus=true}={}) {
   setReplayPaused(true);
   if(restoreFocus){
     if(externalReview)externalReview.restoreFocus?.();
-    else if(notebookSession&&notebookPhase==="complete")$("notebook-story").focus();
+    else if(notebookSession&&notebookPhase==="complete"&&!$("notebook-story").hidden)$("notebook-story").focus();
     else $("watch-again")?.focus();
   }
   window.dispatchEvent(new Event("mathssprites:reward-review-closed"));

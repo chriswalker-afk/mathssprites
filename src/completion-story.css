@@ -30,3 +30,5 @@
 .comic-area-cell.posX{background:#596d61;border-color:#2a4239}
 .comic-area-cell.posOne{background:#d8b478;border-color:#967341}
 @media(max-width:600px){.fb-campaign .level-clear{top:26%;padding:13px 15px;font-size:.73rem}.fb-campaign .level-clear .clear-spark{font-size:1.8rem}.comic-area-grid{width:min(52px,44%)}}
+
+.fb-campaign[data-completing="true"] #fb-review,.fb-campaign[data-completing="true"] #fb-review-link{visibility:hidden}
