@@ -12,7 +12,8 @@
     "audit:world3": "node scripts/audit-world3-routes.mjs",
     "check:live:world3": "node scripts/check-live-fractions.mjs",
     "audit:world4": "node scripts/audit-world4-routes.mjs",
-    "check:live:world4": "node scripts/check-live-squares.mjs"
+    "check:live:world4": "node scripts/check-live-squares.mjs",
+    "check:live:cosmetics": "node scripts/check-live-cosmetics.mjs"
   },
   "engines": {
     "node": ">=20"

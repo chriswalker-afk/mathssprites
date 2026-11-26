@@ -1,0 +1,11 @@
+# PR90 — Final cosmetic release QA
+
+PR89 merged as 8f6a9c8c6b12e426abf658c5ae6335eb2646e844. Evidence at audit:
+- 444/444 unit tests passed (PR89 run 45732660642).
+- PR89 browser quick 40, visual 39, navigation 57, notebook 49, layout 37, signed 23 all passed. These suites overlap; do not add them as a unique test count. Navigation includes the real 719-to-720 star transition and visual includes all 35 component IDs.
+- Live World 4 release check 45733084123 passed against balance.mrwalkermaths.com: entrypoint and World 4 module bytes matched checkout; all 240 levels selectable; no uncaught browser errors. Full main browser regression 45733084099 still running at initial audit.
+- PR88 run 45732269280 exposed an obsolete crowded fraction-room test that counted the removed .fs-piece SVG instead of .fs-whole-actor, and an intermittent timing-sensitive cargo probe. PR89 navigation and layout passed on rerun; crowded-room selector remained obsolete. PR90 corrects the selector while strengthening the assertions (48 actual whole sprites, 48 weights, no duplicates, bounded wrapping and full outfit; refused overflow leaves both sides and saves intact). The cargo recorder now observes actual animation frames in-browser from before the action, without reducing the >2px displacement or running-animation requirements.
+
+Adds a strict live cosmetic check with matching release bytes, actual requested versioned assets, isolated browser profile, locked try-on, real final star, post-replay notification, equip/reload, desktop/phone, signed cancellation, fractions and crowded room, square form, free-play saves and restore. Publishes screenshots and structured results via Actions. Existing campaign maths and star thresholds unchanged. The synthetic 719-star fixture does not certify 240 independent shortest paths, and browser screenshots are evidence for human visual inspection rather than a claim of subjective approval. No actual learner profile used.
+
+Release gate: review PR90 checks and the full main regression; inspect the retained screenshot artifact on a real school desktop and phone before cosmetic sign-off. Report any remaining failures separately rather than relabeling a failed test as passed.

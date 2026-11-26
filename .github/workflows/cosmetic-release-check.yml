@@ -1,0 +1,45 @@
+name: Cosmetic published release check
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'scripts/check-live-cosmetics.mjs'
+      - '.github/workflows/cosmetic-release-check.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - 'src/cosmetic-*.mjs'
+      - 'src/sprite-*.mjs'
+      - 'src/sprite-*.css'
+      - 'src/atelier-model.mjs'
+      - 'src/site.mjs'
+      - 'src/fraction-*.mjs'
+      - 'src/fraction-*.css'
+      - 'src/reward-celebration.*'
+      - 'scripts/check-live-cosmetics.mjs'
+      - '.github/workflows/cosmetic-release-check.yml'
+permissions:
+  contents: read
+jobs:
+  live-cosmetics:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install Chrome probe
+        run: npm install --no-save --ignore-scripts --no-audit --no-fund @playwright/test@1.65.1
+      - name: Verify actual published cosmetic release (isolated test profile)
+        run: npm run check:live:cosmetics -- --wait
+      - name: Retain visual review evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cosmetic-published-release
+          path: artifacts/
+          if-no-files-found: warn
+          retention-days: 14
