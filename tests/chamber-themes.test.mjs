@@ -16,7 +16,7 @@ test("five chamber architectures have separate local SVG artwork and agreed mile
     assert.ok(rule.includes("assets/chambers/"+t.id+".svg?v=95"));
     for(const key of ["frame","top","trim","floor","deep","ambient"])assert.match(rule,new RegExp("--ct-"+key+":#[a-f0-9]{6};"));
     const svg=read("assets/chambers/"+t.id+".svg");
-    assert.match(svg,/viewBox="0 0 480 320"/);
+    assert.match(svg,/viewBox="0 0 480 320" preserveAspectRatio="none"/);
     assert.match(svg,/<rect y="155" width="480" height="100" fill="url\(#fade\)"\/>/);
     assert.doesNotMatch(svg,/<(?:script|foreignObject|animate|image)\b/);
     assert.doesNotMatch(svg,/\b(?:href|onload|onclick)\s*=/);
