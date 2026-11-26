@@ -5,6 +5,7 @@
  * are presentation only. This module does not enable World 3.
  */
 import {rational,radd,rsub,rmul,req,rtext} from "./rational.mjs";
+import {spriteCreatureMarkup} from "./square-sprites.mjs";
 import {FRACTION_DENOMINATORS,FRACTION_CAPACITY,fractionParts,fractionPieceCount} from "./fraction-engine.mjs";
 
 export const SPRITE_RADIUS=32;
@@ -88,10 +89,23 @@ function furTexture(){
   }).join("");
 }
 const fur=furTexture();
+// The optional texture groups stay INSIDE the disk. SVG clipping of the
+// shared art, not separate miniature faces, continues to define fractions.
+const fluffyFur=Array.from({length:24},(_,i)=>{
+  const a=tau*i/24,p=point(a,28.1);
+  return '<circle cx="'+p[0]+'" cy="'+p[1]+'" r="3.7" fill="'+(i%3===0?"#495753":"#263234")+'"/>';
+}).join("");
+const spikyFur=Array.from({length:18},(_,i)=>{
+  const a=tau*i/18,tip=point(a,31.8),lo=point(a-.10,23),hi=point(a+.10,23);
+  return '<path d="M '+xy(lo)+' L '+xy(tip)+' L '+xy(hi)+' Z" fill="'+(i%2?"#41504d":"#182123")+'"/>';
+}).join("");
 function spriteArt(id){
   return '<defs><radialGradient id="'+id+'-body" cx=".32" cy=".24" r=".8">'+
     '<stop stop-color="#56615c"/><stop offset=".78" stop-color="#121719"/><stop offset="1" stop-color="#0d1315"/></radialGradient>'+
-    '<g id="'+id+'-art"><circle cx="64" cy="60" r="32" fill="url(#'+id+'-body)"/>'+fur+
+    '<g id="'+id+'-art"><circle cx="64" cy="60" r="32" fill="url(#'+id+'-body)"/>'+
+    '<g class="fs-fur-original">'+fur+'</g>'+
+    '<g class="fs-fur-fluffy" display="none">'+fluffyFur+'</g>'+
+    '<g class="fs-fur-spiky" display="none">'+spikyFur+'</g>'+
     '<path d="M39 74Q45 77 42 82M89 74Q83 77 86 82" fill="none" stroke="#151a1c" stroke-width="2.5" stroke-linecap="round"/>'+
     '<path d="M53 83l-1 7m24-7 1 7" stroke="#0c1011" stroke-width="4.5" stroke-linecap="round"/>'+
     '<ellipse class="fs-eye" cx="53" cy="54" rx="5.3" ry="8" fill="#fff6dd"/>'+
@@ -110,7 +124,8 @@ export function spriteAssemblyMarkup(denominator,indices,{outline=true,label=tru
   // Keep the exact SVG for genuine partials and the standalone art previews.
   if(denominator===1&&animatedWhole){
     return '<span class="fs-assembly" data-complete="true" data-denominator="1" role="img" aria-label="One whole dark sprite">'+
-      '<span class="fs-whole-actor token sprite sprite-black" aria-hidden="true" style="--hop-delay:'+(-serial*173%1600)+'ms;--wiggle-delay:'+(-serial*193%1100)+'ms;--blink-delay:'+(-serial*331%6000)+'ms"><span class="sprite-ground-shadow"></span><span class="sprite-reaction-shell"><span class="sprite-motion"><span class="sprite-feet"></span><span class="sprite-body"><span class="sprite-eyes"><i></i><i></i></span></span></span></span></span>'+'</span>';
+      spriteCreatureMarkup("fraction-chamber","whole","posX",serial)
+        .replace('class="token sprite sprite-black"','class="fs-whole-actor token sprite sprite-black" aria-hidden="true"')+'</span>';
   }
   const caption=denominator===1?"1":ordered.length+"/"+denominator;
   const description=denominator===1?"One whole dark sprite":caption+" of one dark sprite ("+ordered.length+" equal pieces)";

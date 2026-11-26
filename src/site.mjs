@@ -1,5 +1,5 @@
 import { LEVELS } from "./engine.mjs";
-import {createFractionCampaignView} from "./fraction-campaign.mjs?v=80";
+import {createFractionCampaignView} from "./fraction-campaign.mjs?v=85";
 import {
   CAMPAIGN_REGISTRY,findCampaignWorld,findCampaignStage,findCampaignLevel,
   nextCampaignLevel,isCampaignPlayable,firstCampaignLevel
@@ -10,6 +10,7 @@ import {
   campaignStars,campaignStarTotals,campaignOptimalMoves,stageResumeLevel
 } from "./campaign-records.mjs?v=84";
 import {createCosmeticRewards} from "./cosmetic-rewards.mjs?v=84";
+import {applySpriteAppearance} from "./sprite-cosmetics.mjs?v=85";
 import {createWorkshopEquation,WORKSHOP_EXAMPLES} from "./equation-workshop.mjs?v=82";
 import {createSignedWorkshopEquation,SIGNED_WORKSHOP_EXAMPLES} from "./signed-workshop.mjs?v=82";
 import {createFractionWorkshopEquation,FRACTION_WORKSHOP_EXAMPLES} from "./fraction-workshop.mjs";
@@ -61,7 +62,12 @@ let campaign = loadCampaignRecords();
 // One authoritative reward session; later renderer/Atelier PRs can read
 // its snapshot and listen to changes. Do not equip or display any art yet.
 export const cosmeticRewards=createCosmeticRewards(campaign);
-cosmeticRewards.subscribe(change=>window.dispatchEvent(new CustomEvent("mathssprites:cosmetics-change",{detail:change})));
+applySpriteAppearance(document.body,cosmeticRewards.getSnapshot().equipped);
+cosmeticRewards.subscribe(change=>{
+  applySpriteAppearance(document.body,change.snapshot.equipped);
+  fractionCampaign?.setAppearance(change.snapshot.equipped);
+  window.dispatchEvent(new CustomEvent("mathssprites:cosmetics-change",{detail:change}));
+});
 let campaignResume = loadCampaignResume();
 let teacher = loadTeacherSetting();
 let guideEnabled = readGuideEnabled();
@@ -486,6 +492,7 @@ function launch(levelIdOrNumber,stageId=selectedStage,worldId=selectedWorld) {
   if(worldId==="fractions"){
     $("game-shell").hidden=true;
     fractionCampaign=createFractionCampaignView({slot,context,
+      appearance:cosmeticRewards.getSnapshot().equipped,
       onLeave:screen=>showScreen(screen),
       onAdvance:()=>window.dispatchEvent(new Event("mathssprites:advance")),
       onComplete:state=>window.dispatchEvent(new CustomEvent("mathssprites:solved",
@@ -558,6 +565,7 @@ function launchWorkshopScene(level,handMode){
     $("game-shell").hidden=true;
     const method=["auto","manual","notebook"].includes(handMode)?handMode:"auto";
     fractionCampaign=createFractionCampaignView({slot:{id:level.id,title:level.title,level},
+      appearance:cosmeticRewards.getSnapshot().equipped,
       context:{freePlay:true,method,chapterLevels:[],chapterTitle:"Your own experiment"},
       onLeave:screen=>showScreen(screen==="home"?"home":"workshop"),
       onAdvance:()=>showScreen("workshop"),
