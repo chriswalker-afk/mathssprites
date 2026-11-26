@@ -29,7 +29,7 @@ test("browser specs do not navigate through retired multi-screen menus",()=>{
 });
 test("critical QA remains available for level selection, progress and stage-specific behaviour",()=>{
   const checks={
-    "menu-polish.spec.mjs":["#map-world-tabs","#map-stage-tabs","#world1-progress-number"],
+    "menu-polish.spec.mjs":["#world-cards [data-world-stages]","#site-stages","#world1-progress-number"],
     "site-navigation.spec.mjs":["#world1-finale","#world1-progress-bar","#object-picker"],
     "star-ratings.spec.mjs":["#replay-star-summary","mathssprites.stars.v1"],
     "viewport-fit.spec.mjs":["#amount-control","noDocumentScroll"],
