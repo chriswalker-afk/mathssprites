@@ -1111,14 +1111,24 @@ legend{margin-bottom:12px;padding:0}
 /* JS initialises from the OS accessibility preference. An explicit Motion: on
    click must be able to override it; an unconditional media rule would prevent
    the user's chosen animations from ever appearing. */
-.reduce-motion *,.reduce-motion *:before,.reduce-motion *:after{animation-duration:.001ms!important;transition-duration:.001ms!important;scroll-behavior:auto!important}
+/* Explicit Play opts only the decorative foyer into motion. Do not restore
+   motion elsewhere, or accidentally compress its falling/idle animations. */
+.reduce-motion *:not(:where(#home-hero-art[data-motion-opt-in="true"] *)),
+.reduce-motion *:not(:where(#home-hero-art[data-motion-opt-in="true"] *)):before,
+.reduce-motion *:not(:where(#home-hero-art[data-motion-opt-in="true"] *)):after{
+  animation-duration:.001ms!important;transition-duration:.001ms!important;scroll-behavior:auto!important
+}
 /* Static presentation must not flicker/blink at 1000fps on reduced motion. */
-.reduce-motion .sprite-motion,.reduce-motion .sprite-body,
-.reduce-motion .sprite-ground-shadow,.reduce-motion .sprite-ground-shadow:after,
-.reduce-motion .sprite-eyes,.reduce-motion .sprite-eyes i{
-  animation:none!important;transform:none!important}
-.reduce-motion .sprite-ground-shadow{transform:translateX(-50%)!important}
-.reduce-motion .sprite-ground-shadow:after{opacity:0!important}
+.reduce-motion .sprite-motion:not(:where(#home-hero-art[data-motion-opt-in="true"] *)),
+.reduce-motion .sprite-body:not(:where(#home-hero-art[data-motion-opt-in="true"] *)),
+.reduce-motion .sprite-ground-shadow:not(:where(#home-hero-art[data-motion-opt-in="true"] *)),
+.reduce-motion .sprite-ground-shadow:not(:where(#home-hero-art[data-motion-opt-in="true"] *)):after,
+.reduce-motion .sprite-eyes:not(:where(#home-hero-art[data-motion-opt-in="true"] *)),
+.reduce-motion .sprite-eyes i:not(:where(#home-hero-art[data-motion-opt-in="true"] *)){
+  animation:none!important;transform:none!important
+}
+.reduce-motion .sprite-ground-shadow:not(:where(#home-hero-art[data-motion-opt-in="true"] *)){transform:translateX(-50%)!important}
+.reduce-motion .sprite-ground-shadow:not(:where(#home-hero-art[data-motion-opt-in="true"] *)):after{opacity:0!important}
 .reduce-motion .sprite-reaction-shell,.reduce-motion .sprite-reacting:after,
 .reduce-motion .hand-cargo .held-sprite{animation:none!important;transform:none!important}
 /* A still, readable in-room square for students choosing Motion: reduced. */

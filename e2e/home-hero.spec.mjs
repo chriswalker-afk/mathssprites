@@ -209,3 +209,65 @@ test("desktop tablet and phone layouts keep the heading, both pans and playback 
     });
   }
 });
+
+
+test("foyer uses the actual chamber sprite, with one full layered actor and independent idle motion @quick @smoke",async({page})=>{
+  const creature=page.locator("#hero-left-items .hero-creature").first();
+  await expect(creature).toHaveClass(/hero-landed/,{timeout:5000});
+  const actor=creature.locator(":scope > .token.sprite.sprite-black");
+  await expect(actor).toHaveCount(1);
+  await expect(actor.locator(".sprite-ground-shadow")).toHaveCount(1);
+  await expect(actor.locator(".sprite-feet")).toHaveCount(1);
+  await expect(actor.locator(".sprite-body .sprite-eyes i")).toHaveCount(2);
+  await expect(creature.locator(".hero-eyes")).toHaveCount(0);
+  const motion=actor.locator(".sprite-motion");
+  await expect(motion).toHaveCSS("animation-name","sprite-hop");
+  await expect(actor.locator(".sprite-body")).toHaveCSS("animation-name","sprite-wiggle");
+  await expect(actor.locator(".sprite-eyes i").first()).toHaveCSS("animation-name","sprite-blink");
+  await page.locator("#hero-playback").click();
+  await expect(motion).toHaveCSS("animation-play-state","paused");
+  const before=await motion.evaluate(el=>getComputedStyle(el).transform);
+  await page.waitForTimeout(250);
+  expect(await motion.evaluate(el=>getComputedStyle(el).transform)).toBe(before);
+  await page.locator("#hero-playback").click();
+  await expect(motion).toHaveCSS("animation-play-state","running");
+});
+
+test("reduced-motion foyer shows the real resting sprite and explicit Play restores its idle motion",async({page})=>{
+  await page.evaluate(()=>localStorage.setItem("mathssprites.motion-preference.v1","reduced"));
+  await page.reload();
+  const actor=page.locator("#hero-left-items .hero-creature .sprite-black");
+  await expect(hero(page)).toHaveAttribute("data-playback","reduced");
+  await expect(actor).toBeVisible();
+  await expect(actor.locator(".sprite-motion")).toHaveCSS("animation-name","none");
+  await expect(actor.locator(".sprite-motion")).toHaveCSS("transform","none");
+  await page.locator("#hero-playback").click();
+  await expect(page.locator("#hero-left-items .hero-creature")).toHaveClass(/hero-landed/,{timeout:5000});
+  await expect(actor.locator(".sprite-motion")).toHaveCSS("animation-name","sprite-hop");
+  const duration=await actor.locator(".sprite-motion").evaluate(el=>parseFloat(getComputedStyle(el).animationDuration));
+  expect(duration).toBeGreaterThan(1);
+  await page.locator("#hero-playback").click();
+  await expect(actor.locator(".sprite-motion")).toHaveCSS("animation-play-state","paused");
+});
+
+test("the static fallback sprite remains detailed and fits its pan on desktop and phone",async({page},testInfo)=>{
+  await page.emulateMedia({reducedMotion:"reduce"});
+  await page.reload();
+  for(const width of [375,768,1440,1838]){
+    await page.setViewportSize({width,height:900});
+    await expect(hero(page)).toHaveAttribute("data-playback","reduced");
+    const sprite=page.locator("#hero-left-items .hero-creature");
+    await expect(sprite.locator(".sprite-body")).toBeVisible();
+    const bounds=await sprite.evaluate(el=>{
+      const actor=el.querySelector(".sprite"),body=actor.querySelector(".sprite-body");
+      const pan=el.closest(".hero-pan").getBoundingClientRect();
+      const box=actor.getBoundingClientRect(),face=body.getBoundingClientRect();
+      return {panLeft:pan.left,panRight:pan.right,panBottom:pan.bottom,actorLeft:box.left,actorRight:box.right,actorBottom:box.bottom,faceWidth:face.width};
+    });
+    expect(bounds.actorLeft).toBeGreaterThan(bounds.panLeft);
+    expect(bounds.actorRight).toBeLessThan(bounds.panRight);
+    expect(bounds.actorBottom).toBeLessThan(bounds.panBottom);
+    expect(bounds.faceWidth).toBeGreaterThan(18);
+    await testInfo.attach("home-sprite-"+width+".png",{body:await page.screenshot({fullPage:true}),contentType:"image/png"});
+  }
+});

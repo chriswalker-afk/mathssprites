@@ -13,7 +13,7 @@ import {createWorkshopEquation,WORKSHOP_EXAMPLES} from "./equation-workshop.mjs?
 import {createSignedWorkshopEquation,SIGNED_WORKSHOP_EXAMPLES} from "./signed-workshop.mjs?v=82";
 import {createFractionWorkshopEquation,FRACTION_WORKSHOP_EXAMPLES} from "./fraction-workshop.mjs";
 import {createSquareWorkshopEquation,SQUARE_WORKSHOP_EXAMPLES,SQUARE_BUILD_EXAMPLES} from "./square-workshop.mjs";
-import {createHomeHero} from "./home-hero.mjs";
+import {createHomeHero} from "./home-hero.mjs?v=83";
 import {compactWorldProgress,compactStageProgress,briefStageIntro} from "./menu-copy.mjs";
 import {boardContinueLevel,spatialTileIndex} from "./navigation-journey.mjs";
 import {loadResume,saveResume,resumeDestination,resumeLabel,RESUME_STAGE_NUMBERS} from "./resume.mjs";

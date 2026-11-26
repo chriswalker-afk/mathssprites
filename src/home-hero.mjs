@@ -1,3 +1,4 @@
+import {spriteCreatureMarkup} from "./square-sprites.mjs";
 import {
   HERO_SCENES,HERO_STEP_MS,HERO_LANDING_MS,HERO_HOLD_MS,
   HERO_CHANGE_MS,emptyHeroCounts,heroMass,heroAngle
@@ -153,10 +154,10 @@ export class HomeHeroAnimator{
     this.root.dataset.rightMass=String(right);
     this.root.dataset.balance=left===right?"level":left>right?"left-heavy":"right-heavy";
   }
-  createItem(kind,animated=false,drift=0){
+  createItem(side,kind,index,animated=false,drift=0){
     const item=document.createElement("span");
     item.className="hero-item "+(kind==="sprite"?"hero-creature":"hero-weight")+
-      (animated?" hero-arriving":"");
+      (animated?" hero-arriving":" hero-landed");
     item.dataset.kind=kind;
     item.setAttribute("aria-hidden","true");
     if(animated){
@@ -164,10 +165,10 @@ export class HomeHeroAnimator{
       item.style.setProperty("--hero-flight",HERO_LANDING_MS+"ms");
     }
     if(kind==="sprite"){
-      const eyes=document.createElement("span");
-      eyes.className="hero-eyes";
-      eyes.append(document.createElement("i"),document.createElement("i"));
-      item.appendChild(eyes);
+      // The foyer uses the same creature as the actual balance chambers:
+      // one outer landing wrapper, one shared native actor, no second face.
+      // Its deterministic identity also keeps adjacent sprites out of sync.
+      item.innerHTML=spriteCreatureMarkup("home-"+this.sceneIndex,side,"posX",index);
     }else{
       const handle=document.createElement("i");
       handle.className="hero-weight-handle";
@@ -176,7 +177,10 @@ export class HomeHeroAnimator{
     return item;
   }
   putItem(side,kind,animated=false,drift=0){
-    this.items[side].appendChild(this.createItem(kind,animated,drift));
+    const pan=this.items[side];
+    const item=this.createItem(side,kind,pan.childElementCount,animated,drift);
+    pan.appendChild(item);
+    return item;
   }
   clearItems(){
     this.items.left.replaceChildren();
@@ -221,16 +225,20 @@ export class HomeHeroAnimator{
     this.caption.textContent=scene.caption;
   }
   emit(step){
-    this.putItem(step.side,step.kind,true,step.drift);
-    // Do not change the mass until the new object has actually landed.
-    this.pending.push({side:step.side,kind:step.kind,remaining:HERO_LANDING_MS});
+    const item=this.putItem(step.side,step.kind,true,step.drift);
+    // The character starts idling only when its real landing is registered.
+    // Before that, only the outer wrapper's drop animation moves it.
+    this.pending.push({side:step.side,kind:step.kind,item,remaining:HERO_LANDING_MS});
   }
   updateLandings(dt){
     for(const landing of this.pending)landing.remaining-=dt;
     const ready=this.pending.filter(landing=>landing.remaining<=0);
     this.pending=this.pending.filter(landing=>landing.remaining>0);
     if(!ready.length)return;
-    for(const landing of ready)this.counts[landing.side][landing.kind]++;
+    for(const landing of ready){
+      this.counts[landing.side][landing.kind]++;
+      landing.item.classList.add("hero-landed");
+    }
     this.setMassAndBalance();
     // Small pan bounce is synced with the actual landing, not the scheduled
     // appearance of a sprite still falling through the air.
