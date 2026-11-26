@@ -128,7 +128,7 @@ test("notebook explicitly chooses a local Expand; never silently expands MathML"
   assert.deepEqual(parseNotebookOperation("expand left").action,unpack);
   assert.deepEqual(parseNotebookOperation("OPEN west").action,unpack);
   assert.deepEqual(parseNotebookOperation("expand right").action,{op:"unpack",side:"right"});
-  assert.match(notebookOperationMathML(unpack),/Expand west/);
+  assert.match(notebookOperationMathML(unpack),/Expand left expression/);
   assert.equal(previewNotebookOperation(session,"expand right").ok,false);
   assert.equal(previewNotebookOperation(session,"expand left").ok,true);
   assert.equal(session.steps.length,0,"A preview never applies the rewrite");

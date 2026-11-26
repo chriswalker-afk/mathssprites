@@ -29,17 +29,18 @@ import { WORLD1_LEVELS } from "./worlds.mjs";
 import {INDEPENDENT_LEVELS} from "./independent-levels.mjs";
 import {
   startNotebook,undoNotebookLine,notebookReplayScript
-} from "./notebook-engine.mjs?v=108";
+} from "./notebook-engine.mjs?v=109";
 import {
   parseNotebookOperation,previewNotebookOperation,tryNotebookOperation,
   notebookEquationMathML,notebookOperationMathML,notebookAreaOperationMathML
-} from "./notebook-maths-editor.mjs?v=108";
+} from "./notebook-maths-editor.mjs?v=109";
 import {
   CHAPTER_BRIEFINGS, INDEPENDENT_BRIEFINGS,
   introductionCue,independentIntroductionCue,readGuideEnabled,readGuideSeen,
   writeGuideEnabled,writeGuideSeen,readIndependentGuideSeen,writeIndependentGuideSeen
 } from "./onboarding.mjs";
 import {readOppositesGuideSeen,writeOppositesGuideSeen,oppositeIntroductionCue} from "./opposite-onboarding.mjs";
+import {notebookOperationJustification,notebookThinkingPrompt,notebookWritingPrompt} from "./notebook-advice.mjs?v=109";
 
 const $ = id => document.getElementById(id);
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
@@ -400,23 +401,16 @@ function renderNotebookVisibility() {
   $("notebook-signed-operations").hidden=currentLevel().quantityMode!=="signed";
   $("notebook-operation").placeholder=square?"e.g. +4, −x², √, ÷2":"e.g. −3, +x or ÷2";
   $("notebook-help").textContent=square
-    ?"Use 1–12 whole weights, round sprites or square sprites; factors 2–5. Square or root each entire expression. Sprite weights are nonnegative."
-    :"Choose a balancing operation, not the answer. Addition or subtraction can use 1–12 weights or sprites; multiplication and division use factors 2–5. Every move must work with whole objects on both sides.";
+    ?"Use whole-number coefficients and constants. Add or subtract 1–12 of a term; multiply or divide by 2–5. Square/root both entire expressions; x ≥ 0."
+    :"Apply the same operation to both sides to preserve equality. Use integer coefficients and constants, with amounts 1–12 and numerical factors 2–5.";
   $("notebook-operation-tip").textContent=square
-    ?"Square or square root the whole of each side. Use +x² or −x² for a single square-sprite term.":currentLevel().groupedPrototype
-    ?(currentLevel().quantityMode==="signed"
-      ?"Signed groups stay in brackets until you choose to expand west or east. Expansion changes ONE expression's appearance; +, −, × and ÷ change BOTH sides."
-      :"Choose a balanced operation on both sides, or expand ONE sealed expression. Neither choice is preselected.")
-    :currentLevel().quantityMode==="signed"
-      ?"Subtract normally, e.g. −8 or −x. If objects are missing, the hand adds opposites and cancels zero pairs."
-      :"Choose an operation for both sides, not an answer. Use −x to remove a dark sprite.";
-  $("notebook-level-prompt").textContent=campaign
-    ? square?(currentLevel().goal==="area"
-      ?"Write the operation that squares each entire expression."
-      :"Choose operations that leave one round sprite facing only weights."):currentLevel().prompt
-    :workshopActive&&square?currentLevel().goal==="area"
-      ?"Write operations that build both square areas.":"Choose operations that leave one round sprite facing only weights."
-      : "You already have the equation. Choose an operation for both sides. The maths editor calculates the new equation automatically; the sprites will replay your route.";
+    ?"Use +x² or −x² for a quadratic term. Squaring/rooting transforms each entire expression."
+    :currentLevel().groupedPrototype
+      ?"Expansion uses the distributive law and changes only the form of one expression. Other operations must be applied to both sides."
+      :currentLevel().quantityMode==="signed"
+        ?"Subtracting a negative term is equivalent to adding its opposite. Combine like terms, e.g. 3x − x = 2x."
+        :"Use inverse operations to isolate x. For example, subtracting x from both sides preserves equality.";
+  $("notebook-level-prompt").textContent=notebookWritingPrompt(currentLevel());
   const support=campaign?currentLevel().scaffold:null;
   const showSupport=!!support&&support.kind!=="none"&&notebookPhase==="writing";
   $("notebook-scaffold").hidden=!showSupport;
@@ -484,7 +478,7 @@ function renderNotebookMathEditor(){
   $("notebook-area-applied-math").innerHTML=area?notebookAreaOperationMathML(notebookSession.state,parsed.action):"";
   const inline=$("notebook-inline-message");
   const blocked=!!text.trim()&&!preview.ok&&preview.code!=="incomplete";
-  const message=blocked?preview.message:preview.ok?(preview.representation||""):"";
+  const message=blocked?preview.message:preview.ok?notebookOperationJustification(preview.action):"";
   inline.hidden=!message;inline.textContent=message;
   inline.dataset.status=blocked?"error":"info";
   if(preview.ok){
@@ -543,7 +537,7 @@ function renderNotebookPaper() {
   };
   const initial=initialState(notebookSession.level);
   addLine(equation({left:initial.left,right:initial.right}),
-    notebookSession.level.goal==="area"?"Starting equation · build both square areas":"Starting equation · the mystery you must solve",true,initial);
+    notebookSession.level.goal==="area"?"Starting equation · square both sides":"Starting equation · isolate x",true,initial);
   for(let i=0;i<notebookSession.steps.length;i++){
     const step=notebookSession.steps[i];
     const tx=notebookSession.state.history[i];
@@ -559,6 +553,7 @@ function renderNotebookPaper() {
   $("notebook-undo").disabled=!notebookSession.steps.length||notebookPhase==="replaying";
   $("notebook-reset").disabled=notebookPhase==="replaying";
   renderNotebookMathEditor();
+  if(!$("notebook-hint-message").hidden)$("notebook-hint-message").textContent=notebookThinkingPrompt(notebookSession);
 }
 function independentSquareCampaign(){
   return (campaignWorldId==="squares"&&campaignStage==="independent")||
@@ -2704,13 +2699,7 @@ function openNotebookLevel(level,number=null,context={}){
   $("notebook-hint-message").hidden=true;
   $("notebook-hint-message").textContent="";
   $("notebook-operation").value="";
-  notebookMessage(level.squareLaboratory
-    ?"Choose one operation on both sides. The editor calculates the next equation; the sprites wait for your checked working."
-    :level.quantityMode==="signed"
-    ?"Choose a signed operation for both sides: +2, +(−x), −(−1), or ÷2. The editor calculates the result."
-    :level.groupedPrototype
-      ?"Choose a balanced operation, or expand the grouped expression in one room. The editor calculates the result."
-      :"Choose an operation for BOTH sides, such as −3, −x or ÷2. The editor calculates the next equation.");
+  notebookMessage("Choose a mathematical operation, not the answer. The editor calculates the equivalent equation.");
   renderNotebookPaper();
   render();
   $("notebook-operation").focus({preventScroll:true});
@@ -2733,8 +2722,7 @@ window.addEventListener("mathssprites:notebook-close",()=>{
 });
 $("notebook-hint").addEventListener("click",()=>{
   if(!notebookSession)return;
-  $("notebook-hint-message").textContent=currentLevel().suggested||
-    "Think about one equal change you can make to both sides.";
+  $("notebook-hint-message").textContent=notebookThinkingPrompt(notebookSession);
   $("notebook-hint-message").hidden=false;
 });
 /** Operation editor: clicking a maths sign or keypad key edits only the
@@ -2767,7 +2755,7 @@ $("notebook-operation").addEventListener("input",()=>{
     if(!preview.ok&&preview.code!=="incomplete")
       notebookMessage(preview.message,"error");
     else if(preview.ok)
-      notebookMessage("Preview ready: "+preview.line+". Apply this change to both sides when you are ready.");
+      notebookMessage("Preview ready. Check the equivalent equation, then confirm the operation.");
     else
       notebookMessage("Choose an operation and an amount. The editor calculates the new equation.");
     renderNotebookMathEditor();
@@ -2837,7 +2825,7 @@ $("notebook-form").addEventListener("submit",event=>{
   renderNotebookPaper();
   notebookMessage(result.solved
     ? (notebookSession.level.goal==="area"?"Square construction checked! Replay with sprites.":"Solution checked! Replay with sprites to see each operation you chose.")
-    : "Applied "+result.explanation+". The new equation was calculated for you. Choose another operation.",
+    : notebookOperationJustification(result.action),
     "success");
   if(!result.solved)input.focus({preventScroll:true});
   else $("notebook-replay").focus({preventScroll:true});
@@ -2847,7 +2835,7 @@ $("notebook-undo").addEventListener("click",()=>{
   notebookSession=undoNotebookLine(notebookSession);
   $("notebook-operation").value="";
   renderNotebookPaper();
-  notebookMessage("The last operation has been undone. Choose your next balanced move.");
+  notebookMessage("The previous equivalent equation has been restored. Choose your next operation.");
   $("notebook-operation").focus({preventScroll:true});
 });
 $("notebook-reset").addEventListener("click",()=>{

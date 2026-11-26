@@ -139,6 +139,8 @@ test("complete a missing corner on paper and replay the three exact transformati
   await input(page).fill("√");
   await expect(result(page)).toHaveAttribute("data-state","error");
   await expect(page.locator("#notebook-inline-message")).toContainText("not a complete square");
+  await expect(page.locator("#notebook-inline-message")).toContainText("2abx");
+  await expect(page.locator("#notebook-inline-message")).not.toContainText(/sprite|weight|chamber/i);
   await expect(page.locator("#notebook-area-applied-math msqrt")).toHaveCount(2);
   await expect(page.locator("#notebook-apply")).toBeDisabled();
   await expect(lines(page)).toHaveCount(1);

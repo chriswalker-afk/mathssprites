@@ -103,15 +103,15 @@ function stageLevels(id,rows){
       heading:["Look at another example","Choose a first operation",
                "Think about the last step","Work independently"][i%4],
       text:(i>=12?[
-        "A sealed crate is a bracketed group. Expanding one bracket changes its appearance, not the balance.",
-        "Which complete groups could remain sealed? Choose an algebraic action or expand a bracket.",
-        "What will the equation look like when only a single dark sprite remains?",
-        "Every written step must correspond to real whole objects or a genuine group expansion."
+        "The distributive law gives a(b + c) = ab + ac. Expanding brackets changes the form, not the value.",
+        "Consider dividing by a common factor or expanding brackets. Both preserve equivalence when applied correctly.",
+        "Aim for a coefficient of 1 on the variable side, with only a constant on the other side.",
+        "Each written line must follow from one supported operation on both sides or an equivalent expansion."
       ]:[
-        "For example, adding two weights to two balloons creates two zero pairs. Apply a balanced operation to YOUR equation.",
-        "Think about a positive and a negative object that could cancel. Type an operation, not its answer.",
-        "Finish with a lone dark sprite opposite only weights. Which move could leave this arrangement?",
-        "Your notebook is yours to solve. Every operation must work in both rooms."
+        "For example, x − 2 = 7 becomes x = 9 by adding 2 to both sides. The additive inverse satisfies −2 + 2 = 0.",
+        "Use additive inverses to simplify like terms: a + (−a) = 0. Choose an operation that preserves equality.",
+        "Finish with x on one side and a constant on the other. Which inverse operation makes the coefficient equal to 1?",
+        "Choose your own route. Each operation must preserve equivalence."
       ])[i%4]
     };
     // PR57: new grouped levels add one sealed package to an ordinary

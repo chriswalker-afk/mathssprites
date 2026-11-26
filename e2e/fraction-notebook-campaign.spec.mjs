@@ -102,9 +102,14 @@ test("typed equivalent fractions, invalid preview, editing invalidation, undo an
   await board(page);await open(page,9);const h=lab(page);
   await typeOperation(page,"−1/7");await preview(page);
   await expect(h.locator("#fb-nb-feedback")).toHaveAttribute("data-error","true");
+  await expect(h.locator("#fb-nb-feedback")).toContainText("denominator 7");
+  await expect(h.locator("#fb-nb-feedback")).not.toContainText(/sprite|weight|chamber/i);
   await expect(h.locator("#fb-nb-confirm")).toBeDisabled();
   await typeOperation(page,"−2/4");await preview(page);
   await expect(h.locator("#fb-nb-confirm")).toBeEnabled();
+  await expect(h.locator("#fb-nb-feedback")).toContainText("preserves equality");
+  await h.locator("#fb-nb-hint").click();
+  await expect(h.locator("#fb-nb-hint-message")).toContainText("additive inverse");
   await h.locator("#fb-nb-typed").fill("−3/6");
   await expect(h.locator("#fb-nb-confirm")).toBeDisabled();
   await preview(page);await confirm(page);

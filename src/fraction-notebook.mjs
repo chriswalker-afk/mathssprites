@@ -2,9 +2,10 @@
  * shared fraction campaign scene. No campaign reference actions are read.
  * All accepted actions originate from the learner's own confirmed lines. */
 import {startFractionNotebook,previewFractionNotebookOperation,tryFractionNotebookOperation,
-  parseFractionNotebookOperation,undoFractionNotebook,fractionNotebookReplayScript} from "./fraction-notebook-engine.mjs?v=108";
+  parseFractionNotebookOperation,undoFractionNotebook,fractionNotebookReplayScript} from "./fraction-notebook-engine.mjs?v=109";
 import {req} from "./rational.mjs";
 import {isSolved} from "./engine.mjs";
+import {notebookThinkingPrompt,notebookOperationJustification} from "./notebook-advice.mjs?v=109";
 
 const paperMarkup=`<section class="fb-notebook" id="fb-notebook" aria-label="Fractional algebra notebook">
 <div class="fb-notebook-paper notebook-paper">
@@ -14,7 +15,7 @@ const paperMarkup=`<section class="fb-notebook" id="fb-notebook" aria-label="Fra
 <div class="notebook-journal-footer"><output id="fb-nb-count">0 moves</output><span>Checked working</span></div>
 </div>
 <div class="fb-notebook-controls notebook-control-panel" aria-label="Algebra controls">
-<div class="notebook-control-heading"><h3>Choose your next move</h3><p>Choose one operation for both sides. Preview, then confirm.</p></div>
+<div class="notebook-control-heading"><h3>Choose your next move</h3><p>Apply the same operation to both sides to preserve equality. Keep fractions exact.</p></div>
 <div class="notebook-tools-scroll">
 <div class="notebook-guide-slot"></div>
 <div class="fb-editor" id="fb-nb-editor">
@@ -32,7 +33,7 @@ const paperMarkup=`<section class="fb-notebook" id="fb-notebook" aria-label="Fra
 <p id="fb-nb-feedback" class="fb-paper-feedback" role="status" aria-live="polite">Choose an operation.</p>
 <div class="fb-paper-actions"><button type="button" id="fb-nb-preview" disabled>Preview line</button><button type="button" id="fb-nb-confirm" disabled>Confirm line</button></div>
 </div>
-<div class="notebook-support" aria-label="Optional learning support"></div>
+<div class="notebook-support" aria-label="Optional learning support"><button type="button" id="fb-nb-hint" aria-controls="fb-nb-hint-message" aria-expanded="false">Need a thinking prompt?</button><p id="fb-nb-hint-message" hidden role="status"></p></div>
 </div>
 <div class="fb-paper-actions"><button type="button" id="fb-nb-undo" disabled>↶ Undo line</button><button type="button" id="fb-nb-restart">Start again</button><button type="button" id="fb-nb-watch" hidden>Watch your sprites →</button></div>
 </div>
@@ -101,6 +102,7 @@ export function mountFractionNotebook(root,{level,controller,equationMarkup,oper
     $("fb-nb-editor").hidden=solved;$("fb-nb-watch").hidden=!solved;
     $("fb-nb-undo").disabled=!session.steps.length;
     root.dataset.notebookSolved=String(solved);
+    if(!$("fb-nb-hint-message").hidden)$("fb-nb-hint-message").textContent=notebookThinkingPrompt(session);
   }
   function showPreview(){
     const result=previewFractionNotebookOperation(session,draft());
@@ -108,13 +110,14 @@ export function mountFractionNotebook(root,{level,controller,equationMarkup,oper
     if(!result.ok){message(result.message,true);return;}
     preview={text:draft(),result};
     $("fb-nb-result").innerHTML='<span>Next line</span>'+equationMarkup(result.state);
-    $("fb-nb-result").hidden=false;$("fb-nb-confirm").disabled=false;message("Check the new line, then confirm.");
+    $("fb-nb-result").hidden=false;$("fb-nb-confirm").disabled=false;message(notebookOperationJustification(result.action));
   }
   function confirm(){
     if(!preview||preview.text!==draft()||playing)return;
     const result=tryFractionNotebookOperation(session,preview.text);
     if(!result.ok){invalidate();message(result.message,true);return;}
     session=result.session;resetDraft();renderPaper();
+    message(notebookOperationJustification(result.action));
     if(isSolved(session.state))$("fb-nb-watch").focus();
   }
   function paper(){
@@ -169,6 +172,7 @@ export function mountFractionNotebook(root,{level,controller,equationMarkup,oper
   for(const id of ["fb-nb-num","fb-nb-den"])listen($(id),"input",()=>{source="builder";refreshDraft();});
   listen($("fb-nb-typed"),"input",()=>{source="typed";refreshDraft();});
   listen($("fb-nb-typed"),"keydown",event=>{if(event.key==="Enter"){event.preventDefault();showPreview();}});
+  listen($("fb-nb-hint"),"click",()=>{const hint=$("fb-nb-hint-message");hint.hidden=!hint.hidden;$("fb-nb-hint").setAttribute("aria-expanded",String(!hint.hidden));if(!hint.hidden)hint.textContent=notebookThinkingPrompt(session);});
   listen($("fb-nb-preview"),"click",showPreview);listen($("fb-nb-confirm"),"click",confirm);
   listen($("fb-nb-undo"),"click",()=>{session=undoFractionNotebook(session);resetDraft();renderPaper();});
   listen($("fb-nb-restart"),"click",()=>{session=startFractionNotebook(level);resetDraft();renderPaper();});

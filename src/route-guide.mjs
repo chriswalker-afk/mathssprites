@@ -26,6 +26,16 @@ export function resetFirstVisitGuides(registry,storage){
     setRouteGuideSeen(world.id,stage.id,false,storage);
 }
 export function routeGuideCues(world,stage){
+  if(stage==="notebook")return [
+    {title:"Meet the maths",text:({
+      workshop:"An equation states that two expressions are equal. Use nonnegative integer coefficients and constants in this world.",
+      opposites:"Negative coefficients and constants are allowed. Adding a term and its additive inverse gives zero, e.g. x + (−x) = 0.",
+      fractions:"Use exact fractions for coefficients and constants. Combine fractions using a common denominator.",
+      squares:"Squaring applies to the entire expression: (a + b)² = a² + 2ab + b². For principal roots, use x ≥ 0."
+    })[world]||"Equivalent equations have the same solutions."},
+    {title:"Preserve equality",text:"Apply the same addition, subtraction or nonzero numerical multiplication/division to both sides. Expanding brackets is an equivalent rewrite of one expression."},
+    {title:"Justify each line",text:"Choose an operation, preview the equivalent equation and confirm it. Aim to isolate x, or perform the requested square transformation."}
+  ];
   const idea={
     workshop:"A dark sprite has a mystery value. Each whole weight counts as one.",
     opposites:"Black and white sprites are opposites, as are weights and balloons. An opposite pair makes zero.",
@@ -33,11 +43,7 @@ export function routeGuideCues(world,stage){
     squares:"Round sprites represent a side length; square sprites represent its square. Inspect or build square areas as the experiment requires."
   }[world]||"Look at the objects and the goal of your experiment.";
   const choose=world==="fractions"?"Choose an operation, then an object and an exact whole/fraction amount, or a number of groups.":world==="squares"?"Choose the operation that fits the goal. Square and square root act on the whole expression.":"Choose an operation, an object and an amount, or a number of equal groups.";
-  return stage==="notebook"?[
-    {title:"Meet the maths",text:idea},
-    {title:"Choose an operation",text:"Write or select an operation for both sides, not the answer. Preview the new line and confirm it if it is valid."},
-    {title:"Watch your working",text:"Complete the checked working, then ask the sprites to replay it. The hand shows the same mathematical changes."}
-  ]:[
+  return [
     {title:"Meet this world",text:idea},
     {title:"Choose your tools",text:choose},
     stage==="independent"?{title:"Match your moves",text:"Use the hand in one chamber, then make the matching change in the other. The scale settles once the moves match."}

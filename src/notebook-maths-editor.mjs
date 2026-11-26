@@ -9,7 +9,7 @@
  * No eval, dynamic math parser, CDN, or invented symbolic solutions.
  */
 import {canonical,equation,perform,isSolved,algebraOperation} from "./engine.mjs";
-import {NOTEBOOK_MAX_STEPS,notebookFailureMessage} from "./notebook-engine.mjs?v=108";
+import {NOTEBOOK_MAX_STEPS,notebookFailureMessage} from "./notebook-engine.mjs?v=109";
 
 function failure(code,message){return {ok:false,code,message};}
 const OP_SYMBOLS=Object.freeze({add:"+",remove:"−",multiply:"×",divide:"÷"});
@@ -24,11 +24,11 @@ export function parseNotebookOperation(expression,options={}){
   const wholeRoot=/^(?:sqrt(?:bothsides)?|squareroot(?:bothsides)?|√)$/i.test(compact);
   const squareTerm=/^([+\-])([1-9][0-9]*|)x(?:²|\^2)$/i.exec(compact);
   if(wholeSquare||wholeRoot||squareTerm){
-    if(!squareMode)return failure("locked-operation","Square operations and square sprites belong to the Square Laboratory.");
+    if(!squareMode)return failure("locked-operation","Quadratic terms and square/root operations are available in World 4.");
     if(wholeSquare||wholeRoot)return {ok:true,action:{op:wholeSquare?"square":"sqrt"},display:wholeSquare?"²":"√"};
     const [,sign,digits]=squareTerm,count=digits===""?1:Number(digits);
     if(!Number.isInteger(count)||count<1||count>12)
-      return failure("range","Choose 1–12 square sprites.");
+      return failure("range","Choose a whole-number coefficient from 1 to 12 for x².");
     return {ok:true,action:{op:sign==="+"?"add":"remove",kind:"posX2",count},
       display:sign+(count===1?"":String(count))+"x²"};
   }
@@ -38,10 +38,10 @@ export function parseNotebookOperation(expression,options={}){
   if(opened){
     const side=["left","west"].includes(opened[1].toLowerCase())?"left":"right";
     return {ok:true,action:{op:"unpack",side},
-      display:"Expand "+(side==="left"?"west":"east")};
+      display:"Expand "+side};
   }
   if(!compact||/^[+\-×÷]$/.test(compact))
-    return failure("incomplete","Choose +, −, × or ÷, then an object or a factor.");
+    return failure("incomplete","Choose +, −, × or ÷, followed by a term or numerical factor.");
   // Explicit brackets preserve the physical difference between subtracting
   // a negative object and subtracting a positive object.
   const match=/^([+\-×÷])(?:\(([+\-]?)(\d{1,3}x?|x)\)|(\d{1,3}x?|x))$/i.exec(compact);
@@ -53,10 +53,10 @@ export function parseNotebookOperation(expression,options={}){
     const sprite=operand.endsWith("x");
     const digits=sprite?operand.slice(0,-1):operand;
     if(/^0\d/.test(digits)||digits==="0"||/[^0-9]/.test(digits))
-      return failure("number","Use whole objects with no leading zeros.");
+      return failure("number","Use integers without leading zeros.");
     const count=digits===""&&sprite?1:Number(digits);
     if(!Number.isInteger(count)||count<1||count>12)
-      return failure("range","Choose 1–12 sprites or weights.");
+      return failure("range","Choose a whole-number constant or coefficient from 1 to 12.");
     const kind=sprite?(signed?"negX":"posX"):(signed?"negOne":"posOne");
     const action={op:sign==="+"?"add":"remove",kind,count};
     const term=(count===1&&sprite?"":count)+(sprite?"x":"");
@@ -155,9 +155,9 @@ function checkedNotebookMove(state,action){
 export function notebookOperationMathML(action){
   if(action?.op==="unpack"){
     if(!["left","right"].includes(action.side))
-      throw new RangeError("Choose which side contains the sealed groups.");
+      throw new RangeError("Choose the side containing the bracketed expression.");
     return '<math xmlns="http://www.w3.org/1998/Math/MathML" display="inline">'+
-      '<mrow><mtext>Expand '+(action.side==="left"?"west":"east")+
+      '<mrow><mtext>Expand '+action.side+
       ' expression</mtext></mrow></math>';
   }
   if(action?.op==="square"||action?.op==="sqrt"){
@@ -192,7 +192,7 @@ export function previewNotebookOperation(session,expression){
   if(!parsed.ok)return parsed;
   if((parsed.action.kind==="negX"||parsed.action.kind==="negOne") &&
       session.level.quantityMode!=="signed")
-    return failure("locked-negative","White sprites and balloons belong to the Opposite Chambers.");
+    return failure("locked-negative","Negative terms are supported in World 2; this activity uses nonnegative terms.");
   const {changed,physicalAction,representation}=checkedNotebookMove(session.state,parsed.action);
   if(!changed.ok)
     return failure(changed.code||"illegal",notebookFailureMessage(changed,session.state,parsed.action));

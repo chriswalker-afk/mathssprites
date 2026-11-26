@@ -12,6 +12,7 @@ import {
   equation, validInitialLevel, algebraOperation
 } from "./engine.mjs";
 import {validSquareLaboratoryLevel} from "./square-rules.mjs";
+export {notebookFailureMessage} from "./notebook-advice.mjs?v=109";
 
 export const NOTEBOOK_MAX_STEPS = 16;
 export const NOTEBOOK_MAX_INPUT = 80;
@@ -25,9 +26,9 @@ export function parseNotebookSide(input) {
   const compact=input.replace(/\s+/g,"").toLowerCase();
   if(!compact)return error("syntax","Each side of the equation needs an expression.");
   if(/[−–-]/.test(compact))
-    return error("negative","Stage 3 of World 1 cannot use negative terms or subtract inside a room.");
+    return error("negative","World 1 requires nonnegative coefficients and constants.");
   if(/[./÷^²()]/.test(compact))
-    return error("fraction","Use whole sprites and weights only; fractions, powers and typed brackets are not supported in the custom-room editor.");
+    return error("fraction","Use integer coefficients and constants; fractions, powers and typed brackets are not supported in this equation editor.");
   if(!/^[0-9x+]+$/.test(compact))
     return error("syntax","Use terms such as x, 2x, 3, or 2x + 3.");
   const terms=compact.split("+");
@@ -38,10 +39,10 @@ export function parseNotebookSide(input) {
     if(term==="x") x++;
     else if(/^[1-9][0-9]*x$/.test(term)) x+=Number(term.slice(0,-1));
     else if(/^(?:0|[1-9][0-9]*)$/.test(term)) constant+=Number(term);
-    else return error("syntax","Write each sprite as x or 2x, and weights as whole numbers.");
+    else return error("syntax","Write variable terms such as x or 2x, and constants as integers.");
     if(!Number.isSafeInteger(x)||!Number.isSafeInteger(constant)||
        x+constant>MAX_ROOM_OBJECTS)
-      return error("capacity","The written chamber would exceed the 48-object limit.");
+      return error("capacity","The expression exceeds this activity's representation limit of 48. This is a software limit.");
   }
   return {ok:true,x,constant};
 }
@@ -128,7 +129,7 @@ export function tryNotebookLine(session,text) {
   const parsed=parseNotebookEquation(text);
   if(!parsed.ok)return parsed;
   if(notebookStateMatches(parsed,session.state))
-    return error("unchanged","That line rearranges the same objects. Try an operation on both sides.");
+    return error("unchanged","That line is an equivalent rearrangement, not a new operation. Try one algebraic transformation.");
   const atSolution=side=>side.x*session.level.solution+side.constant;
   if(atSolution(parsed.left)!==atSolution(parsed.right))
     return error("not-equivalent","That equation is not balanced. Check that you changed both sides equally.");
@@ -144,25 +145,7 @@ export function tryNotebookLine(session,text) {
     }
   }
   return error("not-one-move",
-    "This is not one possible whole-object operation on BOTH sides. Try removing, adding, multiplying or making equal whole groups. Use one move per line.");
-}
-/** Notebook feedback distinguishes algebraic validity from a world's
- * physical vocabulary. It never changes the engine's actual permission. */
-export function notebookFailureMessage(result,state,action){
-  const side=result.side==="left"?"west":result.side==="right"?"east":null;
-  const room=side?"The "+side+" chamber":"This experiment";
-  if(result.code==="missing"&&state.quantityMode!=="signed")
-    return room+" would need a negative term after this subtraction. This world uses nonnegative objects; choose a route that stays within its number system.";
-  if(result.code==="unsupported-area"&&action.op==="sqrt")
-    return room+" is not a complete square of whole sprites and weights. Complete the square on both sides before taking an exact principal root.";
-  if(result.code==="unsupported-area"&&action.op==="square")
-    return room+" cannot be squared with this world's objects. Squaring an expression containing x² would require higher powers.";
-  if(result.code==="fraction")
-    return room+" would need fractional pieces. Use exact whole-object division here; fractional objects are available in World 3.";
-  if(result.code==="unsupported-denominator")
-    return (side?"In the "+side+" chamber: ":"")+(result.reason||"That denominator is not supported in the Fraction Workshop.");
-  return (side?"In the "+side+" chamber: ":"")+
-    (result.reason||"This operation cannot be represented with the available objects.");
+    "Use one supported addition, subtraction, multiplication or division on both sides per line. The resulting coefficients and constants must be nonnegative integers.");
 }
 export function undoNotebookLine(session) {
   if(!session?.steps?.length)return session;

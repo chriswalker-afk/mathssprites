@@ -3,7 +3,7 @@
  * Navigation and progress remain owned by site.mjs, not the physics renderer.
  */
 import {mountFractionBalance} from "./fraction-balance.mjs?v=94";
-import {mountFractionNotebook} from "./fraction-notebook.mjs?v=108";
+import {mountFractionNotebook} from "./fraction-notebook.mjs?v=109";
 import {FRACTION_CAMPAIGN_SCENE} from "./fraction-campaign-scene.mjs";
 import {spriteInventoryMarkup} from "./fraction-sprites.mjs?v=89";
 import {weightInventoryMarkup} from "./fraction-weights.mjs?v=94";
@@ -14,7 +14,7 @@ import {isSolved} from "./engine.mjs";
 // revision as their markup, including on a returning student's warm cache.
 // Bump this revision and the site entry/import URLs when presentation assets change.
 import {applyLaboratoryAppearance} from "./laboratory-cosmetics.mjs?v=96";
-export const FRACTION_PRESENTATION_REVISION="108";
+export const FRACTION_PRESENTATION_REVISION="109";
 const STYLE_FILES=["styles.css","scene-polish.css","fraction-weights.css","fraction-sprites.css","fraction-balance.css","fraction-campaign.css","fraction-notebook.css","sprite-cosmetics.css","sprite-wearables.css","sprite-effects.css","weight-materials.css","weight-shapes.css","weight-effects.css","chamber-themes.css","scene-grounding.css","route-guide.css","completion-story.css","apprentice-workspace.css"];
 const escape=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const mn=n=>"<mn>"+n+"</mn>";
