@@ -6,7 +6,7 @@ import {rational,rtext,rcompare} from "./rational.mjs";
 import {FRACTION_DENOMINATORS} from "./fraction-engine.mjs";
 
 const sideName=side=>side==="left"?"left-hand side":side==="right"?"right-hand side":null;
-const subject=side=>side?"The "+sideName(side):"This expression";
+const subject=side=>sideName(side)?"The "+sideName(side):"This expression";
 const kindName=kind=>kind==="posX2"?"coefficient of x²":["posX","negX"].includes(kind)?"coefficient of x":"constant term";
 const amountText=value=>value===undefined?"":rtext(rational(value));
 const negativeKind=kind=>["negOne","negX"].includes(kind);

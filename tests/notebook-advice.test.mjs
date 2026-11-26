@@ -6,7 +6,7 @@ import {routeGuideCues} from "../src/route-guide.mjs";
 import {startNotebook} from "../src/notebook-engine.mjs";
 import {previewNotebookOperation,tryNotebookOperation} from "../src/notebook-maths-editor.mjs";
 import {startFractionNotebook,previewFractionNotebookOperation} from "../src/fraction-notebook-engine.mjs";
-const physical=/\b(?:chambers?|sprites?|weights?|balloons?|crates?|baskets?|objects?|hand|rooms?)\b/i;
+const physical=/\b(?:chambers?|sprites?|weights?|balloons?|crates?|baskets?|objects?|rooms?)\b/i;
 const level=(w,n)=>findCampaignLevel(w,"notebook",n).level;
 test("all notebook guides, current hints, goals and displayed scaffolds are mathematical",()=>{
   for(const world of CAMPAIGN_REGISTRY){

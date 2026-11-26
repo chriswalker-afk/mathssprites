@@ -23,6 +23,7 @@ import {WORLD_DEMOS,METHOD_DEMOS,worldDemoMarkup,methodDemoMarkup,createMenuDemo
 import {compactWorldProgress,compactStageProgress,briefStageIntro,worldChoiceIntro,methodChoiceIntro} from "./menu-copy.mjs?v=101";
 import {boardContinueLevel,spatialTileIndex,campaignMenuScreen,campaignHomeLabel,quickBoardDestination} from "./navigation-journey.mjs?v=103";
 import {mountRouteGuide,resetFirstVisitGuides,usesPhysicalFirstLesson} from "./route-guide.mjs?v=109";
+import {notebookWritingPrompt} from "./notebook-advice.mjs?v=109";
 import {loadResume,saveResume,resumeDestination,resumeLabel,RESUME_STAGE_NUMBERS} from "./resume.mjs";
 import {
   WORLDS, WORLD1_CHAPTERS, WORLD1_LEVELS, findWorld1Level,
@@ -393,7 +394,7 @@ function renderSelectedLevel(){
   details.dataset.chapter=String(slot.chapterIndex+1);
   $("selected-level-kicker").textContent="LEVEL "+slot.number+" · "+chapter.title;
   $("selected-level-title").textContent=slot.title;
-  $("selected-level-description").textContent=slot.level.prompt||chapter.description||"Find the sprite's value.";
+  $("selected-level-description").textContent=stage.method==="notebook"?notebookWritingPrompt(slot.level):slot.level.prompt||chapter.description||"Find the sprite's value.";
   $("selected-level-rating").textContent=starGlyphs(rating)+" · "+(rating?rating+" of 3 stars":"Not rated yet")+
     (Number.isInteger(best)?" · Best: "+best+" "+(best===1?"move":"moves"):"");
   $("selected-level-status").textContent=done?"Completed":revised?"Revised challenge · replay for new stars":"Ready to play";
