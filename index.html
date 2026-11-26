@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#151d20" />
   <meta name="description" content="Maths Sprites: a mysterious little balancing-lab game where physical puzzles turn into algebraic discoveries." />
   <title>Maths Sprites — The Balance Lab</title>
-  <link rel="stylesheet" href="./src/styles.css" />
+  <link rel="stylesheet" href="./src/styles.css?v=81" />
   <link rel="stylesheet" href="./src/site.css" />
   <link rel="stylesheet" href="./src/polish.css" />
   <link rel="stylesheet" href="./src/stages.css" />
@@ -32,7 +32,7 @@
   <link rel="stylesheet" href="./src/square-sprites.css" />
   <link rel="stylesheet" href="./src/square-construction.css" />
   <link rel="stylesheet" href="./src/square-inspection.css" />
-  <script type="module" src="./src/app.mjs"></script>
+  <script type="module" src="./src/app.mjs?v=81"></script>
   <script type="module" src="./src/site.mjs?v=80"></script>
 </head>
 <body>
@@ -721,8 +721,8 @@
         <label class="replay-speed" for="replay-speed"><span>Writing pace</span>
           <select id="replay-speed" aria-label="Writing pace">
             <option value="0.7">Careful</option>
-            <option value="1" selected>Natural</option>
-            <option value="1.6">Quick</option>
+            <option value="1.6" selected>Normal</option>
+            <option value="2.5">Fast</option>
           </select>
         </label>
         <span id="replay-end-note" class="replay-end-note" hidden>Ready for the next experiment?</span>

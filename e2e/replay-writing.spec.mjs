@@ -22,8 +22,7 @@ test("the pencil reveals only the symbol it has reached, not whole equations", a
 
   const firstStatus = await page.locator("#replay-progress").innerText();
   expect(firstStatus).toContain("Panel 1 of 2");
-  await page.waitForTimeout(650);
-  expect(await ink.count()).toBeGreaterThan(firstCount);
+  await expect.poll(() => ink.count()).toBeGreaterThan(firstCount);
   await expect(page.locator("#pencil")).toBeVisible();
   const proximity = await page.evaluate(() => {
     const pen = document.querySelector("#pencil").getBoundingClientRect();
@@ -90,4 +89,26 @@ test("reduced-motion mode displays complete readable lines without pencil moveme
   await expect(page.locator("#pencil-lines")).toContainText("x + 2 = 5");
   await expect(page.locator("#pencil-lines .ink-glyph")).toHaveCount(0);
   await expect(page.locator("#pencil")).toBeHidden();
+});
+
+
+test("Normal uses the former Quick speed, Fast shortens nib travel without resetting the current writing",async({page})=>{
+  const speed=page.locator("#replay-speed"),pen=page.locator("#pencil");
+  const ink=page.locator("#pencil-lines .ink-glyph.written");
+  const travel=()=>pen.evaluate(el=>parseFloat(getComputedStyle(el).transitionDuration.split(",")[0]));
+  await solveFirstLevel(page);
+  await expect(speed).toHaveValue("1.6");
+  await expect(speed.locator("option:checked")).toHaveText("Normal");
+  const normalTravel=await travel();
+  await expect.poll(()=>ink.count()).toBeGreaterThan(0);
+  await page.locator("#replay-play").click();
+  const pausedAt=await ink.count();
+  expect(pausedAt).toBeLessThan("x + 2 = 5".length);
+  await speed.selectOption("2.5");
+  await expect(speed.locator("option:checked")).toHaveText("Fast");
+  expect(await travel()).toBeLessThan(normalTravel);
+  expect(await ink.count()).toBe(pausedAt);
+  await page.locator("#replay-play").click();
+  await expect.poll(()=>ink.count()).toBeGreaterThan(pausedAt);
+  await expect(page.locator("#replay-progress")).toContainText("Panel 2 of 2");
 });

@@ -977,18 +977,18 @@ legend{margin-bottom:12px;padding:0}
 /* Every character has a reserved space, but is invisible until the pencil
    reaches it. This deliberately does not reveal whole lines at once. */
 .ink-glyph{display:inline-block;white-space:pre;opacity:0}
-.ink-glyph.written{opacity:1;animation:ink-stroke .16s steps(4,end) both}
+.ink-glyph.written{opacity:1;animation:ink-stroke var(--ink-stroke-time,.1s) steps(4,end) both}
 @keyframes ink-stroke{from{clip-path:inset(0 100% 0 0);opacity:.65}to{clip-path:inset(0 0 0 0);opacity:1}}
 .paper-line .answer-line:not(.complete){border-bottom-color:transparent}
 .writing-status{font:italic .79rem Georgia,serif;color:#8f7955;margin-bottom:10px;min-height:18px}
 .pencil-icon{position:absolute;z-index:9;left:20px;top:160px;width:30px;height:70px;pointer-events:none;
   transform:rotate(29deg);transform-origin:50% 100%;
-  transition:left .16s linear,top .16s linear,opacity .15s ease;
+  transition:left var(--pencil-travel,.082s) linear,top var(--pencil-travel,.082s) linear,opacity .15s ease;
   filter:drop-shadow(3px 4px 2px #0006)}
 .pencil-icon svg{height:100%;width:100%;overflow:visible}
-.pencil-icon.writing{animation:pencil-nib .22s ease-in-out infinite alternate}
+.pencil-icon.writing{animation:pencil-nib var(--pencil-nib-time,.138s) ease-in-out infinite alternate}
 @keyframes pencil-nib{from{transform:rotate(26deg)}to{transform:rotate(32deg)}}
-.replay-paused .pencil-icon.writing,.replay-paused .mini-stage *{animation-play-state:paused!important}
+.replay-paused .pencil-icon.writing,.replay-paused .ink-glyph.written,.replay-paused .mini-stage *{animation-play-state:paused!important}
 .paper-page .pencil-lines{z-index:1}
 .sr-only{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;
   overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
