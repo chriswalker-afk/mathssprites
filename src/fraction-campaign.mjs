@@ -13,8 +13,8 @@ import {isSolved} from "./engine.mjs";
 // Keep the separately fetched shadow-root assets on the same presentation
 // revision as their markup, including on a returning student's warm cache.
 // Bump this revision and the site entry/import URLs when presentation assets change.
-import {applyLaboratoryAppearance} from "./laboratory-cosmetics.mjs?v=95";
-export const FRACTION_PRESENTATION_REVISION="95";
+import {applyLaboratoryAppearance} from "./laboratory-cosmetics.mjs?v=96";
+export const FRACTION_PRESENTATION_REVISION="96";
 const STYLE_FILES=["styles.css","scene-polish.css","fraction-weights.css","fraction-sprites.css","fraction-balance.css","fraction-campaign.css","fraction-notebook.css","sprite-cosmetics.css","sprite-wearables.css","sprite-effects.css","weight-materials.css","weight-shapes.css","weight-effects.css","chamber-themes.css"];
 const escape=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const mn=n=>"<mn>"+n+"</mn>";

@@ -1,4 +1,4 @@
-/* PR95: shared architectural artwork, never geometry.
+/* PR95–96: shared architectural artwork, never geometry.
    Variables reset at every independent scope (body, shadow lab, preview,
    thumbnail). The original main/fraction artwork is untouched. */
 :where([data-chamber-theme]){
@@ -6,33 +6,63 @@
   --ct-floor:initial;--ct-deep:initial;--ct-ambient:initial;--ct-old-decor:visible;
 }
 [data-chamber-theme="clockmakers-workshop"]{
-  --ct-wall:url("../assets/chambers/clockmakers-workshop.svg?v=95");
+  --ct-wall:url("../assets/chambers/clockmakers-workshop.svg?v=96");
   --ct-frame:#76573a;--ct-top:#b59360;--ct-trim:#ccae7d;
   --ct-floor:#967349;--ct-deep:#50402e;--ct-ambient:#34362d;
   --ct-old-decor:hidden;
 }
 [data-chamber-theme="scholars-library"]{
-  --ct-wall:url("../assets/chambers/scholars-library.svg?v=95");
+  --ct-wall:url("../assets/chambers/scholars-library.svg?v=96");
   --ct-frame:#62483b;--ct-top:#9c7957;--ct-trim:#c7aa7c;
   --ct-floor:#8b7255;--ct-deep:#483b31;--ct-ambient:#333e35;
   --ct-old-decor:hidden;
 }
 [data-chamber-theme="midnight-observatory"]{
-  --ct-wall:url("../assets/chambers/midnight-observatory.svg?v=95");
+  --ct-wall:url("../assets/chambers/midnight-observatory.svg?v=96");
   --ct-frame:#4b506b;--ct-top:#828cab;--ct-trim:#b0badd;
   --ct-floor:#78839a;--ct-deep:#3b465b;--ct-ambient:#242c43;
   --ct-old-decor:hidden;
 }
 [data-chamber-theme="botanical-laboratory"]{
-  --ct-wall:url("../assets/chambers/botanical-laboratory.svg?v=95");
+  --ct-wall:url("../assets/chambers/botanical-laboratory.svg?v=96");
   --ct-frame:#48634c;--ct-top:#8fae85;--ct-trim:#b7cca0;
   --ct-floor:#89946f;--ct-deep:#485a42;--ct-ambient:#2c4236;
   --ct-old-decor:hidden;
 }
 [data-chamber-theme="clockwork-foundry"]{
-  --ct-wall:url("../assets/chambers/clockwork-foundry.svg?v=95");
+  --ct-wall:url("../assets/chambers/clockwork-foundry.svg?v=96");
   --ct-frame:#57504b;--ct-top:#99897a;--ct-trim:#c0a080;
   --ct-floor:#827368;--ct-deep:#413a36;--ct-ambient:#383332;
+  --ct-old-decor:hidden;
+}
+[data-chamber-theme="frostbound-vault"]{
+  --ct-wall:url("../assets/chambers/frostbound-vault.svg?v=96");
+  --ct-frame:#526b7d;--ct-top:#9dbac9;--ct-trim:#c0d8de;
+  --ct-floor:#869ba7;--ct-deep:#45586a;--ct-ambient:#34495a;
+  --ct-old-decor:hidden;
+}
+[data-chamber-theme="ember-forge"]{
+  --ct-wall:url("../assets/chambers/ember-forge.svg?v=96");
+  --ct-frame:#735243;--ct-top:#b58055;--ct-trim:#d6ac79;
+  --ct-floor:#946e52;--ct-deep:#533b32;--ct-ambient:#422f29;
+  --ct-old-decor:hidden;
+}
+[data-chamber-theme="royal-treasury"]{
+  --ct-wall:url("../assets/chambers/royal-treasury.svg?v=96");
+  --ct-frame:#7d633c;--ct-top:#c2a16a;--ct-trim:#dec58e;
+  --ct-floor:#a28b62;--ct-deep:#55432e;--ct-ambient:#48402e;
+  --ct-old-decor:hidden;
+}
+[data-chamber-theme="arcane-laboratory"]{
+  --ct-wall:url("../assets/chambers/arcane-laboratory.svg?v=96");
+  --ct-frame:#61516e;--ct-top:#a791ba;--ct-trim:#cec0de;
+  --ct-floor:#8b809e;--ct-deep:#474054;--ct-ambient:#393045;
+  --ct-old-decor:hidden;
+}
+[data-chamber-theme="astral-sanctuary"]{
+  --ct-wall:url("../assets/chambers/astral-sanctuary.svg?v=96");
+  --ct-frame:#525d86;--ct-top:#95a5cc;--ct-trim:#d2cfeb;
+  --ct-floor:#8392b3;--ct-deep:#414b6a;--ct-ambient:#2c344f;
   --ct-old-decor:hidden;
 }
 /* Specificity covers the separate fraction-campaign background rules.

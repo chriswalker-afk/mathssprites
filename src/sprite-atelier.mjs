@@ -3,9 +3,9 @@
 import {COSMETIC_REWARDS,findCosmeticReward,findCosmeticItem,COSMETIC_COLLECTIONS,cosmeticCollection} from "./cosmetic-catalog.mjs?v=91";
 import {spriteCreatureMarkup} from "./square-sprites.mjs?v=88";
 import {weightAssemblyMarkup} from "./fraction-weights.mjs?v=94";
-import {applyLaboratoryAppearance} from "./laboratory-cosmetics.mjs?v=95";
+import {applyLaboratoryAppearance} from "./laboratory-cosmetics.mjs?v=96";
 import {atelierFilters,rewardArtReady,atelierRewardState,
-  atelierCollection,atelierPreview,atelierDescription,equipAtelierReward} from "./atelier-model.mjs?v=95";
+  atelierCollection,atelierPreview,atelierDescription,equipAtelierReward} from "./atelier-model.mjs?v=96";
 
 const icons=Object.freeze({fur:"✳",eyes:"◉",headwear:"⌂",eyewear:"∞",neckwear:"◇",
   movement:"↟",effect:"✦",set:"♛","weight-shape":"◆","weight-material":"▧","weight-effect":"✧","chamber-theme":"⌂"});

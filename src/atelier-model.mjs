@@ -2,7 +2,7 @@
  * selections always come from the PR84 store; trying on art is local. */
 import {COSMETIC_REWARDS,COSMETIC_SLOTS,COSMETIC_COLLECTIONS,cosmeticCollection,findCosmeticReward,originalAppearance} from "./cosmetic-catalog.mjs?v=91";
 import {IMPLEMENTED_SPRITE_COSMETICS} from "./sprite-cosmetics.mjs?v=89";
-import {IMPLEMENTED_LABORATORY_COSMETICS} from "./laboratory-cosmetics.mjs?v=95";
+import {IMPLEMENTED_LABORATORY_COSMETICS} from "./laboratory-cosmetics.mjs?v=96";
 export const IMPLEMENTED_COSMETICS=Object.freeze([...IMPLEMENTED_SPRITE_COSMETICS,...IMPLEMENTED_LABORATORY_COSMETICS]);
 
 export const ATELIER_FILTERS=Object.freeze([
@@ -19,6 +19,11 @@ export function atelierFilters(collection){
   return ATELIER_FILTERS.filter(f=>f.id==="all"||slots.includes(f.id)||(collection==="sprites"&&f.id==="set"));
 }
 const descriptions=Object.freeze({
+  "frostbound-vault":"Ice-carved Gothic arches, frosted steel vault doors and blue crystal ribs.",
+  "ember-forge":"Dark basalt arches, copper vents and a distant bank of glowing embers.",
+  "royal-treasury":"Carved gilt pilasters, burgundy damask panels and an ornate royal vault door.",
+  "arcane-laboratory":"Violet stone, luminous glass alchemical vessels, and an engraved geometric seal.",
+  "astral-sanctuary":"A silver celestial dome, a suspended orrery and deep indigo constellations.",
   "clockmakers-workshop":"Warm walnut panels, brass clock faces and a clockmaker's cabinet.",
   "scholars-library":"Tall bookcases, carved walnut pilasters and a quiet reading alcove.",
   "midnight-observatory":"A star-filled arched window, a brass telescope and midnight-blue stonework.",
