@@ -162,3 +162,21 @@
   #notebook-workspace .notebook-line-equation{font-size:1.24rem}
   .fb-campaign #fb-nb-lines li{grid-template-columns:1.8rem minmax(0,1fr) auto;gap:4px}
 }
+
+/* The first-visit guide remains discoverable at the top of the control desk.
+   Optional help can scroll, while the paper never loses space. */
+.notebook-guide-slot:not(:empty){margin-bottom:6px}
+#notebook-workspace .notebook-guide-slot .route-guide-message{color:#e0e7dc}
+#notebook-workspace .notebook-math-editor .notebook-operation-preview{container-type:inline-size}
+#notebook-workspace .notebook-preview-arrow span:first-child{font-size:1rem}
+#notebook-workspace .notebook-line-equation{min-width:max-content}
+.fb-campaign #fb-nb-lines li{grid-template-columns:2.4rem minmax(min-content,1fr) minmax(min-content,auto)}
+@media(max-width:899px),(max-height:499px){
+  .fb-campaign #fb-nb-lines li{grid-template-columns:1.8rem minmax(min-content,1fr) minmax(min-content,auto)}
+}
+@media(max-width:440px){
+  #notebook-workspace .notebook-operation-preview{grid-template-columns:minmax(0,1fr)}
+  #notebook-workspace .notebook-preview-current{grid-column:1;grid-row:1}
+  #notebook-workspace .notebook-preview-arrow{grid-column:1;grid-row:2}
+  #notebook-workspace .notebook-preview-next{grid-column:1;grid-row:3}
+}

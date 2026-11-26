@@ -16,6 +16,7 @@ const paperMarkup=`<section class="fb-notebook" id="fb-notebook" aria-label="Fra
 <div class="fb-notebook-controls notebook-control-panel" aria-label="Algebra controls">
 <div class="notebook-control-heading"><h3>Choose your next move</h3><p>Choose one operation for both sides. Preview, then confirm.</p></div>
 <div class="notebook-tools-scroll">
+<div class="notebook-guide-slot"></div>
 <div class="fb-editor" id="fb-nb-editor">
 <div class="fb-editor-row">
 <div class="fb-editor-keys" role="group" aria-label="Operation">
