@@ -29,11 +29,11 @@ import { WORLD1_LEVELS } from "./worlds.mjs";
 import {INDEPENDENT_LEVELS} from "./independent-levels.mjs";
 import {
   startNotebook,undoNotebookLine,notebookReplayScript
-} from "./notebook-engine.mjs";
+} from "./notebook-engine.mjs?v=108";
 import {
   parseNotebookOperation,previewNotebookOperation,tryNotebookOperation,
-  notebookEquationMathML,notebookOperationMathML
-} from "./notebook-maths-editor.mjs";
+  notebookEquationMathML,notebookOperationMathML,notebookAreaOperationMathML
+} from "./notebook-maths-editor.mjs?v=108";
 import {
   CHAPTER_BRIEFINGS, INDEPENDENT_BRIEFINGS,
   introductionCue,independentIntroductionCue,readGuideEnabled,readGuideSeen,
@@ -403,12 +403,12 @@ function renderNotebookVisibility() {
     ?"Use 1–12 whole weights, round sprites or square sprites; factors 2–5. Square or root each entire expression. Sprite weights are nonnegative."
     :"Choose a balancing operation, not the answer. Addition or subtraction can use 1–12 weights or sprites; multiplication and division use factors 2–5. Every move must work with whole objects on both sides.";
   $("notebook-operation-tip").textContent=square
-    ?"Choose the same operation on both sides. Use x² for square sprites; √ takes the principal nonnegative root.":currentLevel().groupedPrototype
+    ?"Square or square root the whole of each side. Use +x² or −x² for a single square-sprite term.":currentLevel().groupedPrototype
     ?(currentLevel().quantityMode==="signed"
       ?"Signed groups stay in brackets until you choose to expand west or east. Expansion changes ONE expression's appearance; +, −, × and ÷ change BOTH sides."
       :"Choose a balanced operation on both sides, or expand ONE sealed expression. Neither choice is preselected.")
     :currentLevel().quantityMode==="signed"
-      ?"Use +(−x) for a pale sprite or −(−1) to remove a balloon. Whole objects only."
+      ?"Subtract normally, e.g. −8 or −x. If objects are missing, the hand adds opposites and cancels zero pairs."
       :"Choose an operation for both sides, not an answer. Use −x to remove a dark sprite.";
   $("notebook-level-prompt").textContent=campaign
     ? square?(currentLevel().goal==="area"
@@ -478,6 +478,15 @@ function renderNotebookMathEditor(){
   }
   const result=$("notebook-result-math");
   const arrow=$("notebook-apply-label");
+  const area=parsed.ok&&["square","sqrt"].includes(parsed.action.op);
+  const proposed=$("notebook-area-proposal");
+  proposed.hidden=!area;
+  $("notebook-area-applied-math").innerHTML=area?notebookAreaOperationMathML(notebookSession.state,parsed.action):"";
+  const inline=$("notebook-inline-message");
+  const blocked=!!text.trim()&&!preview.ok&&preview.code!=="incomplete";
+  const message=blocked?preview.message:preview.ok?(preview.representation||""):"";
+  inline.hidden=!message;inline.textContent=message;
+  inline.dataset.status=blocked?"error":"info";
   if(preview.ok){
     result.innerHTML=notebookEquationMathML(preview.state);
     result.setAttribute("aria-label",preview.line);
@@ -492,7 +501,7 @@ function renderNotebookMathEditor(){
   }
   $("notebook-apply").disabled=!preview.ok||notebookPhase!=="writing"||busy;
   $("notebook-apply").textContent=parsed.ok&&parsed.action.op==="unpack"
-    ?"Expand selected expression →":"Apply to both sides →";
+    ?"Expand selected expression →":area?(parsed.action.op==="square"?"Square both sides →":"Square root both sides →"):"Apply to both sides →";
   input.setAttribute("aria-invalid",String(!!text.trim()&&!preview.ok&&
     preview.code!=="incomplete"));
   const sign=(parsed.ok?parsed.display[0]:text.trim().slice(0,1)).replace("-","−");
@@ -507,7 +516,7 @@ function renderNotebookPaper() {
   if(!notebookSession)return;
   const lines=$("notebook-lines");
   lines.replaceChildren();
-  const addLine=(text,explanation,original=false,mathState=null)=>{
+  const addLine=(text,explanation,original=false,mathState=null,areaMarkup="")=>{
     const item=document.createElement("li");
     if(original)item.className="notebook-original";
     const value=document.createElement("span");
@@ -520,6 +529,11 @@ function renderNotebookPaper() {
     accessible.textContent=text;
     value.appendChild(accessible);
     item.appendChild(value);
+    if(areaMarkup){
+      const worked=document.createElement("span");
+      worked.className="notebook-area-working";
+      worked.innerHTML=areaMarkup;item.appendChild(worked);
+    }
     if(explanation){
       const note=document.createElement("small");
       note.textContent=explanation;
@@ -532,7 +546,8 @@ function renderNotebookPaper() {
     notebookSession.level.goal==="area"?"Starting equation · build both square areas":"Starting equation · the mystery you must solve",true,initial);
   for(let i=0;i<notebookSession.steps.length;i++){
     const step=notebookSession.steps[i];
-    addLine(step.line,step.explanation,false,notebookSession.state.history[i].after);
+    const tx=notebookSession.state.history[i];
+    addLine(step.line,step.explanation,false,tx.after,notebookAreaOperationMathML(tx.before,step.action));
   }
   $("notebook-line-count").textContent=lines.children.length+" equation"+(lines.children.length===1?"":"s");
   // Follow the latest full line inside the paper only. On stacked layouts
@@ -1803,7 +1818,7 @@ async function replayNotebookWithSprites() {
       if(!previews.left.ok||!previews.right.ok)
         throw new Error("A notebook room preview was invalid");
       $("notebook-playback-message").textContent=
-        "Step "+(i+1)+" of "+script.length+": "+step.explanation;
+        "Step "+(i+1)+" of "+script.length+": "+step.explanation+(step.representation?" · "+step.representation:"");
       if(action.op==="divide"){
         await neutraliseBeforeDivision(action,previews);
         groups={left:action.factor,right:action.factor};

@@ -77,11 +77,14 @@ test("whole-expression squaring creates a genuine build goal; replay alone saves
   await page.locator('[data-notebook-area-operation="square"]').click();
   await expect(input(page)).toHaveValue("²");
   await expect(page.locator("#notebook-operation-typeset msup")).toHaveCount(1);
+  await expect(page.locator("#notebook-apply")).toHaveText("Square both sides →");
+  await expect(page.locator("#notebook-area-applied-math msup")).toHaveCount(2);
   await expect(result(page)).toHaveAttribute("aria-label","x² + 2x + 1 = 16");
   await expect(lines(page)).toHaveCount(1);
   await shot(page,"square-preview");
   await page.locator("#notebook-apply").click();
   await expect(lines(page)).toHaveCount(2);
+  await expect(lines(page).last().locator(".notebook-area-working msup")).toHaveCount(2);
   await expect(page.locator("#notebook-replay")).toBeEnabled();
   await expect(page.locator("#scene")).toBeHidden();
   await noCredit(page);
@@ -135,6 +138,8 @@ test("complete a missing corner on paper and replay the three exact transformati
   await board(page);await open(page,10);
   await input(page).fill("√");
   await expect(result(page)).toHaveAttribute("data-state","error");
+  await expect(page.locator("#notebook-inline-message")).toContainText("not a complete square");
+  await expect(page.locator("#notebook-area-applied-math msqrt")).toHaveCount(2);
   await expect(page.locator("#notebook-apply")).toBeDisabled();
   await expect(lines(page)).toHaveCount(1);
   await expect(page.locator("#notebook-replay")).toBeDisabled();
@@ -143,9 +148,12 @@ test("complete a missing corner on paper and replay the three exact transformati
   await apply(page,"+4","x² + 4x + 4 = 36");
   await page.locator('[data-notebook-area-operation="sqrt"]').click();
   await expect(page.locator("#notebook-operation-typeset msqrt")).toHaveCount(1);
+  await expect(page.locator("#notebook-apply")).toHaveText("Square root both sides →");
+  await expect(page.locator("#notebook-area-applied-math msqrt")).toHaveCount(2);
   await expect(result(page)).toHaveAttribute("aria-label","x + 2 = 6");
   await expect(page.locator("#notebook-apply-label")).toContainText("principal root");
   await page.locator("#notebook-apply").click();
+  await expect(lines(page).last().locator(".notebook-area-working msqrt")).toHaveCount(2);
   await apply(page,"−2","x = 4");
   await expect(page.locator("#notebook-replay")).toBeEnabled();
   await expect(lines(page)).toHaveCount(4);
@@ -174,6 +182,7 @@ test("quadratic term keypad removes x² exactly; changing the operation or undoi
   await page.locator('[data-notebook-symbol="−"]').click();
   await page.locator("#notebook-square-key").click();
   await expect(input(page)).toHaveValue("−x²");
+  await expect(page.locator("#notebook-area-proposal")).toBeHidden();
   await expect(page.locator("#notebook-operation-typeset msup")).toHaveCount(1);
   await expect(result(page)).toHaveAttribute("aria-label","x² + 5x + 1 = x + 22");
   await expect(lines(page)).toHaveCount(1);

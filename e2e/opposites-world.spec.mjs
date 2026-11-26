@@ -164,3 +164,41 @@ test("World 2 menus and board fit small laptop and phone without sideways clippi
     await page.locator("#site-back").click();
   }
 });
+
+test("signed Apprentice accepts subtract 8 with opposite addition replay and no premature credit @smoke",async({page})=>{
+  test.setTimeout(90000);
+  await page.setViewportSize({width:1266,height:531});
+  await board(page,"notebook");
+  await playCampaignLevel(page,page.locator('[data-level="5"]'));
+  const input=page.locator("#notebook-operation"),apply=page.locator("#notebook-apply");
+  const rows=page.locator("#notebook-lines li"),result=page.locator("#notebook-result-math");
+  const guide=page.locator('#notebook-workspace [data-guide-action="skip"]');
+  if(await guide.isVisible())await guide.click();
+  await input.fill("−8");
+  await expect(apply).toBeEnabled();
+  await expect(input).toHaveAttribute("aria-invalid","false");
+  await expect(page.locator("#notebook-inline-message")).toContainText("8 balloons");
+  await expect(result).toHaveAttribute("aria-label","2x − 5 = x");
+  await expect(rows).toHaveCount(1);
+  await apply.click();
+  await expect(rows).toHaveCount(2);
+  await expect(rows.last()).toContainText("− 8 on both sides");
+  await expect(rows.last().locator(".notebook-line-equation")).toHaveAttribute("aria-label","2x − 5 = x");
+  await page.locator("#notebook-undo").click();
+  await expect(rows).toHaveCount(1);
+  for(const [operation,next] of [["−8","2x − 5 = x"],["−x","x − 5 = 0"],["+5","x = 5"]]){
+    await input.fill(operation);await expect(apply).toBeEnabled();
+    await expect(result).toHaveAttribute("aria-label",next);await apply.click();
+  }
+  await expect(rows).toHaveCount(4);
+  await expect(page.locator("#notebook-replay")).toBeEnabled();
+  const before=await page.evaluate(()=>JSON.parse(localStorage.getItem("mathssprites.campaign.v2")));
+  expect(before.worlds.opposites.stages.notebook.completed).not.toContain("op-a-05");
+  await page.locator("#notebook-replay").click();
+  await expect(page.locator("#notebook-next")).toBeVisible({timeout:60000});
+  await expect(page.locator("#left-items .sprite-black")).toHaveCount(1);
+  await expect(page.locator("#left-items .weight")).toHaveCount(0);
+  await expect(page.locator("#right-items .weight")).toHaveCount(5);
+  const after=await page.evaluate(()=>JSON.parse(localStorage.getItem("mathssprites.campaign.v2")));
+  expect(after.worlds.opposites.stages.notebook.bestMoves["op-a-05"]).toBe(3);
+});

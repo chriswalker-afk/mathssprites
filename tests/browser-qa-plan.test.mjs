@@ -19,7 +19,8 @@ test("crate artwork and animation changes run actual crate interaction tests",()
 });
 test("feature edits select only their relevant browser group",()=>{
   assert.deepEqual(selectBrowserGroups(["src/opposite-guided.mjs"]),["signed"]);
-  assert.deepEqual(selectBrowserGroups(["src/notebook-engine.mjs"]),["notebook"]);
+  for(const path of ["src/notebook-engine.mjs","src/notebook-maths-editor.mjs"])
+    assert.deepEqual(selectBrowserGroups([path]),["notebook","signed","area"],path);
   assert.deepEqual(selectBrowserGroups(["src/site.mjs"]),["navigation"]);
   assert.deepEqual(selectBrowserGroups(["src/viewport-adaptive.css"]),["layout"]);
 });

@@ -180,3 +180,49 @@
   #notebook-workspace .notebook-preview-arrow{grid-column:1;grid-row:2}
   #notebook-workspace .notebook-preview-next{grid-column:1;grid-row:3}
 }
+
+/* PR108 — distinguish x² terms from operations on entire expressions.
+   Reasons for a blocked move must be visible beside its Apply action. */
+#notebook-workspace #notebook-square-operations:not([hidden]){
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px
+}
+#notebook-workspace #notebook-square-operations .notebook-area-label{
+  grid-column:1/-1;font-size:.68rem;color:#4d665a;font-weight:700
+}
+#notebook-workspace #notebook-square-operations button{
+  display:flex;align-items:center;justify-content:center;gap:5px;
+  min-width:0;white-space:normal;font:600 .72rem/1.2 system-ui,sans-serif
+}
+#notebook-workspace #notebook-square-operations button span{
+  font:normal 1.1rem "Cambria Math",Georgia,serif;color:inherit
+}
+#notebook-workspace #notebook-square-operations button[aria-pressed="true"]{
+  background:#2d574c;color:#fff0cc;border-color:#325e51
+}
+#notebook-workspace .notebook-area-proposal{
+  display:flex;flex-direction:column;gap:3px;min-width:0;padding:5px 8px;
+  background:#fff9e8;color:#31463c;border:1px solid #b4a179;border-radius:6px
+}
+#notebook-workspace .notebook-area-proposal small{font:600 .66rem/1.2 system-ui,sans-serif;color:#75654b}
+#notebook-workspace #notebook-area-applied-math{
+  font:normal 1.15rem/1.35 "Cambria Math","STIX Two Math",Georgia,serif;
+  white-space:nowrap;overflow-x:auto;max-width:100%
+}
+#notebook-workspace .notebook-inline-message{
+  margin:0;padding:6px 8px;border-radius:5px;border-left:3px solid #789083;
+  color:#294d3e;background:#e7f0df;font:normal .73rem/1.35 system-ui,sans-serif
+}
+#notebook-workspace .notebook-inline-message[data-status="error"]{
+  color:#792e28;background:#f9e5dc;border-color:#ad5f4d
+}
+#notebook-workspace .notebook-area-proposal[hidden],
+#notebook-workspace .notebook-inline-message[hidden]{display:none!important}
+#notebook-workspace .notebook-area-working{
+  display:block;max-width:max-content;color:#47655a;
+  font:normal .92rem/1.4 "Cambria Math","STIX Two Math",Georgia,serif;
+  white-space:nowrap;margin:2px 0
+}
+#notebook-workspace .notebook-math-editor #notebook-operation-tip{color:#65543a}
+@media(max-width:440px){
+  #notebook-workspace #notebook-square-operations button{min-height:44px}
+}

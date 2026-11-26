@@ -2,7 +2,7 @@
  * shared fraction campaign scene. No campaign reference actions are read.
  * All accepted actions originate from the learner's own confirmed lines. */
 import {startFractionNotebook,previewFractionNotebookOperation,tryFractionNotebookOperation,
-  parseFractionNotebookOperation,undoFractionNotebook,fractionNotebookReplayScript} from "./fraction-notebook-engine.mjs";
+  parseFractionNotebookOperation,undoFractionNotebook,fractionNotebookReplayScript} from "./fraction-notebook-engine.mjs?v=108";
 import {req} from "./rational.mjs";
 import {isSolved} from "./engine.mjs";
 

@@ -146,6 +146,24 @@ export function tryNotebookLine(session,text) {
   return error("not-one-move",
     "This is not one possible whole-object operation on BOTH sides. Try removing, adding, multiplying or making equal whole groups. Use one move per line.");
 }
+/** Notebook feedback distinguishes algebraic validity from a world's
+ * physical vocabulary. It never changes the engine's actual permission. */
+export function notebookFailureMessage(result,state,action){
+  const side=result.side==="left"?"west":result.side==="right"?"east":null;
+  const room=side?"The "+side+" chamber":"This experiment";
+  if(result.code==="missing"&&state.quantityMode!=="signed")
+    return room+" would need a negative term after this subtraction. This world uses nonnegative objects; choose a route that stays within its number system.";
+  if(result.code==="unsupported-area"&&action.op==="sqrt")
+    return room+" is not a complete square of whole sprites and weights. Complete the square on both sides before taking an exact principal root.";
+  if(result.code==="unsupported-area"&&action.op==="square")
+    return room+" cannot be squared with this world's objects. Squaring an expression containing x² would require higher powers.";
+  if(result.code==="fraction")
+    return room+" would need fractional pieces. Use exact whole-object division here; fractional objects are available in World 3.";
+  if(result.code==="unsupported-denominator")
+    return (side?"In the "+side+" chamber: ":"")+(result.reason||"That denominator is not supported in the Fraction Workshop.");
+  return (side?"In the "+side+" chamber: ":"")+
+    (result.reason||"This operation cannot be represented with the available objects.");
+}
 export function undoNotebookLine(session) {
   if(!session?.steps?.length)return session;
   return {level:session.level,state:undo(session.state),steps:session.steps.slice(0,-1)};
@@ -159,6 +177,7 @@ export function notebookReplayScript(session) {
     before:entry.before,
     after:entry.after,
     line:session.steps[i].line,
-    explanation:session.steps[i].explanation
+    explanation:session.steps[i].explanation,
+    ...(session.steps[i].representation?{representation:session.steps[i].representation}:{})
   }));
 }
