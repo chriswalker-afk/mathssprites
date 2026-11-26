@@ -1,3 +1,4 @@
+import {openCampaignBoard} from "./campaign-menu-helper.mjs";
 import {test,expect} from "@playwright/test";
 
 test.beforeEach(async({page})=>{
@@ -5,9 +6,7 @@ test.beforeEach(async({page})=>{
   await page.goto("/");
 });
 async function openStage(page,stage,level){
-  await page.locator("#home-choose-level").click();
-  await page.locator('[data-map-world="workshop"]').click();
-  await page.locator('[data-map-stage="'+stage+'"]').click();
+  await openCampaignBoard(page,"workshop",stage);
   await page.locator('[data-level="'+level+'"]').click();
   await expect(page.locator("#chapter-status")).toContainText("LEVEL "+String(level).padStart(2,"0"));
 }

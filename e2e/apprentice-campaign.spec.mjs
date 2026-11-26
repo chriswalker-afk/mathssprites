@@ -1,3 +1,4 @@
+import {openCampaignBoard,chooseCampaignStage} from "./campaign-menu-helper.mjs";
 import {test,expect} from "@playwright/test";
 
 test.beforeEach(async({page})=>{
@@ -23,8 +24,7 @@ async function openStage3(page,{teacher=false,level=1}={}){
   }else{
     await masterFirstTwo(page);
   }
-  await page.locator('.site-nav-links [data-screen="levels"]').click();
-  await page.locator('[data-map-stage="notebook"]').click();
+  await openCampaignBoard(page,"workshop","notebook");
   await page.locator('[data-level="'+level+'"]').click();
   await expect(page.locator("#notebook-workspace")).toBeVisible();
   await expect(page.locator("#scene")).toBeHidden();
@@ -35,13 +35,13 @@ async function applyOperation(page,expression){
 }
 
 test("Stage 3 and all sixteen notebook levels are open without prior mastery",async({page})=>{
-  await page.locator('.site-nav-links [data-screen="levels"]').click();
-  await expect(page.locator('[data-map-stage="notebook"]')).toHaveCount(1);
+  await openCampaignBoard(page);
+  await expect(page.locator('[data-stage-open="notebook"]')).toHaveCount(1);
   await masterFirstTwo(page);
-  await expect(page.locator("#home-play")).toContainText("Continue Stage 3 · Level 1");
-  await page.locator('.site-nav-links [data-screen="levels"]').click();
-  await expect(page.locator('[data-map-stage="notebook"]')).toHaveCount(1);
-  await page.locator('[data-map-stage="notebook"]').click();
+  await expect(page.locator("#home-play")).toContainText("Continue: Balance · Algebra Apprentice · Level 1");
+  await openCampaignBoard(page);
+  await expect(page.locator('[data-stage-open="notebook"]')).toHaveCount(1);
+  await chooseCampaignStage(page,"notebook");
   await expect(page.locator(".chapter-group")).toHaveCount(4);
   await expect(page.locator(".level-tile")).toHaveCount(16);
   await expect(page.locator('[data-level="1"]')).toBeEnabled();
@@ -130,11 +130,10 @@ test("a fully mastered Stage 3 shows its own 16/16 banner and completion route",
   await page.evaluate(()=>localStorage.setItem("mathssprites.apprentice-progress.v1",
     JSON.stringify({completed:Array.from({length:16},(_,i)=>i+1),lastPlayed:16})));
   await page.reload();
-  await expect(page.locator("#home-play")).toContainText("Replay Stage 3 · Level 16");
-  await page.locator('.site-nav-links [data-screen="levels"]').click();
-  await page.locator('[data-map-stage="notebook"]').click();
+  await expect(page.locator("#home-play")).toContainText("Replay: Balance · Algebra Apprentice · Level 16");
+  await openCampaignBoard(page,"workshop","notebook");
   await expect(page.locator("#world1-progress-number")).toHaveText("16 of 16 complete");
-  await page.locator('[data-map-stage="notebook"]').click();
+  await chooseCampaignStage(page,"notebook");
   await expect(page.locator("#world1-finale")).toContainText("Algebra Apprentice mastered");
   await expect(page.locator("#world1-progress-bar")).toHaveJSProperty("max",16);
   await expect(page.locator("#world1-progress-bar")).toHaveJSProperty("value",16);

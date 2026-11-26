@@ -1,3 +1,4 @@
+import {openCampaignBoard} from "./campaign-menu-helper.mjs";
 import {test,expect} from "@playwright/test";
 const host=page=>page.locator("#fraction-game-host");
 const root=page=>host(page).locator("#fraction-lab");
@@ -6,7 +7,7 @@ const saves=page=>page.evaluate(()=>Object.fromEntries(Object.entries(localStora
 async function open(page){
   await page.emulateMedia({reducedMotion:"reduce"});
   await page.addInitScript(()=>localStorage.setItem("mathssprites.motion-preference.v1","reduced"));await page.goto("/");
-  await page.locator("#home-choose-level").click();
+  await openCampaignBoard(page);
   await page.locator('#site-levels [data-screen="workshop"]').click();
   await expect(page.locator("#site-workshop")).toBeVisible();
 }

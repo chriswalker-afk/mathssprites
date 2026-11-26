@@ -1,12 +1,11 @@
+import {openCampaignBoard,chooseCampaignStage} from "./campaign-menu-helper.mjs";
 import {test,expect} from "@playwright/test";
 import {mkdirSync} from "node:fs";
 const lab=p=>p.locator("#fraction-game-host #fraction-lab");
 const slot=(p,id)=>p.locator('.level-tile[data-level-id="'+id+'"]');
 const ready=p=>expect(lab(p)).toHaveAttribute("data-busy","false",{timeout:25000});
 async function board(p,world,stage){
-  await p.locator("#home-choose-level").click();
-  await p.locator('[data-map-world="'+world+'"]').click();
-  await p.locator('[data-map-stage="'+stage+'"]').click();
+  await openCampaignBoard(p,world,stage);
 }
 async function enter(p,{world="fractions",stage="guided",id="frac-g-06"}={}){
   await board(p,world,stage);await slot(p,id).click();
@@ -166,7 +165,7 @@ test("Independent and Apprentice reuse the new full-width composition without ex
   await expect(lab(page).locator("#fb-apply")).toBeHidden();
   let g=await geometry(page,"fraction");expect(g.panel.x).toBeGreaterThan(g.scene.right);
   await lab(page).locator("#fb-game-levels").click();
-  await page.locator('[data-map-stage="notebook"]').click();
+  await chooseCampaignStage(page,"notebook");
   await slot(page,"frac-a-03").click();
   await expect(lab(page).locator("#fb-notebook")).toBeVisible();
   await expect(lab(page).locator(".fb-board")).toBeHidden();

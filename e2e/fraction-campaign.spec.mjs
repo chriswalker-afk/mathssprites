@@ -1,10 +1,10 @@
+import {openCampaignBoard,chooseCampaignWorld} from "./campaign-menu-helper.mjs";
 import {test,expect} from "@playwright/test";
 async function board(page){
   await page.emulateMedia({reducedMotion:"reduce"});
   await page.addInitScript(()=>localStorage.setItem("mathssprites.motion-preference.v1","reduced"));
   await page.goto("/");
-  await page.locator("#home-choose-level").click();
-  await page.locator('[data-map-world="fractions"]').click();
+  await openCampaignBoard(page,"fractions");
   await expect(page.locator("#site-levels")).toHaveAttribute("data-active-world","fractions");
 }
 const lab=page=>page.locator("#fraction-game-host");
@@ -31,8 +31,8 @@ test("Fraction Workshop opens all 24 Guided levels, alongside Apprentice @quick 
   await expect(page.locator(".chapter-group")).toHaveCount(6);
   await expect(page.locator(".level-tile")).toHaveCount(24);
   await expect(page.locator(".level-tile:disabled")).toHaveCount(0);
-  await expect(page.locator('[data-map-stage="independent"]')).toBeEnabled();
-  await expect(page.locator('[data-map-stage="notebook"]')).toBeEnabled();
+  await expect(page.locator('[data-stage-open="independent"]')).toBeEnabled();
+  await expect(page.locator('[data-stage-open="notebook"]')).toBeEnabled();
   await expect(page.locator("#level-progress")).toContainText("0 / 72 stars");
   await page.locator('[data-level="24"]').click();
   await expect(lab(page).locator("#fb-level-title")).toHaveText("The twelfths challenge");
@@ -70,13 +70,13 @@ test("solve a Guided fraction level, reveal exact comic and stars, advance and r
   await root.locator("#fb-next-level").click();
   await expect(lab(page).locator("#fb-chapter-status")).toContainText("LEVEL 02 / 24");
   await lab(page).locator("#fb-game-home").click();
-  await expect(page.locator("#home-play")).toContainText("Continue Guided Fractions · Level 2");
+  await expect(page.locator("#home-play")).toContainText("Continue: Fractions · Guided · Level 2");
   await page.reload();
   await page.locator("#home-play").click();
   await expect(lab(page).locator("#fb-chapter-status")).toContainText("LEVEL 02 / 24");
   await lab(page).locator("#fb-game-levels").click();
   await expect(page.locator('[data-level="1"] .tile-stars')).toHaveAttribute("data-stars","3");
-  await page.locator('[data-map-world="workshop"]').click();
+  await chooseCampaignWorld(page,"workshop");
   await page.locator('[data-level="1"]').click();
   await expect(page.locator("#game-shell")).toBeVisible();
   await expect(page.locator("#level-title")).toHaveText("One little resident");
