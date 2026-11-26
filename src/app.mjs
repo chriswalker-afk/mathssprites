@@ -3,7 +3,7 @@ import {
   LEVELS, TOKEN_KINDS, initialState, visibleRooms, evaluate, levelQuantityMode, normalize, room,
   perform, previewRoomAction, attachAvailablePairs, undo, isSolved, equation, operationDescription, algebraOperation, areaArrangement
 } from "./engine.mjs";
-import { buildWritingTimeline, symbolsOf, WRITING_PACE } from "./replay-timeline.mjs";
+import { buildWritingTimeline, symbolsOf, WRITING_PACE, WRITING_SPEEDS, DEFAULT_WRITING_SPEED, advanceWritingClock } from "./replay-timeline.mjs?v=81";
 import { handMotionPlan } from "./hand-timeline.mjs";
 import { divisionBasketMarkup, playDivisionBaskets } from "./division-baskets.mjs";
 import {
@@ -113,7 +113,7 @@ let replayTimeline = null;
 let replayElapsed = 0;
 let replayLastFrame = null;
 let replayNextEvent = 0;
-let replaySpeed = 1;
+let replaySpeed = DEFAULT_WRITING_SPEED;
 let replayPanelFinished = false;
 
 function currentAction() {
@@ -2246,7 +2246,7 @@ function tickReplay(timestamp) {
   // Background tabs and breakpoint pauses should never skip whole equations.
   const delta = Math.min(Math.max(timestamp - replayLastFrame, 0), 80);
   replayLastFrame = timestamp;
-  replayElapsed += delta * replaySpeed;
+  replayElapsed = advanceWritingClock(replayTimeline, replayElapsed, delta, replaySpeed);
 
   while (replayNextEvent < replayTimeline.events.length &&
          replayTimeline.events[replayNextEvent].at <= replayElapsed) {
@@ -2581,10 +2581,21 @@ $("replay-skip").addEventListener("click", () => {
   setReplayPaused(true);
   drawReplay(replayEntries.length - 1, { animate: false, complete: true });
 });
+function setWritingSpeed(value) {
+  const selected = Number(value);
+  replaySpeed = Object.values(WRITING_SPEEDS).includes(selected) ? selected : DEFAULT_WRITING_SPEED;
+  $("replay-speed").value = String(replaySpeed);
+  // Match the actual nib travel and ink stroke to the symbol clock, rather
+  // than making the pencil trail behind newly revealed symbols at Fast.
+  const style = $("replay-backdrop").style;
+  style.setProperty("--pencil-travel", (WRITING_PACE.penLeadMs * .9 / replaySpeed) + "ms");
+  style.setProperty("--ink-stroke-time", (160 / replaySpeed) + "ms");
+  style.setProperty("--pencil-nib-time", (220 / replaySpeed) + "ms");
+}
+setWritingSpeed(DEFAULT_WRITING_SPEED);
 $("replay-speed").addEventListener("change", event => {
-  replaySpeed = Number(event.target.value) || 1;
-  // Playback clock uses the chosen speed on every new frame; switching pace
-  // never jumps the pencil to a different symbol.
+  // Preserve the current symbol and elapsed clock on a pace change.
+  setWritingSpeed(event.target.value);
 });
 document.addEventListener("visibilitychange", () => { replayLastFrame = null; });
 $("next-level").addEventListener("click", () => {
