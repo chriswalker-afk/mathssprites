@@ -1,7 +1,7 @@
 /** PR86 — a catalogue view, not a second reward system. Ownership and
  * selections always come from the PR84 store; trying on art is local. */
 import {COSMETIC_REWARDS,COSMETIC_SLOTS,findCosmeticReward,originalAppearance} from "./cosmetic-catalog.mjs";
-import {IMPLEMENTED_SPRITE_COSMETICS} from "./sprite-cosmetics.mjs?v=85";
+import {IMPLEMENTED_SPRITE_COSMETICS} from "./sprite-cosmetics.mjs?v=87";
 
 export const ATELIER_FILTERS=Object.freeze([
   ["all","All rewards"],["fur","Fur"],["eyes","Eyes"],["headwear","Headwear"],
@@ -16,7 +16,21 @@ const descriptions=Object.freeze({
   "curious-eyes":"Big, inquisitive eyes for an eager explorer.",
   "extra-fluffy":"Soft, rounded tufts of fur.",
   "sleepy-eyes":"A relaxed, half-open expression.",
-  "spiky-fur":"Sharper tufts for a wonderfully unruly sprite."
+  "spiky-fur":"Sharper tufts for a wonderfully unruly sprite.",
+  "little-bow-tie":"A neat copper-red bow tie.",
+  "knitted-beanie":"A snug russet cap with stitched ribs.",
+  "brass-spectacles":"Round brass frames with clear lenses.",
+  "explorer-hat":"A broad-brimmed expedition hat.",
+  "inventor-goggles":"Leather-strapped goggles with brass rims.",
+  "striped-scarf":"A green scarf with fine golden stripes.",
+  "victorian-top-hat":"A dark formal hat with a brass band.",
+  "professor-monocle":"One brass lens and a delicate chain.",
+  "graduation-cap":"A mortarboard with a golden tassel.",
+  "alchemist-hat":"A green laboratory cap with a diamond emblem.",
+  "clockwork-goggles":"Toothed clockwork rims around clear lenses.",
+  "velvet-wizard-hat":"A violet pointed hat with a golden star.",
+  "order-of-balance-medal":"A brass medal engraved with a balance.",
+  "crown-of-equilibrium":"A golden crown with a red jewel."
 });
 export function rewardArtReady(reward,implemented=IMPLEMENTED_SPRITE_COSMETICS){
   if(!reward)return false;

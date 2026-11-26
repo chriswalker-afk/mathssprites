@@ -1,5 +1,5 @@
 import { LEVELS } from "./engine.mjs";
-import {createFractionCampaignView} from "./fraction-campaign.mjs?v=85";
+import {createFractionCampaignView} from "./fraction-campaign.mjs?v=87";
 import {
   CAMPAIGN_REGISTRY,findCampaignWorld,findCampaignStage,findCampaignLevel,
   nextCampaignLevel,isCampaignPlayable,firstCampaignLevel
@@ -10,13 +10,13 @@ import {
   campaignStars,campaignStarTotals,campaignOptimalMoves,stageResumeLevel
 } from "./campaign-records.mjs?v=84";
 import {createCosmeticRewards} from "./cosmetic-rewards.mjs?v=84";
-import {applySpriteAppearance} from "./sprite-cosmetics.mjs?v=85";
-import {mountSpriteAtelier} from "./sprite-atelier.mjs?v=86";
+import {applySpriteAppearance} from "./sprite-cosmetics.mjs?v=87";
+import {mountSpriteAtelier} from "./sprite-atelier.mjs?v=87";
 import {createWorkshopEquation,WORKSHOP_EXAMPLES} from "./equation-workshop.mjs?v=82";
 import {createSignedWorkshopEquation,SIGNED_WORKSHOP_EXAMPLES} from "./signed-workshop.mjs?v=82";
 import {createFractionWorkshopEquation,FRACTION_WORKSHOP_EXAMPLES} from "./fraction-workshop.mjs";
 import {createSquareWorkshopEquation,SQUARE_WORKSHOP_EXAMPLES,SQUARE_BUILD_EXAMPLES} from "./square-workshop.mjs";
-import {createHomeHero} from "./home-hero.mjs?v=83";
+import {createHomeHero} from "./home-hero.mjs?v=87";
 import {compactWorldProgress,compactStageProgress,briefStageIntro} from "./menu-copy.mjs";
 import {boardContinueLevel,spatialTileIndex} from "./navigation-journey.mjs";
 import {loadResume,saveResume,resumeDestination,resumeLabel,RESUME_STAGE_NUMBERS} from "./resume.mjs";

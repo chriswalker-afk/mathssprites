@@ -1,6 +1,7 @@
-import {spriteCreatureMarkup} from "./square-sprites.mjs";
-import {spriteAssemblyMarkup} from "./fraction-sprites.mjs?v=85";
-import {applySpriteAppearance} from "./sprite-cosmetics.mjs?v=85";
+import {COSMETIC_REWARDS} from "./cosmetic-catalog.mjs";
+import {spriteCreatureMarkup} from "./square-sprites.mjs?v=87";
+import {spriteAssemblyMarkup} from "./fraction-sprites.mjs?v=87";
+import {applySpriteAppearance} from "./sprite-cosmetics.mjs?v=87";
 const variants=[
   {id:"original",name:"Original",label:"Default",equipped:{}},
   {id:"curious",name:"Curious eyes",label:"3 stars",equipped:{eyes:"curious-eyes"}},
@@ -9,6 +10,12 @@ const variants=[
   {id:"spiky",name:"Spiky fur",label:"90 stars",equipped:{fur:"spiky-fur"}},
   {id:"combined",name:"Fluffy and curious",label:"Combined example",equipped:{fur:"extra-fluffy",eyes:"curious-eyes"}}
 ];
+for(const reward of COSMETIC_REWARDS.filter(r=>["headwear","eyewear","neckwear"].includes(r.slot))){
+  variants.push({id:reward.id,name:reward.name,label:reward.stars+" stars",equipped:{[reward.slot]:reward.id}});
+}
+variants.push({id:"wearable-combination",name:"Laboratory explorer",label:"Combined example",equipped:{
+  fur:"extra-fluffy",eyes:"curious-eyes",headwear:"explorer-hat",eyewear:"brass-spectacles",neckwear:"striped-scarf"
+}});
 const grid=document.getElementById("study-grid");
 for(const v of variants){
   const card=document.createElement("section");
