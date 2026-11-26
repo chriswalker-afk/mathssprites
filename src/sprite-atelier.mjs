@@ -2,9 +2,10 @@
  * preview, scoped independently from the saved appearance on document.body. */
 import {COSMETIC_REWARDS,findCosmeticReward,findCosmeticItem,COSMETIC_COLLECTIONS,cosmeticCollection} from "./cosmetic-catalog.mjs?v=91";
 import {spriteCreatureMarkup} from "./square-sprites.mjs?v=88";
-import {applyLaboratoryAppearance} from "./laboratory-cosmetics.mjs?v=91";
+import {weightAssemblyMarkup} from "./fraction-weights.mjs?v=92";
+import {applyLaboratoryAppearance} from "./laboratory-cosmetics.mjs?v=92";
 import {atelierFilters,rewardArtReady,atelierRewardState,
-  atelierCollection,atelierPreview,atelierDescription,equipAtelierReward} from "./atelier-model.mjs?v=91";
+  atelierCollection,atelierPreview,atelierDescription,equipAtelierReward} from "./atelier-model.mjs?v=92";
 
 const icons=Object.freeze({fur:"✳",eyes:"◉",headwear:"⌂",eyewear:"∞",neckwear:"◇",
   movement:"↟",effect:"✦",set:"♛","weight-shape":"◆","weight-material":"▧","weight-effect":"✧","chamber-theme":"⌂"});
@@ -33,6 +34,7 @@ export function mountSpriteAtelier({root,homeSummary,store}){
     list.scrollTop=0;
   }
   setCollection("sprites");
+  $("atelier-weight-fraction").innerHTML=weightAssemblyMarkup(3,[0,1],{label:true});
   for(const [kind,side] of [["posX","black"],["negX","white"]])
     $("atelier-"+side).innerHTML=spriteCreatureMarkup("atelier-preview",side,kind,0);
   for(const reward of COSMETIC_REWARDS){
@@ -45,6 +47,9 @@ export function mountSpriteAtelier({root,homeSummary,store}){
       applyLaboratoryAppearance(thumb,reward.slot?{[reward.slot]:reward.id}:reward.loadout);
       thumb.innerHTML=spriteCreatureMarkup("atelier-thumbnail",reward.id,"posX",0);
       if(reward.slot==="movement")thumb.dataset.motionPreview=reward.id;
+    }else if(cosmeticCollection(reward)==="weights"&&rewardArtReady(reward)){
+      applyLaboratoryAppearance(thumb,{[reward.slot]:reward.id});
+      thumb.innerHTML='<span class="token weight"><i class="weight-handle"></i><i class="weight-shine"></i></span>';
     }else{
       thumb.classList.add("atelier-thumb-placeholder");thumb.textContent=icons[reward.slot??"set"];
     }
@@ -81,7 +86,9 @@ export function mountSpriteAtelier({root,homeSummary,store}){
     }
     const reward=findCosmeticReward(selected);
     const state=reward?atelierRewardState(snapshot,reward):null;
-    applyLaboratoryAppearance(scope,atelierPreview(snapshot,selected));
+    const preview=atelierPreview(snapshot,selected);
+    applyLaboratoryAppearance(scope,preview);
+    $("atelier-weight-finish").textContent=findCosmeticItem(preview["weight-material"])?.name||"Original brass";
     const names=COSMETIC_COLLECTIONS[collection].map(slot=>findCosmeticItem(snapshot.equipped[slot])?.name).filter(Boolean);
     const fullSet=findCosmeticReward("grand-alchemist");
     const wearingSet=collection==="sprites"&&Object.entries(fullSet.loadout).every(([slot,id])=>snapshot.equipped[slot]===id);

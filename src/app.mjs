@@ -155,7 +155,7 @@ function token(kind, i, mini = false, side = "left", weightTotal = 0) {
         (pile.last?' data-weight-pile-end="'+pile.last+'"':"")
       : "";
     return '<span class="token weight"'+placement+
-      ' title="A brass weight"><i class="weight-handle"></i><i class="weight-shine"></i></span>';
+      ' title="One unit weight"><i class="weight-handle"></i><i class="weight-shine"></i></span>';
   }
   return '<span class="token balloon" title="A little floating balloon"><i class="balloon-body"></i><i class="balloon-knot"></i><i class="balloon-string"></i></span>';
 }

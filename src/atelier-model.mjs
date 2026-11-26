@@ -2,7 +2,7 @@
  * selections always come from the PR84 store; trying on art is local. */
 import {COSMETIC_REWARDS,COSMETIC_SLOTS,COSMETIC_COLLECTIONS,cosmeticCollection,findCosmeticReward,originalAppearance} from "./cosmetic-catalog.mjs?v=91";
 import {IMPLEMENTED_SPRITE_COSMETICS} from "./sprite-cosmetics.mjs?v=89";
-import {IMPLEMENTED_LABORATORY_COSMETICS} from "./laboratory-cosmetics.mjs?v=91";
+import {IMPLEMENTED_LABORATORY_COSMETICS} from "./laboratory-cosmetics.mjs?v=92";
 export const IMPLEMENTED_COSMETICS=Object.freeze([...IMPLEMENTED_SPRITE_COSMETICS,...IMPLEMENTED_LABORATORY_COSMETICS]);
 
 export const ATELIER_FILTERS=Object.freeze([
@@ -19,6 +19,13 @@ export function atelierFilters(collection){
   return ATELIER_FILTERS.filter(f=>f.id==="all"||slots.includes(f.id)||(collection==="sprites"&&f.id==="set"));
 }
 const descriptions=Object.freeze({
+  "polished-steel":"Polished silver-grey steel with a cool metallic highlight.",
+  "copper":"Warm burnished copper, with a reddish metallic sheen.",
+  "blue-enamel":"Deep blue enamel with a glossy pale-blue highlight.",
+  "gold":"Bright polished gold with warm yellow highlights.",
+  "jade-enamel":"Glossy jade-green enamel and a softly lit edge.",
+  "cast-iron":"Textured charcoal-grey iron with bright bevels, distinct from dark sprites.",
+  "violet-enamel":"Glossy violet enamel with a lilac highlight.",
   "curious-eyes":"Big, inquisitive eyes for an eager explorer.",
   "extra-fluffy":"Soft, rounded tufts of fur.",
   "sleepy-eyes":"A relaxed, half-open expression.",
