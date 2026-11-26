@@ -244,3 +244,42 @@ test("weight and chamber slots are independent; finale equips only sprites and c
   for(const [group,count] of [["sprites",29],["weights",18],["chambers",10]])
     assert.equal(COSMETIC_REWARDS.filter(r=>cosmeticCollection(r)===group).length,count);
 });
+
+test("read-only cross-tab refresh updates appearance and permanent entitlements without duplicate unlocks or writes",()=>{
+  const seed=storage();
+  const one=createCosmeticRewards(recordsForStars(720),{storage:seed});
+  const two=createCosmeticRewards(recordsForStars(3),{storage:seed});
+  const changes=[];
+  two.subscribe(change=>changes.push(change));
+  one.equip("weight-shape","kettlebell");
+  one.equip("chamber-theme","astral-sanctuary");
+  const writes=seed.writes.length;
+  const update=two.refreshAppearance();
+  assert.equal(update.changed,true);
+  assert.equal(update.snapshot.equipped["weight-shape"],"kettlebell");
+  assert.equal(update.snapshot.equipped["chamber-theme"],"astral-sanctuary");
+  assert.equal(update.snapshot.earnedStars,3);
+  assert.equal(update.snapshot.unlockedCount,57);
+  assert.deepEqual(update.newlyUnlocked,[]);
+  assert.equal(two.refreshAppearance().changed,false);
+  assert.equal(changes.length,1);
+  assert.equal(seed.writes.length,writes);
+  one.restoreOriginal("chambers");
+  two.refreshAppearance();
+  assert.equal(two.getSnapshot().equipped["chamber-theme"],null);
+  assert.equal(two.getSnapshot().equipped["weight-shape"],"kettlebell");
+});
+test("read-only refresh tolerates malformed remote profiles and keeps session-only choices",()=>{
+  const seed=storage();
+  const rewards=createCosmeticRewards(recordsForStars(24),{storage:seed});
+  rewards.equip("chamber-theme","clockmakers-workshop");
+  seed.map.set(COSMETIC_SAVE_KEY,"{bad");
+  const before=rewards.getSnapshot();
+  assert.equal(rewards.refreshAppearance().changed,false);
+  assert.deepEqual(rewards.getSnapshot(),before);
+  const blocked={getItem:()=>null,setItem(){throw Error("blocked")}};
+  const session=createCosmeticRewards(recordsForStars(24),{storage:blocked});
+  session.equip("chamber-theme","clockmakers-workshop");
+  session.refreshAppearance();
+  assert.equal(session.getSnapshot().equipped["chamber-theme"],"clockmakers-workshop");
+});

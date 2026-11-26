@@ -1,5 +1,5 @@
 import { LEVELS } from "./engine.mjs";
-import {createFractionCampaignView} from "./fraction-campaign.mjs?v=96";
+import {createFractionCampaignView} from "./fraction-campaign.mjs?v=97";
 import {
   CAMPAIGN_REGISTRY,findCampaignWorld,findCampaignStage,findCampaignLevel,
   nextCampaignLevel,isCampaignPlayable,firstCampaignLevel
@@ -9,7 +9,7 @@ import {
   withCampaignLastPlayed,withCampaignCompleted,campaignStageRecord,
   campaignStars,campaignStarTotals,campaignOptimalMoves,stageResumeLevel
 } from "./campaign-records.mjs?v=84";
-import {createCosmeticRewards} from "./cosmetic-rewards.mjs?v=91";
+import {createCosmeticRewards,COSMETIC_SAVE_KEY} from "./cosmetic-rewards.mjs?v=97";
 import {applyLaboratoryAppearance} from "./laboratory-cosmetics.mjs?v=96";
 import {mountSpriteAtelier} from "./sprite-atelier.mjs?v=96";
 import {mountRewardCelebration} from "./reward-celebration.mjs?v=91";
@@ -84,6 +84,14 @@ let playingNumber = null;
 let playingStage = null;
 let playingWorld = null;
 let fractionCampaign=null;
+// Synchronize cosmetics across tabs without repainting an active physical
+// experiment. Safe menu/level boundaries read the latest saved appearance.
+// Campaign progress retains its existing independent save lifecycle.
+window.addEventListener("storage",event=>{
+  if(event.key!==COSMETIC_SAVE_KEY)return;
+  try{if(event.storageArea!==localStorage)return;}catch{return;}
+  if(screenNames.includes(currentScreen))cosmeticRewards.refreshAppearance();
+});
 function closeFractionCampaign(){fractionCampaign?.destroy();fractionCampaign=null;}
 let selectedWorld = campaignResume?.worldId||"workshop";
 let selectedStage = campaignResume?.stageId||"guided";
@@ -427,6 +435,7 @@ function showScreen(name,{focusHeading=true}={}) {
   closeFractionCampaign();
   rewardCelebration.leaveReview();
   currentScreen = name;
+  cosmeticRewards.refreshAppearance();
   playingNumber = null;
   playingStage = null;
   playingWorld = null;
@@ -476,6 +485,7 @@ function launch(levelIdOrNumber,stageId=selectedStage,worldId=selectedWorld) {
   if(!slot?.level||!stage)return false;
   closeFractionCampaign();
   rewardCelebration.leaveReview();
+  cosmeticRewards.refreshAppearance();
   homeHero.setActive(false);
   selectedWorld=worldId;
   selectedStage=stageId;
@@ -572,6 +582,7 @@ function launchWorkshopScene(level,handMode){
   const signed=level?.quantityMode==="signed"&&!level.lockPositive;
   if(!fractions&&!signed&&(!level?.lockPositive||level.quantityMode!=="positive"))return false;
   closeFractionCampaign();
+  cosmeticRewards.refreshAppearance();
   homeHero.setActive(false);
   playingNumber=null;
   playingStage=null;
@@ -804,6 +815,7 @@ function restartIndependentIntroduction() {
 $("site-replay-independent").addEventListener("click",restartIndependentIntroduction);
 /** Teacher-facing preview only: PR21 will add real Stage 3 levels and progress. */
 function launchNotebookPreview(level=WORLD1_LEVELS[8].level){
+  cosmeticRewards.refreshAppearance();
   homeHero.setActive(false);
   playingStage=null;
   playingNumber=null;

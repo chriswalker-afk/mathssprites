@@ -119,3 +119,18 @@
 :where([data-chamber-theme]) .atelier-chamber-stage{
   background:radial-gradient(ellipse at 50% 55%,var(--ct-ambient,transparent),transparent 75%);
 }
+
+/* PR97: finish the matching metalwork. The dial face remains light enough
+   for its unchanged dark needle; no new geometry or feedback overrides. */
+[data-chamber-theme]:not([data-chamber-theme="original"]) .playfield .room-roof{
+  background:linear-gradient(var(--ct-frame),var(--ct-ambient));
+  border-color:var(--ct-frame);
+  box-shadow:inset 0 5px 0 var(--ct-top),0 -6px 9px #0004;
+}
+[data-chamber-theme]:not([data-chamber-theme="original"]) .playfield .roof-line{background:var(--ct-trim)}
+[data-chamber-theme]:not([data-chamber-theme="original"]) .playfield .pivot-dial{
+  background:radial-gradient(circle at 30% 25%,#efe6cb,var(--ct-trim) 45%,var(--ct-top));
+  border-color:var(--ct-frame);
+  box-shadow:0 0 0 3px var(--ct-trim),0 7px 11px #0009;
+  color:#34291e;
+}
