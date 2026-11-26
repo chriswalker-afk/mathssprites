@@ -577,8 +577,6 @@ function setWorkshopQuantity(quantity){
   const build=squares&&$("workshop-square-goal").value==="area";
   $("workshop-lesson-copy").textContent=signed?"Black sprite = x, white sprite = −x, weight = +1, balloon = −1. Opposite objects cancel.":squares?"Round sprites represent x and square sprites represent x².":fractions?"Sprites and weights can be divided into exact fractional pieces.":"x means a sprite; each number counts brass weights. The hand acts on both rooms.";
   $("workshop-equation").placeholder=squares?(build?"e.g. x + 1 = 4":"e.g. x² + 4x = 21"):fractions?"e.g. (2/3)x = 4":signed?"e.g. 2x − 3 = x + 4":"e.g. 3x + 5 = 20";
-  $("workshop-west-example").textContent=squares?(build?"1 round sprite + 1 weight":"1 square sprite + 4 round sprites"):fractions?"2 sprites":signed?"2 black sprites + 3 balloons":"3 sprites + 5 weights";
-  $("workshop-east-example").textContent=squares?(build?"4 weights":"21 weights"):fractions?"5 weights":signed?"1 black sprite + 4 weights":"20 weights";
   $("workshop-rule-copy").textContent=squares
     ?(build?"Enter a positive whole-object linear balance with at most six markers on each side. Square the whole expression in each chamber. The mystery weight must be a unique positive integer from 1 to 48."
       :"Use whole nonnegative terms such as x², 2x and 3. The equation must have a unique positive integer weight from 1 to 48 on x ≥ 0. Each room holds at most 48 objects; square roots must recover complete whole sides. A route of at most 16 legal moves must be verified.")

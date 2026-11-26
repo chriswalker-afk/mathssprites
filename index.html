@@ -254,7 +254,7 @@
               <div class="workshop-field">
                 <label for="workshop-quantity-mode">1 · Number system</label>
                 <select id="workshop-quantity-mode"><option value="positive">Whole numbers · World 1</option><option value="signed">Negative numbers · World 2</option><option value="fractions">Fractions · World 3</option><option value="squares">Squares · World 4</option></select>
-                <div class="workshop-world-choices" aria-label="Choose a number system">
+                <div class="workshop-world-choices" role="group" aria-label="Choose a number system">
                   <button type="button" data-workshop-choice="positive"><span class="workshop-choice-icon" aria-hidden="true">●</span><strong>Whole</strong></button>
                   <button type="button" data-workshop-choice="signed"><span class="workshop-choice-icon" aria-hidden="true">±</span><strong>Negatives</strong></button>
                   <button type="button" data-workshop-choice="fractions"><span class="workshop-choice-icon" aria-hidden="true">½</span><strong>Fractions</strong></button>
@@ -283,7 +283,7 @@
                   <option value="manual">Independent · move each room yourself</option>
                   <option value="notebook" disabled hidden>Algebra Apprentice · write then replay</option>
                 </select>
-                <div class="workshop-method-choices" aria-label="Choose a learning method">
+                <div class="workshop-method-choices" role="group" aria-label="Choose a learning method">
                   <button type="button" data-workshop-method="auto"><strong>Guided</strong><small>One move · both rooms</small></button>
                   <button type="button" data-workshop-method="manual"><strong>Independent</strong><small>Match both rooms</small></button>
                   <button type="button" data-workshop-method="notebook"><strong>Algebra Apprentice</strong><small>Write, then replay</small></button>

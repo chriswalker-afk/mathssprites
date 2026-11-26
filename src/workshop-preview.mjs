@@ -33,10 +33,10 @@ export function workshopPreview(input,mode="positive",goal="isolate"){
 export function workshopInventoryMarkup(items){
   return items.map(item=>{
     const visible=Math.min(5,item.whole);
-    const tokens=Array.from({length:visible},()=>'<i class="mini-token '+item.kind+'" aria-hidden="true"></i>').join("");
+    const tokens=Array.from({length:item.whole>visible?1:visible},()=>'<i class="mini-token '+item.kind+'" aria-hidden="true"></i>').join("");
     const count=item.whole>visible?'<b class="workshop-token-count">×'+item.whole+'</b>':"";
     const partial=item.pieces?'<span class="comic-fraction-piece '+(item.kind==="posX"?"sprite-piece":"weight-piece")+'" style="--fraction-fill:'+(item.pieces/item.denominator*100)+'%;--fraction-step:'+(100/item.denominator)+'%" data-numerator="'+item.pieces+'" data-denominator="'+item.denominator+'"><i></i><small>'+item.pieces+'/'+item.denominator+'</small></span>':"";
     // For large groups, a single labelled object denotes the exact count.
-    return '<span class="workshop-object-group" data-kind="'+item.kind+'" data-whole="'+item.whole+'">'+(count?tokens.slice(0,tokens.indexOf("</i>")+4)+count:tokens)+partial+'</span>';
+    return '<span class="workshop-object-group" data-kind="'+item.kind+'" data-whole="'+item.whole+'">'+tokens+count+partial+'</span>';
   }).join("");
 }
