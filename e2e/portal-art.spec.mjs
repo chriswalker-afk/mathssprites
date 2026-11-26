@@ -23,7 +23,7 @@ test.beforeEach(async({page})=>{
   await page.goto("/");
 });
 
-test("Laboratory Foyer keeps its animated scale and three loaded stage illustrations @smoke",async({page})=>{
+test("Laboratory Foyer keeps its animated scale and clear campaign entry @smoke",async({page})=>{
   await expect(page.locator("#home-title")).toHaveText("How much does the sprite weigh?");
   await expect(page.locator("#site-home .portal-kicker")).toContainText("LABORATORY FOYER");
   await expect(page.locator("#home-hero-art")).toHaveAttribute("data-playback","playing");
@@ -36,6 +36,7 @@ test("Laboratory Foyer keeps its animated scale and three loaded stage illustrat
 test("four actual door illustrations and three learning medallions load in their own menus @smoke",async({page})=>{
   await page.locator("#home-choose-level").click();
   await expect(page.locator("#site-worlds")).toBeVisible();
+  for(const image of await page.locator("#world-cards .hall-door-art").all())await image.scrollIntoViewIfNeeded();
   await imagesLoaded(page,"#world-cards .hall-door-art",4);
   const srcs=await page.locator("#world-cards .hall-door-art").evaluateAll(els=>els.map(el=>el.getAttribute("src")));
   expect(new Set(srcs).size).toBe(4);

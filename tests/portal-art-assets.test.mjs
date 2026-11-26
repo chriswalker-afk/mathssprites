@@ -40,8 +40,8 @@ test("menu artwork is separated from the engine and its required controls",()=>{
   assert.match(html,/portal-art\.css\?v=33/);
   assert.match(html,/id="home-play"/);
   assert.match(html,/id="home-choose-level"/);
-  assert.match(html,/id="map-world-tabs"/);
-  assert.match(html,/id="map-stage-tabs"/);
+  assert.match(html,/id="world-cards"/);
+  assert.match(html,/id="world1-stage-cards"/);
   assert.match(html,/id="workshop-equation"/);
   for(const name of ["foyer-ambient","board-etching"])
     assert.match(css,new RegExp(name+"\\.svg"));

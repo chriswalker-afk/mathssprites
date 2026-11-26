@@ -35,7 +35,11 @@
   .campaign-step{width:100%;margin-left:0}
 }
 
-#site-worlds .world-card{min-height:max-content;overflow:hidden}
+#site-worlds .world-card{min-height:0;overflow:hidden}
+@media(min-width:761px){
+  #site-worlds .world-grid{grid-auto-rows:minmax(148px,1fr)}
+  #site-stages .world1-stage-grid{grid-auto-rows:minmax(215px,1fr)}
+}
 #site-worlds .world-card-scene .hall-door-art{object-fit:contain}
-#site-stages .stage-card{min-height:max-content}
+#site-stages .stage-card{min-height:0}
 #site-worlds .site-back-link{align-self:flex-start;flex:none;margin:0}
