@@ -119,8 +119,8 @@ test("world and stage tabs, scrollable chapters and signed notebook use the scre
     {width:1024,height:720,name:"laptop"}
   ]){
     await page.setViewportSize(size);
-    await openCampaignBoard(page);
-    await expect(page.locator("#site-levels")).toBeVisible();
+    await page.locator('.site-nav-links [data-screen="worlds"]').click();
+    await expect(page.locator("#site-worlds")).toBeVisible();
     await expect(page.locator("#world-cards [data-world-stages]")).toHaveCount(4);
     await expect(page.locator('[data-world-stages="fractions"]')).toBeEnabled();
     await expect(page.locator('[data-world-stages="squares"]')).toBeEnabled();
@@ -142,6 +142,7 @@ test("world and stage tabs, scrollable chapters and signed notebook use the scre
     await expect(page.locator(".chapter-group")).toHaveCount(4);
     await expect(page.locator(".level-tile")).toHaveCount(16);
     await page.locator('[data-level="1"]').click();
+    await page.locator("#board-continue").click();
     await expect(page.locator("#notebook-workspace")).toBeVisible();
     await expect(page.locator("#notebook-apply")).toBeVisible();
     withinScreen(await measure(page));
@@ -154,6 +155,7 @@ test("signed zero-pair hand actions still commit in both tall desktop hand modes
   await page.setViewportSize({width:2048,height:1252});
   await openCampaignBoard(page,"opposites");
   await page.locator('[data-level="1"]').click();
+    await page.locator("#board-continue").click();
   if(await page.locator("#guide-skip").isVisible())await page.locator("#guide-skip").click();
   await expect(page.locator("#left-items .balloon")).toHaveCount(1);
   await clickWithReferenceMove(page,"#do-both");
@@ -165,6 +167,7 @@ test("signed zero-pair hand actions still commit in both tall desktop hand modes
   await page.setViewportSize({width:1200,height:1252});
   await openCampaignBoard(page,"opposites","independent");
   await page.locator('[data-level="1"]').click();
+    await page.locator("#board-continue").click();
   if(await page.locator("#guide-skip").isVisible())await page.locator("#guide-skip").click();
   await expect(page.locator("#left-items .balloon")).toHaveCount(2);
   await clickWithReferenceMove(page,"#left-action");

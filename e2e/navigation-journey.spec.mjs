@@ -9,12 +9,14 @@ test.beforeEach(async({page})=>{
 test("new player chooses the campaign and can return to the same experiment @quick @smoke",async({page})=>{
   await expect(page.locator("#home-play")).toBeHidden();
   await openCampaignBoard(page);
+  await expect(page.locator("#board-continue")).toBeDisabled();
+  await page.locator('[data-level="1"]').click();
   await expect(page.locator("#board-continue")).toHaveText("Play Level 1 →");
   await expect(page.locator(".level-tile")).toHaveCount(24);
   await page.locator("#board-continue").click();
   await expect(page.locator("#level-title")).toHaveText("One little resident");
   await page.locator("#game-levels").click();
-  await expect(page.locator("#board-continue")).toHaveText("Continue Level 1 →");
+  await expect(page.locator("#board-continue")).toHaveText("Play Level 1 →");
   await page.locator("#board-continue").click();
   await expect(page.locator("#level-title")).toHaveText("One little resident");
   await page.locator("#game-home").click();
@@ -23,12 +25,13 @@ test("new player chooses the campaign and can return to the same experiment @qui
 test("returning Stage 3 student gets a single board action without changing progress @smoke",async({page})=>{
   await openCampaignBoard(page);
   await chooseCampaignStage(page,"notebook");
-  await expect(page.locator("#board-continue")).toHaveText("Play Level 1 →");
+  await expect(page.locator("#board-continue")).toBeDisabled();
   await page.locator('[data-level="6"]').click();
+  await page.locator("#board-continue").click();
   await expect(page.locator("#notebook-workspace")).toBeVisible();
   await page.locator("#game-levels").click();
   await expect(page.locator("#site-levels")).toHaveAttribute("data-active-stage","notebook");
-  await expect(page.locator("#board-continue")).toHaveText("Continue Level 6 →");
+  await expect(page.locator("#board-continue")).toHaveText("Play Level 6 →");
   await page.locator("#board-continue").click();
   await expect(page.locator("#notebook-workspace")).toBeVisible();
   await page.locator("#game-home").click();
@@ -60,19 +63,20 @@ test("keyboard selects worlds and methods only on explicit Enter; Escape reverse
   await page.keyboard.press("Escape");
   await expect(page.locator("#site-home")).toBeVisible();
 });
-test("desktop arrow keys follow the visual chapter columns, and Enter launches @smoke",async({page})=>{
+test("desktop arrow keys follow the visual chapter columns, and Enter selects before Play @smoke",async({page})=>{
   await page.setViewportSize({width:1024,height:720});
   await openCampaignBoard(page);
   await page.locator('[data-level="1"]').focus();
   await page.keyboard.press("ArrowRight");
-  await expect(page.locator('[data-level="5"]')).toBeFocused();
-  await page.keyboard.press("ArrowDown");
-  await expect(page.locator('[data-level="6"]')).toBeFocused();
+  await expect(page.locator('[data-level="2"]')).toBeFocused();
   await page.keyboard.press("Home");
   await expect(page.locator('[data-level="1"]')).toBeFocused();
   await page.keyboard.press("End");
   await expect(page.locator('[data-level="24"]')).toBeFocused();
   await page.keyboard.press("Enter");
+  await expect(page.locator("#selected-level-title")).toHaveText("The hall of crates");
+  await expect(page.locator("#site-levels")).toBeVisible();
+  await page.locator("#board-continue").click();
   await expect(page.locator("#level-title")).toHaveText("The hall of crates");
 });
 test("Help and Settings return to the actual prior screen, not always Home @smoke",async({page})=>{
@@ -119,7 +123,7 @@ test("phone levels and contextual return are accessible without horizontal overf
   await page.keyboard.press("ArrowRight");
   await expect(page.locator('[data-level="2"]')).toBeFocused();
   await page.keyboard.press("ArrowDown");
-  await expect(page.locator('[data-level="4"]')).toBeFocused();
+  await expect(page.locator('[data-level="6"]')).toBeFocused();
   await page.locator('.site-nav-links [data-screen="settings"]').click();
   await expect(page.locator("#settings-return")).toContainText("levels");
   await page.screenshot({path:"artifacts/pr35-phone-settings-375x812.png",fullPage:true});

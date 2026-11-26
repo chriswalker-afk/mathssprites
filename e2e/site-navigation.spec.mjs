@@ -9,6 +9,7 @@ test.beforeEach(async ({page}) => {
 async function startFirstLevel(page) {
   await openCampaignBoard(page);
       await page.locator('[data-level="1"]').click();
+  await page.locator("#board-continue").click();
 }
 test("Worlds and the Home campaign button both begin with world selection",async({page})=>{
   await page.locator('.site-nav-links [data-screen="worlds"]').click();
@@ -107,6 +108,7 @@ test("teacher can open the final multi-step puzzle with only whole-number tools"
   await page.locator("#teacher-unlock").check();
   await openCampaignBoard(page);
       await page.locator('[data-level="20"]').click();
+  await page.locator("#board-continue").click();
   await expect(page.locator("#level-title")).toHaveText("The master experiment");
   await expect(page.locator("#level-prompt")).toContainText("Sometimes adding something helps");
   await expect(page.locator("#left-items .sprite-black")).toHaveCount(5);
@@ -128,6 +130,7 @@ test("a reversed, two-sided World 1 level completes and reveals correct algebra"
   await page.locator("#teacher-unlock").check();
   await openCampaignBoard(page);
       await page.locator('[data-level="18"]').click();
+  await page.locator("#board-continue").click();
   await expect(page.locator("#level-title")).toHaveText("The other way round");
   await clickWithReferenceMove(page,"#amount-up"); // remove two sprites on both sides
   await clickWithReferenceMove(page,"#do-both");
@@ -146,10 +149,12 @@ test("a reversed, two-sided World 1 level completes and reveals correct algebra"
 
 test("World 1 stage tabs and Equation Workshop remain accessible from the board", async ({page}) => {
   await openCampaignBoard(page);
+  await page.locator("#site-back").click();
   await expect(page.locator("#world1-stage-cards [data-stage-open]")).toHaveCount(3);
   await expect(page.locator('[data-stage-open="guided"]')).toBeEnabled();
   await expect(page.locator('[data-stage-open="independent"]')).toBeEnabled();
   await expect(page.locator('[data-stage-open="notebook"]')).toBeEnabled();
+  await page.locator('[data-stage-open="guided"]').click();
   await page.locator('#site-levels [data-screen="workshop"]').click();
   await expect(page.locator("#site-workshop")).toBeVisible();
   await page.locator("#workshop-back").click();
