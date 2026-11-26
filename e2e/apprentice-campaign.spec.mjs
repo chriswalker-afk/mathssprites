@@ -119,7 +119,9 @@ test("solved paper alone earns NO progress; successful hands earn credit and adv
 test("wrong or skipped steps leave campaign progress untouched, and one-step hints do not solve it",async({page})=>{
   await openStage3(page,{teacher:true,level:3});
   await applyOperation(page,"÷3");
-  await expect(page.locator("#notebook-feedback")).toContainText("part of a sprite");
+  await expect(page.locator("#notebook-feedback")).toContainText("must remain an integer");
+  await expect(page.locator("#notebook-inline-message")).toContainText("World 3");
+  await expect(page.locator("#notebook-inline-message")).not.toContainText(/chamber|sprite|weight|basket/i);
   await expect(page.locator("#notebook-lines li")).toHaveCount(1);
   await expect(page.locator("#notebook-replay")).toBeDisabled();
   await applyOperation(page,"−4");

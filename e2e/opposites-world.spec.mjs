@@ -177,7 +177,9 @@ test("signed Apprentice accepts subtract 8 with opposite addition replay and no 
   await input.fill("−8");
   await expect(apply).toBeEnabled();
   await expect(input).toHaveAttribute("aria-invalid","false");
-  await expect(page.locator("#notebook-inline-message")).toContainText("8 balloons");
+  await expect(page.locator("#notebook-inline-message")).toContainText("additive inverse");
+  await expect(page.locator("#notebook-inline-message")).toContainText("preserves equality");
+  await expect(page.locator("#notebook-inline-message")).not.toContainText(/balloon|sprite|chamber/i);
   await expect(result).toHaveAttribute("aria-label","2x − 5 = x");
   await expect(rows).toHaveCount(1);
   await apply.click();

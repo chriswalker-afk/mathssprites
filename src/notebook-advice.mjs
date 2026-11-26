@@ -20,7 +20,9 @@ export function notebookOperationJustification(action){
   if(op==="multiply")return "Multiplying both sides by "+action.factor+", a nonzero number, preserves the solution. Multiply every term on each side.";
   if(op==="add"||op==="remove"){
     const variable=["posX","negX","posX2"].includes(action.kind);
-    const term=(variable&&rcompare(action.count,1)===0?"":amountText(action.count))+(action.kind==="posX2"?"x²":variable?"x":"");
+    const count=amountText(action.count);
+    const coefficient=variable&&rcompare(action.count,1)===0?"":variable&&count.includes("/")?"("+count+")":count;
+    const term=coefficient+(action.kind==="posX2"?"x²":variable?"x":"");
     const signed=negativeKind(action.kind)?"−"+term:term;
     const signRule=op==="remove"&&negativeKind(action.kind)?"Subtracting "+signed+" is equivalent to adding "+term+". ":
       op==="remove"?"Subtracting "+term+" is equivalent to adding its additive inverse. ":
@@ -98,7 +100,7 @@ export function notebookThinkingPrompt(session){
   if(!zero(l.x)&&!zero(r.x))return "Both sides contain x-terms. Add or subtract the same multiple of x to collect the variable terms on one side.";
   const variableSide=!zero(l.x)?l:r;
   if(!zero(variableSide.constant))return "Use the additive inverse of the constant term on the side containing x. Apply the same operation to the other side.";
-  if(rational(variableSide.x).d!==1)return "Clear the fractional coefficient by multiplying both sides by its denominator, then consider the remaining coefficient of x.";
+  if(rational(variableSide.x).d!==1)return "Clear the fractional coefficient by multiplying both sides by its denominator, using supported factors if needed. Then consider the remaining coefficient of x.";
   if(rcompare(variableSide.x,0)<0)return "The coefficient of x is negative. Consider an equivalent equation with a positive coefficient, keeping each operation the same on both sides.";
   return "To isolate x, divide both sides by a common nonzero factor of the coefficient of x. In this activity, keep the result within the allowed number system.";
 }
