@@ -1,4 +1,4 @@
-import {COSMETIC_REWARDS} from "./cosmetic-catalog.mjs";
+import {COSMETIC_REWARDS} from "./cosmetic-catalog.mjs?v=91";
 import {spriteCreatureMarkup} from "./square-sprites.mjs?v=88";
 import {spriteAssemblyMarkup} from "./fraction-sprites.mjs?v=89";
 import {applySpriteAppearance} from "./sprite-cosmetics.mjs?v=89";

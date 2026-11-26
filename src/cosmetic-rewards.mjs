@@ -7,8 +7,8 @@
 import {CAMPAIGN_REGISTRY} from "./campaign-registry.mjs";
 import {campaignStarTotals} from "./campaign-records.mjs?v=84";
 import {
-  COSMETIC_REWARDS,COSMETIC_SLOTS,findCosmeticReward,findCosmeticItem,originalAppearance
-} from "./cosmetic-catalog.mjs";
+  COSMETIC_REWARDS,COSMETIC_SLOTS,COSMETIC_COLLECTIONS,findCosmeticReward,findCosmeticItem,originalAppearance
+} from "./cosmetic-catalog.mjs?v=91";
 
 export const COSMETIC_SAVE_KEY="mathssprites.cosmetics.v1";
 const version=1;
@@ -130,13 +130,17 @@ export function createCosmeticRewards(initialCampaign,{
     const reward=findCosmeticReward(id);
     if(reward?.category!=="set")return reject("unknown-set");
     if(!isUnlocked(id))return reject("locked");
-    profile=normalizeCosmeticProfile({...profile,equipped:{...reward.loadout}});
+    profile=normalizeCosmeticProfile({...profile,equipped:{...profile.equipped,...reward.loadout}});
     persist(saved);
     return publish(before);
   }
-  function restoreOriginal(){
+  function restoreOriginal(collection=null){
     const before=getSnapshot(),saved=refreshSaved();
-    profile=normalizeCosmeticProfile({...profile,equipped:originalAppearance()});
+    if(collection!==null&&!Object.hasOwn(COSMETIC_COLLECTIONS,collection))return reject("unknown-collection");
+    const slots=collection===null?COSMETIC_SLOTS:COSMETIC_COLLECTIONS[collection];
+    profile=normalizeCosmeticProfile({...profile,equipped:{
+      ...profile.equipped,...Object.fromEntries(slots.map(slot=>[slot,null]))
+    }});
     persist(saved);
     return publish(before);
   }

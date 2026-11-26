@@ -3,7 +3,7 @@
 import {chromium,expect} from "@playwright/test";
 import {readFileSync,mkdirSync,writeFileSync} from "node:fs";
 import {setTimeout as pause} from "node:timers/promises";
-import {COSMETIC_REWARDS,findCosmeticReward} from "../src/cosmetic-catalog.mjs";
+import {COSMETIC_REWARDS,findCosmeticReward,originalAppearance,cosmeticCollection} from "../src/cosmetic-catalog.mjs";
 import {CAMPAIGN_REGISTRY} from "../src/campaign-registry.mjs";
 import {blankCampaignRecords,campaignStarTotals} from "../src/campaign-records.mjs";
 import {clickWithReferenceMove} from "../e2e/reference-move-helper.mjs";
@@ -12,7 +12,7 @@ const revision=process.env.GITHUB_SHA||"manual";
 const result={url,revision,checks:[],errors:[]};
 const note=message=>{result.checks.push(message);console.log(message);};
 const read=path=>readFileSync(new URL("../"+path,import.meta.url),"utf8");
-const files=["index.html","src/site.mjs","src/cosmetic-catalog.mjs","src/cosmetic-rewards.mjs","src/atelier-model.mjs",
+const files=["index.html","src/site.mjs","src/laboratory-cosmetics.mjs","src/cosmetic-catalog.mjs","src/cosmetic-rewards.mjs","src/atelier-model.mjs",
   "src/sprite-atelier.mjs","src/sprite-atelier.css","src/sprite-cosmetics.mjs","src/sprite-cosmetics.css",
   "src/sprite-wearables.css","src/sprite-effects.css","src/reward-celebration.mjs","src/reward-celebration.css",
   "src/fraction-campaign.mjs","src/fraction-sprites.mjs","src/fraction-balance.mjs","src/square-sprites.mjs",
@@ -81,9 +81,9 @@ try{
   await page.goto(url,{waitUntil:"domcontentloaded"});
   await page.locator("#home-atelier").click();
   await expect(page.locator("#atelier-stars")).toHaveText("719 / 720 ★");
-  await expect(page.locator("#atelier-owned")).toHaveText("28 / 29 unlocked");
-  await expect(page.locator("#atelier-collection .atelier-reward")).toHaveCount(29);
-  await expect(page.locator("#atelier-collection [data-status$='coming']")).toHaveCount(0);
+  await expect(page.locator("#atelier-owned")).toHaveText("56 / 57 unlocked");
+  await expect(page.locator("#atelier-collection .atelier-reward")).toHaveCount(57);
+  await expect(page.locator("#atelier-collection [data-status$='coming']")).toHaveCount(COSMETIC_REWARDS.filter(r=>cosmeticCollection(r)!=="sprites").length);
   const before=await saves(page);
   await page.locator("#atelier-filter").selectOption("set");
   await reward(page,"grand-alchemist").click();
@@ -91,7 +91,7 @@ try{
   for(const slot of slotKeys)await expect(page.locator("#atelier-preview")).toHaveAttribute("data-sprite-"+slot,outfit[slot]);
   expect(await saves(page)).toEqual(before);
   await shot(page,"locked-preview");
-  note("Live 29-reward Atelier; locked 720-star outfit can be tried on without writes");
+  note("Live 57-reward Atelier; locked 720-star outfit can be tried on without writes");
   await page.locator("#atelier-back").click();
   await page.locator("#home-choose-level").click();
   await page.locator('[data-map-world="workshop"]').click();
@@ -107,11 +107,11 @@ try{
   await page.locator("#replay-close").click();await page.locator("#game-levels").click();
   await page.locator(".site-nav-links [data-screen='atelier']").click();
   await expect(page.locator("#atelier-stars")).toHaveText("720 / 720 ★");
-  await expect(page.locator("#atelier-owned")).toHaveText("29 / 29 unlocked");
+  await expect(page.locator("#atelier-owned")).toHaveText("57 / 57 unlocked");
   await page.locator("#atelier-filter").selectOption("set");
   await reward(page,"grand-alchemist").click();
   await page.locator("#atelier-equip").click();
-  expect(JSON.parse((await saves(page))[profileKey]).equipped).toEqual(outfit);
+  expect(JSON.parse((await saves(page))[profileKey]).equipped).toEqual({...originalAppearance(),...outfit});
   await shot(page,"complete-desktop");
   await page.reload();await page.locator("#home-atelier").click();
   await expect(page.locator("#atelier-equipped")).toContainText("The Grand Alchemist");

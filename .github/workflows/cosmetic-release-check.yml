@@ -1,11 +1,6 @@
 name: Cosmetic published release check
 on:
   workflow_dispatch:
-  pull_request:
-    branches: [main]
-    paths:
-      - 'scripts/check-live-cosmetics.mjs'
-      - '.github/workflows/cosmetic-release-check.yml'
   push:
     branches: [main]
     paths:
@@ -14,6 +9,7 @@ on:
       - 'src/sprite-*.mjs'
       - 'src/sprite-*.css'
       - 'src/atelier-model.mjs'
+      - 'src/laboratory-cosmetics.mjs'
       - 'src/site.mjs'
       - 'src/fraction-*.mjs'
       - 'src/fraction-*.css'

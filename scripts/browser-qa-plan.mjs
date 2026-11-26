@@ -30,6 +30,7 @@ const RULES=Object.freeze([
   [/^src\/(?:sprite-effects\.css|reward-celebration\.(?:mjs|css))$/ ,["visual","motion","physics","navigation","notebook","layout","area","signed"]],
   [/^src\/sprite-wearables\.css$/ ,["navigation","visual","layout","signed","physics","area"]],
   [/^src\/sprite-cosmetics\.(?:mjs|css)$|^sprite-cosmetic-preview\.html$|^src\/sprite-cosmetic-preview\.mjs$/ ,["visual","layout","signed","physics","area"]],
+  [/^src\/laboratory-cosmetics\.mjs$/,["navigation","visual","layout","physics"]],
   [/^src\/cosmetic-(?:catalog|rewards)\.mjs$/,["navigation","notebook","signed","physics","area"]],
   [/^src\/square-(?:workshop|route-search)\.mjs$/ ,["notebook","area","navigation"]],
   [/^src\/square-(?:campaign-levels|star-benchmarks)\.mjs$/ ,["area","navigation","layout","physics"]],

@@ -1,5 +1,5 @@
 import { LEVELS } from "./engine.mjs";
-import {createFractionCampaignView} from "./fraction-campaign.mjs?v=89";
+import {createFractionCampaignView} from "./fraction-campaign.mjs?v=91";
 import {
   CAMPAIGN_REGISTRY,findCampaignWorld,findCampaignStage,findCampaignLevel,
   nextCampaignLevel,isCampaignPlayable,firstCampaignLevel
@@ -9,10 +9,10 @@ import {
   withCampaignLastPlayed,withCampaignCompleted,campaignStageRecord,
   campaignStars,campaignStarTotals,campaignOptimalMoves,stageResumeLevel
 } from "./campaign-records.mjs?v=84";
-import {createCosmeticRewards} from "./cosmetic-rewards.mjs?v=84";
-import {applySpriteAppearance} from "./sprite-cosmetics.mjs?v=89";
-import {mountSpriteAtelier} from "./sprite-atelier.mjs?v=89";
-import {mountRewardCelebration} from "./reward-celebration.mjs?v=88";
+import {createCosmeticRewards} from "./cosmetic-rewards.mjs?v=91";
+import {applyLaboratoryAppearance} from "./laboratory-cosmetics.mjs?v=91";
+import {mountSpriteAtelier} from "./sprite-atelier.mjs?v=91";
+import {mountRewardCelebration} from "./reward-celebration.mjs?v=91";
 import {createWorkshopEquation,WORKSHOP_EXAMPLES} from "./equation-workshop.mjs?v=82";
 import {createSignedWorkshopEquation,SIGNED_WORKSHOP_EXAMPLES} from "./signed-workshop.mjs?v=82";
 import {createFractionWorkshopEquation,FRACTION_WORKSHOP_EXAMPLES} from "./fraction-workshop.mjs";
@@ -63,9 +63,9 @@ let recent = loadResume();
 let campaign = loadCampaignRecords();
 // One authoritative reward session shared by the renderer and Atelier.
 export const cosmeticRewards=createCosmeticRewards(campaign);
-applySpriteAppearance(document.body,cosmeticRewards.getSnapshot().equipped);
+applyLaboratoryAppearance(document.body,cosmeticRewards.getSnapshot().equipped);
 cosmeticRewards.subscribe(change=>{
-  applySpriteAppearance(document.body,change.snapshot.equipped);
+  applyLaboratoryAppearance(document.body,change.snapshot.equipped);
   fractionCampaign?.setAppearance(change.snapshot.equipped);
   window.dispatchEvent(new CustomEvent("mathssprites:cosmetics-change",{detail:change}));
 });
