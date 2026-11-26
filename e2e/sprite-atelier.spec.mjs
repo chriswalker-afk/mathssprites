@@ -293,7 +293,7 @@ test("719 to 720: actual final star unlocks the full outfit after replay, with s
   expect((await snapshot(page)).unlockedRewards).toEqual(COSMETIC_REWARDS.map(r=>r.id));
 });
 
-test("the expanded Atelier has three independent collections, clear pending art and no preview save writes @quick @smoke",async({page},testInfo)=>{
+test("the complete Atelier has three independent collections and no preview save writes @quick @smoke",async({page},testInfo)=>{
   await legacyStars(page,4);
   await page.goto("/");await open(page);
   const before=await saves(page);
@@ -323,6 +323,7 @@ test("the expanded Atelier has three independent collections, clear pending art 
   await expect(page.locator("#atelier-empty")).toBeVisible();
   await page.locator("#atelier-owned-only").uncheck();
   await expect(visibleRewards(page)).toHaveCount(10);
+  await expect(page.locator("#atelier-collection [data-status$='coming']")).toHaveCount(0);
   await expect(page.locator(".atelier-chamber-stage")).toBeVisible();
   await reward(page,"clockmakers-workshop").click();
   await expect(page.locator("#atelier-preview")).toHaveAttribute("data-chamber-theme","clockmakers-workshop");

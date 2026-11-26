@@ -85,7 +85,8 @@ try{
   await expect(page.locator("#atelier-stars")).toHaveText("719 / 720 ★");
   await expect(page.locator("#atelier-owned")).toHaveText("56 / 57 unlocked");
   await expect(page.locator("#atelier-collection .atelier-reward")).toHaveCount(57);
-  await expect(page.locator("#atelier-collection [data-status$='coming']")).toHaveCount(COSMETIC_REWARDS.filter(r=>!rewardArtReady(r)).length);
+  expect(COSMETIC_REWARDS.every(r=>rewardArtReady(r))).toBe(true);
+  await expect(page.locator("#atelier-collection [data-status$='coming']")).toHaveCount(0);
   const before=await saves(page);
   await page.locator("#atelier-filter").selectOption("set");
   await reward(page,"grand-alchemist").click();
@@ -133,12 +134,27 @@ try{
   await expect(page.locator("#atelier-weight-fraction .fw-weight-effect").first()).toHaveCSS("animation-name","none");
   await shot(page,"blue-dumbbell-golden-halo");
   await page.locator('[data-atelier-collection="chambers"]').click();
-  await reward(page,"midnight-observatory").click();
-  await expect(page.locator("#atelier-preview")).toHaveAttribute("data-chamber-theme","midnight-observatory");
-  await expect(page.locator(".atelier-mini-room").first()).toHaveCSS("background-image",/midnight-observatory\.svg/);
+  const beforeThemes=await saves(page);
+  for(const id of IMPLEMENTED_CHAMBER_THEMES){
+    await reward(page,id).click();
+    await expect(page.locator("#atelier-preview")).toHaveAttribute("data-chamber-theme",id);
+    const mini=page.locator(".atelier-mini-room").first();
+    await expect(mini).toHaveCSS("background-image",new RegExp(id+"\\.svg"));
+    const loaded=await mini.evaluate(async el=>{
+      const match=getComputedStyle(el).backgroundImage.match(/url\("([^"]+)"\)/);
+      if(!match)return false;
+      const img=new Image();img.src=match[1];
+      try{await img.decode();return img.naturalWidth===480&&img.naturalHeight===320;}catch{return false;}
+    });
+    expect(loaded).toBe(true);
+  }
+  expect(await saves(page)).toEqual(beforeThemes);
+  await reward(page,"astral-sanctuary").click();
+  await expect(page.locator("#atelier-preview")).toHaveAttribute("data-chamber-theme","astral-sanctuary");
+  await expect(page.locator(".atelier-mini-room").first()).toHaveCSS("background-image",/astral-sanctuary\.svg/);
   await page.locator("#atelier-equip").click();
-  await expect(page.locator("body")).toHaveAttribute("data-chamber-theme","midnight-observatory");
-  await shot(page,"midnight-observatory-gallery");
+  await expect(page.locator("body")).toHaveAttribute("data-chamber-theme","astral-sanctuary");
+  await shot(page,"astral-sanctuary-gallery");
   await page.reload();await page.locator("#home-atelier").click();
   await expect(page.locator("#atelier-equipped")).toContainText("The Grand Alchemist");
   await expect(page.locator("#reward-celebration")).toBeHidden();
@@ -147,7 +163,7 @@ try{
   await expect(page.locator("#atelier-white .sprite-wear-headwear")).toBeVisible();
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
   await shot(page,"complete-phone");
-  note("Real final star, replay-gated celebration, equipment persistence, desktop and phone");
+  note("All 57 artworks ready; all ten chamber images decode; real final star, replay-gated celebration, equipment persistence, desktop and phone");
   await page.setViewportSize({width:1280,height:720});
   const saved=await saves(page);
   const custom=async(equation,world)=>{
@@ -157,8 +173,8 @@ try{
   };
   await custom("3x-2x+3-5=6","signed");
   await expect(page.locator("#left-items .sprite-black")).toHaveCount(3);
-  await expect(page.locator("#left-chamber .room-interior")).toHaveCSS("background-image",/midnight-observatory\.svg/);
-  await expect(page.locator("#right-chamber .room-interior")).toHaveCSS("background-image",/midnight-observatory\.svg/);
+  await expect(page.locator("#left-chamber .room-interior")).toHaveCSS("background-image",/astral-sanctuary\.svg/);
+  await expect(page.locator("#right-chamber .room-interior")).toHaveCSS("background-image",/astral-sanctuary\.svg/);
   await expect(page.locator("#left-items .sprite-white")).toHaveCount(2);
   await expect(page.locator("#left-items .sprite-white .sprite-wear-headwear").first()).toBeVisible();
   await shot(page,"signed");
@@ -172,9 +188,9 @@ try{
   await expect(lab).toHaveAttribute("data-weight-material","blue-enamel");
   await expect(lab).toHaveAttribute("data-weight-shape","dumbbell");
   await expect(lab).toHaveAttribute("data-weight-effect","golden-halo");
-  await expect(lab).toHaveAttribute("data-chamber-theme","midnight-observatory");
-  await expect(lab.locator("#left-chamber .room-interior")).toHaveCSS("background-image",/midnight-observatory\.svg/);
-  await expect(lab.locator("#right-chamber .room-interior")).toHaveCSS("background-image",/midnight-observatory\.svg/);
+  await expect(lab).toHaveAttribute("data-chamber-theme","astral-sanctuary");
+  await expect(lab.locator("#left-chamber .room-interior")).toHaveCSS("background-image",/astral-sanctuary\.svg/);
+  await expect(lab.locator("#right-chamber .room-interior")).toHaveCSS("background-image",/astral-sanctuary\.svg/);
   await expect(lab.locator("#left-items .fw-weight-effect")).toHaveCount(2);
   await expect(lab.locator("#left-items .fw-weight-effect").first()).toHaveCSS("display","inline");
   await expect(lab.locator("#left-items .fw-weight-effect").first()).toHaveCSS("animation-name","none");
@@ -214,7 +230,7 @@ try{
   await expect(page.locator("body")).toHaveAttribute("data-weight-material","original");
   await expect(page.locator("body")).toHaveAttribute("data-weight-shape","original");
   await expect(page.locator("body")).toHaveAttribute("data-weight-effect","original");
-  await expect(page.locator("body")).toHaveAttribute("data-chamber-theme","midnight-observatory");
+  await expect(page.locator("body")).toHaveAttribute("data-chamber-theme","astral-sanctuary");
   await page.locator('[data-atelier-collection="chambers"]').click();
   await page.locator("#atelier-restore").click();
   await expect(page.locator("body")).toHaveAttribute("data-chamber-theme","original");

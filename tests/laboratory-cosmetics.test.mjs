@@ -8,7 +8,7 @@ import {ALTERNATIVE_WEIGHT_SHAPES} from "../src/weight-shapes.mjs";
 import {IMPLEMENTED_CHAMBER_THEMES} from "../src/chamber-themes.mjs";
 const effects=["soft-glow","frost-shimmer","ember-glow","pearlescent-shimmer","golden-halo"];
 const materials=["polished-steel","copper","blue-enamel","gold","jade-enamel","cast-iron","violet-enamel"];
-test("seven weight materials are ready while other future lab art defaults safely",()=>{
+test("all laboratory cosmetics are ready while unknown art defaults safely",()=>{
   const attrs=new Map(),scope={getAttribute:k=>attrs.get(k),setAttribute:(k,v)=>attrs.set(k,v)};
   const selected={fur:"extra-fluffy","weight-shape":"dumbbell","weight-material":"copper","weight-effect":"soft-glow","chamber-theme":"clockmakers-workshop"};
   assert.deepEqual(IMPLEMENTED_LABORATORY_COSMETICS,[...ALTERNATIVE_WEIGHT_SHAPES,...materials,...effects,...IMPLEMENTED_CHAMBER_THEMES]);
