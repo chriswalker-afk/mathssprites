@@ -1,3 +1,4 @@
+import {openCampaignBoard,chooseCampaignStage,chooseCampaignWorld} from "./campaign-menu-helper.mjs";
 import {test,expect} from "@playwright/test";
 
 test.beforeEach(async({page})=>{
@@ -5,9 +6,9 @@ test.beforeEach(async({page})=>{
   await page.goto("/");
 });
 
-test("new player starts at Level 1 in one click and can return to the same experiment @quick @smoke",async({page})=>{
-  await expect(page.locator("#home-play")).toContainText("Start Stage 1");
-  await page.locator("#home-choose-level").click();
+test("new player chooses the campaign and can return to the same experiment @quick @smoke",async({page})=>{
+  await expect(page.locator("#home-play")).toBeHidden();
+  await openCampaignBoard(page);
   await expect(page.locator("#board-continue")).toHaveText("Play Level 1 →");
   await expect(page.locator(".level-tile")).toHaveCount(24);
   await page.locator("#board-continue").click();
@@ -20,8 +21,8 @@ test("new player starts at Level 1 in one click and can return to the same exper
   await expect(page.locator("#site-home")).toBeVisible();
 });
 test("returning Stage 3 student gets a single board action without changing progress @smoke",async({page})=>{
-  await page.locator("#home-choose-level").click();
-  await page.locator('[data-map-stage="notebook"]').click();
+  await openCampaignBoard(page);
+  await chooseCampaignStage(page,"notebook");
   await expect(page.locator("#board-continue")).toHaveText("Play Level 1 →");
   await page.locator('[data-level="6"]').click();
   await expect(page.locator("#notebook-workspace")).toBeVisible();
@@ -34,36 +35,34 @@ test("returning Stage 3 student gets a single board action without changing prog
   const store=await page.evaluate(()=>JSON.parse(localStorage.getItem("mathssprites.resume.v2")));
   expect(store).toEqual({worldId:"workshop",stageId:"notebook",levelId:"apprentice-06"});
   await page.reload();
-  await expect(page.locator("#home-play")).toContainText("Continue Stage 3 · Level 6");
+  await expect(page.locator("#home-play")).toContainText("Continue: Balance · Algebra Apprentice · Level 6");
 });
-test("keyboard can change stages without losing focus, announce selection @quick @smoke",async({page})=>{
+test("keyboard selects worlds and methods only on explicit Enter; Escape reverses the path @quick @smoke",async({page})=>{
   await page.locator("#home-choose-level").click();
-  await page.locator('[data-map-stage="guided"]').focus();
-  await page.keyboard.press("ArrowRight");
-  await expect(page.locator('[data-map-stage="independent"]')).toHaveAttribute("aria-pressed","true");
-  await expect(page.locator('[data-map-stage="independent"]')).toBeFocused();
-  await expect(page.locator("#board-selection-status")).toContainText("Independent Balance");
-  await expect(page.locator(".level-tile")).toHaveCount(20);
+  await page.locator('[data-world-stages="workshop"]').focus();
   await page.keyboard.press("End");
-  await expect(page.locator('[data-map-stage="notebook"]')).toBeFocused();
-  await expect(page.locator('[data-map-stage="notebook"]')).toHaveAttribute("aria-pressed","true");
-  await expect(page.locator(".level-tile")).toHaveCount(16);
-  await page.keyboard.press("Home");
-  await expect(page.locator('[data-map-stage="guided"]')).toBeFocused();
-  await expect(page.locator(".level-tile")).toHaveCount(24);
-  await page.keyboard.press("ArrowLeft");
-  await expect(page.locator('[data-map-stage="guided"]')).toBeFocused();
-  // Arrow keys can select all four worlds; unavailable stages stay locked.
-  await page.locator('[data-map-world="workshop"]').focus();
-  await page.keyboard.press("ArrowRight");
-  await expect(page.locator('[data-map-world="opposites"]')).toBeFocused();
-  await expect(page.locator('[data-map-world="opposites"]')).toHaveAttribute("aria-pressed","true");
-  await expect(page.locator('[data-map-world="fractions"]')).toBeEnabled();
-  await expect(page.locator('[data-map-world="squares"]')).toBeEnabled();
+  await expect(page.locator('[data-world-stages="squares"]')).toBeFocused();
+  await expect(page.locator("#site-worlds")).toBeVisible();
+  await page.keyboard.press("Enter");
+  await expect(page.locator("#site-stages")).toHaveAttribute("data-active-world","squares");
+  await expect(page.locator("#site-levels")).toBeHidden();
+  await page.locator('[data-stage-open="guided"]').focus();
+  await page.keyboard.press("End");
+  await expect(page.locator('[data-stage-open="notebook"]')).toBeFocused();
+  await expect(page.locator("#site-stages")).toBeVisible();
+  await page.keyboard.press("Enter");
+  await expect(page.locator("#site-levels")).toHaveAttribute("data-active-stage","notebook");
+  await expect(page.locator("#board-selection-status")).toContainText("Square Algebra Apprentice");
+  await page.keyboard.press("Escape");
+  await expect(page.locator("#site-stages")).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(page.locator("#site-worlds")).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(page.locator("#site-home")).toBeVisible();
 });
 test("desktop arrow keys follow the visual chapter columns, and Enter launches @smoke",async({page})=>{
   await page.setViewportSize({width:1024,height:720});
-  await page.locator("#home-choose-level").click();
+  await openCampaignBoard(page);
   await page.locator('[data-level="1"]').focus();
   await page.keyboard.press("ArrowRight");
   await expect(page.locator('[data-level="5"]')).toBeFocused();
@@ -77,8 +76,8 @@ test("desktop arrow keys follow the visual chapter columns, and Enter launches @
   await expect(page.locator("#level-title")).toHaveText("The hall of crates");
 });
 test("Help and Settings return to the actual prior screen, not always Home @smoke",async({page})=>{
-  await page.locator("#home-choose-level").click();
-  await page.locator('[data-map-stage="independent"]').click();
+  await openCampaignBoard(page);
+  await chooseCampaignStage(page,"independent");
   await page.locator('.site-nav-links [data-screen="help"]').click();
   await expect(page.locator("#help-return")).toHaveText("← Back to levels");
   await page.locator("#help-return").click();
@@ -100,7 +99,7 @@ test("Escape closes open guidance before navigating and never steals input editi
   await expect(page.locator("#help-stages")).not.toHaveAttribute("open","");
   await page.keyboard.press("Escape");
   await expect(page.locator("#site-home")).toBeVisible();
-  await page.locator("#home-choose-level").click();
+  await openCampaignBoard(page);
   await page.locator('#site-levels [data-screen="workshop"]').click();
   await page.locator("#workshop-equation").fill("3x + 5 = 20");
   await page.locator("#workshop-equation").press("Escape");
@@ -113,7 +112,7 @@ test("Escape closes open guidance before navigating and never steals input editi
 });
 test("phone levels and contextual return are accessible without horizontal overflow @smoke",async({page})=>{
   await page.setViewportSize({width:375,height:812});
-  await page.locator("#home-choose-level").click();
+  await openCampaignBoard(page);
   const cta=await page.locator("#board-continue").boundingBox();
   expect(cta.height).toBeGreaterThanOrEqual(44);
   await page.locator('[data-level="1"]').focus();
@@ -125,7 +124,7 @@ test("phone levels and contextual return are accessible without horizontal overf
   await expect(page.locator("#settings-return")).toContainText("levels");
   await page.screenshot({path:"artifacts/pr35-phone-settings-375x812.png",fullPage:true});
   await page.locator("#settings-return").click();
-  for(const sel of ["#site-levels","#board-continue","#map-stage-tabs"]){
+  for(const sel of ["#site-levels","#board-continue",".campaign-path"]){
     await expect(page.locator(sel)).toBeVisible();
   }
   const width=await page.evaluate(()=>document.documentElement.scrollWidth);
@@ -135,13 +134,13 @@ test("phone levels and contextual return are accessible without horizontal overf
 for(const size of [{width:1024,height:720},{width:1092,height:540}]){
   test("continuation action fits without document scroll at "+size.width+"x"+size.height+" @smoke",async({page})=>{
     await page.setViewportSize(size);
-    await page.locator("#home-choose-level").click();
+    await openCampaignBoard(page);
     await expect(page.locator("#board-continue")).toBeInViewport();
     // Six chapters now occupy two visually balanced rows; the last tile
     // remains reachable using the board’s own scrolling container.
     await page.locator('[data-level="24"]').scrollIntoViewIfNeeded();
     await expect(page.locator('[data-level="24"]')).toBeInViewport();
-    await page.locator('[data-map-stage="notebook"]').click();
+    await chooseCampaignStage(page,"notebook");
     await expect(page.locator("#board-continue")).toBeInViewport();
     const measure=await page.evaluate(()=>({
       width:document.documentElement.scrollWidth,height:document.documentElement.scrollHeight,

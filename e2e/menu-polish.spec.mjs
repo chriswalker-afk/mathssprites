@@ -1,3 +1,4 @@
+import {openCampaignBoard,chooseCampaignStage,chooseCampaignWorld} from "./campaign-menu-helper.mjs";
 import {test,expect} from "@playwright/test";
 
 test.beforeEach(async({page})=>{
@@ -5,35 +6,28 @@ test.beforeEach(async({page})=>{
   await page.goto("/");
 });
 
-test("the foyer retains direct play and all three shortcuts @quick @smoke",async({page})=>{
+test("the foyer offers one campaign entry for a fresh learner @quick @smoke",async({page})=>{
   await expect(page.getByRole("heading",{name:"How much does the sprite weigh?"})).toBeVisible();
-  await expect(page.locator("#home-stage-shortcuts .home-stage-quick")).toHaveCount(3);
-  await expect(page.locator("#site-home .landing-copy p")).toHaveText("Balance the rooms. Discover the algebra.");
-  await page.locator('[data-home-stage="notebook"]').click();
-  await expect(page.locator("#notebook-workspace")).toBeVisible();
+  await expect(page.locator("#home-play")).toBeHidden();
+  await expect(page.locator("#home-choose-level")).toHaveText("Choose a world →");
+  await page.locator("#home-choose-level").click();
+  await expect(page.locator("#site-worlds")).toBeVisible();
 });
-
-test("the unified board offers four playable worlds and current stage progress @quick @smoke",async({page})=>{
-  await page.locator('.site-nav-links [data-screen="levels"]').click();
-  await expect(page.locator("#site-levels")).toBeVisible();
-  await expect(page.locator("#site-levels")).toHaveAttribute("data-active-world","workshop");
-  await expect(page.locator("#map-world-tabs button")).toHaveCount(4);
-  await expect(page.locator('[data-map-world="workshop"]')).toBeEnabled();
-  await expect(page.locator('[data-map-world="opposites"]')).toBeEnabled();
-  await expect(page.locator('[data-map-world="fractions"]')).toBeEnabled();
-  await expect(page.locator('[data-map-world="squares"]')).toBeEnabled();
-  await expect(page.locator("#map-stage-tabs button")).toHaveCount(3);
+test("the selected world's method cards explain how to learn and show progress @quick @smoke",async({page})=>{
+  await page.locator('.site-nav-links [data-screen="worlds"]').click();
+  await expect(page.locator("#world-cards [data-world-stages]")).toHaveCount(4);
+  await page.locator('[data-world-stages="opposites"]').click();
+  await expect(page.locator("#site-stages")).toBeVisible();
+  await expect(page.locator('[data-stage="guided"]')).toContainText("mirrors");
+  await expect(page.locator('[data-stage="independent"]')).toContainText("balance");
+  await expect(page.locator('[data-stage="notebook"]')).toContainText("editor");
+  await page.locator('[data-stage-open="notebook"]').click();
+  await expect(page.locator("#world1-progress-number")).toHaveText("0 of 16 complete");
+  await page.locator("#site-back").click();
+  await expect(page.locator("#site-stages")).toHaveAttribute("data-active-world","opposites");
+  await page.locator('[data-stage-open="guided"]').click();
   await expect(page.locator("#world1-progress-number")).toHaveText("0 of 24 complete");
-  await page.locator('[data-map-stage="notebook"]').click();
-  await expect(page.locator("#world1-progress-number")).toHaveText("0 of 16 complete");
-  await page.locator('[data-map-world="opposites"]').click();
-  await expect(page.locator("#site-levels")).toHaveAttribute("data-active-world","opposites");
-  await expect(page.locator(".level-tile")).toHaveCount(16);
-  await expect(page.locator("#world1-progress-number")).toHaveText("0 of 16 complete");
-  await page.locator('[data-map-stage="guided"]').click();
-  await expect(page.locator(".level-tile")).toHaveCount(24);
 });
-
 test("the guide is short first, with full stage explanations on demand @smoke",async({page})=>{
   await page.locator('.site-nav-links [data-screen="help"]').click();
   await expect(page.locator("#site-help h2")).toBeFocused();
@@ -46,8 +40,8 @@ test("the guide is short first, with full stage explanations on demand @smoke",a
   await page.locator("#help-experiments summary").click();
   await expect(page.locator("#help-experiments")).toContainText("undoes the attempt");
   await page.getByRole("button",{name:"Choose your first world"}).click();
-  await expect(page.locator("#site-levels")).toBeVisible();
-  await expect(page.locator("#map-world-tabs button")).toHaveCount(4);
+  await expect(page.locator("#site-worlds")).toBeVisible();
+  await expect(page.locator("#world-cards [data-world-stages]")).toHaveCount(4);
 });
 
 test("settings are scannable, keyboard-operable, and motion state is announced @smoke",async({page})=>{
@@ -79,7 +73,7 @@ test("Inventor's Desk opens directly from Home and the Experiment Board @quick @
   await expect(page.locator("#workshop-feedback")).not.toHaveAttribute("data-status","error");
   await page.locator("#workshop-back").click();
   await expect(page.locator("#site-home")).toBeVisible();
-  await page.locator("#home-choose-level").click();
+  await openCampaignBoard(page);
   await page.locator('#site-levels [data-screen="workshop"]').click();
   await expect(page.locator("#workshop-equation")).toBeFocused();
   await page.locator("#workshop-back").click();
@@ -87,15 +81,15 @@ test("Inventor's Desk opens directly from Home and the Experiment Board @quick @
 });
 
 test("Experiment Board retains 24/20/16 World 1 levels and optional star help @smoke",async({page})=>{
-  await page.locator("#home-choose-level").click();
+  await openCampaignBoard(page);
   await expect(page.locator(".level-tile")).toHaveCount(24);
   await expect(page.locator("#level-progress")).toContainText("0 / 72 stars earned");
   await page.locator("#level-star-legend summary").click();
   await expect(page.locator("#level-star-legend")).toHaveAttribute("open","");
   await expect(page.locator("#level-star-legend")).toContainText("shortest route");
-  await page.locator('[data-map-stage="independent"]').click();
+  await chooseCampaignStage(page,"independent");
   await expect(page.locator(".level-tile")).toHaveCount(20);
-  await page.locator('[data-map-stage="notebook"]').click();
+  await chooseCampaignStage(page,"notebook");
   await expect(page.locator(".level-tile")).toHaveCount(16);
   await expect(page.locator("#level-progress")).toContainText("0 / 48 stars earned");
 });
@@ -103,7 +97,7 @@ test("Experiment Board retains 24/20/16 World 1 levels and optional star help @s
 for(const size of [{width:1024,height:720},{width:1092,height:540}]){
   test("the active menus fit laptop "+size.width+"x"+size.height+" @smoke",async({page})=>{
     await page.setViewportSize(size);
-    for(const screen of ["levels","help","settings"]){
+    for(const screen of ["worlds","help","settings"]){
       await page.locator('.site-nav-links [data-screen="'+screen+'"]').click();
       await expect(page.locator("#site-"+screen)).toBeVisible();
       const scroll=await page.evaluate(()=>({
@@ -119,13 +113,13 @@ for(const size of [{width:1024,height:720},{width:1092,height:540}]){
 
 test("phone menus and Equation Workshop remain usable without sideways clipping @quick @smoke",async({page})=>{
   await page.setViewportSize({width:375,height:812});
-  for(const screen of ["levels","help","settings"]){
+  for(const screen of ["worlds","help","settings"]){
     await page.locator('.site-nav-links [data-screen="'+screen+'"]').click();
     await expect(page.locator("#site-"+screen)).toBeVisible();
     const width=await page.evaluate(()=>document.documentElement.scrollWidth);
     expect(width).toBeLessThanOrEqual(378);
   }
-  await page.locator('.site-nav-links [data-screen="levels"]').click();
+  await openCampaignBoard(page);
   await page.locator('#site-levels [data-screen="workshop"]').click();
   await expect(page.locator("#workshop-equation")).toBeVisible();
   const width=await page.evaluate(()=>document.documentElement.scrollWidth);

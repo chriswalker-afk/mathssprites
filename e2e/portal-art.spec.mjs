@@ -1,3 +1,4 @@
+import {openCampaignBoard,chooseCampaignStage,chooseCampaignWorld} from "./campaign-menu-helper.mjs";
 import {test,expect} from "@playwright/test";
 
 const laptopViews=[{width:1024,height:720},{width:1092,height:540}];
@@ -26,40 +27,37 @@ test("Laboratory Foyer keeps its animated scale and three loaded stage illustrat
   await expect(page.locator("#home-title")).toHaveText("How much does the sprite weigh?");
   await expect(page.locator("#site-home .portal-kicker")).toContainText("LABORATORY FOYER");
   await expect(page.locator("#home-hero-art")).toHaveAttribute("data-playback","playing");
-  await imagesLoaded(page,"#home-stage-shortcuts .portal-stage-medallion",3);
+  await expect(page.locator("#home-choose-level")).toBeVisible();
   const surface=await page.locator(".landing-hero").evaluate(el=>getComputedStyle(el).backgroundImage);
   expect(surface).toContain("foyer-ambient.svg");
   await page.screenshot({path:"artifacts/pr59-foyer-1280.png"});
 });
 
-test("the live world selector has four distinct emblems, with all four world portals available @smoke",async({page})=>{
+test("four actual door illustrations and three learning medallions load in their own menus @smoke",async({page})=>{
   await page.locator("#home-choose-level").click();
-  await expect(page.locator("#site-levels")).toBeVisible();
-  await expect(page.locator("#map-world-tabs button")).toHaveCount(4);
-  const symbols=await page.locator("#map-world-tabs button > span:first-child")
-    .allTextContents();
-  expect(new Set(symbols).size).toBe(4);
-  await expect(page.locator('[data-map-world="workshop"]')).toBeEnabled();
-  await expect(page.locator('[data-map-world="opposites"]')).toBeEnabled();
-  await expect(page.locator('[data-map-world="fractions"]')).toBeEnabled();
-  await expect(page.locator('[data-map-world="squares"]')).toBeEnabled();
-  await expect(page.locator("#map-stage-tabs .map-stage-icon")).toHaveCount(3);
-  await page.screenshot({path:"artifacts/pr59-world-tabs-1280.png"});
+  await expect(page.locator("#site-worlds")).toBeVisible();
+  await imagesLoaded(page,"#world-cards .hall-door-art",4);
+  const srcs=await page.locator("#world-cards .hall-door-art").evaluateAll(els=>els.map(el=>el.getAttribute("src")));
+  expect(new Set(srcs).size).toBe(4);
+  await page.screenshot({path:"artifacts/pr98-worlds-1280.png"});
+  await page.locator('[data-world-stages="workshop"]').click();
+  await expect(page.locator("#site-stages")).toBeVisible();
+  await imagesLoaded(page,"#world1-stage-cards .portal-stage-medallion",3);
+  await page.screenshot({path:"artifacts/pr98-methods-1280.png"});
 });
-
 test("the engraved board shows all World 1 stage levels and active artwork @smoke",async({page})=>{
-  await page.locator("#home-choose-level").click();
+  await openCampaignBoard(page);
   const bg=await page.locator("#site-levels").evaluate(el=>getComputedStyle(el).backgroundImage);
   expect(bg).toContain("board-etching.svg");
   await expect(page.locator(".level-tile")).toHaveCount(24);
   await expect(page.locator(".level-tile:disabled")).toHaveCount(0);
   await expect(page.locator(".chapter-illustration")).toHaveCount(6);
-  await page.locator('[data-map-stage="independent"]').click();
+  await chooseCampaignStage(page,"independent");
   await expect(page.locator("#site-levels")).toHaveAttribute("data-active-stage","independent");
   await expect(page.locator(".level-tile")).toHaveCount(20);
-  await page.locator('[data-map-stage="notebook"]').click();
+  await chooseCampaignStage(page,"notebook");
   await expect(page.locator(".level-tile")).toHaveCount(16);
-  await expect(page.locator(".map-world-button:disabled")).toHaveCount(0);
+  await expect(page.locator("[data-world-stages]:disabled")).toHaveCount(0);
   await page.screenshot({path:"artifacts/pr59-board-1280.png"});
 });
 
@@ -79,11 +77,11 @@ for(const size of laptopViews){
     test.setTimeout(75000);
     await page.setViewportSize(size);
     await noPageOverflow(page);
-    await expect(page.locator("#home-play")).toBeInViewport();
-    await expect(page.locator("#home-stage-shortcuts")).toBeInViewport();
-    await page.locator("#home-choose-level").click();
-    await expect(page.locator("#map-world-tabs button")).toHaveCount(4);
-    await expect(page.locator("#map-stage-tabs")).toBeInViewport();
+    await expect(page.locator("#home-choose-level")).toBeInViewport();
+    
+    await openCampaignBoard(page);
+    await expect(page.locator("#world-cards [data-world-stages]")).toHaveCount(4);
+    await expect(page.locator(".campaign-path")).toBeInViewport();
     await expect(page.locator(".level-tile")).toHaveCount(24);
     await page.locator('[data-level="24"]').scrollIntoViewIfNeeded();
     await expect(page.locator('[data-level="24"]')).toBeInViewport();
@@ -100,9 +98,9 @@ for(const size of laptopViews){
 
 test("phone keeps artwork non-interactive and the Workshop form reachable @smoke",async({page})=>{
   await page.setViewportSize({width:375,height:812});
-  await imagesLoaded(page,"#home-stage-shortcuts .portal-stage-medallion",3);
-  await page.locator("#home-choose-level").click();
-  await expect(page.locator("#map-world-tabs button")).toHaveCount(4);
+  await expect(page.locator("#home-choose-level")).toBeVisible();
+  await openCampaignBoard(page);
+  await expect(page.locator("#world-cards [data-world-stages]")).toHaveCount(4);
   await page.locator('#site-levels [data-screen="workshop"]').click();
   await imagesLoaded(page,".inventor-art img",1);
   await page.locator("#workshop-equation").fill("x + 3 = 8");
@@ -117,7 +115,7 @@ test("reduced motion keeps a static foyer scale beside an optional Play control 
   await expect(page.locator("#home-hero-art")).toHaveAttribute("data-playback","reduced");
   await expect(page.locator("#hero-playback")).toBeVisible();
   await expect(page.locator("#hero-playback")).toHaveText("Play animation");
-  await imagesLoaded(page,"#home-stage-shortcuts .portal-stage-medallion",3);
-  await page.locator("#home-choose-level").click();
-  await expect(page.locator("#map-world-tabs button")).toHaveCount(4);
+  await expect(page.locator("#home-choose-level")).toBeVisible();
+  await openCampaignBoard(page);
+  await expect(page.locator("#world-cards [data-world-stages]")).toHaveCount(4);
 });

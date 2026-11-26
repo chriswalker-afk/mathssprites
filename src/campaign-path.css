@@ -34,3 +34,8 @@
   .campaign-path .site-back-link{min-height:44px;display:inline-flex;align-items:center}
   .campaign-step{width:100%;margin-left:0}
 }
+
+#site-worlds .world-card{min-height:max-content;overflow:hidden}
+#site-worlds .world-card-scene .hall-door-art{object-fit:contain}
+#site-stages .stage-card{min-height:max-content}
+#site-worlds .site-back-link{align-self:flex-start;flex:none;margin:0}

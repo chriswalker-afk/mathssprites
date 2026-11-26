@@ -185,7 +185,7 @@ function renderWorlds() {
         clean(world.subtitle) + '</p><p class="world-context">'+clean(world.description||"")+'</p>' +
       '<div class="world-card-footer"><span class="world-progress">' + progressLine + ' · '+totals.earned+' / '+totals.available+' ★</span>' +
         (world.available
-          ? '<button type="button" class="primary-btn" data-world-stages="'+clean(world.id)+'">'+
+          ? '<button type="button" class="primary-btn" data-world-stages="'+clean(world.id)+'" aria-label="Choose '+clean(world.title)+' — '+clean(world.subtitle)+'">'+
             "Choose world →"+'</button>'
           : '<span class="soon-lock" aria-label="This world is not available yet">◇ Locked</span>') +
       '</div></div></article>';
@@ -198,7 +198,7 @@ function renderStages() {
   if(!world?.available)return;
   $("site-stages").dataset.activeWorld=world.id;
   $("stages-world-kicker").textContent="WORLD "+String(world.number).padStart(2,"0")+" · "+
-    world.title.toUpperCase();
+    world.title.toUpperCase()+" · 2 OF 3";
   $("world1-stage-cards").setAttribute("aria-label",world.title+" learning stages");
   $("world1-stage-cards").innerHTML=world.stages.map(stage=>{
     const record=campaignStageRecord(campaign,world.id,stage.id);

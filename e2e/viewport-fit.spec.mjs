@@ -25,11 +25,9 @@ async function noDocumentScroll(page){
   expect(m.scrollWidth,"No sideways page overflow").toBeLessThanOrEqual(m.width+3);
 }
 async function openLevels(page,stage=1){
-  await openCampaignBoard(page);
+  await openCampaignBoard(page,"workshop",{1:"guided",2:"independent",3:"notebook"}[stage]);
   await expect(page.locator("#site-levels")).toBeVisible();
   await expect(page.locator("#world-cards [data-world-stages]")).toHaveCount(4);
-  await chooseCampaignWorld(page,"workshop");
-  await page.locator('[data-stage-open="'+({1:"guided",2:"independent",3:"notebook"}[stage])+'"]').click();
   await expect(page.locator("#site-levels")).toHaveAttribute("data-active-stage",
     {1:"guided",2:"independent",3:"notebook"}[stage]);
 }
