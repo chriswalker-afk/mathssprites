@@ -6,7 +6,8 @@ import {rational,radd,rsub,rmul,req,rtext} from "./rational.mjs";
 import {FRACTION_DENOMINATORS,FRACTION_CAPACITY,fractionParts,fractionPieceCount} from "./fraction-engine.mjs";
 import {weightPilePosition,WEIGHT_COUNT_LABEL_THRESHOLD} from "./weight-piles.mjs";
 
-export const WEIGHT_BODY=Object.freeze([[29,17],[72,17],[90,88],[84,97],[13,97],[8,88]].map(Object.freeze));
+import {weightShape,resolveWeightShape} from "./weight-shapes.mjs?v=93";
+export const WEIGHT_BODY=weightShape("original").outer;
 export const WEIGHT_SLICE_GAP=4;
 const allowed=d=>FRACTION_DENOMINATORS.includes(d);
 export function polygonArea(points){
@@ -29,30 +30,38 @@ function clipAt(points,x,keepLeft){
   }
   return out;
 }
-const area=polygonArea(WEIGHT_BODY);
-const left=Math.min(...WEIGHT_BODY.map(p=>p[0])),right=Math.max(...WEIGHT_BODY.map(p=>p[0]));
+/** Clip each contour separately. The hole is subtracted, including when a
+ *  slice meets the handle opening; a weakly simple clipped contour can have
+ *  zero-area doubled boundary segments but never creates extra material. */
+export function weightContourArea(outer,holes=[]){
+  return polygonArea(outer)-holes.reduce((sum,hole)=>sum+polygonArea(hole),0);
+}
 const cache=new Map();
-export function weightPartition(denominator,{trial=false}={}){
+export function weightPartition(denominator,{trial=false,shape="original"}={}){
+  shape=resolveWeightShape(shape);
+  const {outer,holes}=weightShape(shape),area=weightContourArea(outer,holes);
+  const left=Math.min(...outer.map(p=>p[0])),right=Math.max(...outer.map(p=>p[0]));
+  const key=shape+":"+denominator;
   if(!allowed(denominator)&&!(trial&&Number.isInteger(denominator)&&denominator>1&&denominator<=120))throw new RangeError("Unsupported weight denominator");
-  if(cache.has(denominator))return cache.get(denominator);
+  if(cache.has(key))return cache.get(key);
   const cuts=[left];
   for(let i=1;i<denominator;i++){
     let lo=left,hi=right;
     for(let j=0;j<50;j++){
       const mid=(lo+hi)/2;
-      if(polygonArea(clipAt(WEIGHT_BODY,mid,true))<area*i/denominator)lo=mid;
+      if(weightContourArea(clipAt(outer,mid,true),holes.map(hole=>clipAt(hole,mid,true)))<area*i/denominator)lo=mid;
       else hi=mid;
     }
     cuts.push((lo+hi)/2);
   }
   cuts.push(right);
   const pieces=Object.freeze(Array.from({length:denominator},(_,index)=>{
-    const points=clipAt(clipAt(WEIGHT_BODY,cuts[index],false),cuts[index+1],true)
-      .map(p=>Object.freeze(p));
+    const clip=ring=>Object.freeze(clipAt(clipAt(ring,cuts[index],false),cuts[index+1],true).map(Object.freeze));
+    const points=clip(outer),cutHoles=Object.freeze(holes.map(clip).filter(r=>r.length>=3&&polygonArea(r)>1e-10));
     return Object.freeze({index,denominator,value:rational(1,denominator),
-      polygon:Object.freeze(points),left:cuts[index],right:cuts[index+1]});
+      polygon:points,holes:cutHoles,left:cuts[index],right:cuts[index+1]});
   }));
-  cache.set(denominator,pieces);
+  cache.set(key,pieces);
   return pieces;
 }
 export function weightInventoryPlan(value){
@@ -107,12 +116,16 @@ export function weightChangeStages(plan,operation){
 }
 let svgSerial=0;
 const coords=points=>points.map(p=>p.map(n=>n.toFixed(6)).join(",")).join(" ");
-const body=coords(WEIGHT_BODY);
+const contourPath=(outer,holes=[])=>[outer,...holes].filter(r=>r.length>=3).map(r=>"M"+coords(r).replaceAll(" "," L")+" Z").join(" ");
+function contour(outer,holes,attributes){
+  return holes.length?'<path d="'+contourPath(outer,holes)+'" fill-rule="evenodd" clip-rule="evenodd" '+attributes+'/>':'<polygon points="'+coords(outer)+'" '+attributes+'/>';
+}
 /** One reusable SVG assembly. Every fragment is one real equal-value polygon,
  * never a scaled-down whole. The ghost outline is a reference, not a token.
  */
-export function weightAssemblyMarkup(denominator,indices,{outline=true,label=true,separated=false,trial=false}={}){
-  const partition=weightPartition(denominator,{trial});
+export function weightAssemblyMarkup(denominator,indices,{outline=true,label=true,separated=false,trial=false,shape="original"}={}){
+  shape=resolveWeightShape(shape);
+  const profile=weightShape(shape),partition=weightPartition(denominator,{trial,shape});
   if(!Array.isArray(indices)||!indices.length||new Set(indices).size!==indices.length||
     indices.some(i=>!Number.isInteger(i)||i<0||i>=denominator))
     throw new RangeError("Select distinct pieces of the original weight");
@@ -127,29 +140,29 @@ export function weightAssemblyMarkup(denominator,indices,{outline=true,label=tru
     const clip=id+"-p"+index;
     return '<g class="fw-piece" data-piece-index="'+index+'" data-denominator="'+denominator+
       '" data-value="1/'+denominator+'" style="--fw-spread:'+spread+'px">'+
-      '<clipPath id="'+clip+'"><polygon points="'+coords(p.polygon)+'"/></clipPath>'+
-      '<g clip-path="url(#'+clip+')"><polygon points="'+body+'" fill="url(#'+id+')"/>'+
-      '<path class="fw-material-rim" d="M12 89H88 M13 94H86" fill="none" stroke="#d8b77b" stroke-width="2.5"/>'+
-      '<path class="fw-material-shine" d="M36 31L31 72" stroke="#ffefb8" stroke-opacity=".30" stroke-width="8" stroke-linecap="round"/>'+
-      '</g><polygon class="fw-cut-edge" points="'+coords(p.polygon)+'" fill="none" stroke="#694921" stroke-width=".75" stroke-linejoin="round"/></g>';
+      '<clipPath id="'+clip+'">'+contour(p.polygon,p.holes,"")+'</clipPath>'+
+      '<g clip-path="url(#'+clip+')">'+contour(profile.outer,profile.holes,'class="fw-weight-body" fill="url(#'+id+')"')+
+      '<path class="fw-material-rim" d="'+profile.rim+'" fill="none" stroke="#d8b77b" stroke-width="2.5"/>'+
+      '<path class="fw-material-shine" d="'+profile.shine+'" fill="none" stroke="#ffefb8" stroke-opacity=".30" stroke-width="8" stroke-linecap="round"/>'+
+      '</g>'+contour(p.polygon,p.holes,'class="fw-cut-edge" fill="none" stroke="#694921" stroke-width=".75" stroke-linejoin="round"'+(shape==="original"?"":' clip-path="url(#'+clip+')"'))+'</g>';
   }).join("");
-  return '<span class="fw-assembly'+(separated?' is-separated':'')+'" data-complete="'+full+'" role="img" aria-label="'+description+'">'+
+  return '<span class="fw-assembly'+(separated?' is-separated':'')+'" data-complete="'+full+'" data-shape="'+shape+'" role="img" aria-label="'+description+'">'+
     '<svg aria-hidden="true" viewBox="-18 0 136 103" xmlns="http://www.w3.org/2000/svg">'+
     '<defs><linearGradient id="'+id+'" x1="8" y1="15" x2="90" y2="97" gradientUnits="userSpaceOnUse">'+
     '<stop class="fw-material-dark" stop-color="#7b592f"/><stop class="fw-material-light" offset=".32" stop-color="#d5b17c"/><stop class="fw-material-mid" offset=".70" stop-color="#8f6a3e"/><stop class="fw-material-deep" offset="1" stop-color="#5b412b"/>'+
     '</linearGradient></defs>'+
-    (outline&&denominator>1?'<polygon class="fw-whole-outline" points="'+body+'" fill="none" stroke="currentColor" stroke-width="1.4" stroke-dasharray="3 3"/>':"")+
-    art+(full?'<polygon class="fw-joined-edge" points="'+body+'" fill="none" stroke="#694921" stroke-width=".75" stroke-linejoin="round"/>':"")+'</svg>'+(label?'<span class="fw-label" aria-hidden="true">'+caption+'</span>':"")+'</span>';
+    (outline&&denominator>1?contour(profile.outer,profile.holes,'class="fw-whole-outline" fill="none" stroke="currentColor" stroke-width="1.4" stroke-dasharray="3 3"'):"")+
+    art+(full?contour(profile.outer,profile.holes,'class="fw-joined-edge" fill="none" stroke="#694921" stroke-width=".75" stroke-linejoin="round"'):"")+'</svg>'+(label?'<span class="fw-label" aria-hidden="true">'+caption+'</span>':"")+'</span>';
 }
-function pileMarkup(positions){
+function pileMarkup(positions,shape){
   return '<span class="fw-pile" data-pile-size="'+positions.length+'">'+positions.map(pos=>
     '<span class="fw-pile-weight" data-slot="'+pos.slot+'">'+
-    weightAssemblyMarkup(1,[0],{outline:false,label:false})+'</span>').join("")+'</span>';
+    weightAssemblyMarkup(1,[0],{outline:false,label:false,shape})+'</span>').join("")+'</span>';
 }
-export function weightInventoryMarkup(value){
+export function weightInventoryMarkup(value,{shape="original"}={}){
   const plan=weightInventoryPlan(value);
-  const pile=plan.piles.map(pileMarkup).join("");
-  const partial=plan.pieces.length?weightAssemblyMarkup(plan.denominator,plan.pieces.map(p=>p.index)):"";
+  const pile=plan.piles.map(positions=>pileMarkup(positions,shape)).join("");
+  const partial=plan.pieces.length?weightAssemblyMarkup(plan.denominator,plan.pieces.map(p=>p.index),{shape}):"";
   return '<div class="fw-inventory" role="img" aria-label="'+rtext(plan.value)+' weights">'+
     '<div class="fw-inventory-objects" aria-hidden="true">'+
     (plan.countPlaque?'<span class="fw-count-plaque">'+plan.countPlaque+' whole weights</span>':"")+
@@ -158,15 +171,15 @@ export function weightInventoryMarkup(value){
 /** Show a temporary unreduced grid, including borrowed whole weights and
  * uncombined pieces. A full group of d pieces retains its seams here.
  */
-export function weightGridMarkup({whole,units,denominator}){
+export function weightGridMarkup({whole,units,denominator},{shape="original"}={}){
   if(!Number.isInteger(whole)||whole<0||!Number.isInteger(units)||units<0||
     !allowed(denominator)||whole+units>FRACTION_CAPACITY*2)
     throw new RangeError("Invalid demonstration inventory");
-  const wholes=weightInventoryMarkup(whole);
+  const wholes=weightInventoryMarkup(whole,{shape});
   const groups=[];
   for(let i=0;i<units;i+=denominator){
     groups.push(weightAssemblyMarkup(denominator,
-      Array.from({length:Math.min(denominator,units-i)},(_,j)=>j),{separated:true}));
+      Array.from({length:Math.min(denominator,units-i)},(_,j)=>j),{separated:true,shape}));
   }
   return '<div class="fw-grid-inventory">'+(whole?wholes:"")+groups.join("")+
     (!whole&&!units?'<span class="fw-empty">No weights</span>':"")+'</div>';

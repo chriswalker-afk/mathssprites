@@ -11,6 +11,8 @@ on:
       - 'src/atelier-model.mjs'
       - 'src/laboratory-cosmetics.mjs'
       - 'src/weight-materials.css'
+      - 'src/weight-shapes.css'
+      - 'src/weight-shapes.mjs'
       - 'src/site.mjs'
       - 'src/fraction-*.mjs'
       - 'src/fraction-*.css'

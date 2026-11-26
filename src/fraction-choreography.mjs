@@ -4,7 +4,7 @@
  */
 import {rational,radd,rmul,rsub,req,rtext} from "./rational.mjs";
 import {FRACTION_KINDS,FRACTION_DENOMINATORS,fractionRoom,fractionRoomCount,fractionParts} from "./fraction-engine.mjs";
-import {weightGrid,weightChangeStages,weightAssemblyMarkup} from "./fraction-weights.mjs?v=92";
+import {weightGrid,weightChangeStages,weightAssemblyMarkup} from "./fraction-weights.mjs?v=93";
 import {spriteGrid,spriteChangeStages,spriteAssemblyMarkup} from "./fraction-sprites.mjs?v=89";
 
 const gridFor=(kind,value,d)=>(kind==="posX"?spriteGrid:weightGrid)(value,d);
@@ -78,14 +78,14 @@ export function failureDiagram(failure){
  * requested equal subdivision; a small illustrative spill is deliberately
  * bounded even if the attempted overflow is large. Neither is a room or
  * counted object, and neither participates in engine state. */
-export function fractionRefusalMarkup(failure,action,room,{animatedWhole=false}={}){
+export function fractionRefusalMarkup(failure,action,room,{animatedWhole=false,shape="original"}={}){
   const diagram=failureDiagram(failure);
   if(diagram.type==="grid"){
     const kind=failure.kind||action?.kind||"posOne";
     const art=kind==="posX"?spriteAssemblyMarkup:weightAssemblyMarkup;
     const d=diagram.denominator;
     return '<div class="fb-refusal-art fb-refusal-cut" role="img" aria-label="Illustration of an attempted '+d+'-part '+(kind==="posX"?"sprite":"weight")+' cut" data-trial-denominator="'+d+'">'+
-      art(d,Array.from({length:d},(_,i)=>i),{trial:true,label:false,outline:true})+'</div>';
+      art(d,Array.from({length:d},(_,i)=>i),{trial:true,label:false,outline:true,shape})+'</div>';
   }
   if(diagram.type==="overflow"){
     const kinds=action?.kind?[action.kind]:FRACTION_KINDS.filter(k=>room?.[k]?.n>0);
@@ -95,7 +95,7 @@ export function fractionRefusalMarkup(failure,action,room,{animatedWhole=false}=
       Array.from({length:n},(_,i)=>{
         const kind=kinds[i%kinds.length],art=kind==="posX"?spriteAssemblyMarkup:weightAssemblyMarkup;
         const value=room?.[kind],d=value?.d||1;
-        return '<span class="fb-spill-object" style="--spill-index:'+i+'">'+art(d,[0],{outline:false,label:false,animatedWhole})+'</span>';
+        return '<span class="fb-spill-object" style="--spill-index:'+i+'">'+art(d,[0],{outline:false,label:false,animatedWhole,shape})+'</span>';
       }).join("")+'</div>';
   }
   return "";

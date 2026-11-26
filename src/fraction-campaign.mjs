@@ -2,20 +2,20 @@
  * A shadow root isolates legacy app IDs, SVG clip IDs and event listeners.
  * Navigation and progress remain owned by site.mjs, not the physics renderer.
  */
-import {mountFractionBalance} from "./fraction-balance.mjs?v=92";
+import {mountFractionBalance} from "./fraction-balance.mjs?v=93";
 import {mountFractionNotebook} from "./fraction-notebook.mjs";
 import {FRACTION_CAMPAIGN_SCENE} from "./fraction-campaign-scene.mjs";
 import {spriteInventoryMarkup} from "./fraction-sprites.mjs?v=89";
-import {weightInventoryMarkup} from "./fraction-weights.mjs?v=92";
+import {weightInventoryMarkup} from "./fraction-weights.mjs?v=93";
 import {rational,req,rtext} from "./rational.mjs";
 import {isSolved} from "./engine.mjs";
 
 // Keep the separately fetched shadow-root assets on the same presentation
 // revision as their markup, including on a returning student's warm cache.
 // Bump this revision and the site entry/import URLs when presentation assets change.
-import {applyLaboratoryAppearance} from "./laboratory-cosmetics.mjs?v=92";
-export const FRACTION_PRESENTATION_REVISION="92";
-const STYLE_FILES=["styles.css","scene-polish.css","fraction-weights.css","fraction-sprites.css","fraction-balance.css","fraction-campaign.css","fraction-notebook.css","sprite-cosmetics.css","sprite-wearables.css","sprite-effects.css","weight-materials.css"];
+import {applyLaboratoryAppearance} from "./laboratory-cosmetics.mjs?v=93";
+export const FRACTION_PRESENTATION_REVISION="93";
+const STYLE_FILES=["styles.css","scene-polish.css","fraction-weights.css","fraction-sprites.css","fraction-balance.css","fraction-campaign.css","fraction-notebook.css","sprite-cosmetics.css","sprite-wearables.css","sprite-effects.css","weight-materials.css","weight-shapes.css"];
 const escape=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const mn=n=>"<mn>"+n+"</mn>";
 const mo=s=>"<mo>"+s+"</mo>";
@@ -40,18 +40,18 @@ export function fractionOperationMarkup(action){
   const s=action.op==="add"?"+":action.op==="remove"?"−":action.op==="multiply"?"×":"÷";
   return math(mo(s)+(action.kind?term(action.count,action.kind):mn(action.factor)));
 }
-function comicRoom(r){
-  return '<div class="fb-comic-room">'+spriteInventoryMarkup(r.posX,{animatedWhole:true})+weightInventoryMarkup(r.posOne)+'</div>';
+function comicRoom(r,shape){
+  return '<div class="fb-comic-room">'+spriteInventoryMarkup(r.posX,{animatedWhole:true})+weightInventoryMarkup(r.posOne,{shape})+'</div>';
 }
-function comicPanel(pair,title){
+function comicPanel(pair,title,shape){
   return '<article class="fb-comic-panel"><h3>'+escape(title)+'</h3><div class="fb-comic-scale">'+
-    comicRoom(pair.left)+'<span aria-hidden="true">⚖</span>'+comicRoom(pair.right)+
+    comicRoom(pair.left,shape)+'<span aria-hidden="true">⚖</span>'+comicRoom(pair.right,shape)+
     '</div><div class="fb-equation">'+fractionEquationMarkup(pair)+'</div></article>';
 }
-export function fractionComicMarkup(transaction,index){
-  return '<div class="fb-comic-spread">'+comicPanel(transaction.before,"Before")+
+export function fractionComicMarkup(transaction,index,{shape="original"}={}){
+  return '<div class="fb-comic-spread">'+comicPanel(transaction.before,"Before",shape)+
     '<div class="fb-comic-action"><span>Move '+(index+1)+'</span>'+fractionOperationMarkup(transaction.action)+'<span>on both rooms</span></div>'+
-    comicPanel(transaction.after,"After")+'</div>';
+    comicPanel(transaction.after,"After",shape)+'</div>';
 }
 export function createFractionCampaignView({slot,context,onLeave,onAdvance,onComplete,onReviewReady=()=>{},appearance={}}){
   const host=document.createElement("div");host.id="fraction-game-host";
@@ -126,7 +126,7 @@ export function createFractionCampaignView({slot,context,onLeave,onAdvance,onCom
   function showComic(){
     if(!completed?.history.length)return;
     step=Math.max(0,Math.min(step,completed.history.length-1));
-    $("fb-comic-page").innerHTML=fractionComicMarkup(completed.history[step],step);
+    $("fb-comic-page").innerHTML=fractionComicMarkup(completed.history[step],step,{shape:root.dataset.weightShape});
     $("fb-replay-step").textContent=(step+1)+" / "+completed.history.length;
     $("fb-replay-prev").disabled=step===0;
     $("fb-replay-next").disabled=step===completed.history.length-1;
@@ -191,6 +191,6 @@ export function createFractionCampaignView({slot,context,onLeave,onAdvance,onCom
     const back=document.createElement("button");back.type="button";back.textContent="Return to levels";
     back.addEventListener("click",()=>onLeave("levels"),{once:true});loading.append(back);
   });
-  return {controller,host,setAppearance(equipped){applyLaboratoryAppearance(root,equipped);},setRating(message){$("fb-rating").textContent=message;},
+  return {controller,host,setAppearance(equipped){const prior=root.dataset.weightShape;applyLaboratoryAppearance(root,equipped);if(prior!==root.dataset.weightShape){controller.refreshAppearance();if(completed)showComic();}},setRating(message){$("fb-rating").textContent=message;},
     destroy(){observer.disconnect();abort.abort();notebook?.destroy();controller.destroy();host.remove();}};
 }

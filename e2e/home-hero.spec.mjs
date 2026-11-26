@@ -144,14 +144,26 @@ test("OS reduced motion cannot silently disable explicit homepage playback",asyn
 test("explicit in-game Motion: on auto-plays even when the OS prefers reduced motion",async({page})=>{
   await page.evaluate(()=>localStorage.setItem("mathssprites.motion-preference.v1","on"));
   await page.emulateMedia({reducedMotion:"reduce"});
+  // Record actual transitions from page startup. Under parallel CI the
+  // original short right-heavy interval can occur between Playwright polls.
+  // Require both the real imbalance and the real animated arriving weight.
+  await page.addInitScript(()=>{
+    window.heroObserved={rightHeavy:false,arrivalAnimated:false};
+    const observer=new MutationObserver(records=>{
+      const art=document.getElementById("home-hero-art");
+      if(!art)return;
+      if(art.dataset.balance==="right-heavy"||records.some(r=>r.target===art&&r.attributeName==="data-balance"&&r.oldValue==="right-heavy"))window.heroObserved.rightHeavy=true;
+      for(const el of art.querySelectorAll("#hero-right-items .hero-arriving")){
+        if(getComputedStyle(el).animationName.includes("hero-item-land"))window.heroObserved.arrivalAnimated=true;
+      }
+    });
+    observer.observe(document,{subtree:true,childList:true,attributes:true,attributeOldValue:true,attributeFilter:["data-balance","class"]});
+  });
   await page.reload();
   await expect(hero(page)).toHaveAttribute("data-playback","playing");
   await expect(hero(page)).toHaveAttribute("data-motion-opt-in","true");
   await expect(page.locator("#hero-playback")).toHaveText("Pause animation");
-  await expect(hero(page)).toHaveAttribute("data-balance","right-heavy",{timeout:4000});
-  const cssAnimation=await page.locator("#hero-right-items .hero-arriving").first()
-    .evaluate(el=>getComputedStyle(el).animationName);
-  expect(cssAnimation).toContain("hero-item-land");
+  await expect.poll(()=>page.evaluate(()=>window.heroObserved),{timeout:10000}).toEqual({rightHeavy:true,arrivalAnimated:true});
 });
 
 test("initial home load and reload do not select or focus the headline @quick @smoke",async({page})=>{

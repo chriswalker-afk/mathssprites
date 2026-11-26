@@ -1,8 +1,9 @@
 /** Presentation-only weight/chamber scope. Future art PRs populate the
  * allow-lists only after all corresponding renderers support the art. */
 import {applySpriteAppearance} from "./sprite-cosmetics.mjs?v=89";
+import {ALTERNATIVE_WEIGHT_SHAPES} from "./weight-shapes.mjs?v=93";
 export const LABORATORY_VISUAL_VARIANTS=Object.freeze({
-  "weight-shape":Object.freeze([]),"weight-material":Object.freeze(["polished-steel","copper","blue-enamel","gold","jade-enamel","cast-iron","violet-enamel"]),
+  "weight-shape":ALTERNATIVE_WEIGHT_SHAPES,"weight-material":Object.freeze(["polished-steel","copper","blue-enamel","gold","jade-enamel","cast-iron","violet-enamel"]),
   "weight-effect":Object.freeze([]),"chamber-theme":Object.freeze([])
 });
 export const IMPLEMENTED_LABORATORY_COSMETICS=Object.freeze(Object.values(LABORATORY_VISUAL_VARIANTS).flat());

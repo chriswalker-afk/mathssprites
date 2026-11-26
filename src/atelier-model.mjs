@@ -2,7 +2,7 @@
  * selections always come from the PR84 store; trying on art is local. */
 import {COSMETIC_REWARDS,COSMETIC_SLOTS,COSMETIC_COLLECTIONS,cosmeticCollection,findCosmeticReward,originalAppearance} from "./cosmetic-catalog.mjs?v=91";
 import {IMPLEMENTED_SPRITE_COSMETICS} from "./sprite-cosmetics.mjs?v=89";
-import {IMPLEMENTED_LABORATORY_COSMETICS} from "./laboratory-cosmetics.mjs?v=92";
+import {IMPLEMENTED_LABORATORY_COSMETICS} from "./laboratory-cosmetics.mjs?v=93";
 export const IMPLEMENTED_COSMETICS=Object.freeze([...IMPLEMENTED_SPRITE_COSMETICS,...IMPLEMENTED_LABORATORY_COSMETICS]);
 
 export const ATELIER_FILTERS=Object.freeze([
@@ -19,6 +19,12 @@ export function atelierFilters(collection){
   return ATELIER_FILTERS.filter(f=>f.id==="all"||slots.includes(f.id)||(collection==="sprites"&&f.id==="set"));
 }
 const descriptions=Object.freeze({
+  "dumbbell":"Two solid ends joined by a short grip. Still one unit of weight.",
+  "hexagonal-weight":"A bevelled six-sided metal weight.",
+  "kettlebell":"A rounded weight with an open handle; the opening is excluded from fractional area.",
+  "cube-weight":"A compact cube with bevelled faces.",
+  "metal-ingot":"A low, solid cast-metal bar.",
+  "cylindrical-weight":"A smooth round-ended cylinder with a rolled rim.",
   "polished-steel":"Polished silver-grey steel with a cool metallic highlight.",
   "copper":"Warm burnished copper, with a reddish metallic sheen.",
   "blue-enamel":"Deep blue enamel with a glossy pale-blue highlight.",

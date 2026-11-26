@@ -1,0 +1,71 @@
+/* PR93: shape-only skin, independent of material. Keep native .token
+   footprints and existing animations. Scope resets protect original previews. */
+:where([data-weight-shape]){
+  --ws-clip:initial;--ws-detail:initial;--ws-rise:initial;--ws-fraction-rise:initial;
+  --ws-handle:initial;--ws-detail-inset:initial;--ws-detail-height:initial;
+  --ws-detail-shadow:initial;--ws-detail-width:initial;--ws-detail-left:initial;
+}
+[data-weight-shape="dumbbell"]{
+  --ws-clip:polygon(evenodd, 4% 25%, 12% 15%, 30% 15%, 37% 24%, 37% 43%, 63% 43%, 63% 24%, 70% 15%, 88% 15%, 96% 25%, 96% 87%, 88% 97%, 70% 97%, 63% 88%, 63% 62%, 37% 62%, 37% 88%, 30% 97%, 12% 97%, 4% 87%);
+  --ws-detail:linear-gradient(90deg,transparent 12%,var(--wm-rim,#d8b77b) 13% 16%,transparent 17% 29%,var(--wm-seam,#694921) 30% 33%,transparent 34% 66%,var(--wm-seam,#694921) 67% 70%,transparent 71% 83%,var(--wm-rim,#d8b77b) 84% 87%,transparent 88%);
+  --ws-rise:31px;--ws-fraction-rise:32px;
+  --ws-handle:hidden;--ws-detail-inset:0px;--ws-detail-height:100%;--ws-detail-width:100%;--ws-detail-left:0px;--ws-detail-shadow:none;
+}
+[data-weight-shape="hexagonal-weight"]{
+  --ws-clip:polygon(evenodd, 25% 17%, 75% 17%, 97% 55%, 75% 97%, 25% 97%, 3% 55%);
+  --ws-detail:linear-gradient(145deg,#fff4 0 23%,transparent 24% 73%,#0003 74%);
+  --ws-rise:28px;--ws-fraction-rise:29px;
+  --ws-handle:hidden;--ws-detail-inset:0px;--ws-detail-height:100%;--ws-detail-width:100%;--ws-detail-left:0px;--ws-detail-shadow:none;
+}
+[data-weight-shape="kettlebell"]{
+  --ws-clip:polygon(evenodd, 39% 9%, 61% 9%, 72% 15%, 78% 29%, 78% 41%, 89% 52%, 96% 68%, 94% 82%, 85% 94%, 72% 97%, 28% 97%, 15% 94%, 6% 82%, 4% 68%, 11% 52%, 22% 41%, 22% 29%, 28% 15%, 39% 9%, 40% 22%, 60% 22%, 65% 26%, 66% 35%, 63% 40%, 37% 40%, 34% 35%, 35% 26%, 40% 22%, 39% 9%);
+  --ws-detail:linear-gradient(0deg,#0004 0 9%,transparent 10% 55%,#0003 56% 59%,transparent 60%);
+  --ws-rise:25px;--ws-fraction-rise:26px;
+  --ws-handle:hidden;--ws-detail-inset:0px;--ws-detail-height:100%;--ws-detail-width:100%;--ws-detail-left:0px;--ws-detail-shadow:none;
+}
+[data-weight-shape="cube-weight"]{
+  --ws-clip:polygon(evenodd, 8% 32%, 29% 13%, 92% 13%, 96% 18%, 96% 77%, 76% 97%, 8% 97%);
+  --ws-detail:linear-gradient(90deg,transparent 0 75%,#0005 76%),linear-gradient(0deg,transparent 0 67%,#fff4 68%);
+  --ws-rise:30px;--ws-fraction-rise:31px;
+  --ws-handle:hidden;--ws-detail-inset:0px;--ws-detail-height:100%;--ws-detail-width:100%;--ws-detail-left:0px;--ws-detail-shadow:none;
+}
+[data-weight-shape="metal-ingot"]{
+  --ws-clip:polygon(evenodd, 23% 35%, 37% 24%, 83% 24%, 95% 37%, 99% 86%, 86% 97%, 4% 97%, 1% 88%);
+  --ws-detail:linear-gradient(0deg,#0003 0 13%,transparent 14% 64%,#fff4 65%),linear-gradient(105deg,transparent 0 72%,#0003 73%);
+  --ws-rise:27px;--ws-fraction-rise:28px;
+  --ws-handle:hidden;--ws-detail-inset:0px;--ws-detail-height:100%;--ws-detail-width:100%;--ws-detail-left:0px;--ws-detail-shadow:none;
+}
+[data-weight-shape="cylindrical-weight"]{
+  --ws-clip:polygon(evenodd, 4% 31%, 8% 24%, 20% 19%, 34% 16%, 66% 16%, 80% 19%, 92% 24%, 96% 31%, 96% 82%, 92% 89%, 80% 94%, 66% 97%, 34% 97%, 20% 94%, 8% 89%, 4% 82%);
+  --ws-detail:linear-gradient(0deg,#0004 0 9%,transparent 10% 55%,#0003 56% 60%,transparent 61% 69%,#fff5 70%);
+  --ws-rise:31px;--ws-fraction-rise:32px;
+  --ws-handle:hidden;--ws-detail-inset:0px;--ws-detail-height:100%;--ws-detail-width:100%;--ws-detail-left:0px;--ws-detail-shadow:none;
+}
+:where([data-weight-shape]) .weight,
+:where([data-weight-shape]) .group-basket .weight{
+  clip-path:var(--ws-clip,polygon(29% 17%,72% 17%,90% 88%,84% 97%,13% 97%,8% 88%));
+}
+:where([data-weight-shape]) .weight:after{
+  left:var(--ws-detail-left,10%);bottom:var(--ws-detail-inset,4px);
+  width:var(--ws-detail-width,80%);height:var(--ws-detail-height,5px);
+  background:var(--ws-detail,var(--wm-seam,#4b311e));
+  box-shadow:var(--ws-detail-shadow,0 -3px var(--wm-rim,#d8b77b));
+}
+:where([data-weight-shape]) .weight-handle,
+:where([data-weight-shape]) .hero-weight-handle,
+:where([data-weight-shape]) .overflow-piece.weight-spill:before{visibility:var(--ws-handle,visible)}
+:where([data-weight-shape]) .hero-weight{clip-path:var(--ws-clip,polygon(23% 3%,77% 3%,96% 100%,4% 100%))}
+:where([data-weight-shape]) .tiny-weight{clip-path:var(--ws-clip,polygon(25% 10%,75% 10%,100% 100%,0 100%))}
+:where([data-weight-shape]) .fb-mini-weight{clip-path:var(--ws-clip,polygon(29% 17%,72% 17%,90% 88%,84% 97%,13% 97%,8% 88%))}
+:where([data-weight-shape]) .overflow-piece.weight-spill{clip-path:var(--ws-clip,none)}
+:where([data-weight-shape]) .sealed-crate .crate-mini-weight{clip-path:var(--ws-clip,polygon(25% 0,75% 0,100% 100%,0 100%))}
+:where([data-weight-shape]) .sealed-crate .crate-bay-weight{clip-path:var(--ws-clip,polygon(27% 0,73% 0,100% 100%,0 100%))}
+:where([data-weight-shape]) .comic-crate-story .comic-crate-weight{clip-path:var(--ws-clip,polygon(27% 0,72% 0,100% 100%,0 100%))}
+:where([data-weight-shape]) .box-actor.box-actor-weight{clip-path:var(--ws-clip,polygon(34% 0,67% 0,87% 26%,100% 100%,0 100%,12% 26%))}
+:where([data-weight-shape]) .box-edge-token.edge-weight:after{clip-path:var(--ws-clip,none)}
+/* Three below and two above; only vertical seating changes to meet the
+   selected shoulder profile. Horizontal slot spacing/compensation and
+   physical weight-node identity remain exactly as before. */
+.room-items .items-grid.floor-track > .token.weight[data-weight-slot="4"],
+.room-items .items-grid.floor-track > .token.weight[data-weight-slot="5"]{top:calc(-1 * var(--ws-rise,33px))}
+.fw-pile-weight[data-slot="4"],.fw-pile-weight[data-slot="5"]{bottom:var(--ws-fraction-rise,34px)}
