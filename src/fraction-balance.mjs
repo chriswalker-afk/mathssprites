@@ -6,10 +6,10 @@
 import {initialState,visibleRooms,prepare,perform,undo,isSolved,equation,algebraOperation,evaluate,previewRoomAction} from "./engine.mjs";
 import {rational,radd,rsub,rcompare,rtext} from "./rational.mjs";
 import {FRACTION_DENOMINATORS,FRACTION_FACTORS,fractionAction,fractionRoom} from "./fraction-engine.mjs";
-import {weightInventoryMarkup,weightGridMarkup} from "./fraction-weights.mjs?v=92";
+import {weightInventoryMarkup,weightGridMarkup} from "./fraction-weights.mjs?v=93";
 import {spriteInventoryMarkup,spriteGridMarkup} from "./fraction-sprites.mjs?v=89";
 import {divisionBasketMarkup,resetHand} from "./division-baskets.mjs";
-import {gridRoom,roomChoreography,failureSpeech,fractionRefusalMarkup} from "./fraction-choreography.mjs?v=92";
+import {gridRoom,roomChoreography,failureSpeech,fractionRefusalMarkup} from "./fraction-choreography.mjs?v=93";
 const SIDES=["left","right"];
 const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 const frame=()=>new Promise(resolve=>requestAnimationFrame(resolve));
@@ -20,8 +20,9 @@ const options=values=>values.map(v=>'<option value="'+v+'">'+v+'</option>').join
 export function mountFractionBalance(root,{level,mode="auto",reduced=false,onComplete=()=>{},onState=()=>{}}={}){
   const $=id=>root.querySelector("#"+id);
   const spriteOptions={animatedWhole:root.classList.contains("fb-campaign")};
-  const roomMarkup=room=>'<div class="fb-room-floor">'+spriteInventoryMarkup(room.posX,spriteOptions)+weightInventoryMarkup(room.posOne)+'</div>';
-  const gridMarkup=grid=>'<div class="fb-room-floor">'+spriteGridMarkup(grid.posX,spriteOptions)+weightGridMarkup(grid.posOne)+'</div>';
+  const weightOptions=()=>({shape:root.dataset.weightShape||"original"});
+  const roomMarkup=room=>'<div class="fb-room-floor">'+spriteInventoryMarkup(room.posX,spriteOptions)+weightInventoryMarkup(room.posOne,weightOptions())+'</div>';
+  const gridMarkup=grid=>'<div class="fb-room-floor">'+spriteGridMarkup(grid.posX,spriteOptions)+weightGridMarkup(grid.posOne,weightOptions())+'</div>';
   const scene=$("scene"),hand=$("hand"),cargo=$("hand-cargo"),speech=$("speech"),caption=$("action-caption");
   const abort=new AbortController();
   const listen=(el,type,fn)=>el.addEventListener(type,fn,{signal:abort.signal});
@@ -288,7 +289,7 @@ export function mountFractionBalance(root,{level,mode="auto",reduced=false,onCom
     delete el.dataset.operation;await pause(120);
   }
   async function refusal(failure,side,rollback,action){
-    const el=$(side+"-items"),markup=fractionRefusalMarkup(failure,action,shown[side],spriteOptions);
+    const el=$(side+"-items"),markup=fractionRefusalMarkup(failure,action,shown[side],{...spriteOptions,...weightOptions()});
     el.dataset.refusal=failure.code||"invalid";
     if(markup){
       const trial=document.createElement("div");trial.className="fb-refusal-overlay";
@@ -378,6 +379,7 @@ export function mountFractionBalance(root,{level,mode="auto",reduced=false,onCom
   for(const side of SIDES)observer?.observe($(side+"-items"));
   setReduced(reduced);restart(level,mode);
   return {load:restart,setMode,setReduced,getState:()=>state,play,refit:fitAll,
+    refreshAppearance(){if(!busy&&!dead)settled();},
     async playAction(action){
       // Used only for checked notebook replay, never for uncommitted paper.
       if(mode!=="auto"||busy||dead||isSolved(state))return false;
