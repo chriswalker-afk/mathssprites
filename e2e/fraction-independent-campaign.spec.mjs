@@ -1,3 +1,4 @@
+import {playCampaignLevel} from "./campaign-menu-helper.mjs";
 import {openCampaignBoard} from "./campaign-menu-helper.mjs";
 import {test,expect} from "@playwright/test";
 const lab=page=>page.locator("#fraction-game-host");
@@ -9,7 +10,7 @@ async function board(page){
   await openCampaignBoard(page,"fractions","independent");
   await expect(page.locator("#site-levels")).toHaveAttribute("data-active-stage","independent");
 }
-async function open(page,n){await page.locator('[data-level="'+n+'"]').click();await ready(page);}
+async function open(page,n){await playCampaignLevel(page,page.locator('[data-level="'+n+'"]'));await ready(page);}
 async function amount(page,op,kind,n,d,whole=0){
   const host=lab(page);
   await host.locator('[data-fb-op="'+op+'"]').click();await host.locator('[data-fb-kind="'+kind+'"]').click();
