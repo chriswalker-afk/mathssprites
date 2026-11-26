@@ -1,3 +1,4 @@
+import {playCampaignLevel} from "./campaign-menu-helper.mjs";
 import {openCampaignBoard} from "./campaign-menu-helper.mjs";
 import {CAMPAIGN_REGISTRY} from "../src/campaign-registry.mjs";
 import {blankCampaignRecords,campaignStarTotals} from "../src/campaign-records.mjs";
@@ -249,7 +250,7 @@ test("719 to 720: actual final star unlocks the full outfit after replay, with s
   await expect(page.locator("#reward-celebration")).toBeHidden();
   await page.locator("#atelier-back").click();
   await openCampaignBoard(page,"workshop","guided");
-  await page.locator('[data-level="1"]').click();
+  await playCampaignLevel(page,page.locator('[data-level="1"]'));
   await clickWithReferenceMove(page,"#do-both");
   await expect(page.locator("#replay-backdrop")).toBeVisible({timeout:25000});
   await expect(page.locator("#reward-celebration")).toBeHidden();
