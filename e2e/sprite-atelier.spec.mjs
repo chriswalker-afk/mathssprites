@@ -36,6 +36,11 @@ test("the Atelier shows all rewards and allows a locked preview without writing 
   await page.locator("#atelier-filter").selectOption("headwear");
   await expect(visibleRewards(page)).toHaveCount(7);
   await reward(page,"knitted-beanie").click();
+  await expect(page.locator("#atelier-black .sprite-wear-headwear")).toBeVisible();
+  await expect(page.locator("#atelier-white .sprite-wear-headwear")).toBeVisible();
+  await expect(page.locator("#atelier-equip")).toBeDisabled();
+  await page.locator("#atelier-filter").selectOption("movement");
+  await reward(page,"springy-bounce").click();
   await expect(page.locator("#atelier-detail-copy")).toContainText("Artwork coming soon");
   await expect(page.locator("#atelier-equip")).toBeDisabled();
   await page.locator("#atelier-owned-only").check();
@@ -84,14 +89,14 @@ test("previous stars unlock art, students can equip and combine variants, and sa
   const after=await saves(page);delete before[saveKey];delete after[saveKey];
   expect(after).toEqual(before);
 });
-test("earned but unfinished accessories cannot be equipped and a preview is discarded when leaving",async({page})=>{
+test("earned but unfinished effects cannot be equipped and a preview is discarded when leaving",async({page})=>{
   await page.addInitScript(key=>{
     if(!localStorage.getItem(key))localStorage.setItem(key,JSON.stringify({version:1,
-      unlockedRewards:["curious-eyes","extra-fluffy","little-bow-tie"],equipped:{fur:"extra-fluffy"}}));
+      unlockedRewards:["curious-eyes","extra-fluffy","springy-bounce"],equipped:{fur:"extra-fluffy"}}));
   },saveKey);
   await page.goto("/");await open(page);
-  await reward(page,"little-bow-tie").click();
-  await expect(reward(page,"little-bow-tie")).toHaveAttribute("data-status","owned-coming");
+  await reward(page,"springy-bounce").click();
+  await expect(reward(page,"springy-bounce")).toHaveAttribute("data-status","owned-coming");
   await expect(page.locator("#atelier-equip")).toBeDisabled();
   await expect(page.locator("#atelier-detail-copy")).toContainText("Artwork coming soon");
   await reward(page,"sleepy-eyes").click();
@@ -136,4 +141,42 @@ test("navigation returns to the originating board, and desktop and phone have re
     await testInfo.attach("atelier-"+width+".png",{body:await page.screenshot({fullPage:true}),contentType:"image/png"});
     await page.locator("#atelier-back").click();
   }
+});
+
+test("wearables can be tried on, combined, changed and removed in the Atelier without spending stars",async({page})=>{
+  await page.addInitScript(key=>{
+    if(!localStorage.getItem(key)){
+      localStorage.setItem(key,JSON.stringify({version:1,
+        unlockedRewards:["curious-eyes","extra-fluffy","little-bow-tie","knitted-beanie","brass-spectacles","explorer-hat","striped-scarf"],
+        equipped:{eyes:"curious-eyes"}}));
+      localStorage.setItem("mathssprites.motion-preference.v1","reduced");
+    }
+  },saveKey);
+  await page.goto("/");await open(page);
+  const before=await saves(page);
+  for(const [slot,id] of [["headwear","knitted-beanie"],["eyewear","brass-spectacles"],["neckwear","little-bow-tie"]]){
+    await page.locator("#atelier-filter").selectOption(slot);
+    await reward(page,id).click();
+    await expect(page.locator("#atelier-preview")).toHaveAttribute("data-sprite-"+slot,id);
+    await expect(page.locator("#atelier-equip")).toBeEnabled();
+    await page.locator("#atelier-equip").click();
+    await expect(page.locator("body")).toHaveAttribute("data-sprite-"+slot,id);
+  }
+  for(const side of ["black","white"])for(const slot of ["headwear","eyewear","neckwear"])
+    await expect(page.locator("#atelier-"+side+" .sprite-wear-"+slot)).toBeVisible();
+  await page.locator("#atelier-filter").selectOption("headwear");
+  await reward(page,"explorer-hat").click();
+  await page.locator("#atelier-equip").click();
+  await expect(page.locator("body")).toHaveAttribute("data-sprite-headwear","explorer-hat");
+  await expect(page.locator("body")).toHaveAttribute("data-sprite-eyewear","brass-spectacles");
+  await page.locator("#atelier-back").click();
+  await page.reload();
+  await expect(page.locator("#hero-left-items .sprite-wear-headwear").first()).toBeVisible();
+  await open(page);
+  await page.locator("#atelier-filter").selectOption("neckwear");
+  await reward(page,"little-bow-tie").click();
+  await page.locator("#atelier-remove").click();
+  await expect(page.locator("body")).toHaveAttribute("data-sprite-neckwear","original");
+  await expect(page.locator("body")).toHaveAttribute("data-sprite-headwear","explorer-hat");
+  const after=await saves(page);delete before[saveKey];delete after[saveKey];expect(after).toEqual(before);
 });

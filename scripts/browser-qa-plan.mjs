@@ -27,6 +27,7 @@ const ALL=Object.freeze(Object.keys(GROUP_SPECS));
 // group, with deliberately broader routing for cross-feature weight piles.
 const RULES=Object.freeze([
   [/^src\/(?:atelier-model|sprite-atelier)\.(?:mjs|css)$/ ,["navigation","visual","layout"]],
+  [/^src\/sprite-wearables\.css$/ ,["navigation","visual","layout","signed","physics","area"]],
   [/^src\/sprite-cosmetics\.(?:mjs|css)$|^sprite-cosmetic-preview\.html$|^src\/sprite-cosmetic-preview\.mjs$/ ,["visual","layout","signed","physics","area"]],
   [/^src\/cosmetic-(?:catalog|rewards)\.mjs$/,["navigation","notebook","signed","physics","area"]],
   [/^src\/square-(?:workshop|route-search)\.mjs$/ ,["notebook","area","navigation"]],

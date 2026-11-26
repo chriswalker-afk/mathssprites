@@ -3,7 +3,7 @@ import {mkdirSync} from "node:fs";
 const card=(page,id)=>page.locator('[data-study="'+id+'"]');
 const saveKey="mathssprites.cosmetics.v1";
 const profile=(fur="extra-fluffy",eyes="curious-eyes")=>({
-  version:1,unlockedRewards:["curious-eyes","extra-fluffy","sleepy-eyes","spiky-fur"],equipped:{fur,eyes}
+  version:1,unlockedRewards:["curious-eyes","extra-fluffy","sleepy-eyes","spiky-fur","knitted-beanie","brass-spectacles","little-bow-tie"],equipped:{fur,eyes,headwear:"knitted-beanie",eyewear:"brass-spectacles",neckwear:"little-bow-tie"}
 });
 async function seed(page,value=profile()){
   await page.addInitScript(({key,value})=>{
@@ -25,7 +25,7 @@ async function spriteMetrics(actor){
 test("all first cosmetics retain native body dimensions, sign contrast, square corners and exact fragments @quick @smoke",async({page},testInfo)=>{
   await page.goto("/sprite-cosmetic-preview.html");
   const before=await page.evaluate(()=>JSON.stringify(localStorage));
-  await expect(page.locator(".study-card")).toHaveCount(6);
+  await expect(page.locator(".study-card")).toHaveCount(21);
   for(const kind of ["sprite-black","sprite-white","sprite-square"]){
     const baseline=await spriteMetrics(card(page,"original").locator("."+kind));
     for(const name of ["curious","fluffy","sleepy","spiky","combined"]){
@@ -75,6 +75,8 @@ test("saved unlocked appearance reaches home, signed Workshop and fraction shado
   await expect(page.locator("#left-items .sprite-black")).toHaveCount(3);
   await expect(page.locator("#left-items .sprite-white")).toHaveCount(2);
   await expect(page.locator("#left-items .sprite-white .sprite-eyes i").first()).toHaveCSS("height","14px");
+  await expect(page.locator("#left-items .sprite-white .sprite-wear-headwear")).toHaveCount(2);
+  await expect(page.locator("#left-items .sprite-white .sprite-wear-headwear").first()).toBeVisible();
   await expect(page.locator('[data-pair-side="left"][data-pair-type="sprites"]')).toBeVisible();
   await page.locator('[data-pair-side="left"][data-pair-type="sprites"]').click();
   await expect(page.locator("#left-items .sprite-white")).toHaveCount(0,{timeout:15000});
@@ -90,6 +92,11 @@ test("saved unlocked appearance reaches home, signed Workshop and fraction shado
   await expect(lab.locator("#left-items .fs-whole-actor")).toHaveCount(1);
   await expect(lab.locator("#left-items .fs-whole-actor .sprite-eyes i").first()).toHaveCSS("height","14px");
   await expect(lab.locator("#left-items .fs-whole-actor > svg")).toHaveCount(0);
+  for(const slot of ["headwear","eyewear","neckwear"]){
+    await expect(lab).toHaveAttribute("data-sprite-"+slot,profile().equipped[slot]);
+    await expect(lab.locator("#left-items .fs-whole-actor .sprite-wear-"+slot)).toBeVisible();
+  }
+  await expect(lab.locator(".fs-piece .sprite-wear")).toHaveCount(0);
 });
 test("a locked saved selection falls back to the original appearance",async({page})=>{
   await seed(page,{version:1,unlockedRewards:["curious-eyes"],equipped:{fur:"spiky-fur",eyes:"curious-eyes"}});
@@ -112,4 +119,35 @@ test("scoped previews and the live equip event change CSS without replacing the 
   await expect(page.locator("#hero-left-items .sprite")).toHaveAttribute("data-same-actor","true");
   await expect(page.locator("#hero-left-items .sprite-eyes i").first()).toHaveCSS("height","5px");
   await expect(page.locator("body")).toHaveAttribute("data-sprite-fur","spiky-fur");
+});
+
+test("every wearable fits the native body envelope and keeps both signs and the square face intact",async({page},testInfo)=>{
+  await page.goto("/sprite-cosmetic-preview.html");
+  const report=await page.locator(".study-card").evaluateAll(cards=>{
+    const read=actor=>{
+      const body=actor.querySelector(".sprite-body"),b=body.getBoundingClientRect(),style=getComputedStyle(body),token=getComputedStyle(actor);
+      const scale=b.width/parseFloat(style.width);
+      const visible=[...body.querySelectorAll(".sprite-wear")].filter(layer=>getComputedStyle(layer).display!=="none").map(layer=>{
+        const r=layer.getBoundingClientRect(),s=getComputedStyle(layer);
+        return {slot:layer.className,art:s.backgroundImage.startsWith('url("data:image/svg+xml,'),pointer:s.pointerEvents,
+          fits:r.left>=b.left-5*scale-1&&r.right<=b.right+5*scale+1&&r.top>=b.top-5*scale-1&&r.bottom<=b.bottom+5*scale+1};
+      });
+      return {kind:actor.classList.contains("sprite-white")?"white":actor.classList.contains("sprite-square")?"square":"black",
+        width:token.width,height:token.height,bodyWidth:style.width,bodyHeight:style.height,bodyColor:style.backgroundImage,radius:style.borderTopLeftRadius,visible};
+    };
+    return cards.map(c=>({id:c.dataset.study,actors:[...c.querySelectorAll(".study-stage>.sprite")].map(read),
+      fragmentWear:c.querySelectorAll(".fs-assembly .sprite-wear").length}));
+  });
+  const baseline=report.find(c=>c.id==="original");
+  expect(report.length).toBe(21);
+  for(const entry of report.slice(6)){
+    expect(entry.fragmentWear).toBe(0);
+    for(const actor of entry.actors){
+      const reference=baseline.actors.find(a=>a.kind===actor.kind);
+      for(const prop of ["width","height","bodyWidth","bodyHeight","bodyColor","radius"])expect(actor[prop]).toBe(reference[prop]);
+      expect(actor.visible).toHaveLength(entry.id==="wearable-combination"?3:1);
+      expect(actor.visible.every(v=>v.fits&&v.art&&v.pointer==="none"),entry.id+" "+actor.kind).toBe(true);
+    }
+  }
+  await testInfo.attach("combined-wearables.png",{body:await card(page,"wearable-combination").screenshot(),contentType:"image/png"});
 });
