@@ -128,3 +128,12 @@
 
 #site-atelier #atelier-browse{display:none;padding:4px 3px;color:#ead0a0;text-decoration:underline;text-underline-offset:3px;font-size:.78rem}
 @media(max-width:899px){#site-atelier #atelier-browse{display:inline-block;min-height:44px}}
+
+/* Final set remains part of the ordinary collection rather than taking
+   up another page. Compact static thumbnails identify movement rewards. */
+.atelier-reward.atelier-finale{border-color:#b79a61;background:linear-gradient(145deg,#3c493b,#2b3933)}
+.atelier-reward.atelier-finale[aria-pressed="true"]{border-color:#f6dba0}
+.atelier-thumb[data-motion-preview]::after{
+  content:"↟";position:absolute;right:-4px;top:0;color:#d9bd82;font-size:.85rem;line-height:1;pointer-events:none
+}
+.atelier-thumb[data-motion-preview="magical-levitation"]::after{content:"≈"}

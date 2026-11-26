@@ -2,10 +2,10 @@
  * A shadow root isolates legacy app IDs, SVG clip IDs and event listeners.
  * Navigation and progress remain owned by site.mjs, not the physics renderer.
  */
-import {mountFractionBalance} from "./fraction-balance.mjs?v=88";
+import {mountFractionBalance} from "./fraction-balance.mjs?v=89";
 import {mountFractionNotebook} from "./fraction-notebook.mjs";
 import {FRACTION_CAMPAIGN_SCENE} from "./fraction-campaign-scene.mjs";
-import {spriteInventoryMarkup} from "./fraction-sprites.mjs?v=88";
+import {spriteInventoryMarkup} from "./fraction-sprites.mjs?v=89";
 import {weightInventoryMarkup} from "./fraction-weights.mjs";
 import {rational,req,rtext} from "./rational.mjs";
 import {isSolved} from "./engine.mjs";
@@ -13,8 +13,8 @@ import {isSolved} from "./engine.mjs";
 // Keep the separately fetched shadow-root assets on the same presentation
 // revision as their markup, including on a returning student's warm cache.
 // Bump this revision and the site entry/import URLs when presentation assets change.
-import {applySpriteAppearance} from "./sprite-cosmetics.mjs?v=88";
-export const FRACTION_PRESENTATION_REVISION="88";
+import {applySpriteAppearance} from "./sprite-cosmetics.mjs?v=89";
+export const FRACTION_PRESENTATION_REVISION="89";
 const STYLE_FILES=["styles.css","scene-polish.css","fraction-weights.css","fraction-sprites.css","fraction-balance.css","fraction-campaign.css","fraction-notebook.css","sprite-cosmetics.css","sprite-wearables.css","sprite-effects.css"];
 const escape=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const mn=n=>"<mn>"+n+"</mn>";

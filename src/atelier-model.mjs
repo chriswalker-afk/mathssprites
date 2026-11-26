@@ -1,7 +1,7 @@
 /** PR86 — a catalogue view, not a second reward system. Ownership and
  * selections always come from the PR84 store; trying on art is local. */
 import {COSMETIC_REWARDS,COSMETIC_SLOTS,findCosmeticReward,originalAppearance} from "./cosmetic-catalog.mjs";
-import {IMPLEMENTED_SPRITE_COSMETICS} from "./sprite-cosmetics.mjs?v=88";
+import {IMPLEMENTED_SPRITE_COSMETICS} from "./sprite-cosmetics.mjs?v=89";
 
 export const ATELIER_FILTERS=Object.freeze([
   ["all","All rewards"],["fur","Fur"],["eyes","Eyes"],["headwear","Headwear"],
@@ -36,7 +36,12 @@ const descriptions=Object.freeze({
   "stardust-footsteps":"Small pale stars gather at the feet.",
   "golden-landing-sparkles":"A brief golden shimmer as the sprite settles.",
   "celestial-particle-trail":"Tiny blue and violet motes follow the sprite.",
-  "constellation-aura":"A delicate ring of stars around the silhouette."
+  "constellation-aura":"A delicate ring of stars around the silhouette.",
+  "mischievous-eyes":"A cheeky sideways glance with jaunty brows.",
+  "curled-fur":"A tightly curled monochrome fleece.",
+  "distinguished-eyebrows":"Expressive, scholarly brows above clear eyes.",
+  "silky-fur":"Smooth, combed fur with a soft sheen.",
+  "grand-alchemist":"The complete seven-piece brass and midnight-green outfit, with exclusive fur, eyes, headwear, eyewear, neckwear, movement and aura. Equip the whole set, then mix it with other rewards."
 });
 export function rewardArtReady(reward,implemented=IMPLEMENTED_SPRITE_COSMETICS){
   if(!reward)return false;

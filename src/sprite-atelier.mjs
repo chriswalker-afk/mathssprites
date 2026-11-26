@@ -2,9 +2,9 @@
  * preview, scoped independently from the saved appearance on document.body. */
 import {COSMETIC_REWARDS,findCosmeticReward,findCosmeticItem,COSMETIC_SLOTS} from "./cosmetic-catalog.mjs";
 import {spriteCreatureMarkup} from "./square-sprites.mjs?v=88";
-import {applySpriteAppearance} from "./sprite-cosmetics.mjs?v=88";
+import {applySpriteAppearance} from "./sprite-cosmetics.mjs?v=89";
 import {ATELIER_FILTERS,ATELIER_SLOT_LABELS,rewardArtReady,atelierRewardState,
-  atelierCollection,atelierPreview,atelierDescription,equipAtelierReward} from "./atelier-model.mjs?v=88";
+  atelierCollection,atelierPreview,atelierDescription,equipAtelierReward} from "./atelier-model.mjs?v=89";
 
 const icons=Object.freeze({fur:"✳",eyes:"◉",headwear:"⌂",eyewear:"∞",neckwear:"◇",
   movement:"↟",effect:"✦",set:"♛"});
@@ -24,11 +24,13 @@ export function mountSpriteAtelier({root,homeSummary,store}){
   for(const reward of COSMETIC_REWARDS){
     const button=document.createElement("button");button.type="button";
     button.className="atelier-reward";button.dataset.rewardId=reward.id;
+    if(reward.category==="set")button.classList.add("atelier-finale");
     button.setAttribute("aria-pressed","false");
     const thumb=document.createElement("span");thumb.className="atelier-thumb";thumb.setAttribute("aria-hidden","true");
     if(rewardArtReady(reward)){
       applySpriteAppearance(thumb,reward.slot?{[reward.slot]:reward.id}:reward.loadout);
       thumb.innerHTML=spriteCreatureMarkup("atelier-thumbnail",reward.id,"posX",0);
+      if(reward.slot==="movement")thumb.dataset.motionPreview=reward.id;
     }else{
       thumb.classList.add("atelier-thumb-placeholder");thumb.textContent=icons[reward.slot??"set"];
     }
@@ -67,7 +69,9 @@ export function mountSpriteAtelier({root,homeSummary,store}){
     const state=reward?atelierRewardState(snapshot,reward):null;
     applySpriteAppearance(scope,atelierPreview(snapshot,selected));
     const names=COSMETIC_SLOTS.map(slot=>findCosmeticItem(snapshot.equipped[slot])?.name).filter(Boolean);
-    $("atelier-equipped").textContent=names.length?names.join(" · "):"Original appearance";
+    const fullSet=findCosmeticReward("grand-alchemist");
+    const wearingSet=Object.entries(fullSet.loadout).every(([slot,id])=>snapshot.equipped[slot]===id);
+    $("atelier-equipped").textContent=wearingSet?"The Grand Alchemist · complete set":names.length?names.join(" · "):"Original appearance";
     $("atelier-preview-label").textContent=state?.ready&&!state.equipped?"Trying on · not saved":"Equipped appearance";
     $("atelier-detail-title").textContent=reward?reward.name:"Your sprite";
     $("atelier-detail-copy").textContent=!reward?"Select a reward to try it on.":!state.ready?
@@ -76,7 +80,7 @@ export function mountSpriteAtelier({root,homeSummary,store}){
       (state.equipped?"Equipped":state.ready?"Unlocked — ready to equip":"Unlocked — art coming soon"):
       state.starsNeeded+" more stars to unlock · "+reward.stars+" ★";
     $("atelier-equip").disabled=!state?.canEquip;
-    $("atelier-equip").textContent=!reward?"Equip":state.equipped?"Equipped":!state.ready?"Art coming soon":!state.owned?"Locked":"Equip";
+    $("atelier-equip").textContent=!reward?"Equip":state.equipped?"Equipped":!state.ready?"Art coming soon":!state.owned?"Locked":reward.category==="set"?"Equip full set":"Equip";
     $("atelier-remove").hidden=!state?.canRemove;
     $("atelier-cancel-preview").disabled=!reward;
     $("atelier-restore").disabled=!names.length;

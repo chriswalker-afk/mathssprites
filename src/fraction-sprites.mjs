@@ -99,6 +99,18 @@ const spikyFur=Array.from({length:18},(_,i)=>{
   const a=tau*i/18,tip=point(a,31.8),lo=point(a-.10,23),hi=point(a+.10,23);
   return '<path d="M '+xy(lo)+' L '+xy(tip)+' L '+xy(hi)+' Z" fill="'+(i%2?"#41504d":"#182123")+'"/>';
 }).join("");
+const curledFur=Array.from({length:18},(_,i)=>{
+  const a=tau*i/18,p=point(a,27.8);
+  return '<circle cx="'+p[0]+'" cy="'+p[1]+'" r="3.3" fill="none" stroke="#53615b" stroke-width="1.2"/>';
+}).join("");
+const silkyFur=Array.from({length:12},(_,i)=>{
+  const a=tau*i/12,p=point(a,29.5),q=point(a+.13,26.4),r=point(a+.20,30);
+  return '<path d="M '+xy(p)+' Q '+xy(q)+' '+xy(r)+'" fill="none" stroke="#4e5b56" stroke-width="1.25" stroke-linecap="round"/>';
+}).join("");
+const grandFur=Array.from({length:28},(_,i)=>{
+  const a=tau*i/28,p=point(a,30.2),q=point(a-.05,25.9),r=point(a+.07,27.8);
+  return '<path d="M '+xy(q)+' L '+xy(p)+' L '+xy(r)+'" fill="#344440" stroke="#182325" stroke-width=".5"/>';
+}).join("");
 function spriteArt(id){
   return '<defs><radialGradient id="'+id+'-body" cx=".32" cy=".24" r=".8">'+
     '<stop stop-color="#56615c"/><stop offset=".78" stop-color="#121719"/><stop offset="1" stop-color="#0d1315"/></radialGradient>'+
@@ -106,6 +118,10 @@ function spriteArt(id){
     '<g class="fs-fur-original">'+fur+'</g>'+
     '<g class="fs-fur-fluffy" display="none">'+fluffyFur+'</g>'+
     '<g class="fs-fur-spiky" display="none">'+spikyFur+'</g>'+
+    '<g class="fs-fur-curled" display="none">'+curledFur+'</g>'+
+    '<g class="fs-fur-silky" display="none">'+silkyFur+'</g>'+
+    '<g class="fs-fur-grand" display="none">'+grandFur+'</g>'+
+    '<g class="fs-brows" display="none" fill="none" stroke="#e4ddc5" stroke-linecap="round"><path class="fs-brow-left" d="M47 45Q53 42 59 45"/><path class="fs-brow-right" d="M69 45Q75 42 81 45"/></g>'+
     '<path d="M39 74Q45 77 42 82M89 74Q83 77 86 82" fill="none" stroke="#151a1c" stroke-width="2.5" stroke-linecap="round"/>'+
     '<path d="M53 83l-1 7m24-7 1 7" stroke="#0c1011" stroke-width="4.5" stroke-linecap="round"/>'+
     '<ellipse class="fs-eye" cx="53" cy="54" rx="5.3" ry="8" fill="#fff6dd"/>'+

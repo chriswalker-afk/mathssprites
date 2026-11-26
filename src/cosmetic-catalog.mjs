@@ -45,8 +45,8 @@ export const COSMETIC_REWARDS=Object.freeze([
   Object.freeze({id:"grand-alchemist",name:"The Grand Alchemist",stars:720,
     category:"set",slot:null,loadout:grandLoadout})
 ]);
-// The final set grants seven coordinated components as ONE reward. Art and
-// exact styling of these components belong to the later renderer PRs.
+// The final set grants seven coordinated components as ONE reward. Their
+// individual IDs are stable save contracts; no extra star milestones.
 export const COSMETIC_ITEMS=Object.freeze([
   ...COSMETIC_REWARDS.filter(r=>r.slot).map(r=>Object.freeze({
     id:r.id,name:r.name,slot:r.slot,unlockId:r.id
