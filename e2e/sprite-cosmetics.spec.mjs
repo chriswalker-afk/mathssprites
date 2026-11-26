@@ -102,7 +102,7 @@ test("scoped previews and the live equip event change CSS without replacing the 
   await page.goto("/");
   await page.locator("#hero-left-items .sprite").evaluate(el=>el.dataset.sameActor="true");
   const result=await page.evaluate(async()=>{
-    const {cosmeticRewards}=await import("/src/site.mjs?v=85");
+    const {cosmeticRewards}=await import(document.querySelector('script[src*="site.mjs"]').src);
     const before=cosmeticRewards.getSnapshot();
     cosmeticRewards.equip("eyes","sleepy-eyes");
     cosmeticRewards.equip("fur","spiky-fur");

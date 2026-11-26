@@ -1,0 +1,12 @@
+# PR86 — The Sprite Atelier
+
+A real student-facing room accessible from the foyer button (with cumulative stars) and main navigation. The brass and dark-green fitting room uses the existing native black and white sprite actors. The reward shelf contains all 29 milestones, sorted by stars, with category and unlocked-only filters. Global star total, ownership count, and next milestone come from the PR84 store. Only the shelf scrolls on ordinary laptops; phones use a stacked layout. Returning to the board preserves the selected world and stage.
+
+Clicking an implemented item tries it on both signs without changing document.body or storage. Preview overlays just that slot on the currently equipped appearance; clear preview or leave to discard it. Explicit Equip requires real ownership AND implemented artwork, uses the reward store and updates the existing live appearance subscriber. Equip multiple slots separately to combine. Remove a selected equipped item or Restore original; neither action removes stars or entitlements. Saved selections persist across reloads.
+
+The four PR85 cosmetics have native art thumbnails. Later cosmetics are visible with their actual thresholds and a category placeholder, explicitly marked art coming soon even if already unlocked. Never offer fake previews or equip unfinished art. The final set is one milestone and becomes ready only once all its component art is implemented. No new mathematics, stars, storage schema, motion modes or celebrations.
+
+New pure model tests and browser tests cover ownership, art availability, locked previews, explicit equip, combination, reload, removing and restoring, preserving campaign saves, focus, back/escape, board return and phone/desktop layout. Browser QA pending. PR85's old version-specific dynamic import test now discovers the site's actual entry URL, avoiding duplicate initialization after version bumps.
+
+## Next PR87 — Headwear and accessories
+Implement the wearable layers (bow tie, knitted beanie, spectacles, explorer's hat, goggles, scarf, top hat, monocle, cap, alchemist/wizard hats, medal and crown). Keep native sign and square silhouette visible, use compact art boundaries for baskets and crowded rooms, and ensure the Atelier recognizes implemented artwork from the renderer's shared allow-list. No new star milestones. PR88 will address movement/effects and unlock celebrations; PR89 cross-world polish.
