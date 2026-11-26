@@ -1,3 +1,4 @@
+import {openCampaignBoard} from "./campaign-menu-helper.mjs";
 import {test,expect} from "@playwright/test";
 
 test.beforeEach(async({page})=>{
@@ -5,8 +6,7 @@ test.beforeEach(async({page})=>{
   await page.goto("/");
 });
 async function openApprentice(page,level=1){
-  await page.locator("#home-choose-level").click();
-  await page.locator('[data-map-stage="notebook"]').click();
+  await openCampaignBoard(page,"workshop","notebook");
   await expect(page.locator("#site-levels")).toHaveAttribute("data-active-stage","notebook");
   await page.locator('[data-level="'+level+'"]').click();
   await expect(page.locator("#notebook-workspace")).toBeVisible();

@@ -1,3 +1,4 @@
+import {openCampaignBoard} from "./campaign-menu-helper.mjs";
 import {test,expect} from "@playwright/test";
 
 test.beforeEach(async({page})=>{
@@ -5,9 +6,7 @@ test.beforeEach(async({page})=>{
   await page.goto("/");
 });
 async function openGuided(page,number){
-  await page.locator("#home-choose-level").click();
-  await page.locator('[data-map-world="workshop"]').click();
-  await page.locator('[data-map-stage="guided"]').click();
+  await openCampaignBoard(page,"workshop","guided");
   await page.locator('[data-level="'+number+'"]').click();
   await expect(page.locator("#chapter-status")).toContainText(
     "WORLD 1 · STAGE 1 · LEVEL "+number);
@@ -30,7 +29,7 @@ async function pickRemove(page,kind,n){
 
 test("six Guided chapters include four playable crate levels with neutral, non-symbolic scenes @quick @smoke",async({page})=>{
   test.setTimeout(65000);
-  await page.locator("#home-choose-level").click();
+  await openCampaignBoard(page);
   await expect(page.locator(".chapter-group")).toHaveCount(6);
   await expect(page.locator(".level-tile")).toHaveCount(24);
   await expect(page.locator(".chapter-illustration")).toHaveCount(6);
@@ -123,7 +122,7 @@ test("old 20-level Guided completion stays recorded but new chapter is not false
   await page.evaluate(value=>localStorage.setItem("mathssprites.progress.v1",
     JSON.stringify(value)),legacy);
   await page.reload();
-  await page.locator("#home-choose-level").click();
+  await openCampaignBoard(page);
   await expect(page.locator("#site-levels")).toHaveAttribute("data-active-world","workshop");
   await expect(page.locator("#site-levels")).toHaveAttribute("data-active-stage","guided");
   await expect(page.locator("#world1-progress-number")).toHaveText("20 of 24 complete");

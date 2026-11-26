@@ -1,3 +1,4 @@
+import {openCampaignBoard,chooseCampaignStage} from "./campaign-menu-helper.mjs";
 import {test,expect} from "@playwright/test";
 
 test.beforeEach(async({page})=>{
@@ -5,9 +6,7 @@ test.beforeEach(async({page})=>{
   await page.goto("/");
 });
 async function open(page,stage,level){
-  await page.locator("#home-choose-level").click();
-  await page.locator('[data-map-world="opposites"]').click();
-  await page.locator('[data-map-stage="'+stage+'"]').click();
+  await openCampaignBoard(page,"opposites",stage);
   await page.locator('[data-level="'+level+'"]').click();
   await expect(page.locator("#chapter-status"))
     .toContainText("LEVEL "+String(level).padStart(2,"0"));
@@ -93,12 +92,10 @@ test("World 2 signed Apprentice 14 keeps 2x−x inside the brackets until the st
 
 test("World 2 Apprentice 15 offers a RIGHT expression expansion; new stages keep four-level chapter blocks @quick",async({page})=>{
   await page.setViewportSize({width:1092,height:540});
-  await page.locator("#home-choose-level").click();
-  await page.locator('[data-map-world="opposites"]').click();
-  await page.locator('[data-map-stage="independent"]').click();
+  await openCampaignBoard(page,"opposites","independent");
   await expect(page.locator(".chapter-group")).toHaveCount(5);
   await expect(page.locator(".level-tile")).toHaveCount(20);
-  await page.locator('[data-map-stage="notebook"]').click();
+  await chooseCampaignStage(page,"notebook");
   await expect(page.locator(".chapter-group")).toHaveCount(4);
   await expect(page.locator(".level-tile")).toHaveCount(16);
   await page.locator('[data-level="15"]').click();

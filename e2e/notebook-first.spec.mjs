@@ -1,3 +1,4 @@
+import {openCampaignBoard,launchHomeOrFirst} from "./campaign-menu-helper.mjs";
 import {test,expect} from "@playwright/test";
 
 test.beforeEach(async({page})=>{
@@ -31,8 +32,8 @@ test("teacher notebook sandbox earns no campaign credit after stages are opened"
   await expect(page.locator("#notebook-workspace")).toContainText("No levels or progress earned");
   await page.locator("#game-levels").click();
   await expect(page.locator("#site-settings")).toBeVisible();
-  await page.locator('.site-nav-links [data-screen="levels"]').click();
-  await expect(page.locator('[data-map-stage="notebook"]')).toBeEnabled();
+  await openCampaignBoard(page);
+  await expect(page.locator('[data-stage-open="notebook"]')).toBeEnabled();
   await expect(page.locator('#site-levels [data-screen="workshop"]')).toBeVisible();
   await expect(page.locator("#world1-progress-number")).toHaveText("0 of 24 complete");
 });
@@ -129,7 +130,7 @@ test("maths keypad, keyboard entry and phone sizing all work",async({page})=>{
 });
 
 test("normal guided and independent campaigns remain unaffected by the notebook editor",async({page})=>{
-  await page.locator("#home-play").click();
+  await launchHomeOrFirst(page);
   await expect(page.locator("#scene")).toBeVisible();
   await expect(page.locator("#notebook-workspace")).toBeHidden();
   await expect(page.locator("#do-both")).toBeVisible();

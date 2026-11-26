@@ -57,5 +57,7 @@ test("campaign locks each stage mode and QA previews retain both methods",()=>{
   assert.match(html,/id="mode-select"/);
   assert.match(site,/name === "stages"/);
   assert.match(html,/id="world1-stage-cards"/);
-  assert.match(html,/id="world1-workshop"/);
+  assert.match(html,/id="site-workshop"/);
+  assert.match(html,/id="site-worlds"/);
+  assert.doesNotMatch(html,/id="world1-workshop"/);
 });

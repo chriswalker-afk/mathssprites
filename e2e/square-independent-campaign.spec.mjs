@@ -1,3 +1,4 @@
+import {openCampaignBoard} from "./campaign-menu-helper.mjs";
 import {test,expect} from "@playwright/test";
 import {mkdirSync} from "node:fs";
 const items=(p,side="left")=>p.locator("#"+side+"-items");
@@ -10,9 +11,7 @@ async function board(p){
   await p.emulateMedia({reducedMotion:"reduce"});
   await p.addInitScript(()=>localStorage.setItem("mathssprites.motion-preference.v1","reduced"));
   await p.goto("/");
-  await p.locator("#home-choose-level").click();
-  await p.locator('[data-map-world="squares"]').click();
-  await p.locator('[data-map-stage="independent"]').click();
+  await openCampaignBoard(p,"squares","independent");
   await expect(p.locator("#site-levels")).toHaveAttribute("data-active-world","squares");
   await expect(p.locator("#site-levels")).toHaveAttribute("data-active-stage","independent");
 }
@@ -65,8 +64,8 @@ test("all twenty Independent Squares levels are available immediately, with sepa
   await expect(page.locator(".level-tile")).toHaveCount(20);
   await expect(page.locator(".level-tile:disabled")).toHaveCount(0);
   await expect(page.locator("#level-progress")).toContainText("0 / 60 stars");
-  await expect(page.locator('[data-map-stage="guided"]')).toBeEnabled();
-  await expect(page.locator('[data-map-stage="notebook"]')).toBeEnabled();
+  await expect(page.locator('[data-stage-open="guided"]')).toBeEnabled();
+  await expect(page.locator('[data-stage-open="notebook"]')).toBeEnabled();
   await open(page,20);
   await expect(page.locator("#campaign-hand-title")).toHaveText("Your Turn");
   await expect(page.locator("#do-both")).toBeHidden();
@@ -112,7 +111,7 @@ test("right-first square construction needs a new second selection; two visits e
   await expect(page.locator("#chapter-status")).toContainText("STAGE 2 · LEVEL 02 / 20");
   await neutral(page);
   await page.locator("#game-home").click();await page.reload();
-  await expect(page.locator("#home-play")).toContainText("Continue Independent Squares · Level 2");
+  await expect(page.locator("#home-play")).toContainText("Continue: Squares · Independent · Level 2");
   await page.locator("#home-play").click();
   await expect(page.locator("#chapter-status")).toContainText("STAGE 2 · LEVEL 02 / 20");
   expect(errors).toEqual([]);

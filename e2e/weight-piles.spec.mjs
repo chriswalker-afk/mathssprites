@@ -1,3 +1,4 @@
+import {openCampaignBoard} from "./campaign-menu-helper.mjs";
 import {test,expect} from "@playwright/test";
 
 /**
@@ -11,9 +12,7 @@ test.beforeEach(async({page})=>{
 });
 
 async function openGuided(page,level){
-  await page.locator("#home-choose-level").click();
-  await page.locator('[data-map-world="workshop"]').click();
-  await page.locator('[data-map-stage="guided"]').click();
+  await openCampaignBoard(page,"workshop","guided");
   await page.locator('#level-sections [data-level="'+level+'"]').click();
   await expect(page.locator("#game-shell")).toBeVisible();
 }

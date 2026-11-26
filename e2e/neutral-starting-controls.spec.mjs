@@ -1,3 +1,4 @@
+import {openCampaignBoard,chooseCampaignWorld,chooseCampaignStage,launchHomeOrFirst} from "./campaign-menu-helper.mjs";
 import {test,expect} from "@playwright/test";
 
 /** PR45 student-facing contract: no hidden answer in the selected controls. */
@@ -17,7 +18,7 @@ test.beforeEach(async({page})=>{
   await page.goto("/");
 });
 test("new Guided level, reset and revisiting never reveal the authored move @quick",async({page})=>{
-  await page.locator("#home-play").click();
+  await launchHomeOrFirst(page);
   await expectNeutral(page);
   await page.locator('[data-operation="remove"]').click();
   await expect(page.locator("#object-picker")).toBeVisible();
@@ -39,11 +40,11 @@ test("new Guided level, reset and revisiting never reveal the authored move @qui
   await page.locator('[data-level="3"]').click();
   await expectNeutral(page);
   await page.reload();
-  await page.locator("#home-play").click();
+  await launchHomeOrFirst(page);
   await expectNeutral(page);
 });
 test("division is not preselected and requires student-selected group count",async({page})=>{
-  await page.locator("#home-choose-level").click();
+  await openCampaignBoard(page);
   await page.locator('[data-level="6"]').click();
   await expectNeutral(page);
   await page.locator('[data-operation="divide"]').click();
@@ -63,8 +64,7 @@ test("division is not preselected and requires student-selected group count",asy
   await expect(page.locator("#amount-value")).toHaveText("2");
 });
 test("Independent and Opposite Chambers do not highlight solution choices",async({page})=>{
-  await page.locator("#home-choose-level").click();
-  await page.locator('[data-map-stage="independent"]').click();
+  await openCampaignBoard(page,"workshop","independent");
   await page.locator('[data-level="1"]').click();
   await expectNeutral(page);
   await expect(page.locator("#left-action")).toBeDisabled();
@@ -74,8 +74,8 @@ test("Independent and Opposite Chambers do not highlight solution choices",async
   await page.locator("#amount-up").click();
   await expect(page.locator("#left-action")).toBeEnabled();
   await page.locator("#game-levels").click();
-  await page.locator('[data-map-world="opposites"]').click();
-  await page.locator('[data-map-stage="guided"]').click();
+  await chooseCampaignWorld(page,"opposites");
+  await chooseCampaignStage(page,"guided");
   await page.locator('[data-level="1"]').click();
   await expectNeutral(page);
   await expect(page.locator('[data-kind="negOne"]')).toBeHidden();
@@ -85,7 +85,7 @@ test("Independent and Opposite Chambers do not highlight solution choices",async
   await expect(page.locator("[data-operation].selected")).toHaveCount(1);
 });
 test("sealed crates do not suggest Divide or Open as the first move",async({page})=>{
-  await page.locator("#home-choose-level").click();
+  await openCampaignBoard(page);
   await page.locator('[data-level="19"]').click();
   await expectNeutral(page);
   await expect(page.locator("#crate-controls")).toBeVisible();

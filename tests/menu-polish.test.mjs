@@ -29,15 +29,18 @@ test("stage guidance is data-first, then method-based for later worlds",()=>{
   assert.match(briefStageIntro({method:"notebook"}),/sprites/i);
   assert.equal(briefStageIntro({method:"new-mode"}),"Choose an experiment.");
 });
-test("all 48 existing campaign levels remain registered and open",()=>{
+test("all 60 World 1 campaign levels remain registered and open",()=>{
   const world=CAMPAIGN_REGISTRY.find(w=>w.id==="workshop");
   assert.deepEqual(world.stages.map(s=>s.levels.length),[24,20,16]);
   assert.ok(world.stages.every(s=>s.available&&s.levels.every(l=>l.available)));
   assert.equal(CAMPAIGN_REGISTRY.filter(w=>!w.available).length,0);
 });
-test("the portal has optional help, rules and star details without extra required menu steps",()=>{
+test("the portal has optional help, rules and star details alongside the explicit campaign steps",()=>{
   assert.match(html,/id="home-title"[^>]*>How much does the sprite weigh\?/);
-  assert.match(html,/id="home-stage-shortcuts"/);
+  assert.match(html,/id="home-choose-level"/);
+  assert.match(html,/id="site-worlds"/);
+  assert.match(html,/id="site-stages"/);
+  assert.doesNotMatch(html,/id="map-(world|stage)-tabs"/);
   assert.match(html,/id="level-star-legend" class="level-star-legend"><summary>/);
   assert.match(html,/id="help-stages"/);
   assert.match(html,/id="help-experiments"/);

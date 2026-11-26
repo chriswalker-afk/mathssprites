@@ -1,3 +1,4 @@
+import {openCampaignBoard,launchHomeOrFirst} from "./campaign-menu-helper.mjs";
 import {test,expect} from "@playwright/test";
 
 const hero=page=>page.locator("#home-hero-art");
@@ -19,9 +20,9 @@ test("home leads with the exact question and a functional animation control",asy
   await expect(hero(page)).toHaveAttribute("data-playback","playing");
   await expect(page.locator("#hero-playback")).toHaveText("Pause animation");
   await expect(page.locator("#hero-playback")).toBeVisible();
-  await expect(page.locator("#home-play")).toBeVisible();
-  await expect(page.getByRole("button",{name:"Choose a world and level"})).toBeVisible();
-  await expect(page.locator(".portal-feature")).toHaveCount(3);
+  await expect(page.locator("#home-choose-level")).toBeVisible();
+  await expect(page.getByRole("button",{name:"Choose a world",exact:true})).toBeVisible();
+  await expect(page.locator("#home-play")).toBeHidden();
 });
 
 test("physical beam lowers the heavier pan and settles level",async({page})=>{
@@ -180,7 +181,7 @@ test("navigation stops the loop and preserves home continuation/progress",async(
     "mathssprites.independent-progress.v1",
     "mathssprites.apprentice-progress.v1"
   ].map(key=>[key,localStorage.getItem(key)])));
-  await page.locator('.site-nav-links [data-screen="levels"]').click();
+  await openCampaignBoard(page);
   await expect(hero(page)).toHaveAttribute("data-playback","inactive");
   const state=await hero(page).getAttribute("data-scene");
   await page.waitForTimeout(650);
@@ -193,7 +194,7 @@ test("navigation stops the loop and preserves home continuation/progress",async(
     "mathssprites.apprentice-progress.v1"
   ].map(key=>[key,localStorage.getItem(key)])));
   expect(after).toEqual(before);
-  await page.locator("#home-play").click();
+  await launchHomeOrFirst(page);
   await expect(page.locator("#game-shell")).toBeVisible();
   await expect(hero(page)).toHaveAttribute("data-playback","inactive");
 });
@@ -203,7 +204,7 @@ test("desktop tablet and phone layouts keep the heading, both pans and playback 
     await page.setViewportSize({width,height:900});
     await expect(page.locator("#home-title")).toBeVisible();
     const measures=await page.evaluate(()=>{
-      const keys=["#home-title","#hero-left-items","#hero-right-items","#hero-playback","#home-play"];
+      const keys=["#home-title","#hero-left-items","#hero-right-items","#hero-playback","#home-choose-level"];
       const rects=keys.map(selector=>{
         const box=document.querySelector(selector).getBoundingClientRect();
         return {selector,left:box.left,right:box.right,width:box.width};

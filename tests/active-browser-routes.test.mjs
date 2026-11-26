@@ -9,14 +9,9 @@ import {readFileSync,readdirSync} from "node:fs";
 
 const specsDir=new URL("../e2e/",import.meta.url);
 const retired=[
-  /data-screen=["']worlds["']/,
-  /#site-worlds\b/,
-  /#site-stages\b/,
   /Explore stages/,
   /Choose Stage [123] levels/,
-  /#world1-workshop\b/,
-  /data-world-stages=/,
-  /data-stage-open=/
+  /#world1-workshop\\b/
 ];
 test("browser specs do not navigate through retired multi-screen menus",()=>{
   const files=readdirSync(specsDir).filter(n=>n.endsWith(".spec.mjs"));
@@ -29,7 +24,7 @@ test("browser specs do not navigate through retired multi-screen menus",()=>{
 });
 test("critical QA remains available for level selection, progress and stage-specific behaviour",()=>{
   const checks={
-    "menu-polish.spec.mjs":["#map-world-tabs","#map-stage-tabs","#world1-progress-number"],
+    "menu-polish.spec.mjs":["#world-cards [data-world-stages]","#site-stages","#world1-progress-number"],
     "site-navigation.spec.mjs":["#world1-finale","#world1-progress-bar","#object-picker"],
     "star-ratings.spec.mjs":["#replay-star-summary","mathssprites.stars.v1"],
     "viewport-fit.spec.mjs":["#amount-control","noDocumentScroll"],

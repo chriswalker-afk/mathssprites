@@ -1,3 +1,4 @@
+import {launchHomeOrFirst} from "./campaign-menu-helper.mjs";
 import {test,expect} from "@playwright/test";
 
 async function frameMetrics(page){
@@ -38,7 +39,7 @@ for(const size of [
   test("compact title bar and uncluttered scale at "+size.width+"x"+size.height+" @smoke",async({page})=>{
     await page.setViewportSize(size);
     await page.goto("/");
-    await page.locator("#home-play").click();
+    await launchHomeOrFirst(page);
     if(await page.locator("#apprentice-guide").isVisible())
       await page.locator("#guide-skip").click();
     const icon=page.locator("#game-brand-home");

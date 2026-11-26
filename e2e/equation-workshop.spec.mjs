@@ -1,3 +1,4 @@
+import {openCampaignBoard} from "./campaign-menu-helper.mjs";
 import {clickWithReferenceMove} from "./reference-move-helper.mjs";
 import {test,expect} from "@playwright/test";
 
@@ -6,7 +7,7 @@ test.beforeEach(async({page})=>{
   await page.goto("/");
 });
 async function openBuilder(page){
-  await page.locator("#home-choose-level").click();
+  await openCampaignBoard(page);
   await page.locator('#site-levels [data-screen="workshop"]').click();
   await expect(page.locator("#site-workshop")).toBeVisible();
 }
@@ -169,8 +170,7 @@ test("custom equation builder is accessible on a narrow phone and from a deep li
 test("World 2 free play opens from the experiment board, and renders signed objects without progress writes @quick @smoke",async({page})=>{
   await page.addInitScript(()=>localStorage.setItem("mathssprites.motion-preference.v1","reduced"));
   await page.reload();
-  await page.locator("#home-choose-level").click();
-  await page.locator('[data-map-world="opposites"]').click();
+  await openCampaignBoard(page,"opposites");
   await page.locator('#site-levels [data-screen="workshop"]').click();
   await expect(page.locator("#workshop-quantity-mode")).toHaveValue("signed");
   await expect(page.locator("#workshop-lesson-copy")).toContainText("balloon");

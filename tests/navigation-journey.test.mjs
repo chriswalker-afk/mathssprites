@@ -68,14 +68,16 @@ test("arrow navigation follows the phone's two-column tile layout",()=>{
   assert.equal(spatialTileIndex(grid,2,"ArrowDown"),4);
   assert.equal(spatialTileIndex(grid,2,"Space"),2);
 });
-test("journey controls and accessible status exist with no extra menu screen",()=>{
+test("journey controls and accessible status exist at each explicit menu step",()=>{
   assert.match(html,/id="board-continue"/);
   assert.match(html,/id="board-selection-status".*role="status"/);
-  assert.match(html,/id="map-stage-tabs".*aria-describedby="board-keyboard-note"/);
+  assert.match(html,/id="level-sections".*aria-describedby="board-keyboard-note"/);
+  assert.match(html,/class="campaign-path"/);
   assert.match(html,/id="help-return" data-support-return/);
   assert.match(html,/id="settings-return" data-support-return/);
   assert.match(html,/navigation-journey\.css\?v=35/);
-  assert.match(site,/function focusBoardSelection/);
+  assert.match(site,/campaignMenuScreen\(/);
+  assert.match(site,/selectedStage=null/);
   assert.match(site,/spatialTileIndex\(/);
   assert.match(site,/currentScreen==="levels"/);
   assert.match(site,/function announceBoardSelection/);

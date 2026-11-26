@@ -1,3 +1,4 @@
+import {openCampaignBoard} from "../e2e/campaign-menu-helper.mjs";
 /** Verify the currently published cosmetic release, not a localhost build
  * or a diagnostic's stale response. No real learner data is accessed. */
 import {chromium,expect} from "@playwright/test";
@@ -14,7 +15,7 @@ const revision=process.env.GITHUB_SHA||"manual";
 const result={url,revision,checks:[],errors:[]};
 const note=message=>{result.checks.push(message);console.log(message);};
 const read=path=>readFileSync(new URL("../"+path,import.meta.url),"utf8");
-const files=[...IMPLEMENTED_CHAMBER_THEMES.map(id=>"assets/chambers/"+id+".svg"),"src/chamber-themes.mjs","src/chamber-themes.css","index.html","src/site.mjs","src/laboratory-cosmetics.mjs","src/weight-materials.css","src/weight-effects.css","src/weight-shapes.css","src/weight-shapes.mjs","src/fraction-weights.mjs","src/fraction-choreography.mjs","src/cosmetic-catalog.mjs","src/cosmetic-rewards.mjs","src/atelier-model.mjs",
+const files=[...IMPLEMENTED_CHAMBER_THEMES.map(id=>"assets/chambers/"+id+".svg"),"src/chamber-themes.mjs","src/chamber-themes.css","index.html","src/site.mjs","src/campaign-path.css","src/navigation-journey.mjs","src/laboratory-cosmetics.mjs","src/weight-materials.css","src/weight-effects.css","src/weight-shapes.css","src/weight-shapes.mjs","src/fraction-weights.mjs","src/fraction-choreography.mjs","src/cosmetic-catalog.mjs","src/cosmetic-rewards.mjs","src/atelier-model.mjs",
   "src/sprite-atelier.mjs","src/sprite-atelier.css","src/sprite-cosmetics.mjs","src/sprite-cosmetics.css",
   "src/sprite-wearables.css","src/sprite-effects.css","src/reward-celebration.mjs","src/reward-celebration.css",
   "src/fraction-campaign.mjs","src/fraction-sprites.mjs","src/fraction-balance.mjs","src/square-sprites.mjs",
@@ -100,9 +101,7 @@ try{
   await shot(page,"locked-preview");
   note("Live 57-reward Atelier; locked 720-star outfit can be tried on without writes");
   await page.locator("#atelier-back").click();
-  await page.locator("#home-choose-level").click();
-  await page.locator('[data-map-world="workshop"]').click();
-  await page.locator('[data-map-stage="guided"]').click();
+  await openCampaignBoard(page,"workshop","guided");
   await page.locator('[data-level="1"]').click();
   await clickWithReferenceMove(page,"#do-both");
   await expect(page.locator("#replay-star-summary")).toContainText("3 stars",{timeout:25000});

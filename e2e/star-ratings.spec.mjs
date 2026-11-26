@@ -1,14 +1,15 @@
+import {openCampaignBoard,chooseCampaignStage} from "./campaign-menu-helper.mjs";
 import {clickWithReferenceMove} from "./reference-move-helper.mjs";
 import {test,expect} from "@playwright/test";
 
 async function stages(page){
-  await page.locator('.site-nav-links [data-screen="levels"]').click();
+  await openCampaignBoard(page);
   await expect(page.locator("#site-levels")).toBeVisible();
   await expect(page.locator("#site-levels")).toHaveAttribute("data-active-world","workshop");
 }
 async function openLevel(page,stage,number){
   await stages(page);
-  await page.locator('[data-map-stage="'+stage+'"]').click();
+  await chooseCampaignStage(page,stage);
   await expect(page.locator("#site-levels")).toHaveAttribute("data-active-stage",stage);
   await page.locator('[data-level="'+number+'"]').click();
 }
@@ -34,8 +35,8 @@ test.beforeEach(async({page})=>{
 test("all 60 World 1 levels remain selectable with unrated stars and the new Guided Squares world available @quick @smoke",async({page})=>{
   await stages(page);
   for(const [stage,n] of [["guided",24],["independent",20],["notebook",16]]){
-    await expect(page.locator('[data-map-stage="'+stage+'"]')).toBeEnabled();
-    await page.locator('[data-map-stage="'+stage+'"]').click();
+    await expect(page.locator('[data-stage-open="'+stage+'"]')).toBeEnabled();
+    await chooseCampaignStage(page,stage);
     await expect(page.locator("#site-levels")).toHaveAttribute("data-active-stage",stage);
     await expect(page.locator(".level-tile")).toHaveCount(n);
     await expect(page.locator(".level-tile:disabled")).toHaveCount(0);
@@ -44,8 +45,8 @@ test("all 60 World 1 levels remain selectable with unrated stars and the new Gui
     await expect(page.locator("#world1-progress-number")).toHaveText("0 of "+n+" complete");
   }
   await expect(page.locator('#site-levels [data-screen="workshop"]')).toBeVisible();
-  await expect(page.locator('[data-map-world="fractions"]')).toBeEnabled();
-  await expect(page.locator('[data-map-world="squares"]')).toBeEnabled();
+  await expect(page.locator('[data-world-stages="fractions"]')).toBeEnabled();
+  await expect(page.locator('[data-world-stages="squares"]')).toBeEnabled();
 });
 
 test("two-step solution earns two stars; replaying optimally upgrades the best rating @smoke",async({page})=>{
@@ -80,7 +81,7 @@ test("two-step solution earns two stars; replaying optimally upgrades the best r
   await expect(page.locator("#reward-celebration")).toBeHidden();
   expect(await page.evaluate(()=>JSON.parse(localStorage.getItem("mathssprites.cosmetics.v1")))).toEqual(cosmetic);
   await stages(page);
-  await page.locator('[data-map-stage="guided"]').click();
+  await chooseCampaignStage(page,"guided");
   await expect(page.locator('[data-level="1"] .tile-stars')).toHaveText("★★★");
   await expect(page.locator("#level-progress")).toContainText("3 / 72 stars");
 });
@@ -121,7 +122,7 @@ test("legacy completion is preserved without inventing a three-star rating",asyn
   await page.evaluate(value=>localStorage.setItem("mathssprites.progress.v1",JSON.stringify(value)),original);
   await page.reload();
   await stages(page);
-  await page.locator('[data-map-stage="guided"]').click();
+  await chooseCampaignStage(page,"guided");
   await expect(page.locator('[data-level="1"]')).toContainText("Completed");
   await expect(page.locator('[data-level="1"] .tile-stars')).toHaveText("☆☆☆");
   await expect(page.locator('[data-level="2"]')).toContainText("replay for stars");

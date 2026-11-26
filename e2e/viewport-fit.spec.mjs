@@ -1,3 +1,4 @@
+import {openCampaignBoard,chooseCampaignWorld,chooseCampaignStage,launchHomeOrFirst} from "./campaign-menu-helper.mjs";
 import {test,expect} from "@playwright/test";
 
 const laptopViews=[
@@ -24,11 +25,9 @@ async function noDocumentScroll(page){
   expect(m.scrollWidth,"No sideways page overflow").toBeLessThanOrEqual(m.width+3);
 }
 async function openLevels(page,stage=1){
-  await page.locator('.site-nav-links [data-screen="levels"]').click();
+  await openCampaignBoard(page,"workshop",{1:"guided",2:"independent",3:"notebook"}[stage]);
   await expect(page.locator("#site-levels")).toBeVisible();
-  await expect(page.locator("#map-world-tabs button")).toHaveCount(4);
-  await page.locator('[data-map-world="workshop"]').click();
-  await page.locator('[data-map-stage="'+({1:"guided",2:"independent",3:"notebook"}[stage])+'"]').click();
+  await expect(page.locator("#world-cards [data-world-stages]")).toHaveCount(4);
   await expect(page.locator("#site-levels")).toHaveAttribute("data-active-stage",
     {1:"guided",2:"independent",3:"notebook"}[stage]);
 }
@@ -47,16 +46,16 @@ for(const size of laptopViews){
     test.setTimeout(60000);
     await page.setViewportSize(size);
     await page.goto("/");
-    for(const selector of ["#home-play","#home-hero-art","#site-home .portal-features"])
+    for(const selector of ["#home-choose-level","#home-hero-art","#site-home .landing-actions"])
       await inView(page,selector);
     await noDocumentScroll(page);
     await page.screenshot({path:"artifacts/pr59-home-"+size.width+"x"+size.height+".png"});
 
     await openLevels(page,1);
-    await expect(page.locator('[data-map-world="opposites"]')).toBeEnabled();
-    await expect(page.locator('[data-map-world="fractions"]')).toBeEnabled();
-    await expect(page.locator('[data-map-world="squares"]')).toBeEnabled();
-    await expect(page.locator("#map-stage-tabs button")).toHaveCount(3);
+    await expect(page.locator('[data-world-stages="opposites"]')).toBeEnabled();
+    await expect(page.locator('[data-world-stages="fractions"]')).toBeEnabled();
+    await expect(page.locator('[data-world-stages="squares"]')).toBeEnabled();
+    await expect(page.locator("#world1-stage-cards [data-stage-open]")).toHaveCount(3);
     await expect(page.locator(".level-tile")).toHaveCount(24);
     await expect(page.locator(".chapter-group")).toHaveCount(6);
     await checkBothChapterEnds(page);
@@ -66,9 +65,9 @@ for(const size of laptopViews){
     expect(columns).toBe(3);
     await page.screenshot({path:"artifacts/pr59-board-"+size.width+"x"+size.height+".png"});
 
-    await page.locator('[data-map-stage="independent"]').click();
+    await chooseCampaignStage(page,"independent");
     await expect(page.locator(".level-tile")).toHaveCount(20);
-    await page.locator('[data-map-stage="notebook"]').click();
+    await chooseCampaignStage(page,"notebook");
     await expect(page.locator(".level-tile")).toHaveCount(16);
     await noDocumentScroll(page);
     await page.locator('#site-levels [data-screen="workshop"]').click();
@@ -82,7 +81,7 @@ for(const size of laptopViews){
 test("the balance and progressively disclosed operation controls fit a laptop @quick @smoke",async({page})=>{
   await page.setViewportSize({width:1024,height:720});
   await page.goto("/");
-  await page.locator("#home-play").click();
+  await launchHomeOrFirst(page);
   await expect(page.locator("#game-shell")).toBeVisible();
   await inView(page,"#scene");
   await inView(page,".experiment-controls");
@@ -125,10 +124,10 @@ test("home CTA resumes the last opened stage, not whichever was completed @smoke
   await page.locator('[data-level="7"]').click();
   await expect(page.locator("#chapter-status")).toContainText("STAGE 2");
   await page.locator("#game-home").click();
-  await expect(page.locator("#home-play")).toContainText("Continue Stage 2 · Level 7");
+  await expect(page.locator("#home-play")).toContainText("Continue: Balance · Independent · Level 7");
   await page.reload();
-  await expect(page.locator("#home-play")).toContainText("Continue Stage 2 · Level 7");
-  await page.locator("#home-play").click();
+  await expect(page.locator("#home-play")).toContainText("Continue: Balance · Independent · Level 7");
+  await launchHomeOrFirst(page);
   await expect(page.locator("#chapter-status")).toContainText("STAGE 2");
   await expect(page.locator("#level-title")).toHaveText("Four-room rhythm");
   await page.locator("#game-home").click();
@@ -136,22 +135,22 @@ test("home CTA resumes the last opened stage, not whichever was completed @smoke
   await page.locator('[data-level="6"]').click();
   await expect(page.locator("#notebook-workspace")).toBeVisible();
   await page.locator("#game-home").click();
-  await expect(page.locator("#home-play")).toContainText("Continue Stage 3 · Level 6");
-  await page.locator("#home-play").click();
+  await expect(page.locator("#home-play")).toContainText("Continue: Balance · Algebra Apprentice · Level 6");
+  await launchHomeOrFirst(page);
   await expect(page.locator("#notebook-workspace")).toBeVisible();
 });
 
 test("narrow mobile screens still scroll naturally without horizontal clipping",async({page})=>{
   await page.setViewportSize({width:375,height:812});
   await page.goto("/");
-  await expect(page.locator("#home-play")).toBeVisible();
+  await expect(page.locator("#home-choose-level")).toBeVisible();
   const status=await page.evaluate(()=>({
     scrollHeight:document.documentElement.scrollHeight,
     scrollWidth:document.documentElement.scrollWidth,height:innerHeight,width:innerWidth
   }));
   expect(status.scrollHeight).toBeGreaterThan(status.height);
   expect(status.scrollWidth).toBeLessThanOrEqual(status.width+3);
-  await page.locator("#home-play").click();
+  await launchHomeOrFirst(page);
   await expect(page.locator("#scene")).toBeVisible();
   await expect(page.locator("#do-both")).toBeVisible();
   const gameWidth=await page.evaluate(()=>document.documentElement.scrollWidth);
@@ -171,7 +170,7 @@ for(const size of scaledLaptopViews){
       matchMedia("(min-width:900px) and (min-height:500px)").matches
     )).toBe(true);
     await noDocumentScroll(page);
-    for(const selector of ["#home-play","#home-hero-art","#site-home .portal-features"])
+    for(const selector of ["#home-choose-level","#home-hero-art","#site-home .landing-actions"])
       await inView(page,selector);
 
     await openLevels(page,1);
@@ -211,7 +210,7 @@ test("very short viewports preserve scrollable, reachable controls @smoke",async
   await page.goto("/");
   expect(await page.locator("#site-shell").evaluate(el=>getComputedStyle(el).overflowY))
     .not.toBe("hidden");
-  await page.locator("#home-play").click();
+  await launchHomeOrFirst(page);
   await expect(page.locator("#do-both")).toBeVisible();
   await page.locator("#do-both").scrollIntoViewIfNeeded();
   await inView(page,"#do-both");

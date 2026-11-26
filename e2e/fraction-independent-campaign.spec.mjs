@@ -1,3 +1,4 @@
+import {openCampaignBoard} from "./campaign-menu-helper.mjs";
 import {test,expect} from "@playwright/test";
 const lab=page=>page.locator("#fraction-game-host");
 const root=page=>lab(page).locator("#fraction-lab");
@@ -5,9 +6,7 @@ const ready=page=>expect(root(page)).toHaveAttribute("data-busy","false",{timeou
 async function board(page){
   await page.emulateMedia({reducedMotion:"reduce"});
   await page.addInitScript(()=>localStorage.setItem("mathssprites.motion-preference.v1","reduced"));await page.goto("/");
-  await page.locator("#home-choose-level").click();
-  await page.locator('[data-map-world="fractions"]').click();
-  await page.locator('[data-map-stage="independent"]').click();
+  await openCampaignBoard(page,"fractions","independent");
   await expect(page.locator("#site-levels")).toHaveAttribute("data-active-stage","independent");
 }
 async function open(page,n){await page.locator('[data-level="'+n+'"]').click();await ready(page);}
@@ -35,7 +34,7 @@ test("Independent Fractions opens twenty selectable levels, alongside Apprentice
   await expect(page.locator(".level-tile")).toHaveCount(20);
   await expect(page.locator(".level-tile:disabled")).toHaveCount(0);
   await expect(page.locator("#level-progress")).toContainText("0 / 60 stars");
-  await expect(page.locator('[data-map-stage="notebook"]')).toBeEnabled();
+  await expect(page.locator('[data-stage-open="notebook"]')).toBeEnabled();
   await open(page,20);
   await expect(lab(page).locator("#fb-chapter-status")).toContainText("WORLD 3 · STAGE 2 · LEVEL 20 / 20");
   await expect(lab(page).locator(".fb-mode-badge")).toHaveText("Your Turn");
@@ -74,7 +73,7 @@ test("right-first equivalent fractional removals require a fresh second selectio
   await lab(page).locator("#fb-next-level").click();await ready(page);
   await expect(lab(page).locator("#fb-chapter-status")).toContainText("LEVEL 06 / 20");
   await lab(page).locator("#fb-game-home").click();await page.reload();
-  await expect(page.locator("#home-play")).toContainText("Continue Independent Fractions · Level 6");
+  await expect(page.locator("#home-play")).toContainText("Continue: Fractions · Independent · Level 6");
   await page.locator("#home-play").click();await ready(page);
   await expect(lab(page).locator("#fb-chapter-status")).toContainText("LEVEL 06 / 20");
   expect(errors).toEqual([]);

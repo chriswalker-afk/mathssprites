@@ -1,3 +1,4 @@
+import {openCampaignBoard} from "./campaign-menu-helper.mjs";
 import {test,expect} from "@playwright/test";
 import {mkdirSync} from "node:fs";
 const card=(page,id)=>page.locator('[data-study="'+id+'"]');
@@ -227,9 +228,7 @@ test("full outfit follows the real sprites through signed, fraction and square c
   for(const [slot,id] of Object.entries(equipped))await expect(lab).toHaveAttribute("data-sprite-"+slot,id);
   await expect(lab.locator("#left-items .fs-whole-actor")).toHaveCount(1);
   await expect(lab.locator("#left-items .fs-whole-actor .sprite-wear-headwear")).toBeVisible();
-  await page.goto("/");await page.locator("#home-choose-level").click();
-  await page.locator('[data-map-world="squares"]').click();
-  await page.locator('[data-map-stage="guided"]').click();
+  await page.goto("/");await openCampaignBoard(page,"squares","guided");
   await page.locator('[data-level="1"]').click();
   await page.locator('.operation-picker [data-operation="square"]').click();
   await page.locator("#do-both").click();

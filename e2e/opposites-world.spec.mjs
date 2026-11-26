@@ -1,3 +1,4 @@
+import {openCampaignBoard,chooseCampaignWorld,chooseCampaignStage} from "./campaign-menu-helper.mjs";
 import {clickWithReferenceMove} from "./reference-move-helper.mjs";
 import {test,expect} from "@playwright/test";
 
@@ -6,28 +7,27 @@ test.beforeEach(async({page})=>{
   await page.goto("/");
 });
 async function board(page,stage="guided"){
-  await page.locator("#home-choose-level").click();
-  await page.locator('[data-map-world="opposites"]').click();
-  if(stage!=="guided")await page.locator('[data-map-stage="'+stage+'"]').click();
+  await openCampaignBoard(page,"opposites");
+  if(stage!=="guided")await chooseCampaignStage(page,stage);
   await expect(page.locator("#site-levels")).toHaveAttribute("data-active-world","opposites");
 }
 test("World 2 shows the extended independent and notebook stages alongside six Guided chapters on the unified board @quick @smoke",async({page})=>{
   await board(page);
   await expect(page.locator("#site-levels")).toBeVisible();
-  await expect(page.locator('[data-map-world="opposites"]')).toBeEnabled();
+  await expect(page.locator('[data-world-stages="opposites"]')).toBeEnabled();
   await expect(page.locator(".level-tile")).toHaveCount(24);
   await expect(page.locator(".chapter-group")).toHaveCount(6);
   await expect(page.locator('[data-level="21"]')).toContainText("A weight for a balloon");
   await expect(page.locator('[data-level="24"]')).toContainText("The sealed negatives");
   await expect(page.locator("#board-continue")).toHaveText("Play Level 1 →");
-  await page.locator('[data-map-stage="independent"]').click();
+  await chooseCampaignStage(page,"independent");
   await expect(page.locator(".level-tile")).toHaveCount(20);
   await expect(page.locator(".chapter-group")).toHaveCount(5);
-  await page.locator('[data-map-stage="notebook"]').click();
+  await chooseCampaignStage(page,"notebook");
   await expect(page.locator(".level-tile")).toHaveCount(16);
   await expect(page.locator(".chapter-group")).toHaveCount(4);
-  await expect(page.locator('[data-map-world="fractions"]')).toBeEnabled();
-  await expect(page.locator('[data-map-world="squares"]')).toBeEnabled();
+  await expect(page.locator('[data-world-stages="fractions"]')).toBeEnabled();
+  await expect(page.locator('[data-world-stages="squares"]')).toBeEnabled();
   await page.screenshot({path:"artifacts/pr57-opposites-board-1280.png",fullPage:true});
 });
 test("signed Guided level makes the balloon-weight zero pair, saves World 2 stars @smoke",async({page})=>{
@@ -118,14 +118,13 @@ test("World 2 reset retains its signed world, separate guide and physics @smoke"
   await page.locator('[data-operation="add"]').click();
   await expect(page.locator('[data-kind="negOne"]')).toBeVisible();
   await page.locator("#game-home").click();
-  await expect(page.locator('#home-stage-shortcuts[data-active-world="opposites"]')).toBeVisible();
-  await expect(page.locator('[data-home-stage="guided"]')).toContainText("Level 2");
+  await expect(page.locator("#home-play")).toContainText("Continue: Opposites · Guided · Level 2");
   await page.reload();
-  await expect(page.locator("#home-play")).toContainText("Guided Opposites");
+  await expect(page.locator("#home-play")).toContainText("Opposites · Guided");
 });
 test("World 1 remains positive only after changing worlds @quick @smoke",async({page})=>{
   await board(page);
-  await page.locator('[data-map-world="workshop"]').click();
+  await chooseCampaignWorld(page,"workshop");
   await expect(page.locator("#site-levels")).toHaveAttribute("data-active-world","workshop");
   await page.locator('[data-level="1"]').click();
   await expect(page.locator("#chapter-status")).toContainText("WORLD 1");
