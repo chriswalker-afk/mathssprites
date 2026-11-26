@@ -1,3 +1,4 @@
+import {openCampaignBoard,chooseCampaignWorld} from "./campaign-menu-helper.mjs";
 import {test,expect} from "@playwright/test";
 const saves=p=>p.evaluate(()=>Object.fromEntries(Object.entries(localStorage)));
 const tile=(p,n)=>p.locator('.level-tile[data-level-id="square-g-'+String(n).padStart(2,"0")+'"]');
@@ -5,8 +6,8 @@ async function open(p,{fromBoard=true}={}){
   await p.emulateMedia({reducedMotion:"reduce"});
   await p.addInitScript(()=>localStorage.setItem("mathssprites.motion-preference.v1","reduced"));
   await p.goto("/");
-  await p.locator("#home-choose-level").click();
-  if(fromBoard)await p.locator('[data-map-world="squares"]').click();
+  await openCampaignBoard(p);
+  if(fromBoard)await chooseCampaignWorld(p,"squares");
   await p.locator('#site-levels [data-screen="workshop"]').click();
   await expect(p.locator("#site-workshop")).toBeVisible();
 }

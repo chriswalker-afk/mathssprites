@@ -1,3 +1,4 @@
+import {openCampaignBoard,launchHomeOrFirst} from "./campaign-menu-helper.mjs";
 import {test,expect} from "@playwright/test";
 
 test.beforeEach(async({page})=>{
@@ -5,7 +6,7 @@ test.beforeEach(async({page})=>{
 });
 
 test("objects cannot be selected until an action is chosen, then the controls follow 1-2-3 @quick @smoke",async({page})=>{
-  await page.locator("#home-play").click();
+  await launchHomeOrFirst(page);
   await expect(page.locator("#object-picker")).toBeHidden();
   await expect(page.locator("#amount-control")).toBeHidden();
   // Defensive check: synthetic clicks must not bypass the operation-first rule.
@@ -32,8 +33,7 @@ test("objects cannot be selected until an action is chosen, then the controls fo
 });
 
 test("selected white-sprite and balloon buttons use exactly the ordinary selection outline @quick",async({page})=>{
-  await page.locator("#home-choose-level").click();
-  await page.locator('[data-map-world="opposites"]').click();
+  await openCampaignBoard(page,"opposites");
   await page.locator("#board-continue").click();
   await page.locator('[data-operation="add"]').click();
   const style=async kind=>{
@@ -52,8 +52,7 @@ test("selected white-sprite and balloon buttons use exactly the ordinary selecti
 test("the hand releases its weight before a balloon lifts that SAME physical weight @smoke",async({page})=>{
   test.setTimeout(65000);
   await page.emulateMedia({reducedMotion:"no-preference"});
-  await page.locator("#home-choose-level").click();
-  await page.locator('[data-map-world="opposites"]').click();
+  await openCampaignBoard(page,"opposites");
   await page.locator("#board-continue").click();
   await expect(page.locator("#level-title")).toHaveText("One rising balloon");
   await page.locator("#guide-skip").click();

@@ -1,3 +1,4 @@
+import {openCampaignBoard} from "./campaign-menu-helper.mjs";
 import {CAMPAIGN_REGISTRY} from "../src/campaign-registry.mjs";
 import {blankCampaignRecords,campaignStarTotals} from "../src/campaign-records.mjs";
 import {COSMETIC_REWARDS,findCosmeticReward,originalAppearance} from "../src/cosmetic-catalog.mjs";
@@ -115,9 +116,7 @@ test("late unlocked art can be equipped, and a different preview is discarded wh
 });
 test("navigation returns to the originating board, and desktop and phone have reachable controls",async({page},testInfo)=>{
   await page.goto("/");
-  await page.locator("#home-choose-level").click();
-  await page.locator('[data-map-world="opposites"]').click();
-  await page.locator('[data-map-stage="independent"]').click();
+  await openCampaignBoard(page,"opposites","independent");
   await page.locator(".site-nav-links [data-screen='atelier']").click();
   await expect(page.locator("#atelier-back")).toHaveText("← Back to levels");
   await page.locator(".site-nav-links [data-screen='help']").click();
@@ -249,9 +248,7 @@ test("719 to 720: actual final star unlocks the full outfit after replay, with s
   await expect(page.locator("body")).toHaveAttribute("data-sprite-headwear","original");
   await expect(page.locator("#reward-celebration")).toBeHidden();
   await page.locator("#atelier-back").click();
-  await page.locator("#home-choose-level").click();
-  await page.locator('[data-map-world="workshop"]').click();
-  await page.locator('[data-map-stage="guided"]').click();
+  await openCampaignBoard(page,"workshop","guided");
   await page.locator('[data-level="1"]').click();
   await clickWithReferenceMove(page,"#do-both");
   await expect(page.locator("#replay-backdrop")).toBeVisible({timeout:25000});

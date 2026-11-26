@@ -1,3 +1,4 @@
+import {launchHomeOrFirst} from "./campaign-menu-helper.mjs";
 import {test,expect} from "@playwright/test";
 
 /**
@@ -8,7 +9,7 @@ test("signed crates release genuine pale sprites and balloons with no duplicate 
   test.setTimeout(60000);
   await page.emulateMedia({reducedMotion:"reduce"});
   await page.goto("/");
-  await page.locator("#home-play").click();
+  await launchHomeOrFirst(page);
   await page.evaluate(async()=>{
     const {crateMarkup}=await import("./src/group-crates.mjs");
     const {crateExpansionPlan}=await import("./src/crate-expansion.mjs");

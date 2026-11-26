@@ -1,3 +1,4 @@
+import {openCampaignBoard} from "./campaign-menu-helper.mjs";
 import {test,expect} from "@playwright/test";
 
 test.beforeEach(async({page})=>{
@@ -5,9 +6,7 @@ test.beforeEach(async({page})=>{
   await page.goto("/");
 });
 async function openGuided(page,n){
-  await page.locator("#home-choose-level").click();
-  await page.locator('[data-map-world="opposites"]').click();
-  await page.locator('[data-map-stage="guided"]').click();
+  await openCampaignBoard(page,"opposites","guided");
   await page.locator('[data-level="'+n+'"]').click();
 }
 async function divideBy(page,n){
@@ -84,8 +83,7 @@ test("World 2 Guided 24 releases actual balloons from crates, cancels three pair
 
 test("six signed Guided chapters fit the short-laptop level board without hiding the new chapter @quick",async({page})=>{
   await page.setViewportSize({width:1092,height:540});
-  await page.locator("#home-choose-level").click();
-  await page.locator('[data-map-world="opposites"]').click();
+  await openCampaignBoard(page,"opposites");
   await expect(page.locator(".chapter-group")).toHaveCount(6);
   await expect(page.locator(".level-tile")).toHaveCount(24);
   await page.locator('[data-level="24"]').scrollIntoViewIfNeeded();

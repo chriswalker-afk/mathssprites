@@ -1,3 +1,4 @@
+import {openCampaignBoard,chooseCampaignWorld,chooseCampaignStage} from "./campaign-menu-helper.mjs";
 import {test,expect} from "@playwright/test";
 import {mkdirSync} from "node:fs";
 const toggle=p=>p.locator("#square-inspect-toggle");
@@ -164,13 +165,13 @@ test("earlier chapters and worlds have no inspection tool; all stages are publis
   await expect(toggle(page)).toBeHidden();
   await page.goto("/?squarePreview=square-a-09");
   await expect(page.locator("#site-home")).toBeVisible();
-  await page.locator("#home-choose-level").click();
-  await expect(page.locator('[data-map-world="squares"]')).toBeEnabled();
-  await page.locator('[data-map-world="squares"]').click();
-  await expect(page.locator('[data-map-stage="independent"]')).toBeEnabled();
-  await expect(page.locator('[data-map-stage="notebook"]')).toBeEnabled();
-  await page.locator('[data-map-world="workshop"]').click();
-  await page.locator('[data-map-stage="guided"]').click();
+  await openCampaignBoard(page);
+  await expect(page.locator('[data-world-stages="squares"]')).toBeEnabled();
+  await chooseCampaignWorld(page,"squares");
+  await expect(page.locator('[data-stage-open="independent"]')).toBeEnabled();
+  await expect(page.locator('[data-stage-open="notebook"]')).toBeEnabled();
+  await chooseCampaignWorld(page,"workshop");
+  await chooseCampaignStage(page,"guided");
   await page.locator('#level-sections [data-level="1"]').click();
   await expect(toggle(page)).toBeHidden();
   await page.locator('[data-operation="remove"]').click();

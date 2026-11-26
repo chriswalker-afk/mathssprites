@@ -1,3 +1,4 @@
+import {openCampaignBoard,chooseCampaignWorld,chooseCampaignStage} from "./campaign-menu-helper.mjs";
 import {test,expect} from "@playwright/test";
 import {mkdirSync} from "node:fs";
 const tile=(p,n)=>p.locator('.level-tile[data-level-id="square-a-'+String(n).padStart(2,"0")+'"]');
@@ -9,9 +10,7 @@ async function board(p){
   await p.emulateMedia({reducedMotion:"reduce"});
   await p.addInitScript(()=>localStorage.setItem("mathssprites.motion-preference.v1","reduced"));
   await p.goto("/");
-  await p.locator("#home-choose-level").click();
-  await p.locator('[data-map-world="squares"]').click();
-  await p.locator('[data-map-stage="notebook"]').click();
+  await openCampaignBoard(p,"squares","notebook");
   await expect(p.locator("#site-levels")).toHaveAttribute("data-active-stage","notebook");
 }
 async function open(p,n){
@@ -59,8 +58,8 @@ test("all sixteen Square Apprentice levels are public and paper-first, with worl
   await page.locator("#game-levels").click();
   await expect(page.locator("#site-levels")).toHaveAttribute("data-active-stage","notebook");
   await expect(tile(page,16)).toBeEnabled();
-  await page.locator('[data-map-world="workshop"]').click();
-  await page.locator('[data-map-stage="notebook"]').click();
+  await chooseCampaignWorld(page,"workshop");
+  await chooseCampaignStage(page,"notebook");
   await page.locator(".level-tile[data-level='1']").click();
   await expect(page.locator("#notebook-square-operations")).toBeHidden();
   await expect(page.locator("#notebook-square-key")).toBeHidden();
@@ -110,7 +109,7 @@ test("whole-expression squaring creates a genuine build goal; replay alone saves
   await expect(page.locator("#notebook-stage-kicker")).toContainText("LEVEL 02 / 16");
   await expect(page.locator("#scene")).toBeHidden();
   await page.locator("#game-home").click();await page.reload();
-  await expect(page.locator("#home-play")).toContainText("Continue Square Algebra Apprentice · Level 2");
+  await expect(page.locator("#home-play")).toContainText("Continue: Squares · Algebra Apprentice · Level 2");
   await page.locator("#home-play").click();
   await expect(page.locator("#notebook-stage-kicker")).toContainText("LEVEL 02 / 16");
   expect(errors).toEqual([]);
