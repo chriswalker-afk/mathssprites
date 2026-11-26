@@ -1,3 +1,4 @@
+import {playCampaignLevel} from "./campaign-menu-helper.mjs";
 import {openCampaignBoard,chooseCampaignWorld,chooseCampaignStage} from "./campaign-menu-helper.mjs";
 import {test,expect} from "@playwright/test";
 import {mkdirSync} from "node:fs";
@@ -14,7 +15,7 @@ async function board(p){
   await expect(p.locator("#site-levels")).toHaveAttribute("data-active-stage","notebook");
 }
 async function open(p,n){
-  await tile(p,n).click();
+  await playCampaignLevel(p,tile(p,n));
   await expect(p.locator("#notebook-workspace")).toBeVisible();
   await expect(p.locator("#scene")).toBeHidden();
   await expect(p.locator("#notebook-stage-kicker")).toHaveText("WORLD 4 · STAGE 3 · LEVEL "+String(n).padStart(2,"0")+" / 16");
@@ -60,7 +61,7 @@ test("all sixteen Square Apprentice levels are public and paper-first, with worl
   await expect(tile(page,16)).toBeEnabled();
   await chooseCampaignWorld(page,"workshop");
   await chooseCampaignStage(page,"notebook");
-  await page.locator(".level-tile[data-level='1']").click();
+  await playCampaignLevel(page,page.locator(".level-tile[data-level='1']"));
   await expect(page.locator("#notebook-square-operations")).toBeHidden();
   await expect(page.locator("#notebook-square-key")).toBeHidden();
   await input(page).fill("sqrt");

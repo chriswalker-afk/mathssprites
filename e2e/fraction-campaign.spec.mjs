@@ -1,3 +1,4 @@
+import {playCampaignLevel} from "./campaign-menu-helper.mjs";
 import {openCampaignBoard,chooseCampaignWorld} from "./campaign-menu-helper.mjs";
 import {test,expect} from "@playwright/test";
 async function board(page){
@@ -34,7 +35,7 @@ test("Fraction Workshop opens all 24 Guided levels, alongside Apprentice @quick 
   await expect(page.locator('[data-stage-open="independent"]')).toBeEnabled();
   await expect(page.locator('[data-stage-open="notebook"]')).toBeEnabled();
   await expect(page.locator("#level-progress")).toContainText("0 / 72 stars");
-  await page.locator('[data-level="24"]').click();
+  await playCampaignLevel(page,page.locator('[data-level="24"]'));
   await expect(lab(page).locator("#fb-level-title")).toHaveText("The twelfths challenge");
   await expect(lab(page).locator("#fb-chapter-status")).toContainText("WORLD 3 · STAGE 1 · LEVEL 24 / 24");
   await expect(lab(page).locator("#fb-kind-tools")).toBeHidden();
@@ -49,7 +50,7 @@ test("solve a Guided fraction level, reveal exact comic and stars, advance and r
   const errors=[];page.on("pageerror",e=>errors.push(e.message));
   await board(page);
   const legacy=await page.evaluate(()=>Object.fromEntries(Object.entries(localStorage).filter(([k])=>!k.endsWith(".v2")&&k!=="mathssprites.cosmetics.v1")));
-  await page.locator('[data-level="1"]').click();
+  await playCampaignLevel(page,page.locator('[data-level="1"]'));
   const root=lab(page);
   await expect(root.locator("#fb-level-title")).toHaveText("Share the spare weight");
   await expect(root.locator("#fb-apply")).toBeDisabled();
@@ -77,14 +78,14 @@ test("solve a Guided fraction level, reveal exact comic and stars, advance and r
   await lab(page).locator("#fb-game-levels").click();
   await expect(page.locator('[data-level="1"] .tile-stars')).toHaveAttribute("data-stars","3");
   await chooseCampaignWorld(page,"workshop");
-  await page.locator('[data-level="1"]').click();
+  await playCampaignLevel(page,page.locator('[data-level="1"]'));
   await expect(page.locator("#game-shell")).toBeVisible();
   await expect(page.locator("#level-title")).toHaveText("One little resident");
   expect(errors).toEqual([]);
 });
 test("multi-step fraction comic pages and Undo use exact committed operations",async({page})=>{
   await board(page);
-  await page.locator('[data-level="15"]').click();
+  await playCampaignLevel(page,page.locator('[data-level="15"]'));
   await factor(page,"multiply",4);await factor(page,"divide",3);
   const root=lab(page);
   await expect(root.locator("#fb-rating")).toContainText("optimal: 2");
@@ -106,7 +107,7 @@ test("multi-step fraction comic pages and Undo use exact committed operations",a
 });
 test("Guided fraction board and physical scene stay usable on a short laptop and phone",async({page})=>{
   await board(page);
-  await page.locator('[data-level="5"]').click();
+  await playCampaignLevel(page,page.locator('[data-level="5"]'));
   for(const viewport of [{width:1280,height:720},{width:360,height:640}]){
     await page.setViewportSize(viewport);
     expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);

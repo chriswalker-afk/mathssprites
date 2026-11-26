@@ -1,3 +1,4 @@
+import {playCampaignLevel} from "./campaign-menu-helper.mjs";
 import {openCampaignBoard,chooseCampaignWorld,chooseCampaignStage,launchHomeOrFirst} from "./campaign-menu-helper.mjs";
 import {test,expect} from "@playwright/test";
 
@@ -110,7 +111,7 @@ test("notebook writing stays in the viewport with its line entry available @smok
   await page.setViewportSize({width:1024,height:720});
   await page.goto("/");
   await openLevels(page,3);
-  await page.locator('[data-level="1"]').click();
+  await playCampaignLevel(page,page.locator('[data-level="1"]'));
   await expect(page.locator("#notebook-workspace")).toBeVisible();
   await expect(page.locator("#scene")).toBeHidden();
   for(const selector of [".notebook-paper","#notebook-operation","#notebook-apply","#notebook-replay"])
@@ -121,7 +122,7 @@ test("notebook writing stays in the viewport with its line entry available @smok
 test("home CTA resumes the last opened stage, not whichever was completed @smoke",async({page})=>{
   await page.goto("/");
   await openLevels(page,2);
-  await page.locator('[data-level="7"]').click();
+  await playCampaignLevel(page,page.locator('[data-level="7"]'));
   await expect(page.locator("#chapter-status")).toContainText("STAGE 2");
   await page.locator("#game-home").click();
   await expect(page.locator("#home-play")).toContainText("Continue: Balance · Independent · Level 7");
@@ -132,7 +133,7 @@ test("home CTA resumes the last opened stage, not whichever was completed @smoke
   await expect(page.locator("#level-title")).toHaveText("Four-room rhythm");
   await page.locator("#game-home").click();
   await openLevels(page,3);
-  await page.locator('[data-level="6"]').click();
+  await playCampaignLevel(page,page.locator('[data-level="6"]'));
   await expect(page.locator("#notebook-workspace")).toBeVisible();
   await page.locator("#game-home").click();
   await expect(page.locator("#home-play")).toContainText("Continue: Balance · Algebra Apprentice · Level 6");
@@ -183,7 +184,7 @@ for(const size of scaledLaptopViews){
     expect(columns).toBe(3);
     await page.screenshot({path:"artifacts/pr59-compact-board-"+size.width+"x"+size.height+".png"});
 
-    await page.locator('[data-level="1"]').click();
+    await playCampaignLevel(page,page.locator('[data-level="1"]'));
     for(const selector of ["#scene",".scale-base","#do-both"])
       await inView(page,selector);
     await expect(page.locator("#amount-control")).toBeHidden();

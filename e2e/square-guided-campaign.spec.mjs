@@ -1,3 +1,4 @@
+import {playCampaignLevel} from "./campaign-menu-helper.mjs";
 import {openCampaignBoard} from "./campaign-menu-helper.mjs";
 import {test,expect} from "@playwright/test";
 import {mkdirSync} from "node:fs";
@@ -41,7 +42,7 @@ test("World 4 board is live with 24 accessible Guided levels and all three stage
   await expect(page.locator("#level-progress")).toContainText("0 / 72 stars");
   await expect(tile(page,"square-g-24")).toBeEnabled();
   await shot(page,"board");
-  await tile(page,"square-g-24").click();
+  await playCampaignLevel(page,tile(page,"square-g-24"));
   await expect(page.locator("#chapter-status")).toHaveText("WORLD 4 · STAGE 1 · LEVEL 24 / 24");
   await expect(page.locator("#square-inspect-toggle")).toBeVisible();
   await expect(page.locator(".operation-picker [aria-pressed=true]")).toHaveCount(0);
@@ -57,7 +58,7 @@ test("World 4 board is live with 24 accessible Guided levels and all three stage
 test("building the first square wins only after actual construction, awards three stars and resumes at the next level",async({page})=>{
   test.setTimeout(65000);
   const errors=[];page.on("pageerror",e=>errors.push(e.message));
-  await start(page);await board(page);await tile(page,"square-g-01").click();
+  await start(page);await board(page);await playCampaignLevel(page,tile(page,"square-g-01"));
   await expect(page.locator("#level-prompt")).toContainText("Build a complete square");
   await expect(page.locator("#replay-backdrop")).toBeHidden();
   await expect(page.locator("#undo")).toBeDisabled();
@@ -90,7 +91,7 @@ test("building the first square wins only after actual construction, awards thre
 });
 test("public Guided completing-the-square level earns certified stars without counting inspection as a move",async({page})=>{
   test.setTimeout(90000);
-  await start(page);await board(page);await tile(page,"square-g-18").click();
+  await start(page);await board(page);await playCampaignLevel(page,tile(page,"square-g-18"));
   await page.locator("#square-inspect-toggle").click();
   await expect(page.locator("#left-inspection .inspection-corner-gap")).toHaveCount(4);
   await expect(page.locator("#undo")).toBeDisabled();
@@ -121,7 +122,7 @@ test("the new six-chapter board fits a school laptop; mobile can reach later cha
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
   await page.setViewportSize({width:390,height:844});
   await tile(page,"square-g-18").scrollIntoViewIfNeeded();
-  await tile(page,"square-g-18").click();
+  await playCampaignLevel(page,tile(page,"square-g-18"));
   await page.locator("#square-inspect-toggle").click();
   await expect(page.locator("#left-inspection .inspection-corner-gap")).toHaveCount(4);
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);

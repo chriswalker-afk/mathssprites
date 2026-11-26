@@ -1,3 +1,4 @@
+import {playCampaignLevel} from "./campaign-menu-helper.mjs";
 import {openCampaignBoard,chooseCampaignStage} from "./campaign-menu-helper.mjs";
 import {clickWithReferenceMove} from "./reference-move-helper.mjs";
 import {test,expect} from "@playwright/test";
@@ -11,7 +12,7 @@ async function openLevel(page,stage,number){
   await stages(page);
   await chooseCampaignStage(page,stage);
   await expect(page.locator("#site-levels")).toHaveAttribute("data-active-stage",stage);
-  await page.locator('[data-level="'+number+'"]').click();
+  await playCampaignLevel(page,page.locator('[data-level="'+number+'"]'));
 }
 async function doOneGuidedMove(page){
   await clickWithReferenceMove(page,"#do-both");
@@ -64,7 +65,7 @@ test("two-step solution earns two stars; replaying optimally upgrades the best r
   let saved=await page.evaluate(()=>JSON.parse(localStorage.getItem("mathssprites.stars.v1")));
   expect(saved.guided["1"]).toBe(2);
   expect(await page.evaluate(()=>localStorage.getItem("mathssprites.cosmetics.v1"))).toBeNull();
-  await page.locator('[data-level="1"]').click();
+  await playCampaignLevel(page,page.locator('[data-level="1"]'));
   await clickWithReferenceMove(page,"#do-both"); // initial remove two
   await expect(page.locator("#replay-star-summary")).toContainText("★★★ 3 stars",{timeout:16000});
   saved=await page.evaluate(()=>JSON.parse(localStorage.getItem("mathssprites.stars.v1")));

@@ -1,3 +1,4 @@
+import {playCampaignLevel} from "./campaign-menu-helper.mjs";
 import {openCampaignBoard,chooseCampaignWorld,chooseCampaignStage} from "./campaign-menu-helper.mjs";
 import {test,expect} from "@playwright/test";
 import {mkdirSync} from "node:fs";
@@ -172,7 +173,7 @@ test("earlier chapters and worlds have no inspection tool; all stages are publis
   await expect(page.locator('[data-stage-open="notebook"]')).toBeEnabled();
   await chooseCampaignWorld(page,"workshop");
   await chooseCampaignStage(page,"guided");
-  await page.locator('#level-sections [data-level="1"]').click();
+  await playCampaignLevel(page,page.locator('#level-sections [data-level="1"]'));
   await expect(toggle(page)).toBeHidden();
   await page.locator('[data-operation="remove"]').click();
   await expect(page.locator('#object-picker [data-kind="posX2"]')).toBeHidden();

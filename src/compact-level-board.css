@@ -1,0 +1,83 @@
+/* PR99 — compact chapter-coded numbers, with a separate challenge panel.
+   Keep the existing stage header, progress and game scene untouched. */
+#site-levels #level-sections{
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
+  grid-template-rows:none;grid-auto-rows:max-content;
+  align-content:start;gap:10px;
+}
+#site-levels #level-sections .chapter-group{
+  --chapter-tone:#365b49;--chapter-line:#8ebd9f;
+  display:flex;flex-direction:column;gap:7px;
+  height:auto;min-height:0;margin:0;padding:10px;
+  background:#202d2a;border-color:#56665b;border-radius:10px;
+}
+#site-levels #level-sections .chapter-theme-2{--chapter-tone:#355669;--chapter-line:#90bfd6}
+#site-levels #level-sections .chapter-theme-3{--chapter-tone:#68552f;--chapter-line:#e1c17a}
+#site-levels #level-sections .chapter-theme-4{--chapter-tone:#584365;--chapter-line:#cbb2df}
+#site-levels #level-sections .chapter-theme-5{--chapter-tone:#6c453b;--chapter-line:#e0ae99}
+#site-levels #level-sections .chapter-theme-6{--chapter-tone:#414c70;--chapter-line:#a9b8e2}
+#site-levels #level-sections .chapter-group-heading{flex:none;min-height:0;margin:0}
+#site-levels #level-sections .chapter-intro{align-items:center;gap:7px}
+#site-levels #level-sections .chapter-badge{width:24px;height:24px;font-size:.72rem;border-color:var(--chapter-line);background:var(--chapter-tone)}
+#site-levels #level-sections .chapter-group-heading h3{font-size:.8rem;line-height:1.15;margin:0}
+#site-levels #level-sections .chapter-group-heading p,
+#site-levels #level-sections .chapter-illustration{display:none}
+#site-levels #level-sections .level-grid{
+  display:grid;grid-template-columns:repeat(4,minmax(0,1fr));
+  grid-template-rows:none;grid-auto-rows:max-content;gap:6px;flex:none;
+}
+#site-levels #level-sections .level-tile{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  position:relative;gap:3px;min-width:0;min-height:52px;padding:5px 2px;
+  background:var(--chapter-tone);border:1px solid var(--chapter-line);
+  color:#fff5e2;border-radius:8px;transform:none;cursor:pointer;
+}
+#site-levels #level-sections .level-tile .tile-number{color:inherit;font-size:1.3rem;line-height:1}
+#site-levels #level-sections .level-tile .tile-stars{font-size:.76rem;letter-spacing:0;line-height:1}
+#site-levels #level-sections .level-tile .tile-stars[data-stars="0"]{color:#fff5e2aa}
+#site-levels #level-sections .level-tile.level-next::after{content:none}
+#site-levels #level-sections .level-tile.status-complete .tile-number::after{content:"";display:inline-block;width:5px;height:5px;border-radius:50%;background:#f4d587;position:absolute;top:5px;right:5px}
+#site-levels #level-sections .level-tile:hover:not(:disabled){filter:brightness(1.14)}
+#site-levels #level-sections .level-tile[aria-pressed="true"]{
+  outline:2px solid #ffe0a2;outline-offset:2px;box-shadow:inset 0 0 0 2px #ffe0a2;
+}
+#site-levels #level-sections .level-tile:focus-visible{outline:3px dashed #fff6d9;outline-offset:2px}
+#site-levels #level-sections .level-tile:disabled{opacity:.4;cursor:not-allowed}
+#site-levels .selected-level-details{
+  flex:none;display:flex;align-items:center;justify-content:space-between;gap:14px;
+  padding:12px 15px;border:1px solid #9b8356;border-radius:12px;
+  background:#26342e;color:#f4ead7;
+}
+#site-levels #selected-level-content{min-width:0;flex:1}
+#site-levels #selected-level-content[hidden],#site-levels #selected-level-placeholder[hidden]{display:none}
+#site-levels #selected-level-title{font-size:1.18rem;margin:3px 0}
+#site-levels #selected-level-description{font-size:.83rem;line-height:1.3;margin:3px 0 6px;color:#dfded1}
+#site-levels .selected-level-meta{display:flex;gap:8px 14px;flex-wrap:wrap;font-size:.72rem;color:#e8cb88}
+#site-levels #board-continue{flex:none;min-height:44px}
+#site-levels #board-continue:disabled{opacity:.45;cursor:not-allowed}
+#site-levels #selected-level-placeholder{margin:0;color:#c9d6cc;font-size:.84rem}
+@media(min-width:900px) and (min-height:500px){
+  #site-levels #level-sections,
+  #site-levels #level-sections[data-chapter-layout="multi-row"]{
+    flex:1 1 auto;min-height:0;grid-template-rows:none;grid-auto-rows:max-content;
+    overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;align-content:start;
+  }
+  #site-levels #level-sections[data-chapter-layout="multi-row"] .chapter-group{height:auto;min-height:0}
+}
+@media(min-width:900px) and (max-height:649px){
+  #site-levels #level-sections{gap:5px}
+  #site-levels #level-sections .chapter-group{padding:6px;gap:4px}
+  #site-levels #level-sections .level-tile{min-height:44px}
+  #site-levels .selected-level-details{padding:7px 10px;gap:8px}
+  #site-levels #selected-level-title{font-size:1rem}
+  #site-levels #selected-level-description{font-size:.75rem}
+}
+@media(max-width:899px){
+  #site-levels #level-sections{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));overflow:visible}
+}
+@media(max-width:600px){
+  #site-levels #level-sections{display:block}
+  #site-levels #level-sections .chapter-group{margin:0 0 8px;padding:8px}
+  #site-levels .selected-level-details{align-items:stretch;flex-direction:column;gap:9px}
+  #site-levels #board-continue{width:100%}
+}

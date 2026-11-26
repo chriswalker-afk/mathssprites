@@ -1,3 +1,4 @@
+import {playCampaignLevel} from "./campaign-menu-helper.mjs";
 import {openCampaignBoard} from "./campaign-menu-helper.mjs";
 import {test,expect} from "@playwright/test";
 import {mkdirSync} from "node:fs";
@@ -229,7 +230,7 @@ test("full outfit follows the real sprites through signed, fraction and square c
   await expect(lab.locator("#left-items .fs-whole-actor")).toHaveCount(1);
   await expect(lab.locator("#left-items .fs-whole-actor .sprite-wear-headwear")).toBeVisible();
   await page.goto("/");await openCampaignBoard(page,"squares","guided");
-  await page.locator('[data-level="1"]').click();
+  await playCampaignLevel(page,page.locator('[data-level="1"]'));
   await page.locator('.operation-picker [data-operation="square"]').click();
   await page.locator("#do-both").click();
   await expect(page.locator("#replay-backdrop")).toBeVisible({timeout:25000});

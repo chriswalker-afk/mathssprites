@@ -1,3 +1,4 @@
+import {playCampaignLevel} from "./campaign-menu-helper.mjs";
 import {openCampaignBoard} from "./campaign-menu-helper.mjs";
 import {test,expect} from "@playwright/test";
 
@@ -8,7 +9,7 @@ test.beforeEach(async({page})=>{
 async function openApprentice(page,level=1){
   await openCampaignBoard(page,"workshop","notebook");
   await expect(page.locator("#site-levels")).toHaveAttribute("data-active-stage","notebook");
-  await page.locator('[data-level="'+level+'"]').click();
+  await playCampaignLevel(page,page.locator('[data-level="'+level+'"]'));
   await expect(page.locator("#notebook-workspace")).toBeVisible();
 }
 test("students choose −3 and the maths editor calculates the equation without asking for the answer @quick @smoke",async({page})=>{

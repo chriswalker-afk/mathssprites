@@ -1,3 +1,4 @@
+import {playCampaignLevel} from "./campaign-menu-helper.mjs";
 import {openCampaignBoard} from "./campaign-menu-helper.mjs";
 import {test,expect} from "@playwright/test";
 
@@ -13,7 +14,7 @@ test.beforeEach(async({page})=>{
 
 async function openGuided(page,level){
   await openCampaignBoard(page,"workshop","guided");
-  await page.locator('#level-sections [data-level="'+level+'"]').click();
+  await playCampaignLevel(page,page.locator('#level-sections [data-level="'+level+'"]'));
   await expect(page.locator("#game-shell")).toBeVisible();
 }
 async function measureWeights(page,side,loose=false){

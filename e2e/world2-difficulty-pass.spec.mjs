@@ -1,3 +1,4 @@
+import {playCampaignLevel} from "./campaign-menu-helper.mjs";
 import {openCampaignBoard} from "./campaign-menu-helper.mjs";
 import {test,expect} from "@playwright/test";
 
@@ -7,7 +8,7 @@ test.beforeEach(async({page})=>{
 });
 async function open(page,stage,number){
   await openCampaignBoard(page,"opposites",stage);
-  await page.locator('[data-level="'+number+'"]').click();
+  await playCampaignLevel(page,page.locator('[data-level="'+number+'"]'));
 }
 async function chooseSigned(page,op,kind,count){
   await page.locator('[data-operation="'+op+'"]').click();
@@ -89,7 +90,7 @@ test("existing World 2 completions are visibly archived when their puzzle is rev
   await expect(page.locator('[data-level="18"]')).toHaveClass(/status-revised/);
   await expect(page.locator("#world1-progress-number")).toContainText("1 of 24 complete");
   await expect(page.locator("#level-progress")).toContainText("3 / 72 stars earned");
-  await page.locator('[data-level="5"]').click();
+  await playCampaignLevel(page,page.locator('[data-level="5"]'));
   const record=await page.evaluate(()=>JSON.parse(localStorage.getItem("mathssprites.campaign.v2"))
     .worlds.opposites.stages.guided);
   expect(record.historical["op-g-05"]).toEqual({revision:1,bestMoves:2});

@@ -24,6 +24,10 @@ test("a new learner explicitly chooses world and method before any level @quick 
   await expect(page.locator(".level-tile:disabled")).toHaveCount(0);
   expect(await page.evaluate(()=>Object.fromEntries(Object.entries(localStorage)))).toEqual(before);
   await page.locator('[data-level="18"]').click();
+  await expect(page.locator("#selected-level-title")).toHaveText("The other way round");
+  await expect(page.locator("#game-shell")).toBeHidden();
+  expect(await page.evaluate(()=>Object.fromEntries(Object.entries(localStorage)))).toEqual(before);
+  await page.locator("#board-continue").click();
   await expect(page.locator("#level-title")).toHaveText("The other way round");
   await page.locator("#game-levels").click();
   await expect(page.locator("#site-levels")).toHaveAttribute("data-active-stage","guided");
@@ -45,6 +49,10 @@ test("all twelve world/method pairs open the correct board without writing progr
       await expect(page.locator("#site-levels")).toHaveAttribute("data-active-stage",stage);
       await expect(page.locator(".level-tile")).toHaveCount(count);
       await expect(page.locator(".level-tile:disabled")).toHaveCount(0);
+      await expect(page.locator("#board-continue")).toBeDisabled();
+      await page.locator("[data-level='1']").click();
+      await expect(page.locator("#selected-level-title")).not.toBeEmpty();
+      await expect(page.locator("#game-shell")).toBeHidden();
     }
   }
   expect(await page.evaluate(()=>Object.fromEntries(Object.entries(localStorage)))).toEqual(before);
@@ -52,6 +60,7 @@ test("all twelve world/method pairs open the correct board without writing progr
 test("returning learner resumes the actual world and method even after browsing other worlds @smoke",async({page})=>{
   await openCampaignBoard(page,"workshop","independent");
   await page.locator('[data-level="7"]').click();
+  await page.locator("#board-continue").click();
   await expect(page.locator("#level-title")).toHaveText("Four-room rhythm");
   await page.locator("#game-home").click();
   await expect(page.locator("#home-play")).toHaveText("Continue: Balance · Independent · Level 7 →");
@@ -82,6 +91,7 @@ test("legacy progress and best stars migrate, remain on map, and legacy keys sta
   await expect(page.locator('[data-level="3"]')).toBeEnabled();
   await expect(page.locator("#level-progress")).toContainText("5 / 72 stars earned");
   await page.locator('[data-level="3"]').click();
+  await page.locator("#board-continue").click();
   const v2=await page.evaluate(()=>JSON.parse(localStorage.getItem("mathssprites.campaign.v2")));
   expect(v2.worlds.workshop.stages.guided.completed).toEqual(["resident","clearing-02"]);
   expect(v2.worlds.workshop.stages.guided.bestMoves.resident).toBe(1);
@@ -108,4 +118,47 @@ test("single-screen level board stays reachable at 1024×720 and 1092×540 @smok
     await page.screenshot({path:"artifacts/pr32-experiment-board-"+size.width+"x"+size.height+".png"});
     await page.locator("#site-back").click();
   }
+});
+
+test("selection is transient, moves the pressed state, and clears when the learning method changes @quick @smoke",async({page})=>{
+  await openCampaignBoard(page);
+  const before=await page.evaluate(()=>Object.fromEntries(Object.entries(localStorage)));
+  const play=page.locator("#board-continue");
+  const first=page.locator('[data-level="1"]');
+  const second=page.locator('[data-level="2"]');
+  await expect(page.locator("#selected-level-content")).toBeHidden();
+  await expect(play).toBeDisabled();
+  await first.click();
+  await expect(first).toHaveAttribute("aria-pressed","true");
+  await expect(page.locator("#selected-level-title")).toHaveText("One little resident");
+  await expect(page.locator("#selected-level-description")).not.toBeEmpty();
+  await expect(play).toHaveText("Play Level 1 →");
+  await second.click();
+  await expect(first).toHaveAttribute("aria-pressed","false");
+  await expect(second).toHaveAttribute("aria-pressed","true");
+  await expect(page.locator("#selected-level-title")).toHaveText("Three weights in the way");
+  await expect(play).toHaveText("Play Level 2 →");
+  await expect(page.locator("#game-shell")).toBeHidden();
+  await page.locator('.site-nav-links [data-screen="help"]').click();
+  await page.locator("#help-return").click();
+  await expect(second).toHaveAttribute("aria-pressed","true");
+  await chooseCampaignStage(page,"notebook");
+  await expect(play).toBeDisabled();
+  await expect(page.locator("#selected-level-content")).toBeHidden();
+  await expect(page.locator('.level-tile[aria-pressed="true"]')).toHaveCount(0);
+  expect(await page.evaluate(()=>Object.fromEntries(Object.entries(localStorage)))).toEqual(before);
+});
+test("a previously completed level displays saved achievement and offers Replay @smoke",async({page})=>{
+  await page.evaluate(()=>{
+    localStorage.setItem("mathssprites.progress.v1",JSON.stringify({completed:[1],lastPlayed:1}));
+    localStorage.setItem("mathssprites.stars.v1",JSON.stringify({guided:{"1":1},independent:{},notebook:{}}));
+  });
+  await page.reload();
+  await openCampaignBoard(page);
+  const before=await page.evaluate(()=>Object.fromEntries(Object.entries(localStorage)));
+  await page.locator('[data-level="1"]').click();
+  await expect(page.locator("#selected-level-status")).toHaveText("Completed");
+  await expect(page.locator("#selected-level-rating")).toContainText("3 of 3 stars");
+  await expect(page.locator("#board-continue")).toHaveText("Replay Level 1 →");
+  expect(await page.evaluate(()=>Object.fromEntries(Object.entries(localStorage)))).toEqual(before);
 });

@@ -1,3 +1,4 @@
+import {playCampaignLevel} from "./campaign-menu-helper.mjs";
 import {openCampaignBoard} from "./campaign-menu-helper.mjs";
 import {clickWithReferenceMove} from "./reference-move-helper.mjs";
 import {test,expect} from "@playwright/test";
@@ -8,7 +9,7 @@ test.beforeEach(async({page})=>{
 });
 async function openBrackets(page){
   await openCampaignBoard(page,"workshop","guided");
-  await page.locator('[data-level="19"]').click();
+  await playCampaignLevel(page,page.locator('[data-level="19"]'));
   await expect(page.locator("#level-title")).toHaveText("Sealed Crates");
   await expect(page.locator("#chapter-status")).toContainText("WORLD 1 · STAGE 1 · LEVEL 19");
   await expect(page.locator("#crate-controls")).toBeVisible();
@@ -37,7 +38,7 @@ test("sealed opaque crates remain separate physical objects, not loose hidden sp
   await expect(page.locator('[data-kind="negOne"]')).toBeHidden();
   await page.screenshot({path:"artifacts/pr38-initial-sealed-brackets.png",fullPage:true});
   await page.locator("#game-levels").click();
-  await expect(page.locator('[data-level="19"]')).toContainText("Sealed Crates");
+  await expect(page.locator('[data-level="19"]')).toHaveAttribute("aria-label",/Sealed Crates/);
 });
 test("divide-first throws an unwanted sealed crate, opens the survivor, and earns 3 stars @smoke",async({page})=>{
   test.setTimeout(85000);

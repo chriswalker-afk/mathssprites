@@ -15,5 +15,10 @@ export async function chooseCampaignStage(page,stage){
 }
 export async function launchHomeOrFirst(page){
   if(await page.locator("#home-play").isVisible())await page.locator("#home-play").click();
-  else {await openCampaignBoard(page);await page.locator('#level-sections [data-level="1"]').click();}
+  else {await openCampaignBoard(page);await playCampaignLevel(page,page.locator('#level-sections [data-level="1"]'));}
+}
+
+export async function playCampaignLevel(page,tile){
+  await tile.click();
+  await page.locator("#board-continue").click();
 }

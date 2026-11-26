@@ -96,6 +96,7 @@ function closeFractionCampaign(){fractionCampaign?.destroy();fractionCampaign=nu
 // Browsing is independent of the stored resume. No automatic method choice.
 let selectedWorld = null;
 let selectedStage = null;
+let selectedLevelId = null;
 let workshopReturnScreen = "home";
 let atelierReturnScreen = "home";
 // Preserve each stage's chapter scroll position when returning from a game.
@@ -251,14 +252,6 @@ function renderLevels() {
   $("world1-progress-bar").max=total||1;
   $("world1-progress-bar").value=completed;
   $("world1-progress-number").textContent=completed+" of "+total+" complete";
-  const continueButton=$("board-continue");
-  continueButton.hidden=!suggested;
-  if(suggested){
-    continueButton.dataset.levelId=suggested.id;
-    continueButton.textContent=suggested.action+" Level "+suggested.number+" →";
-    continueButton.setAttribute("aria-label",suggested.action+" "+stage.title+
-      ", Level "+suggested.number);
-  }else delete continueButton.dataset.levelId;
   $("world1-finale").hidden=completed!==total||total===0;
   $("world1-finale").setAttribute("aria-label",stage.title+" completed");
   $("stage-finale-kicker").textContent="STAGE "+stage.number+" COMPLETE";
@@ -298,12 +291,12 @@ function renderLevels() {
         (highlighted?' level-next':'')+'" data-level="'+slot.number+
         '" data-level-id="'+clean(slot.id)+'"'+(open?"":" disabled")+
         (highlighted?' aria-current="step"':'')+
+        ' aria-pressed="false" aria-controls="selected-level-details"'+
         ' aria-label="'+clean(world.title)+', '+clean(stage.title)+
         ', Level '+slot.number+': '+clean(slot.title)+'. '+tag+'. '+ratingLabel+'">'+
         '<span class="tile-number">'+String(slot.number).padStart(2,"0")+'</span>'+
-        '<span class="tile-name">'+clean(slot.title)+'</span>'+
         '<span class="tile-stars" data-stars="'+rating+'" aria-hidden="true">'+starGlyphs(rating)+'</span>'+
-        '<span class="tile-status">'+(done?"✓ ":historical?"↻ ":open?"✦ ":"◇ ")+
+        '<span class="tile-status visually-hidden">'+(done?"✓ ":historical?"↻ ":open?"✦ ":"◇ ")+
           (done&&!rating?"Completed · replay for stars":done?"Completed":
             historical?"Revised · replay":open?"Play":"Locked")+'</span></button>';
     }).join("");
@@ -323,9 +316,46 @@ function renderLevels() {
       '</div></section>';
   }).join("");
   sections.scrollTop=priorScroll;
+  renderSelectedLevel();
   $("teacher-note").hidden=!teacher;
   $("teacher-note").textContent="All "+total+" puzzles in "+stage.title+
     " are available. Teacher previews are separate from student progress.";
+}
+// Selecting a level is deliberately a transient UI action, never a save.
+function renderSelectedLevel(){
+  const world=findCampaignWorld(selectedWorld);
+  const stage=findCampaignStage(selectedWorld,selectedStage);
+  const slot=selectedLevelId&&isCampaignPlayable(selectedWorld,selectedStage,selectedLevelId)
+    ?findCampaignLevel(selectedWorld,selectedStage,selectedLevelId):null;
+  const play=$("board-continue"),details=$("selected-level-details");
+  $("level-sections").querySelectorAll(".level-tile").forEach(tile=>{
+    tile.setAttribute("aria-pressed",String(!!slot&&tile.dataset.levelId===slot.id));
+  });
+  $("selected-level-content").hidden=!slot;
+  $("selected-level-placeholder").hidden=!!slot;
+  play.disabled=!slot;
+  if(!slot){
+    delete play.dataset.levelId;
+    play.textContent="Play level";
+    details.removeAttribute("data-chapter");
+    return;
+  }
+  const current=campaignStageRecord(campaign,world.id,stage.id);
+  const chapter=stage.chapters[slot.chapterIndex];
+  const rating=campaignStars(campaign,world.id,stage.id,slot.id);
+  const best=current.bestMoves[slot.id];
+  const done=current.completed.includes(slot.id);
+  const revised=!done&&!!current.historical?.[slot.id];
+  details.dataset.chapter=String(slot.chapterIndex+1);
+  $("selected-level-kicker").textContent="LEVEL "+slot.number+" · "+chapter.title;
+  $("selected-level-title").textContent=slot.title;
+  $("selected-level-description").textContent=slot.level.prompt||chapter.description||"Find the sprite's value.";
+  $("selected-level-rating").textContent=starGlyphs(rating)+" · "+(rating?rating+" of 3 stars":"Not rated yet")+
+    (Number.isInteger(best)?" · Best: "+best+" "+(best===1?"move":"moves"):"");
+  $("selected-level-status").textContent=done?"Completed":revised?"Revised challenge · replay for new stars":"Ready to play";
+  play.dataset.levelId=slot.id;
+  play.textContent=(done?"Replay":"Play")+" Level "+slot.number+" →";
+  $("board-selection-status").textContent="Selected Level "+slot.number+": "+slot.title+". "+$("selected-level-status").textContent+".";
 }
 function renderSettings() {
   $("teacher-unlock").checked = teacher;
@@ -414,6 +444,7 @@ function launch(levelIdOrNumber,stageId=selectedStage,worldId=selectedWorld) {
   homeHero.setActive(false);
   selectedWorld=worldId;
   selectedStage=stageId;
+  selectedLevelId=slot.id;
   playingWorld=worldId;
   playingStage=stageId;
   playingNumber=slot.number;
@@ -579,7 +610,7 @@ $("site-shell").addEventListener("click", event => {
   if(target.id==="board-continue"){
     if(currentScreen!=="levels")return;
     const levelId=target.dataset.levelId;
-    if(levelId)return launch(levelId,selectedStage,selectedWorld);
+    if(levelId&&levelId===selectedLevelId)return launch(levelId,selectedStage,selectedWorld);
     return;
   }
   if(target.id==="home-choose-level")return showScreen("worlds");
@@ -589,6 +620,7 @@ $("site-shell").addEventListener("click", event => {
     if(!world?.available)return;
     selectedWorld=world.id;
     selectedStage=null;
+    selectedLevelId=null;
     return showScreen("stages");
   }
   if (target.dataset.stageOpen) {
@@ -596,6 +628,7 @@ $("site-shell").addEventListener("click", event => {
     const stage=findCampaignStage(selectedWorld,target.dataset.stageOpen);
     if(!findCampaignWorld(selectedWorld)?.available||!stage?.available)return;
     selectedStage=stage.id;
+    selectedLevelId=null;
     return showScreen("levels");
   }
   if (target.dataset.screen){
@@ -607,8 +640,14 @@ $("site-shell").addEventListener("click", event => {
     const board=$("level-sections");
     if(board.dataset.boardKey)
       boardScrollPositions.set(board.dataset.boardKey,board.scrollTop);
-    return launch(target.dataset.levelId||
-      Number(target.dataset.level),selectedStage,selectedWorld);
+    const slot=findCampaignLevel(selectedWorld,selectedStage,target.dataset.levelId||Number(target.dataset.level));
+    if(!slot||!isCampaignPlayable(selectedWorld,selectedStage,slot.id))return;
+    selectedLevelId=slot.id;
+    renderSelectedLevel();
+    // On phones, the selected challenge is below the compact grid.
+    if(window.matchMedia("(max-width: 899px)").matches&&event.detail>0)
+      $("selected-level-details").scrollIntoView({block:"nearest",behavior:"instant"});
+    return;
   }
 });
 // A level board's own scroll is not document scrolling: save it per stage.

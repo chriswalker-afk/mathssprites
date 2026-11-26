@@ -1,3 +1,4 @@
+import {playCampaignLevel} from "./campaign-menu-helper.mjs";
 import {openCampaignBoard} from "./campaign-menu-helper.mjs";
 import {clickWithReferenceMove} from "./reference-move-helper.mjs";
 import {test,expect} from "@playwright/test";
@@ -5,7 +6,7 @@ import {test,expect} from "@playwright/test";
 async function level19(page){
   await page.goto("/");
   await openCampaignBoard(page,"workshop","guided");
-  await page.locator('[data-level="19"]').click();
+  await playCampaignLevel(page,page.locator('[data-level="19"]'));
   await expect(page.locator("#level-title")).toHaveText("Sealed Crates");
 }
 async function phase(page,name){

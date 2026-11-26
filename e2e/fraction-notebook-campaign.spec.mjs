@@ -1,3 +1,4 @@
+import {playCampaignLevel} from "./campaign-menu-helper.mjs";
 import {openCampaignBoard} from "./campaign-menu-helper.mjs";
 import {test,expect} from "@playwright/test";
 const lab=page=>page.locator("#fraction-game-host");
@@ -9,7 +10,7 @@ async function board(page){
   await openCampaignBoard(page,"fractions","notebook");
   await expect(page.locator("#site-levels")).toHaveAttribute("data-active-stage","notebook");
 }
-async function open(page,n){await page.locator('[data-level="'+n+'"]').click();await expect(root(page)).toHaveAttribute("data-notebook-phase","paper");}
+async function open(page,n){await playCampaignLevel(page,page.locator('[data-level="'+n+'"]'));await expect(root(page)).toHaveAttribute("data-notebook-phase","paper");}
 async function typeOperation(page,text){
   const h=lab(page);
   if(!await h.locator("#fb-nb-type-details").evaluate(el=>el.open))await h.locator("#fb-nb-type-details summary").click();

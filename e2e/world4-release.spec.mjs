@@ -1,3 +1,4 @@
+import {playCampaignLevel} from "./campaign-menu-helper.mjs";
 import {openCampaignBoard} from "./campaign-menu-helper.mjs";
 import {test,expect} from "@playwright/test";
 import {SQUARE_CAMPAIGN_STAGES} from "../src/square-campaign-levels.mjs";
@@ -16,7 +17,7 @@ for(const stage of SQUARE_CAMPAIGN_STAGES){
     const errors=[];page.on("pageerror",e=>errors.push(String(e)));
     await openCampaignBoard(page,"squares",stage.id);
     for(const slot of stage.levels){
-      await page.locator('.level-tile[data-level-id="'+slot.id+'"]').click();
+      await playCampaignLevel(page,page.locator('.level-tile[data-level-id="'+slot.id+'"]'));
       const level=slot.level;
       await expect(page.locator("#chapter-status")).toContainText("LEVEL "+String(slot.number).padStart(2,"0")+" / "+stage.levels.length);
       if(stage.method==="notebook"){

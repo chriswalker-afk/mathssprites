@@ -34,6 +34,7 @@ test("objects cannot be selected until an action is chosen, then the controls fo
 
 test("selected white-sprite and balloon buttons use exactly the ordinary selection outline @quick",async({page})=>{
   await openCampaignBoard(page,"opposites");
+  await page.locator('[data-level="1"]').click();
   await page.locator("#board-continue").click();
   await page.locator('[data-operation="add"]').click();
   const style=async kind=>{
@@ -53,6 +54,7 @@ test("the hand releases its weight before a balloon lifts that SAME physical wei
   test.setTimeout(65000);
   await page.emulateMedia({reducedMotion:"no-preference"});
   await openCampaignBoard(page,"opposites");
+  await page.locator('[data-level="1"]').click();
   await page.locator("#board-continue").click();
   await expect(page.locator("#level-title")).toHaveText("One rising balloon");
   await page.locator("#guide-skip").click();

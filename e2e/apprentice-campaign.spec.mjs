@@ -1,3 +1,4 @@
+import {playCampaignLevel} from "./campaign-menu-helper.mjs";
 import {openCampaignBoard,chooseCampaignStage} from "./campaign-menu-helper.mjs";
 import {test,expect} from "@playwright/test";
 
@@ -25,7 +26,7 @@ async function openStage3(page,{teacher=false,level=1}={}){
     await masterFirstTwo(page);
   }
   await openCampaignBoard(page,"workshop","notebook");
-  await page.locator('[data-level="'+level+'"]').click();
+  await playCampaignLevel(page,page.locator('[data-level="'+level+'"]'));
   await expect(page.locator("#notebook-workspace")).toBeVisible();
   await expect(page.locator("#scene")).toBeHidden();
 }
@@ -58,19 +59,19 @@ test("backwards fading shows a different worked example, then first/last cues, t
   await expect(page.locator("#notebook-lines")).toContainText("x + 3 = 8");
   await expect(page.locator("#scene")).toBeHidden();
   await page.locator("#game-levels").click();
-  await page.locator('[data-level="2"]').click();
+  await playCampaignLevel(page,page.locator('[data-level="2"]'));
   await expect(page.locator("#notebook-scaffold")).toContainText("Your first move");
   await page.locator("#game-levels").click();
-  await page.locator('[data-level="3"]').click();
+  await playCampaignLevel(page,page.locator('[data-level="3"]'));
   await expect(page.locator("#notebook-scaffold")).toContainText("Plan the final step");
   await page.locator("#game-levels").click();
-  await page.locator('[data-level="4"]').click();
+  await playCampaignLevel(page,page.locator('[data-level="4"]'));
   await expect(page.locator("#notebook-scaffold")).toBeHidden();
   await page.locator("#notebook-hint").click();
   await expect(page.locator("#notebook-hint-message")).toBeVisible();
   await expect(page.locator("#notebook-hint-message")).not.toContainText("x = 5");
   await page.locator("#game-levels").click();
-  await page.locator('[data-level="9"]').click();
+  await playCampaignLevel(page,page.locator('[data-level="9"]'));
   await expect(page.locator("#notebook-scaffold")).toBeHidden();
   await expect(page.locator("#notebook-hint-message")).toBeHidden();
 });

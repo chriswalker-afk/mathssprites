@@ -1,3 +1,4 @@
+import {playCampaignLevel} from "./campaign-menu-helper.mjs";
 import {openCampaignBoard,launchHomeOrFirst} from "./campaign-menu-helper.mjs";
 import {clickWithReferenceMove} from "./reference-move-helper.mjs";
 import {test,expect} from "@playwright/test";
@@ -104,7 +105,7 @@ test("phone menus and replay keep touch actions in view",async({page})=>{
   await expect(page.locator("#site-levels")).toHaveAttribute("data-active-stage","guided");
   await expect(page.locator(".chapter-illustration").first()).toBeVisible();
   await expect(page.locator(".level-tile")).toHaveCount(24);
-  await page.locator('[data-level="1"]').click();
+  await playCampaignLevel(page,page.locator('[data-level="1"]'));
   await expect(page.locator("#game-home")).toBeVisible();
   await expect(page.locator("#game-levels")).toBeVisible();
   await expect(page.locator("#game-guide-restart")).toBeVisible();
@@ -131,7 +132,7 @@ test("chapter-opening levels show new ideas without exposing the hidden equation
     [13,"Across the hall","4"],
     [17,"Master of the balance","5"]
   ]) {
-    await page.locator('[data-level="'+number+'"]').click();
+    await playCampaignLevel(page,page.locator('[data-level="'+number+'"]'));
     await expect(page.locator("#chapter-briefing")).toBeVisible();
     await expect(page.locator("#chapter-briefing")).toContainText(skill);
     await expect(page.locator("#chapter-status")).toContainText("LEVEL "+String(number).padStart(2,"0"));

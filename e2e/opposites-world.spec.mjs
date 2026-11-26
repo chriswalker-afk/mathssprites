@@ -1,3 +1,4 @@
+import {playCampaignLevel} from "./campaign-menu-helper.mjs";
 import {openCampaignBoard,chooseCampaignWorld,chooseCampaignStage} from "./campaign-menu-helper.mjs";
 import {clickWithReferenceMove} from "./reference-move-helper.mjs";
 import {test,expect} from "@playwright/test";
@@ -17,9 +18,9 @@ test("World 2 shows the extended independent and notebook stages alongside six G
   await expect(page.locator('[data-world-stages="opposites"]')).toBeEnabled();
   await expect(page.locator(".level-tile")).toHaveCount(24);
   await expect(page.locator(".chapter-group")).toHaveCount(6);
-  await expect(page.locator('[data-level="21"]')).toContainText("A weight for a balloon");
-  await expect(page.locator('[data-level="24"]')).toContainText("The sealed negatives");
-  await expect(page.locator("#board-continue")).toHaveText("Play Level 1 →");
+  await expect(page.locator('[data-level="21"]')).toHaveAttribute("aria-label",/A weight for a balloon/);
+  await expect(page.locator('[data-level="24"]')).toHaveAttribute("aria-label",/The sealed negatives/);
+  await expect(page.locator("#board-continue")).toBeDisabled();
   await chooseCampaignStage(page,"independent");
   await expect(page.locator(".level-tile")).toHaveCount(20);
   await expect(page.locator(".chapter-group")).toHaveCount(5);
@@ -33,6 +34,7 @@ test("World 2 shows the extended independent and notebook stages alongside six G
 test("signed Guided level makes the balloon-weight zero pair, saves World 2 stars @smoke",async({page})=>{
   test.setTimeout(60000);
   await board(page);
+  await page.locator('[data-level="1"]').click();
   await page.locator("#board-continue").click();
   await expect(page.locator("#level-title")).toHaveText("One rising balloon");
   await expect(page.locator("#chapter-status")).toContainText("WORLD 2 · STAGE 1");
@@ -57,7 +59,7 @@ test("signed Guided level makes the balloon-weight zero pair, saves World 2 star
 test("signed Independent requires two separate matched room actions @smoke",async({page})=>{
   test.setTimeout(60000);
   await board(page,"independent");
-  await page.locator('[data-level="1"]').click();
+  await playCampaignLevel(page,page.locator('[data-level="1"]'));
   await expect(page.locator("#chapter-status")).toContainText("WORLD 2 · STAGE 2");
   await expect(page.locator("#guide-message")).toContainText("negative unit");
   await page.locator("#guide-skip").click();
@@ -73,7 +75,7 @@ test("signed Independent requires two separate matched room actions @smoke",asyn
 test("World 2 signed editor typesets +(−x), previews and replays real steps @smoke",async({page})=>{
   test.setTimeout(80000);
   await board(page,"notebook");
-  await page.locator('[data-level="5"]').click();
+  await playCampaignLevel(page,page.locator('[data-level="5"]'));
   await expect(page.locator("#notebook-workspace")).toBeVisible();
   await expect(page.locator("#notebook-signed-operations")).toBeVisible();
   await expect(page.locator("#notebook-current-math")).toContainText("x");
@@ -95,7 +97,7 @@ test("World 2 signed editor typesets +(−x), previews and replays real steps @s
 });
 test("signed notebook subtracts NEGATIVE units, then completes a multistep solution @smoke",async({page})=>{
   await board(page,"notebook");
-  await page.locator('[data-level="8"]').click();
+  await playCampaignLevel(page,page.locator('[data-level="8"]'));
   await page.locator("#notebook-operation").fill("−(−4)");
   await expect(page.locator("#notebook-apply")).toBeEnabled();
   await page.locator("#notebook-apply").click();
@@ -109,7 +111,7 @@ test("signed notebook subtracts NEGATIVE units, then completes a multistep solut
 });
 test("World 2 reset retains its signed world, separate guide and physics @smoke",async({page})=>{
   await board(page);
-  await page.locator('[data-level="2"]').click();
+  await playCampaignLevel(page,page.locator('[data-level="2"]'));
   await expect(page.locator("#chapter-status")).toContainText("WORLD 2 · STAGE 1");
   await expect(page.locator("#left-items .balloon")).toHaveCount(2);
   await page.locator("#reset").click();
@@ -126,7 +128,7 @@ test("World 1 remains positive only after changing worlds @quick @smoke",async({
   await board(page);
   await chooseCampaignWorld(page,"workshop");
   await expect(page.locator("#site-levels")).toHaveAttribute("data-active-world","workshop");
-  await page.locator('[data-level="1"]').click();
+  await playCampaignLevel(page,page.locator('[data-level="1"]'));
   await expect(page.locator("#chapter-status")).toContainText("WORLD 1");
   await expect(page.locator('[data-kind="negOne"]')).toBeHidden();
   await expect(page.locator('[data-kind="negX"]')).toBeHidden();
