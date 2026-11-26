@@ -1,0 +1,19 @@
+/* A lightweight acknowledgement, not a second modal or a requirement
+   to open the Atelier. Never capture pointer or keyboard input. */
+.reward-celebration{
+  position:fixed;z-index:100;top:12px;left:50%;transform:translateX(-50%);
+  display:flex;align-items:center;gap:10px;max-width:min(480px,calc(100vw - 24px));
+  width:max-content;padding:10px 15px;border:1px solid #bda26c;border-radius:10px;
+  background:linear-gradient(125deg,#34483e,#202e2b);box-shadow:0 6px 24px #0008;
+  color:#f2e1b8;pointer-events:none;text-align:left;
+}
+.reward-celebration[hidden]{display:none!important}
+.reward-celebration-emblem{flex:none;font:normal 1.65rem Georgia,serif;color:#ebc987}
+.reward-celebration-copy{min-width:0;display:flex;flex-direction:column;gap:3px}
+.reward-celebration-copy strong{font:700 .84rem Georgia,serif;color:#f3d99f}
+.reward-celebration-copy span{font-size:.78rem;color:#f4e9d3;overflow-wrap:anywhere}
+.reward-celebration-copy small{font-size:.69rem;color:#c7d1c1}
+.reward-celebration-enter{animation:reward-notice-enter .36s ease-out both}
+@keyframes reward-notice-enter{from{opacity:0;transform:translate(-50%,-8px)}to{opacity:1;transform:translate(-50%,0)}}
+.reduce-motion .reward-celebration{animation:none!important}
+@media(max-width:600px){.reward-celebration{top:8px;gap:8px;padding:8px 12px}.reward-celebration-copy span{font-size:.72rem}}

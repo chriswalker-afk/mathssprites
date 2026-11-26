@@ -1,5 +1,5 @@
 import { LEVELS } from "./engine.mjs";
-import {createFractionCampaignView} from "./fraction-campaign.mjs?v=87";
+import {createFractionCampaignView} from "./fraction-campaign.mjs?v=88";
 import {
   CAMPAIGN_REGISTRY,findCampaignWorld,findCampaignStage,findCampaignLevel,
   nextCampaignLevel,isCampaignPlayable,firstCampaignLevel
@@ -10,13 +10,14 @@ import {
   campaignStars,campaignStarTotals,campaignOptimalMoves,stageResumeLevel
 } from "./campaign-records.mjs?v=84";
 import {createCosmeticRewards} from "./cosmetic-rewards.mjs?v=84";
-import {applySpriteAppearance} from "./sprite-cosmetics.mjs?v=87";
-import {mountSpriteAtelier} from "./sprite-atelier.mjs?v=87";
+import {applySpriteAppearance} from "./sprite-cosmetics.mjs?v=88";
+import {mountSpriteAtelier} from "./sprite-atelier.mjs?v=88";
+import {mountRewardCelebration} from "./reward-celebration.mjs?v=88";
 import {createWorkshopEquation,WORKSHOP_EXAMPLES} from "./equation-workshop.mjs?v=82";
 import {createSignedWorkshopEquation,SIGNED_WORKSHOP_EXAMPLES} from "./signed-workshop.mjs?v=82";
 import {createFractionWorkshopEquation,FRACTION_WORKSHOP_EXAMPLES} from "./fraction-workshop.mjs";
 import {createSquareWorkshopEquation,SQUARE_WORKSHOP_EXAMPLES,SQUARE_BUILD_EXAMPLES} from "./square-workshop.mjs";
-import {createHomeHero} from "./home-hero.mjs?v=87";
+import {createHomeHero} from "./home-hero.mjs?v=88";
 import {compactWorldProgress,compactStageProgress,briefStageIntro} from "./menu-copy.mjs";
 import {boardContinueLevel,spatialTileIndex} from "./navigation-journey.mjs";
 import {loadResume,saveResume,resumeDestination,resumeLabel,RESUME_STAGE_NUMBERS} from "./resume.mjs";
@@ -69,6 +70,12 @@ cosmeticRewards.subscribe(change=>{
   window.dispatchEvent(new CustomEvent("mathssprites:cosmetics-change",{detail:change}));
 });
 const atelier=mountSpriteAtelier({root:$("site-atelier"),homeSummary:$("home-atelier-stars"),store:cosmeticRewards});
+const rewardCelebration=mountRewardCelebration();
+window.addEventListener("mathssprites:reward-review-ready",()=>{
+  const replay=$("replay-backdrop");
+  rewardCelebration.reveal({anchor:replay.hidden?document.body:replay.querySelector(".replay-card")});
+});
+window.addEventListener("mathssprites:reward-review-closed",()=>rewardCelebration.leaveReview());
 let campaignResume = loadCampaignResume();
 let teacher = loadTeacherSetting();
 let guideEnabled = readGuideEnabled();
@@ -418,6 +425,7 @@ function showScreen(name,{focusHeading=true}={}) {
   if(currentScreen==="workshop-game")
     window.dispatchEvent(new Event("mathssprites:workshop-close"));
   closeFractionCampaign();
+  rewardCelebration.leaveReview();
   currentScreen = name;
   playingNumber = null;
   playingStage = null;
@@ -467,6 +475,7 @@ function launch(levelIdOrNumber,stageId=selectedStage,worldId=selectedWorld) {
   const stage=findCampaignStage(worldId,stageId);
   if(!slot?.level||!stage)return false;
   closeFractionCampaign();
+  rewardCelebration.leaveReview();
   homeHero.setActive(false);
   selectedWorld=worldId;
   selectedStage=stageId;
@@ -504,6 +513,7 @@ function launch(levelIdOrNumber,stageId=selectedStage,worldId=selectedWorld) {
       appearance:cosmeticRewards.getSnapshot().equipped,
       onLeave:screen=>showScreen(screen),
       onAdvance:()=>window.dispatchEvent(new Event("mathssprites:advance")),
+      onReviewReady:()=>rewardCelebration.reveal(),
       onComplete:state=>window.dispatchEvent(new CustomEvent("mathssprites:solved",
         {detail:{worldId,stage:stageId,number:slot.number,levelId:slot.id,moves:state.history.length}}))
     });
@@ -840,7 +850,8 @@ window.addEventListener("mathssprites:solved",event=>{
     campaign,worldId,stageId,slot.id,moves));
   // Only the existing, validated campaign completion path can update rewards.
   // Repeat completions, workshop scenes and preview routes cannot farm stars.
-  cosmeticRewards.syncCampaign(campaign);
+  const cosmeticChange=cosmeticRewards.syncCampaign(campaign);
+  rewardCelebration.enqueue(cosmeticChange.newlyUnlocked);
   const record=campaignStageRecord(campaign,worldId,stageId);
   campaignResume=saveCampaignResume({worldId,stageId,levelId:record.lastPlayed});
 

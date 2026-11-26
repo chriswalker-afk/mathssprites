@@ -9,7 +9,7 @@ import { divisionBasketMarkup, playDivisionBaskets } from "./division-baskets.mj
 import {
   multiplicationBasketMarkup,multiplicationHandProp,playMultiplicationBaskets
 } from "./multiplication-baskets.mjs";
-import {spriteCreatureMarkup,heldSpriteMarkup,miniSpriteMarkup} from "./square-sprites.mjs?v=87";
+import {spriteCreatureMarkup,heldSpriteMarkup,miniSpriteMarkup} from "./square-sprites.mjs?v=88";
 import { pickSpriteHandReaction, dodgeOffsetPx } from "./sprite-reactions.mjs";
 import { floorScaleToFit, inRoomBoxPlan, areaMathLabel } from "./area-layout.mjs";
 import {mountSquareConstruction,squareOverflowPlan,squareOverflowMarkup} from "./square-construction.mjs";
@@ -1863,6 +1863,8 @@ async function replayNotebookWithSprites() {
     render();
     (notebookReplaySuccessful?$("notebook-back-paper"):$("notebook-replay"))
       .focus({preventScroll:true});
+    if(notebookReplaySuccessful&&campaignLevelNumber!==null)
+      window.dispatchEvent(new Event("mathssprites:reward-review-ready"));
   }
 }
 async function manualMove(side) {
@@ -2271,6 +2273,8 @@ function tickReplay(timestamp) {
 function updateReplayEndNote() {
   const ready = replayIndex === replayEntries.length - 1 &&
     (replayPanelFinished || reducedMotion);
+  if(ready&&campaignLevelNumber!==null&&!$("replay-backdrop").hidden)
+    window.dispatchEvent(new Event("mathssprites:reward-review-ready"));
   const note = $("replay-end-note");
   note.hidden = !ready || campaignLevelNumber === null;
   if(ready&&currentLevel().squareLaboratory){
@@ -2379,6 +2383,7 @@ function hideReplay() {
   $("pencil").hidden = true;
   setReplayPaused(true);
   $("watch-again")?.focus();
+  window.dispatchEvent(new Event("mathssprites:reward-review-closed"));
 }
 function replaySeek(offset) {
   setReplayPaused(true);

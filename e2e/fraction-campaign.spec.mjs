@@ -56,6 +56,8 @@ test("solve a Guided fraction level, reveal exact comic and stars, advance and r
   await factor(page,"divide",2);
   await expect(root.locator("#fraction-lab")).toHaveAttribute("data-solved","true");
   await expect(root.locator("#fb-rating")).toContainText("★★★ 3 stars");
+  await expect(page.locator("#reward-celebration-names")).toContainText("Curious eyes");
+  await expect(page.locator("#reward-celebration")).toBeVisible();
   await expect(root.locator("#fb-comic-page math mfrac")).toHaveCount(1);
   await expect(root.locator("#fb-comic-page")).toContainText("Before");
   await expect(root.locator("#fb-comic-page")).toContainText("After");
@@ -87,7 +89,10 @@ test("multi-step fraction comic pages and Undo use exact committed operations",a
   const root=lab(page);
   await expect(root.locator("#fb-rating")).toContainText("optimal: 2");
   await expect(root.locator("#fb-replay-step")).toHaveText("1 / 2");
+  await expect(page.locator("#reward-celebration")).toBeHidden();
   await root.locator("#fb-replay-next").click();
+  await expect(page.locator("#reward-celebration-names")).toContainText("Curious eyes");
+  await expect(page.locator("#reward-celebration")).toBeVisible();
   await expect(root.locator("#fb-replay-step")).toHaveText("2 / 2");
   await expect(root.locator("#fb-replay-next")).toBeDisabled();
   await root.locator("#fb-replay-prev").click();

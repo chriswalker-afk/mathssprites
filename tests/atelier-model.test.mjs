@@ -15,17 +15,17 @@ test("all 29 milestones remain visible and category/owned filtering uses actual 
   assert.equal(atelierCollection(saved,{filter:"set"})[0].id,"grand-alchemist");
 });
 test("owned, locked, equipped and unimplemented art are distinct states",()=>{
-  const saved=snapshot(30,["curious-eyes","extra-fluffy","little-bow-tie","sleepy-eyes","springy-bounce"],{fur:"extra-fluffy"});
+  const saved=snapshot(30,["curious-eyes","extra-fluffy","little-bow-tie","sleepy-eyes","curled-fur"],{fur:"extra-fluffy"});
   assert.equal(atelierRewardState(saved,reward("extra-fluffy")).status,"equipped");
   assert.equal(atelierRewardState(saved,reward("curious-eyes")).canEquip,true);
   assert.equal(atelierRewardState(saved,reward("spiky-fur")).starsNeeded,60);
   assert.equal(atelierRewardState(saved,reward("spiky-fur")).status,"locked");
   assert.equal(atelierRewardState(saved,reward("little-bow-tie")).status,"available");
   assert.equal(atelierRewardState(saved,reward("little-bow-tie")).canEquip,true);
-  assert.equal(atelierRewardState(saved,reward("springy-bounce")).status,"owned-coming");
-  assert.equal(atelierRewardState(saved,reward("springy-bounce")).canEquip,false);
+  assert.equal(atelierRewardState(saved,reward("curled-fur")).status,"owned-coming");
+  assert.equal(atelierRewardState(saved,reward("curled-fur")).canEquip,false);
   assert.equal(atelierRewardState(saved,reward("knitted-beanie")).status,"locked");
-  assert.equal(atelierRewardState(saved,reward("constellation-aura")).status,"locked-coming");
+  assert.equal(atelierRewardState(saved,reward("distinguished-eyebrows")).status,"locked-coming");
   assert.equal(rewardArtReady(reward("grand-alchemist")),false);
   assert.equal(rewardArtReady(reward("grand-alchemist"),Object.values(reward("grand-alchemist").loadout)),true);
 });
@@ -36,16 +36,16 @@ test("try-on merges only the selected slot into a copy, never equips or spends a
   assert.equal(preview.eyes,"sleepy-eyes");
   assert.equal(saved.equipped.eyes,null);
   assert.deepEqual(atelierPreview(saved,"little-bow-tie"),{...saved.equipped,neckwear:"little-bow-tie"});
-  assert.deepEqual(atelierPreview(saved,"springy-bounce"),saved.equipped);
+  assert.deepEqual(atelierPreview(saved,"curled-fur"),saved.equipped);
   assert.deepEqual(atelierPreview(saved,"made-up"),saved.equipped);
   assert.equal(saved.earnedStars,9);
 });
 test("the UI equip guard uses real store ownership and rejects missing art, even if earned",()=>{
-  const map=new Map([[COSMETIC_SAVE_KEY,JSON.stringify({version:1,unlockedRewards:["curious-eyes","extra-fluffy","little-bow-tie","knitted-beanie","brass-spectacles","springy-bounce"],equipped:{}})]]);
+  const map=new Map([[COSMETIC_SAVE_KEY,JSON.stringify({version:1,unlockedRewards:["curious-eyes","extra-fluffy","little-bow-tie","knitted-beanie","brass-spectacles","curled-fur"],equipped:{}})]]);
   const store=createCosmeticRewards(blankCampaignRecords(),{storage:{getItem:key=>map.get(key),setItem:(key,v)=>map.set(key,v)}});
   const before=map.get(COSMETIC_SAVE_KEY);
   assert.equal(equipAtelierReward(store,"sleepy-eyes").code,"locked");
-  assert.equal(equipAtelierReward(store,"springy-bounce").code,"art-unavailable");
+  assert.equal(equipAtelierReward(store,"curled-fur").code,"art-unavailable");
   assert.equal(equipAtelierReward(store,"unknown").code,"unknown-reward");
   assert.equal(map.get(COSMETIC_SAVE_KEY),before);
   assert.equal(equipAtelierReward(store,"curious-eyes").ok,true);
@@ -58,5 +58,22 @@ test("the UI equip guard uses real store ownership and rejects missing art, even
   assert.equal(store.getSnapshot().equipped.headwear,"knitted-beanie");
   assert.equal(store.getSnapshot().equipped.eyewear,"brass-spectacles");
   assert.equal(store.getSnapshot().unlockedCount,6);
+  assert.equal(store.getSnapshot().earnedStars,0);
+});
+
+test("motion and effects are independently previewable and equipable without changing stars",()=>{
+  const saved=snapshot(240,["springy-bounce","stardust-footsteps"],{fur:"extra-fluffy",movement:"springy-bounce"});
+  assert.equal(atelierRewardState(saved,reward("springy-bounce")).status,"equipped");
+  assert.equal(atelierRewardState(saved,reward("magical-levitation")).status,"locked");
+  assert.equal(atelierRewardState(saved,reward("stardust-footsteps")).canEquip,true);
+  assert.equal(atelierPreview(saved,"magical-levitation").movement,"magical-levitation");
+  assert.equal(atelierPreview(saved,"stardust-footsteps").movement,"springy-bounce");
+  const map=new Map([[COSMETIC_SAVE_KEY,JSON.stringify({version:1,unlockedRewards:saved.unlockedRewards,equipped:{}})]]);
+  const store=createCosmeticRewards(blankCampaignRecords(),{storage:{getItem:key=>map.get(key),setItem:(key,v)=>map.set(key,v)}});
+  assert.equal(equipAtelierReward(store,"springy-bounce").ok,true);
+  assert.equal(equipAtelierReward(store,"stardust-footsteps").ok,true);
+  assert.equal(equipAtelierReward(store,"magical-levitation").code,"locked");
+  assert.equal(store.getSnapshot().equipped.movement,"springy-bounce");
+  assert.equal(store.getSnapshot().equipped.effect,"stardust-footsteps");
   assert.equal(store.getSnapshot().earnedStars,0);
 });

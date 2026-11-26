@@ -10,7 +10,9 @@ export const SPRITE_VISUAL_VARIANTS=Object.freeze({
   eyes:Object.freeze(["curious-eyes","sleepy-eyes"]),
   headwear:Object.freeze(["knitted-beanie","explorer-hat","victorian-top-hat","graduation-cap","alchemist-hat","velvet-wizard-hat","crown-of-equilibrium"]),
   eyewear:Object.freeze(["brass-spectacles","inventor-goggles","professor-monocle","clockwork-goggles"]),
-  neckwear:Object.freeze(["little-bow-tie","striped-scarf","order-of-balance-medal"])
+  neckwear:Object.freeze(["little-bow-tie","striped-scarf","order-of-balance-medal"]),
+  movement:Object.freeze(["springy-bounce","magical-levitation"]),
+  effect:Object.freeze(["stardust-footsteps","golden-landing-sparkles","celestial-particle-trail","constellation-aura"])
 });
 export const IMPLEMENTED_SPRITE_COSMETICS=Object.freeze(Object.values(SPRITE_VISUAL_VARIANTS).flat());
 export function resolveSpriteAppearance(equipped){

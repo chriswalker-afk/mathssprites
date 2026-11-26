@@ -1,10 +1,10 @@
 /** Student-facing Atelier. The real sprite renderer supplies every ready
  * preview, scoped independently from the saved appearance on document.body. */
 import {COSMETIC_REWARDS,findCosmeticReward,findCosmeticItem,COSMETIC_SLOTS} from "./cosmetic-catalog.mjs";
-import {spriteCreatureMarkup} from "./square-sprites.mjs?v=87";
-import {applySpriteAppearance} from "./sprite-cosmetics.mjs?v=87";
+import {spriteCreatureMarkup} from "./square-sprites.mjs?v=88";
+import {applySpriteAppearance} from "./sprite-cosmetics.mjs?v=88";
 import {ATELIER_FILTERS,ATELIER_SLOT_LABELS,rewardArtReady,atelierRewardState,
-  atelierCollection,atelierPreview,atelierDescription,equipAtelierReward} from "./atelier-model.mjs?v=87";
+  atelierCollection,atelierPreview,atelierDescription,equipAtelierReward} from "./atelier-model.mjs?v=88";
 
 const icons=Object.freeze({fur:"✳",eyes:"◉",headwear:"⌂",eyewear:"∞",neckwear:"◇",
   movement:"↟",effect:"✦",set:"♛"});

@@ -1,0 +1,94 @@
+/* PR88. All motion is local to the existing idle layer, never to a
+   mathematical slot. Nested scopes reset inherited choices. The square
+   still uses its own original hop; baskets use their original compact bob. */
+[data-sprite-movement]{--cos-round-motion:sprite-hop;--cos-square-motion:square-creature-hop;--cos-round-shadow:sprite-shadow;--cos-square-shadow:square-creature-shadow}
+[data-sprite-movement="springy-bounce"]{--cos-round-motion:cos-spring-round;--cos-square-motion:cos-spring-square;--cos-round-shadow:cos-spring-shadow;--cos-square-shadow:cos-spring-shadow}
+[data-sprite-movement="magical-levitation"]{--cos-round-motion:cos-levitate;--cos-square-motion:cos-levitate;--cos-round-shadow:cos-levitate-shadow;--cos-square-shadow:cos-levitate-shadow}
+:where([data-sprite-movement]) :is(.sprite-black,.sprite-white) .sprite-motion{animation-name:var(--cos-round-motion)}
+:where([data-sprite-movement]) .sprite-square .sprite-motion{animation-name:var(--cos-square-motion)}
+:where([data-sprite-movement]) :is(.sprite-black,.sprite-white) .sprite-ground-shadow{animation-name:var(--cos-round-shadow)}
+:where([data-sprite-movement]) .sprite-square .sprite-ground-shadow{animation-name:var(--cos-square-shadow)}
+/* Keep the standard timings and maximum hop envelope. Springy has two
+   distinct rebounds; levitation rests at floor height between gentle rises. */
+@keyframes cos-spring-round{
+  0%,6%,46%,72%,100%{transform:translateY(0) scale(1)}
+  10%,50%{transform:translateY(2px) scale(1.08,.84)}
+  25%{transform:translateY(var(--hop-height,-39px)) scale(.96,1.06)}
+  38%{transform:translateY(var(--hop-half,-21px)) scale(1)}
+  60%{transform:translateY(calc(var(--hop-height,-39px)*.47)) scale(.98,1.04)}
+  76%{transform:translateY(1px) scale(1.04,.94)}
+}
+@keyframes cos-spring-square{
+  0%,6%,46%,72%,100%{transform:translateY(0) scale(1)}
+  10%,50%{transform:translateY(1px) scale(1.04,.93)}
+  25%{transform:translateY(calc(var(--hop-height,-39px)*.55)) scale(1)}
+  38%{transform:translateY(calc(var(--hop-height,-39px)*.28)) scale(1)}
+  60%{transform:translateY(calc(var(--hop-height,-39px)*.25)) scale(1)}
+}
+@keyframes cos-spring-shadow{
+  0%,10%,46%,50%,72%,100%{transform:translateX(-50%) scaleX(1);opacity:.7}
+  25%{transform:translateX(-50%) scaleX(.65);opacity:.38}
+  60%{transform:translateX(-50%) scaleX(.83);opacity:.52}
+}
+@keyframes cos-levitate{
+  0%,8%,85%,100%{transform:translateY(0)}
+  34%{transform:translateY(-12px)}
+  52%{transform:translateY(-17px)}
+  68%{transform:translateY(-12px)}
+}
+@keyframes cos-levitate-shadow{
+  0%,8%,85%,100%{transform:translateX(-50%) scaleX(1);opacity:.7}
+  52%{transform:translateX(-50%) scaleX(.75);opacity:.4}
+}
+/* One decorative layer per whole actor. Gradients and bounded pseudo-art
+   avoid creating tokens/particles that could be counted as algebra. */
+[data-sprite-effect]{--cos-effect-display:none;--cos-effect-art:none;--cos-effect-motion:none;--cos-effect-ring:transparent}
+[data-sprite-effect="stardust-footsteps"]{
+  --cos-effect-display:block;
+  --cos-effect-art:radial-gradient(circle at 15% 94%,#f4e2b5 0 1px,transparent 2px),radial-gradient(circle at 30% 86%,#d9e5d8 0 1.2px,transparent 2px),radial-gradient(circle at 71% 94%,#eed4a5 0 1.2px,transparent 2px),radial-gradient(circle at 88% 85%,#d6e7de 0 1px,transparent 2px);
+  --cos-effect-motion:cos-footsteps;
+}
+[data-sprite-effect="golden-landing-sparkles"]{
+  --cos-effect-display:block;
+  --cos-effect-art:radial-gradient(circle at 7% 82%,#ffe8a2 0 1.6px,transparent 2.8px),radial-gradient(circle at 18% 65%,#dab56b 0 1.2px,transparent 2.2px),radial-gradient(circle at 93% 82%,#fff2c2 0 1.6px,transparent 2.8px),radial-gradient(circle at 83% 67%,#e8c46e 0 1.2px,transparent 2.2px),radial-gradient(circle at 49% 97%,#f2d58b 0 1px,transparent 2px);
+  --cos-effect-motion:cos-landing;
+}
+[data-sprite-effect="celestial-particle-trail"]{
+  --cos-effect-display:block;
+  --cos-effect-art:radial-gradient(circle at 8% 16%,#b9d9ec 0 1.2px,transparent 2px),radial-gradient(circle at 4% 42%,#9a95d9 0 1px,transparent 2px),radial-gradient(circle at 94% 58%,#b3d9e4 0 1.4px,transparent 2.4px),radial-gradient(circle at 10% 76%,#c0a9df 0 1px,transparent 2px),radial-gradient(circle at 88% 88%,#9bcbdc 0 1.2px,transparent 2px);
+  --cos-effect-motion:cos-celestial;
+}
+[data-sprite-effect="constellation-aura"]{
+  --cos-effect-display:block;--cos-effect-ring:#b8cee584;
+  --cos-effect-art:radial-gradient(circle at 50% 3%,#fff0ba 0 1.4px,transparent 2px),radial-gradient(circle at 88% 19%,#e1e9f6 0 1.2px,transparent 2px),radial-gradient(circle at 97% 58%,#f0d698 0 1.4px,transparent 2px),radial-gradient(circle at 77% 93%,#e1e9f6 0 1.2px,transparent 2px),radial-gradient(circle at 20% 92%,#e1e9f6 0 1.2px,transparent 2px),radial-gradient(circle at 3% 46%,#f0d698 0 1.4px,transparent 2px),radial-gradient(circle at 14% 15%,#e1e9f6 0 1.2px,transparent 2px);
+  --cos-effect-motion:cos-aura;
+}
+.sprite-body>.sprite-cosmetic-effect{
+  display:var(--cos-effect-display,none);position:absolute;inset:-4px;z-index:3;
+  pointer-events:none;box-sizing:border-box;border:1px dotted var(--cos-effect-ring,transparent);
+  border-radius:50%;background:var(--cos-effect-art,none);
+  animation:var(--cos-effect-motion,none) var(--hop-period,1600ms) ease-in-out infinite;
+  animation-delay:var(--hop-delay,0ms);
+}
+.sprite-square .sprite-cosmetic-effect{border-radius:9px}
+@keyframes cos-footsteps{0%,15%,35%{opacity:.2}48%,68%{opacity:.85}100%{opacity:.2}}
+@keyframes cos-landing{0%,38%,76%,100%{opacity:.15}48%,58%{opacity:.95}}
+@keyframes cos-celestial{0%,100%{opacity:.4;transform:translateY(0)}35%{opacity:.9;transform:translateY(1px)}65%{opacity:.5;transform:translateY(-1px)}}
+@keyframes cos-aura{0%,100%{opacity:.55}50%{opacity:.95}}
+/* Basket motion and operation choreography have precedence over cosmetics.
+   Suppress transient particles during contact, cancellation and clipping.
+   Default floor effects remain independent of all gameplay timing. */
+:where([data-sprite-movement]) :is(.group-basket,.basket-in-hand) .sprite .sprite-motion{animation-name:sprite-basket-bob}
+:where([data-sprite-movement]) :is(.group-basket,.basket-in-hand) .sprite .sprite-ground-shadow{animation:none}
+:is(.group-basket,.basket-in-hand) .sprite-cosmetic-effect{animation:none;opacity:.65}
+:is(.hand-target,.fraction-cut-art,.zero-pair-actor,.sprite-reacting,.area-after-square,.area-after-sqrt) .sprite-cosmetic-effect,
+.sprite[data-square-morph] .sprite-cosmetic-effect{visibility:hidden;animation-play-state:paused}
+.hero-creature:not(.hero-landed) .sprite-cosmetic-effect{visibility:hidden;animation:none}
+.hero-is-paused .sprite-cosmetic-effect{animation-play-state:paused}
+.hero-art[data-playback="reduced"] .sprite-cosmetic-effect,
+.reduce-motion .sprite-cosmetic-effect:not(:where(#home-hero-art[data-motion-opt-in="true"] *)),
+.fb-campaign[data-reduced="true"] .sprite-cosmetic-effect,
+.atelier-thumb .sprite-cosmetic-effect{animation:none!important;transform:none!important;opacity:.78}
+.atelier-thumb .sprite-cosmetic-effect{visibility:visible}
+/* The site preference, the hero's resting/falling overrides, and the
+   existing hand-target/morph pause rules continue to govern native motion. */

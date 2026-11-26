@@ -59,7 +59,9 @@ test("structured stacked fractions preview without committing, confirm, then ear
   await expect(h.locator("#scene")).toBeHidden();
   await expect(h.locator("#fb-nb-watch")).toBeVisible();
   expect((await saved(page)).worlds.fractions.stages.notebook.completed).toEqual([]);
+  await expect(page.locator("#reward-celebration")).toBeHidden();
   await watch(page);
+  await expect(page.locator("#reward-celebration-names")).toContainText("Curious eyes");
   await expect(h.locator("#scene")).toBeVisible();
   await expect(h.locator(".fb-tools")).toBeHidden();
   await expect(h.locator("#right-items")).toHaveAttribute("aria-label","East chamber: 0 sprites, 7/5 weights");
