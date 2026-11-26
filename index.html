@@ -42,8 +42,8 @@
   <link rel="stylesheet" href="./src/weight-effects.css?v=94" />
   <link rel="stylesheet" href="./src/chamber-themes.css?v=97" />
   <link rel="stylesheet" href="./src/campaign-path.css?v=98" />
-  <script type="module" src="./src/app.mjs?v=104"></script>
-  <script type="module" src="./src/site.mjs?v=105"></script>
+  <script type="module" src="./src/app.mjs?v=106"></script>
+  <script type="module" src="./src/site.mjs?v=106"></script>
   <link rel="stylesheet" href="./src/compact-level-board.css?v=99" />
   <link rel="stylesheet" href="./src/menu-demonstrations.css?v=100" />
   <link rel="stylesheet" href="./src/menu-usability.css?v=101" />
@@ -51,6 +51,7 @@
   <link rel="stylesheet" href="./src/route-guide.css?v=103" />
   <link rel="stylesheet" href="./src/board-switchers.css?v=103" />
   <link rel="stylesheet" href="./src/completion-story.css?v=104" />
+  <link rel="stylesheet" href="./src/apprentice-workspace.css?v=106" />
 </head>
 <body>
   <div class="site-shell" id="site-shell">
@@ -434,22 +435,17 @@
       </div>
 
       <section id="notebook-workspace" class="notebook-workspace" aria-label="Algebra Apprentice paper-first notebook" hidden>
-        <div class="notebook-intro">
-          <span class="eyebrow" id="notebook-stage-kicker">STAGE 3 · ALGEBRA APPRENTICE · TEACHER PROTOTYPE</span>
-          <h3>First the paper. Then the sprites.</h3>
-          <p id="notebook-level-prompt">Choose a mathematical operation to apply to both sides. The editor calculates each new equation; once you have isolated the mystery sprite, the hand will replay your method.</p>
-          <span id="notebook-stage-note" class="notebook-preview-warning">Practice preview · No levels or progress earned</span>
-          <aside id="notebook-scaffold" class="notebook-scaffold" hidden aria-label="Writing support">
-            <strong id="notebook-scaffold-heading">Your first example</strong>
-            <p id="notebook-scaffold-text">A different example shows how an operation changes both sides of an equation.</p>
-          </aside>
-          <button id="notebook-hint" type="button" class="secondary-btn notebook-hint">Need a thinking prompt?</button>
-          <p id="notebook-hint-message" class="notebook-hint-message" hidden role="status"></p>
-        </div>
         <div class="notebook-paper">
           <div class="notebook-paper-head"><span>THE WORKSHOP JOURNAL</span><span aria-hidden="true">✎</span></div>
           <h4>My algebra notebook</h4>
-          <ol id="notebook-lines" class="notebook-lines" aria-label="Your checked algebra lines"></ol>
+          <ol id="notebook-lines" class="notebook-lines" tabindex="0" aria-label="Your checked algebra lines"></ol>
+          <div class="notebook-journal-footer"><span id="notebook-line-count" aria-live="polite">1 equation</span><span>Checked working</span></div>
+        </div>
+        <div class="notebook-intro notebook-control-panel" aria-label="Algebra controls">
+          <span class="eyebrow" id="notebook-stage-kicker">STAGE 3 · ALGEBRA APPRENTICE · TEACHER PROTOTYPE</span>
+          <h3>Choose your next move</h3>
+          <p id="notebook-level-prompt">Choose a mathematical operation to apply to both sides. The editor calculates each new equation; once you have isolated the mystery sprite, the hand will replay your method.</p>
+          <div class="notebook-tools-scroll">
           <form id="notebook-form" class="notebook-form">
             <div class="notebook-math-editor" role="group" aria-label="Mathematical operation editor">
               <label for="notebook-operation">Choose or write the operation to apply to <strong>both sides</strong></label>
@@ -513,12 +509,22 @@
             </div>
           </form>
           <p id="notebook-feedback" class="notebook-feedback" role="status" aria-live="polite">Use the editor to choose what happens to both sides. The next equation appears automatically. The sprites wait until your route is checked.</p>
+            <div class="notebook-support" aria-label="Optional learning support">
+          <span id="notebook-stage-note" class="notebook-preview-warning">Practice preview · No levels or progress earned</span>
+          <aside id="notebook-scaffold" class="notebook-scaffold" hidden aria-label="Writing support">
+            <strong id="notebook-scaffold-heading">Your first example</strong>
+            <p id="notebook-scaffold-text">A different example shows how an operation changes both sides of an equation.</p>
+          </aside>
+          <button id="notebook-hint" type="button" class="secondary-btn notebook-hint">Need a thinking prompt?</button>
+          <p id="notebook-hint-message" class="notebook-hint-message" hidden role="status"></p>
+          <p id="notebook-help" class="notebook-help">Choose a balancing operation, not the answer. Addition or subtraction can use 1–12 weights or sprites; multiplication and division use factors 2–5. Every move must work with whole objects on both sides.</p>
+            </div>
+          </div>
           <div class="notebook-actions">
             <button id="notebook-undo" class="secondary-btn" type="button">↶ Undo a line</button>
             <button id="notebook-reset" class="secondary-btn" type="button">↺ Start again</button>
             <button id="notebook-replay" class="primary-btn" type="button" disabled>Replay with sprites →</button>
           </div>
-          <p id="notebook-help" class="notebook-help">Choose a balancing operation, not the answer. Addition or subtraction can use 1–12 weights or sprites; multiplication and division use factors 2–5. Every move must work with whole objects on both sides.</p>
         </div>
       </section>
       <section id="notebook-playback" class="notebook-playback" role="status" aria-live="polite" hidden>

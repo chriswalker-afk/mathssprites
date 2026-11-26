@@ -7,9 +7,15 @@ import {req} from "./rational.mjs";
 import {isSolved} from "./engine.mjs";
 
 const paperMarkup=`<section class="fb-notebook" id="fb-notebook" aria-label="Fractional algebra notebook">
-<div class="fb-paper-header"><h2>Algebra notebook</h2><output id="fb-nb-count">0 moves</output></div>
-<p>Choose one operation for both sides. Preview the new line, then confirm it.</p>
-<ol id="fb-nb-lines" class="fb-paper-lines" aria-label="Checked algebra lines"></ol>
+<div class="fb-notebook-paper notebook-paper">
+<div class="notebook-paper-head"><span>THE WORKSHOP JOURNAL</span><span aria-hidden="true">✎</span></div>
+<div class="fb-paper-header"><h2>My algebra notebook</h2></div>
+<ol id="fb-nb-lines" class="fb-paper-lines" tabindex="0" aria-label="Checked algebra lines"></ol>
+<div class="notebook-journal-footer"><output id="fb-nb-count">0 moves</output><span>Checked working</span></div>
+</div>
+<div class="fb-notebook-controls notebook-control-panel" aria-label="Algebra controls">
+<div class="notebook-control-heading"><h3>Choose your next move</h3><p>Choose one operation for both sides. Preview, then confirm.</p></div>
+<div class="notebook-tools-scroll">
 <div class="fb-editor" id="fb-nb-editor">
 <div class="fb-editor-row">
 <div class="fb-editor-keys" role="group" aria-label="Operation">
@@ -25,7 +31,10 @@ const paperMarkup=`<section class="fb-notebook" id="fb-notebook" aria-label="Fra
 <p id="fb-nb-feedback" class="fb-paper-feedback" role="status" aria-live="polite">Choose an operation.</p>
 <div class="fb-paper-actions"><button type="button" id="fb-nb-preview" disabled>Preview line</button><button type="button" id="fb-nb-confirm" disabled>Confirm line</button></div>
 </div>
+<div class="notebook-support" aria-label="Optional learning support"></div>
+</div>
 <div class="fb-paper-actions"><button type="button" id="fb-nb-undo" disabled>↶ Undo line</button><button type="button" id="fb-nb-restart">Start again</button><button type="button" id="fb-nb-watch" hidden>Watch your sprites →</button></div>
+</div>
 </section>
 <section class="fb-nb-replay-status" id="fb-nb-replay-status" hidden aria-label="Physical replay"><span id="fb-nb-replay-message" role="status" aria-live="polite"></span><span id="fb-nb-replay-operation"></span><button type="button" id="fb-nb-again" hidden>Replay again</button><button type="button" id="fb-nb-back" hidden>Back to notebook</button></section>`;
 
@@ -84,7 +93,8 @@ export function mountFractionNotebook(root,{level,controller,equationMarkup,oper
   function renderPaper(){
     const rows=[{state:session.state.history[0]?.before||session.state,step:null},...session.state.history.map((tx,i)=>({state:tx.after,step:session.steps[i]}))];
     $("fb-nb-lines").innerHTML=rows.map(({state,step},i)=>'<li'+(i===rows.length-1?' class="fb-paper-current"':'')+'><span class="fb-paper-index">'+(i===0?"Start":i)+'</span><span>'+equationMarkup(state)+'</span><span class="fb-paper-op">'+(step?math(step):"")+'</span></li>').join("");
-    $("fb-nb-lines").scrollTop=$("fb-nb-lines").scrollHeight;
+    const lines=$("fb-nb-lines");
+    requestAnimationFrame(()=>{if(lines.clientHeight&&lines.scrollHeight>lines.clientHeight)lines.scrollTop=lines.scrollHeight;});
     $("fb-nb-count").textContent=session.steps.length+" move"+(session.steps.length===1?"":"s");
     const solved=isSolved(session.state);
     $("fb-nb-editor").hidden=solved;$("fb-nb-watch").hidden=!solved;

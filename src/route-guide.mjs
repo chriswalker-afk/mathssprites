@@ -48,7 +48,7 @@ export function routeGuideCues(world,stage){
  * No clicks are intercepted and no physical layout coordinates are changed.
  * Only an explicit dismissal, finish or solved experiment marks it seen. */
 export function mountRouteGuide(root,{worldId,stageId,enabled,notebook=false,fraction=false}){
-  const parent=root.querySelector(notebook?(fraction?"#fb-notebook":".notebook-intro"):(fraction?".fb-mission":".mission"));
+  const parent=root.querySelector(notebook?(fraction?"#fb-notebook .notebook-support":"#notebook-workspace .notebook-support"):(fraction?".fb-mission":".mission"));
   if(!parent)return null;
   const doc=parent.ownerDocument,wrapper=doc.createElement("aside");
   wrapper.className="route-guide";wrapper.dataset.routeGuide=worldId+"/"+stageId;
