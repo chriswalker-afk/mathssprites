@@ -62,12 +62,17 @@ test("two-step solution earns two stars; replaying optimally upgrades the best r
   await expect(page.locator('[data-level="1"] .tile-stars')).toHaveText("★★☆");
   let saved=await page.evaluate(()=>JSON.parse(localStorage.getItem("mathssprites.stars.v1")));
   expect(saved.guided["1"]).toBe(2);
+  expect(await page.evaluate(()=>localStorage.getItem("mathssprites.cosmetics.v1"))).toBeNull();
   await page.locator('[data-level="1"]').click();
   await clickWithReferenceMove(page,"#do-both"); // initial remove two
   await expect(page.locator("#replay-star-summary")).toContainText("★★★ 3 stars",{timeout:16000});
   saved=await page.evaluate(()=>JSON.parse(localStorage.getItem("mathssprites.stars.v1")));
   expect(saved.guided["1"]).toBe(1);
+  const cosmetic=await page.evaluate(()=>JSON.parse(localStorage.getItem("mathssprites.cosmetics.v1")));
+  expect(cosmetic.unlockedRewards).toEqual(["curious-eyes"]);
+  expect(Object.values(cosmetic.equipped).every(value=>value===null)).toBe(true);
   await page.reload();
+  expect(await page.evaluate(()=>JSON.parse(localStorage.getItem("mathssprites.cosmetics.v1")))).toEqual(cosmetic);
   await stages(page);
   await page.locator('[data-map-stage="guided"]').click();
   await expect(page.locator('[data-level="1"] .tile-stars')).toHaveText("★★★");
@@ -116,4 +121,17 @@ test("legacy completion is preserved without inventing a three-star rating",asyn
   await expect(page.locator('[data-level="2"]')).toContainText("replay for stars");
   await expect(page.locator('[data-level="20"]')).toBeEnabled();
   expect(await page.evaluate(()=>JSON.parse(localStorage.getItem("mathssprites.progress.v1")))).toEqual(original);
+});
+
+
+test("existing stars silently unlock cosmetics on reload, without spending stars or equipping an item @quick @smoke",async({page})=>{
+  const legacy=JSON.stringify({guided:{"1":1,"2":1,"3":1},independent:{},notebook:{}});
+  await page.evaluate(value=>localStorage.setItem("mathssprites.stars.v1",value),legacy);
+  await page.reload();
+  const profile=await page.evaluate(()=>JSON.parse(localStorage.getItem("mathssprites.cosmetics.v1")));
+  expect(profile.unlockedRewards).toEqual(["curious-eyes","extra-fluffy"]);
+  expect(Object.values(profile.equipped).every(value=>value===null)).toBe(true);
+  expect(await page.evaluate(()=>localStorage.getItem("mathssprites.stars.v1"))).toBe(legacy);
+  await stages(page);
+  await expect(page.locator("#level-progress")).toContainText("9 / 72 stars");
 });

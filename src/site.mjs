@@ -8,7 +8,8 @@ import {
   loadCampaignRecords,saveCampaignRecords,loadCampaignResume,saveCampaignResume,
   withCampaignLastPlayed,withCampaignCompleted,campaignStageRecord,
   campaignStars,campaignStarTotals,campaignOptimalMoves,stageResumeLevel
-} from "./campaign-records.mjs";
+} from "./campaign-records.mjs?v=84";
+import {createCosmeticRewards} from "./cosmetic-rewards.mjs?v=84";
 import {createWorkshopEquation,WORKSHOP_EXAMPLES} from "./equation-workshop.mjs?v=82";
 import {createSignedWorkshopEquation,SIGNED_WORKSHOP_EXAMPLES} from "./signed-workshop.mjs?v=82";
 import {createFractionWorkshopEquation,FRACTION_WORKSHOP_EXAMPLES} from "./fraction-workshop.mjs";
@@ -57,6 +58,10 @@ let stage3Progress = loadStage3Progress();
 let ratings = loadRatings();
 let recent = loadResume();
 let campaign = loadCampaignRecords();
+// One authoritative reward session; later renderer/Atelier PRs can read
+// its snapshot and listen to changes. Do not equip or display any art yet.
+export const cosmeticRewards=createCosmeticRewards(campaign);
+cosmeticRewards.subscribe(change=>window.dispatchEvent(new CustomEvent("mathssprites:cosmetics-change",{detail:change})));
 let campaignResume = loadCampaignResume();
 let teacher = loadTeacherSetting();
 let guideEnabled = readGuideEnabled();
@@ -815,6 +820,9 @@ window.addEventListener("mathssprites:solved",event=>{
   const moves=event.detail.moves;
   campaign=saveCampaignRecords(withCampaignCompleted(
     campaign,worldId,stageId,slot.id,moves));
+  // Only the existing, validated campaign completion path can update rewards.
+  // Repeat completions, workshop scenes and preview routes cannot farm stars.
+  cosmeticRewards.syncCampaign(campaign);
   const record=campaignStageRecord(campaign,worldId,stageId);
   campaignResume=saveCampaignResume({worldId,stageId,levelId:record.lastPlayed});
 
