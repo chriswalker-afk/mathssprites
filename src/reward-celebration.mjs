@@ -1,7 +1,7 @@
 /** New entitlements are queued only from real campaign completions.
  * A review-ready signal drains them once; startup migration, repeated
  * solves, previews and appearance changes never create a celebration. */
-import {COSMETIC_REWARDS} from "./cosmetic-catalog.mjs";
+import {COSMETIC_REWARDS} from "./cosmetic-catalog.mjs?v=91";
 export function createRewardCelebrationQueue(){
   const pending=new Set(),seen=new Set();
   return Object.freeze({
@@ -36,7 +36,7 @@ export function mountRewardCelebration({document:doc=globalThis.document,duratio
     hide();anchor.append(notice);
     title.textContent=rewards.length===1?"New cosmetic unlocked!":rewards.length+" cosmetics unlocked!";
     names.textContent=rewards.map(r=>r.name+" · "+r.stars+" ★").join("  •  ");
-    detail.textContent="Find your rewards in the Sprite Atelier.";
+    detail.textContent="Find your rewards in the Atelier.";
     notice.hidden=false;notice.getBoundingClientRect();
     notice.classList.add("reward-celebration-enter");
     timer=setTimeout(hide,duration);

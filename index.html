@@ -36,9 +36,9 @@
   <link rel="stylesheet" href="./src/sprite-wearables.css?v=89" />
   <link rel="stylesheet" href="./src/sprite-effects.css?v=89" />
   <link rel="stylesheet" href="./src/reward-celebration.css?v=88" />
-  <link rel="stylesheet" href="./src/sprite-atelier.css?v=89" />
+  <link rel="stylesheet" href="./src/sprite-atelier.css?v=91" />
   <script type="module" src="./src/app.mjs?v=88"></script>
-  <script type="module" src="./src/site.mjs?v=89"></script>
+  <script type="module" src="./src/site.mjs?v=91"></script>
 </head>
 <body>
   <div class="site-shell" id="site-shell">
@@ -58,7 +58,7 @@
       <nav class="site-nav-links" aria-label="Main menu">
         <button type="button" data-screen="home">Home</button>
         <button type="button" data-screen="levels" aria-label="Choose a world and level">Worlds</button>
-        <button type="button" data-screen="atelier" aria-label="Sprite Atelier">Atelier</button>
+        <button type="button" data-screen="atelier" aria-label="The Atelier">Atelier</button>
         <button type="button" data-screen="help" aria-label="How to play">Help</button>
         <button type="button" data-screen="settings">Settings</button>
       </nav>
@@ -73,7 +73,7 @@
             <button type="button" id="home-play" class="primary-btn">Start Stage 1 · Level 1 →</button>
             <button type="button" id="home-choose-level" class="secondary-btn">Choose a level →</button>
             <button type="button" class="secondary-btn" data-screen="workshop">Equation Workshop →</button>
-            <button type="button" id="home-atelier" class="secondary-btn atelier-entry" data-screen="atelier"><span>Sprite Atelier</span> <span id="home-atelier-stars" class="atelier-entry-stars">0 / 720 ★</span><span aria-hidden="true">›</span></button>
+            <button type="button" id="home-atelier" class="secondary-btn atelier-entry" data-screen="atelier"><span>The Atelier</span> <span id="home-atelier-stars" class="atelier-entry-stars">0 / 720 ★</span><span aria-hidden="true">›</span></button>
           </div>
           <span id="home-progress" class="landing-progress" aria-live="polite"></span>
         </div>
@@ -131,11 +131,11 @@
         <div>
           <button type="button" id="atelier-back" class="site-back-link">← Back to home</button>
           <div class="portal-kicker">THE LABORATORY · COLLECTION</div>
-          <h1 id="atelier-heading" tabindex="-1">The Sprite Atelier</h1>
+          <h1 id="atelier-heading" tabindex="-1">The Atelier</h1>
         </div>
         <div class="atelier-star-tally" aria-label="Global campaign stars and rewards">
           <strong id="atelier-stars">0 / 720 ★</strong>
-          <span id="atelier-owned">0 / 29 unlocked</span>
+          <span id="atelier-owned">0 / 57 unlocked</span>
         </div>
       </div>
       <div class="atelier-next" aria-label="Next cosmetic reward">
@@ -143,12 +143,25 @@
         <div class="atelier-next-info"><span class="atelier-eyebrow">NEXT REWARD</span><strong id="atelier-next-name"></strong></div>
         <div class="atelier-next-meter"><span id="atelier-next-copy"></span><progress id="atelier-next-progress" value="0" max="3" aria-label="Progress towards next reward"></progress></div>
       </div>
+      <div class="atelier-collections" role="group" aria-label="Customisation collection">
+        <button type="button" data-atelier-collection="sprites" aria-pressed="true">Sprites <span>29</span></button>
+        <button type="button" data-atelier-collection="weights" aria-pressed="false">Weights <span>18</span></button>
+        <button type="button" data-atelier-collection="chambers" aria-pressed="false">Chambers <span>10</span></button>
+      </div>
       <div class="atelier-layout">
-        <section class="atelier-dressing" aria-label="Live sprite preview">
-          <div class="atelier-preview-header"><h2>Fitting room</h2><span id="atelier-preview-label">Equipped appearance</span></div>
+        <section class="atelier-dressing" aria-label="Appearance preview">
+          <div class="atelier-preview-header"><h2 id="atelier-preview-heading">Fitting room</h2><span id="atelier-preview-label">Equipped appearance</span></div>
           <div id="atelier-preview" class="atelier-preview">
-            <div class="atelier-figure"><div id="atelier-black" class="atelier-stage" aria-hidden="true"></div><span>Black sprite · x</span></div>
-            <div class="atelier-figure"><div id="atelier-white" class="atelier-stage" aria-hidden="true"></div><span>White sprite · −x</span></div>
+            <div class="atelier-figure" data-preview-collection="sprites"><div id="atelier-black" class="atelier-stage" aria-hidden="true"></div><span>Black sprite · x</span></div>
+            <div class="atelier-figure" data-preview-collection="sprites"><div id="atelier-white" class="atelier-stage" aria-hidden="true"></div><span>White sprite · −x</span></div>
+            <div class="atelier-lab-preview" data-preview-collection="weights" hidden>
+              <div class="atelier-stage atelier-weight-stage" aria-hidden="true"><span class="token weight"><i class="weight-handle"></i><i class="weight-shine"></i></span></div>
+              <span>Original brass weight · 1 unit</span>
+            </div>
+            <div class="atelier-lab-preview" data-preview-collection="chambers" hidden>
+              <div class="atelier-chamber-stage" aria-hidden="true"><div class="atelier-mini-room"><i></i><b></b></div><div class="atelier-mini-room"><i></i><b></b></div><div class="atelier-mini-beam"></div></div>
+              <span>Original laboratory · design preview</span>
+            </div>
           </div>
           <div class="atelier-equipped-row"><span class="atelier-eyebrow">EQUIPPED</span><span id="atelier-equipped">Original appearance</span></div>
           <div class="atelier-detail">
