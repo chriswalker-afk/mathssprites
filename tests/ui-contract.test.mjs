@@ -53,8 +53,8 @@ test("fifth level really exercises a divide-by-five followed by subtraction", ()
   assert.match(html, /data-kind="posX2"/);
 });
 test("browser imports are local and the prototype has no external runtime dependencies", () => {
-  assert.match(html, /src="\.\/src\/app\.mjs"/);
-  assert.match(html, /href="\.\/src\/styles\.css"/);
+  assert.match(html, /src="\.\/src\/app\.mjs(?:\?v=\d+)?"/);
+  assert.match(html, /href="\.\/src\/styles\.css(?:\?v=\d+)?"/);
   assert.doesNotMatch(html, /https?:\/\//);
   assert.match(app, /from "\.\/engine\.mjs"/);
 });

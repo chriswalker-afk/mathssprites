@@ -9,7 +9,8 @@ import {
   withCampaignLastPlayed,withCampaignCompleted,campaignStageRecord,
   campaignStars,campaignStarTotals,campaignOptimalMoves,stageResumeLevel
 } from "./campaign-records.mjs";
-import {createWorkshopEquation,WORKSHOP_EXAMPLES} from "./equation-workshop.mjs";
+import {createWorkshopEquation,WORKSHOP_EXAMPLES} from "./equation-workshop.mjs?v=82";
+import {createSignedWorkshopEquation,SIGNED_WORKSHOP_EXAMPLES} from "./signed-workshop.mjs?v=82";
 import {createFractionWorkshopEquation,FRACTION_WORKSHOP_EXAMPLES} from "./fraction-workshop.mjs";
 import {createSquareWorkshopEquation,SQUARE_WORKSHOP_EXAMPLES,SQUARE_BUILD_EXAMPLES} from "./square-workshop.mjs";
 import {createHomeHero} from "./home-hero.mjs";
@@ -388,7 +389,7 @@ function showScreen(name,{focusHeading=true}={}) {
   if (!screenNames.includes(name)) return;
   if(name==="workshop" && currentScreen!=="workshop" && currentScreen!=="workshop-game"){
     workshopReturnScreen=currentScreen==="levels"?"levels":"home";
-    if(currentScreen==="levels")setWorkshopQuantity(["fractions","squares"].includes(selectedWorld)?selectedWorld:"positive");
+    if(currentScreen==="levels")setWorkshopQuantity(selectedWorld==="opposites"?"signed":["fractions","squares"].includes(selectedWorld)?selectedWorld:"positive");
   }
   if((name==="help"||name==="settings") &&
       !["help","settings"].includes(currentScreen) &&
@@ -507,23 +508,25 @@ function workshopStatus(message,status="info"){
   $("workshop-equation").setAttribute("aria-invalid",String(status==="error"));
 }
 function setWorkshopQuantity(quantity){
-  const fractions=quantity==="fractions",squares=quantity==="squares";
-  $("workshop-quantity-mode").value=squares?"squares":fractions?"fractions":"positive";
+  const fractions=quantity==="fractions",squares=quantity==="squares",signed=quantity==="signed"||quantity==="opposites";
+  $("workshop-quantity-mode").value=squares?"squares":fractions?"fractions":signed?"signed":"positive";
   const notebook=$("workshop-hand-mode").querySelector('option[value="notebook"]');
-  notebook.disabled=!fractions&&!squares;notebook.hidden=!fractions&&!squares;
+  notebook.disabled=!fractions&&!squares&&!signed;notebook.hidden=notebook.disabled;
   if(notebook.disabled&&$("workshop-hand-mode").value==="notebook")$("workshop-hand-mode").value="auto";
   $("workshop-goal-field").hidden=!squares;
   const build=squares&&$("workshop-square-goal").value==="area";
-  $("workshop-equation").placeholder=squares?(build?"e.g. x + 1 = 4":"e.g. x² + 4x = 21"):fractions?"e.g. (2/3)x = 4":"e.g. 3x + 5 = 20";
-  $("workshop-west-example").textContent=squares?(build?"1 round sprite + 1 weight":"1 square sprite + 4 round sprites"):fractions?"2 sprites":"3 sprites + 5 weights";
-  $("workshop-east-example").textContent=squares?(build?"4 weights":"21 weights"):fractions?"5 weights":"20 weights";
+  $("workshop-lesson-copy").textContent=signed?"Black sprite = x, white sprite = −x, weight = +1, balloon = −1. Opposite objects cancel.":squares?"Round sprites represent x and square sprites represent x².":fractions?"Sprites and weights can be divided into exact fractional pieces.":"x means a sprite; each number counts brass weights. The hand acts on both rooms.";
+  $("workshop-equation").placeholder=squares?(build?"e.g. x + 1 = 4":"e.g. x² + 4x = 21"):fractions?"e.g. (2/3)x = 4":signed?"e.g. 2x − 3 = x + 4":"e.g. 3x + 5 = 20";
+  $("workshop-west-example").textContent=squares?(build?"1 round sprite + 1 weight":"1 square sprite + 4 round sprites"):fractions?"2 sprites":signed?"2 black sprites + 3 balloons":"3 sprites + 5 weights";
+  $("workshop-east-example").textContent=squares?(build?"4 weights":"21 weights"):fractions?"5 weights":signed?"1 black sprite + 4 weights":"20 weights";
   $("workshop-rule-copy").textContent=squares
     ?(build?"Enter a positive whole-object linear balance with at most six markers on each side. Square the whole expression in each chamber. The mystery weight must be a unique positive integer from 1 to 48."
       :"Use whole nonnegative terms such as x², 2x and 3. The equation must have a unique positive integer weight from 1 to 48 on x ≥ 0. Each room holds at most 48 objects; square roots must recover complete whole sides. A route of at most 16 legal moves must be verified.")
     :fractions
     ?"Use positive linear terms, e.g. (2/3)x, x/2, 1/4 or 1 1/2. Reduced denominators: 1, 2, 3, 4, 5, 6, 8, 10 and 12. Up to 48 objects and pieces per room. Copy or share by 2–5. A legal route of at most 16 moves must be found."
-    :"Use positive whole-number solutions, up to 48 objects per room and whole-object moves. Equal groups must divide into 2–5 complete groups. Select Fractions for exact fractional objects and solutions.";
-  const examples=squares?(build?SQUARE_BUILD_EXAMPLES:SQUARE_WORKSHOP_EXAMPLES):fractions?FRACTION_WORKSHOP_EXAMPLES:WORKSHOP_EXAMPLES.slice(0,4);
+    :signed?"Use signed whole-number linear terms, e.g. −2x, x − 3, or x − (−3). Up to 48 objects per room, including opposite pairs. As in World 2, x must have a unique positive whole-number value. A legal route of at most 16 moves must exist. Expand grouped brackets first."
+    :"Use positive whole-number solutions, up to 48 objects per room and whole-object moves. Equal groups must divide into 2–5 complete groups. Select Negative numbers for signed terms, or Fractions for exact fractional objects and solutions.";
+  const examples=squares?(build?SQUARE_BUILD_EXAMPLES:SQUARE_WORKSHOP_EXAMPLES):fractions?FRACTION_WORKSHOP_EXAMPLES:signed?SIGNED_WORKSHOP_EXAMPLES:WORKSHOP_EXAMPLES.slice(0,4);
   const label=document.createElement("span");label.textContent="Try an example:";
   $("workshop-examples").replaceChildren(label,...examples.map(value=>{
     const button=document.createElement("button");button.type="button";button.className="workshop-example";
@@ -535,7 +538,8 @@ $("workshop-quantity-mode").addEventListener("change",()=>setWorkshopQuantity($(
 $("workshop-square-goal").addEventListener("change",()=>setWorkshopQuantity("squares"));
 function launchWorkshopScene(level,handMode){
   const fractions=level?.quantityMode==="fractions";
-  if(!fractions&&(!level?.lockPositive||level.quantityMode!=="positive"))return false;
+  const signed=level?.quantityMode==="signed"&&!level.lockPositive;
+  if(!fractions&&!signed&&(!level?.lockPositive||level.quantityMode!=="positive"))return false;
   closeFractionCampaign();
   homeHero.setActive(false);
   playingNumber=null;
@@ -558,7 +562,7 @@ function launchWorkshopScene(level,handMode){
     return true;
   }
   window.dispatchEvent(new CustomEvent("mathssprites:workshop-launch",{
-    detail:{level,handMode:level.squareLaboratory&&handMode==="notebook"?"notebook":handMode==="manual"?"manual":"auto"}
+    detail:{level,handMode:(level.squareLaboratory||signed)&&handMode==="notebook"?"notebook":handMode==="manual"?"manual":"auto"}
   }));
   $("level-title").focus({preventScroll:true});
   window.scrollTo?.(0,0);
@@ -569,7 +573,7 @@ $("workshop-form").addEventListener("submit",event=>{
   const input=$("workshop-equation").value;
   const quantity=$("workshop-quantity-mode").value;
   const result=quantity==="squares"?createSquareWorkshopEquation(input,{goal:$("workshop-square-goal").value}):
-    quantity==="fractions"?createFractionWorkshopEquation(input):createWorkshopEquation(input);
+    quantity==="fractions"?createFractionWorkshopEquation(input):quantity==="signed"?createSignedWorkshopEquation(input):createWorkshopEquation(input);
   if(!result.ok){
     workshopStatus(result.message,"error");
     $("workshop-equation").focus();
@@ -874,7 +878,7 @@ const workshopDraft=params.get("workshop");
 if(workshopDraft!==null){
   const world=params.get("workshopWorld");
   $("workshop-square-goal").value=params.get("workshopGoal")==="area"?"area":"isolate";
-  setWorkshopQuantity(["fractions","squares"].includes(world)?world:"positive");
+  setWorkshopQuantity(["fractions","squares","signed","opposites"].includes(world)?world:"positive");
   const draftMode=params.get("workshopMode");
   if(["auto","manual","notebook"].includes(draftMode)&&!(draftMode==="notebook"&&$("workshop-quantity-mode").value==="positive"))$("workshop-hand-mode").value=draftMode;
   $("workshop-equation").value=workshopDraft.slice(0,80);
