@@ -18,9 +18,9 @@ test("World 2 shows the extended independent and notebook stages alongside six G
   await expect(page.locator('[data-world-stages="opposites"]')).toBeEnabled();
   await expect(page.locator(".level-tile")).toHaveCount(24);
   await expect(page.locator(".chapter-group")).toHaveCount(6);
-  await expect(page.locator('[data-level="21"]')).toContainText("A weight for a balloon");
-  await expect(page.locator('[data-level="24"]')).toContainText("The sealed negatives");
-  await expect(page.locator("#board-continue")).toHaveText("Play Level 1 →");
+  await expect(page.locator('[data-level="21"]')).toHaveAttribute("aria-label",/A weight for a balloon/);
+  await expect(page.locator('[data-level="24"]')).toHaveAttribute("aria-label",/The sealed negatives/);
+  await expect(page.locator("#board-continue")).toBeDisabled();
   await chooseCampaignStage(page,"independent");
   await expect(page.locator(".level-tile")).toHaveCount(20);
   await expect(page.locator(".chapter-group")).toHaveCount(5);
@@ -34,6 +34,7 @@ test("World 2 shows the extended independent and notebook stages alongside six G
 test("signed Guided level makes the balloon-weight zero pair, saves World 2 stars @smoke",async({page})=>{
   test.setTimeout(60000);
   await board(page);
+  await page.locator('[data-level="1"]').click();
   await page.locator("#board-continue").click();
   await expect(page.locator("#level-title")).toHaveText("One rising balloon");
   await expect(page.locator("#chapter-status")).toContainText("WORLD 2 · STAGE 1");

@@ -15,7 +15,7 @@ async function board(p){
   await expect(p.locator("#site-levels")).toHaveAttribute("data-active-stage","notebook");
 }
 async function open(p,n){
-  await tile(p,n).click();
+  await playCampaignLevel(p,tile(p,n));
   await expect(p.locator("#notebook-workspace")).toBeVisible();
   await expect(p.locator("#scene")).toBeHidden();
   await expect(p.locator("#notebook-stage-kicker")).toHaveText("WORLD 4 · STAGE 3 · LEVEL "+String(n).padStart(2,"0")+" / 16");

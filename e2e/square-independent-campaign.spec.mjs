@@ -1,3 +1,4 @@
+import {playCampaignLevel} from "./campaign-menu-helper.mjs";
 import {openCampaignBoard} from "./campaign-menu-helper.mjs";
 import {test,expect} from "@playwright/test";
 import {mkdirSync} from "node:fs";
@@ -16,7 +17,7 @@ async function board(p){
   await expect(p.locator("#site-levels")).toHaveAttribute("data-active-stage","independent");
 }
 async function open(p,n){
-  await tile(p,"square-i-"+String(n).padStart(2,"0")).click();
+  await playCampaignLevel(p,tile(p,"square-i-"+String(n).padStart(2,"0")));
   await expect(p.locator("#chapter-status")).toHaveText("WORLD 4 · STAGE 2 · LEVEL "+String(n).padStart(2,"0")+" / 20");
   await ready(p);
 }

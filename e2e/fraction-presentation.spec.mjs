@@ -1,3 +1,4 @@
+import {playCampaignLevel} from "./campaign-menu-helper.mjs";
 import {openCampaignBoard,chooseCampaignStage} from "./campaign-menu-helper.mjs";
 import {test,expect} from "@playwright/test";
 import {mkdirSync} from "node:fs";
@@ -8,7 +9,7 @@ async function board(p,world,stage){
   await openCampaignBoard(p,world,stage);
 }
 async function enter(p,{world="fractions",stage="guided",id="frac-g-06"}={}){
-  await board(p,world,stage);await slot(p,id).click();
+  await board(p,world,stage);await playCampaignLevel(p,slot(p,id));
 }
 async function shot(p,name){
   mkdirSync("artifacts",{recursive:true});
@@ -149,7 +150,7 @@ test("motion on really animates the original actor and moving exact cargo, inclu
   await expect(r).toHaveAttribute("data-reduced","true");
   await expect(r.locator("#left-items .fs-whole-actor .sprite-motion")).toHaveCSS("animation-name","none");
   await r.locator("#fb-game-levels").click();
-  await slot(page,"frac-g-07").click();
+  await playCampaignLevel(page,slot(page,"frac-g-07"));
   await expect(lab(page)).toHaveAttribute("data-reduced","true");
   await lab(page).locator("#fb-game-home").click();
   await enter(page,{world:"opposites",id:"op-g-05"});
@@ -166,7 +167,7 @@ test("Independent and Apprentice reuse the new full-width composition without ex
   let g=await geometry(page,"fraction");expect(g.panel.x).toBeGreaterThan(g.scene.right);
   await lab(page).locator("#fb-game-levels").click();
   await chooseCampaignStage(page,"notebook");
-  await slot(page,"frac-a-03").click();
+  await playCampaignLevel(page,slot(page,"frac-a-03"));
   await expect(lab(page).locator("#fb-notebook")).toBeVisible();
   await expect(lab(page).locator(".fb-board")).toBeHidden();
   await expect(lab(page).locator("#scene")).toBeHidden();

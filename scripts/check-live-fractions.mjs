@@ -26,6 +26,7 @@ try{
   await page.setViewportSize({width:1838,height:891});
   await chooseCampaignStage(page,"guided");
   await page.locator('.level-tile[data-level-id="frac-g-06"]').click();
+  if(await page.locator("#selected-level-details").isVisible())await page.locator("#board-continue").click();
   const host=page.locator("#fraction-game-host");
   await host.locator("#fraction-lab").waitFor({state:"visible"});
   const presentation=await host.evaluate(el=>{
