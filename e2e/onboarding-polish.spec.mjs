@@ -103,7 +103,9 @@ test("phone menus and replay keep touch actions in view",async({page})=>{
   await page.setViewportSize({width:375,height:725});
   await openCampaignBoard(page);
   await expect(page.locator("#site-levels")).toHaveAttribute("data-active-stage","guided");
-  await expect(page.locator(".chapter-illustration").first()).toBeVisible();
+  await expect(page.locator(".chapter-illustration").first()).toBeHidden();
+  await expect(page.locator(".level-tile").first().locator(".tile-number")).toBeVisible();
+  await expect(page.locator("#board-continue")).toBeDisabled();
   await expect(page.locator(".level-tile")).toHaveCount(24);
   await playCampaignLevel(page,page.locator('[data-level="1"]'));
   await expect(page.locator("#game-home")).toBeVisible();

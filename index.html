@@ -43,8 +43,9 @@
   <link rel="stylesheet" href="./src/chamber-themes.css?v=97" />
   <link rel="stylesheet" href="./src/campaign-path.css?v=98" />
   <script type="module" src="./src/app.mjs?v=92"></script>
-  <script type="module" src="./src/site.mjs?v=99"></script>
+  <script type="module" src="./src/site.mjs?v=100"></script>
   <link rel="stylesheet" href="./src/compact-level-board.css?v=99" />
+  <link rel="stylesheet" href="./src/menu-demonstrations.css?v=100" />
 </head>
 <body>
   <div class="site-shell" id="site-shell">
@@ -203,7 +204,7 @@
       <button type="button" class="site-back-link" data-screen="home">← Back to home</button>
       <div class="portal-heading"><div><div class="portal-kicker">THE HALL OF DOORS · 1 OF 3</div>
         <h1 tabindex="-1">Choose a world</h1>
-      </div></div>
+      </div><button type="button" class="secondary-btn menu-demo-toggle" data-menu-demo-toggle>Pause previews</button></div>
       <div id="world-cards" class="world-grid"></div>
     </main>
     <main class="site-page" id="site-stages" hidden>
@@ -212,6 +213,7 @@
         <div><div class="portal-kicker" id="stages-world-kicker">WORLD 01 · THE BALANCE WORKSHOP</div>
           <h1 tabindex="-1">Choose how to learn</h1>
         </div>
+        <button type="button" class="secondary-btn menu-demo-toggle" data-menu-demo-toggle>Pause previews</button>
       </div>
       <div id="world1-stage-cards" class="world1-stage-grid" aria-label="World 1 learning stages"></div>
       <p id="stage-teacher-note" class="teacher-note" hidden>Teacher tools include extra previews; all implemented student levels are open.</p>

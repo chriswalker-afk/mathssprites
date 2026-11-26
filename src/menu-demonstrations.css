@@ -1,0 +1,143 @@
+/* PR100. Schematic animations are independent of gameplay and preserve
+   the original doors/medallions as visual identities, not hit targets. */
+#site-worlds .world-card-scene .hall-door-art{opacity:.28;position:absolute;inset:0;z-index:0}
+#site-worlds .world-card-scene .hall-door-mist{z-index:0}
+#site-worlds .world-card-scene .menu-demo{position:relative;z-index:1;width:calc(100% - 12px);height:calc(100% - 12px);max-width:280px;max-height:180px}
+#site-stages .stage-ornament{display:flex;align-items:center;justify-content:center;gap:6px;height:clamp(104px,22dvh,200px);width:100%;flex:none;grid-column:1/-1;grid-row:auto;overflow:visible}
+#site-stages .stage-ornament .portal-stage-medallion{width:clamp(28px,4vw,56px);height:auto;flex:none;opacity:.85}
+#site-stages .stage-ornament .menu-demo{height:100%;width:auto;max-width:calc(100% - 34px);min-width:0}
+#site-worlds .portal-heading,#site-stages .portal-heading{display:flex;flex-direction:row;align-items:center;justify-content:space-between;gap:8px}
+#site-worlds .menu-demo-toggle,#site-stages .menu-demo-toggle{flex:none;font-size:.7rem;min-height:32px;padding:5px 9px;white-space:nowrap}
+.menu-demo-toggle:focus-visible{outline:3px solid #ffe3ad;outline-offset:2px}
+.menu-demo{display:block;pointer-events:none;user-select:none;overflow:visible;--demo-duration:7.2s}
+.menu-demo .md-board{fill:#182825ef;stroke:#af9569;stroke-width:1}
+.menu-demo .md-label{font:700 13px system-ui,sans-serif;fill:#f3e7c8;stroke:none}
+.menu-demo .md-weight{fill:#c8a66a;stroke:#f6d59a;stroke-width:1.3;stroke-linejoin:round}
+.menu-demo .md-handle,.menu-demo .md-weight-shine{fill:none;stroke:#f9dfab;stroke-width:1.5;stroke-linecap:round}
+.menu-demo .md-sprite{fill:#131c20;stroke:#7b9892;stroke-width:1.5}
+.menu-demo .md-eye{fill:#f5e9c9}
+.menu-demo .md-shadow{fill:#0a1416;opacity:.65}
+.menu-demo .md-tray{fill:#9c7d4d;stroke:#dbbe87;stroke-width:1.2;stroke-linejoin:round}
+.menu-demo .md-post,.menu-demo .md-beam path{fill:none;stroke:#c2a16a;stroke-width:5;stroke-linecap:round}
+.menu-demo .md-beam circle,.menu-demo .md-pivot{fill:#d7b779;stroke:#5e4b32;stroke-width:2}
+.menu-demo .md-beam{transform-origin:140px 123px;transform-box:view-box}
+.menu-demo .md-pad rect{fill:#344a42;stroke:#94af9c;stroke-width:1}
+.menu-demo .md-hand{fill:#f0d9b1;stroke:#9c7750;stroke-width:1;opacity:0}
+.menu-demo .md-hand-detail{stroke:#9c7750;fill:none}
+.menu-demo .md-paper rect{fill:#e8d7ad;stroke:#a99668}
+.menu-demo .md-paper .md-label{fill:#243731;font-family:Georgia,serif}
+.menu-demo .md-paper-operation{fill:#795337!important}
+.menu-demo .md-paper-result{font-weight:bold}
+.menu-demo .md-shelf{stroke:#b28f59;stroke-width:5;stroke-linecap:round}
+.menu-demo .md-balloon{fill:#b7dce7;stroke:#e8f2ed;stroke-width:1.4}
+.menu-demo .md-balloon-string{stroke:#e4d5a8;stroke-width:1.4;fill:none}
+.menu-demo .md-balloon-label{fill:#203d45;font-size:12px}
+.menu-demo .md-zero-label{fill:#e8d7ad;opacity:1}
+.menu-demo .md-fraction{fill:#bf9959;stroke:#f2cd83;stroke-width:1.6}
+.menu-demo .md-whole{opacity:0}
+.menu-demo .md-half-left{transform:translateX(-8px)}
+.menu-demo .md-half-right{transform:translateX(8px)}
+.menu-demo .md-cut{fill:none;stroke:#f8e1aa;stroke-width:1.7;opacity:0}
+.menu-demo .md-divider-arrow,.menu-demo .md-dimension{fill:none;stroke:#adccc1;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.menu-demo .md-square-outline{fill:#293b38;stroke:#a3b9af;stroke-width:1.2}
+.menu-demo .md-square-unit{fill:#bc995d;stroke:#f4d393;stroke-width:1.2}
+.menu-demo .md-square-result .md-label{font-size:11px}
+.menu-demo :is(.md-remove-left,.md-remove-right,.md-hand,.md-pad,.md-beam,.md-left-pan,.md-right-pan,.md-zero-pair,.md-pair-weight,.md-zero-label,.md-whole,.md-half,.md-cut,.md-square-row,.md-square-result,.md-paper-operation,.md-paper-result){animation-duration:var(--demo-duration);animation-timing-function:ease-in-out;animation-iteration-count:infinite;animation-play-state:paused}
+[data-demo-motion="playing"] .menu-demo *{animation-play-state:running}
+[data-demo-motion="inactive"] .menu-demo *{animation-play-state:paused}
+[data-demo-motion="paused"] .menu-demo *{animation-play-state:paused}
+[data-demo-motion="reduced"] .menu-demo *{animation:none!important}
+/* Mirrored removal: one command, two visits in quick succession. */
+.menu-demo .md-mirror .md-command-both{animation-name:md-command-early}
+.menu-demo .md-mirror .md-remove-left{animation-name:md-remove-early}
+.menu-demo .md-mirror .md-remove-right{animation-name:md-remove-mirror}
+.menu-demo .md-mirror .md-hand-left{animation-name:md-hand-early}
+.menu-demo .md-mirror .md-hand-right{animation-name:md-hand-mirror}
+.menu-demo .md-mirror .md-beam{animation-name:md-tilt-mirror}
+.menu-demo .md-mirror .md-left-pan{animation-name:md-up-mirror}
+.menu-demo .md-mirror .md-right-pan{animation-name:md-down-mirror}
+/* Independent: a visible unbalanced interval separates two commands. */
+.menu-demo .md-manual .md-command-left{animation-name:md-command-early}
+.menu-demo .md-manual .md-command-right{animation-name:md-command-late}
+.menu-demo .md-manual .md-remove-left{animation-name:md-remove-early}
+.menu-demo .md-manual .md-remove-right{animation-name:md-remove-late}
+.menu-demo .md-manual .md-hand-left{animation-name:md-hand-early}
+.menu-demo .md-manual .md-hand-right{animation-name:md-hand-late}
+.menu-demo .md-manual .md-beam{animation-name:md-tilt}
+.menu-demo .md-manual .md-left-pan{animation-name:md-pan-up}
+.menu-demo .md-manual .md-right-pan{animation-name:md-pan-down}
+/* Paper first: the written operation and result precede the replay. */
+.menu-demo .md-notebook .md-paper-operation{animation-name:md-write-operation}
+.menu-demo .md-notebook .md-paper-result{animation-name:md-write-result}
+.menu-demo .md-notebook .md-remove-left{animation-name:md-remove-paper-left}
+.menu-demo .md-notebook .md-remove-right{animation-name:md-remove-late}
+.menu-demo .md-notebook .md-hand-left{animation-name:md-hand-paper-left}
+.menu-demo .md-notebook .md-hand-right{animation-name:md-hand-late}
+.menu-demo .md-notebook .md-beam{animation-name:md-tilt-paper}
+.menu-demo .md-notebook .md-left-pan{animation-name:md-up-paper}
+.menu-demo .md-notebook .md-right-pan{animation-name:md-down-paper}
+.menu-demo .md-zero-pair{animation-name:md-zero-rise}
+.menu-demo .md-pair-weight{animation-name:md-attach-weight}
+.menu-demo .md-zero-label{animation-name:md-show-zero}
+.menu-demo .md-whole{animation-name:md-whole-split}
+.menu-demo .md-half-left{animation-name:md-half-left}
+.menu-demo .md-half-right{animation-name:md-half-right}
+.menu-demo .md-cut{animation-name:md-cut-line}
+.menu-demo .md-row-two{animation-name:md-square-row-two}
+.menu-demo .md-row-three{animation-name:md-square-row-three}
+.menu-demo .md-square-result{animation-name:md-square-result}
+@keyframes md-command-early{0%,12%,32%,100%{filter:brightness(1)}19%,25%{filter:brightness(1.65)}}
+@keyframes md-command-late{0%,46%,68%,100%{filter:brightness(1)}52%,59%{filter:brightness(1.65)}}
+@keyframes md-remove-early{0%,22%{opacity:1;transform:translateY(0)}32%,89%{opacity:0;transform:translateY(-31px)}96%,100%{opacity:1;transform:translateY(0)}}
+@keyframes md-remove-mirror{0%,33%{opacity:1;transform:translateY(0)}43%,89%{opacity:0;transform:translateY(-31px)}96%,100%{opacity:1;transform:translateY(0)}}
+@keyframes md-remove-late{0%,59%{opacity:1;transform:translateY(0)}69%,89%{opacity:0;transform:translateY(-31px)}96%,100%{opacity:1;transform:translateY(0)}}
+@keyframes md-remove-paper-left{0%,47%{opacity:1;transform:translateY(0)}57%,89%{opacity:0;transform:translateY(-31px)}96%,100%{opacity:1;transform:translateY(0)}}
+@keyframes md-hand-early{0%,10%,34%,100%{opacity:0;transform:translateY(-18px)}18%,22%{opacity:1;transform:translateY(0)}30%{opacity:1;transform:translateY(-23px)}}
+@keyframes md-hand-mirror{0%,31%,45%,100%{opacity:0;transform:translateY(-18px)}34%,36%{opacity:1;transform:translateY(0)}42%{opacity:1;transform:translateY(-23px)}}
+@keyframes md-hand-late{0%,48%,71%,100%{opacity:0;transform:translateY(-18px)}55%,59%{opacity:1;transform:translateY(0)}66%{opacity:1;transform:translateY(-23px)}}
+@keyframes md-hand-paper-left{0%,38%,59%,100%{opacity:0;transform:translateY(-18px)}44%,47%{opacity:1;transform:translateY(0)}54%{opacity:1;transform:translateY(-23px)}}
+@keyframes md-tilt{0%,25%,70%,100%{transform:rotate(0)}34%,59%{transform:rotate(7deg)}}
+@keyframes md-pan-up{0%,25%,70%,100%{transform:translateY(0)}34%,59%{transform:translateY(-9px)}}
+@keyframes md-pan-down{0%,25%,70%,100%{transform:translateY(0)}34%,59%{transform:translateY(9px)}}
+@keyframes md-write-operation{0%,9%,96%,100%{opacity:0}17%,90%{opacity:1}}
+@keyframes md-write-result{0%,22%,96%,100%{opacity:0}32%,90%{opacity:1}}
+@keyframes md-attach-weight{0%,12%{transform:translate(-55px,0)}28%,89%{transform:translate(0,-2px)}96%,100%{transform:translate(-55px,0)}}
+@keyframes md-zero-rise{0%,32%{opacity:1;transform:translateY(0)}62%,86%{opacity:0;transform:translateY(-66px)}96%,100%{opacity:1;transform:translateY(0)}}
+@keyframes md-show-zero{0%,25%,53%,100%{opacity:0}30%,40%{opacity:1}}
+@keyframes md-whole-split{0%,26%,96%,100%{opacity:1}31%,90%{opacity:0}}
+@keyframes md-half-left{0%,25%,96%,100%{opacity:0;transform:translateX(0)}32%{opacity:1;transform:translateX(0)}43%,88%{opacity:1;transform:translateX(-10px)}}
+@keyframes md-half-right{0%,25%,96%,100%{opacity:0;transform:translateX(0)}32%{opacity:1;transform:translateX(0)}43%,88%{opacity:1;transform:translateX(10px)}}
+@keyframes md-cut-line{0%,15%,39%,100%{opacity:0}23%,30%{opacity:1}}
+@keyframes md-square-row-two{0%,13%,93%,100%{opacity:0;transform:translateX(-27px)}25%,83%{opacity:1;transform:translateX(0)}}
+@keyframes md-square-row-three{0%,25%,88%,100%{opacity:0;transform:translateX(27px)}39%,75%{opacity:1;transform:translateX(0)}}
+@keyframes md-square-result{0%,40%,76%,100%{opacity:0}48%,69%{opacity:1}}
+@media(min-width:851px) and (max-height:650px){
+  #site-stages .stage-ornament{height:clamp(93px,23dvh,135px)}
+  #site-stages .stage-card{gap:6px}
+}
+@media(max-width:850px){
+  #site-stages .world1-stage-grid{grid-template-columns:1fr}
+  #site-stages .stage-card{display:flex;gap:8px}
+  #site-stages .stage-ornament{height:clamp(118px,24vw,170px)}
+  #site-stages .stage-ornament .portal-stage-medallion{width:42px}
+  #site-worlds .world-card-scene .menu-demo{max-width:280px}
+}
+@media(max-width:600px){
+  #site-worlds .portal-heading,#site-stages .portal-heading{align-items:flex-start}
+  #site-worlds .menu-demo-toggle,#site-stages .menu-demo-toggle{min-height:44px;font-size:.65rem;padding:4px 7px}
+  #site-worlds .world-card-scene{height:165px}
+}
+
+@keyframes md-tilt-mirror{0%,24%,43%,100%{transform:rotate(0)}32%,35%{transform:rotate(7deg)}}
+@keyframes md-up-mirror{0%,24%,43%,100%{transform:translateY(0)}32%,35%{transform:translateY(-9px)}}
+@keyframes md-down-mirror{0%,24%,43%,100%{transform:translateY(0)}32%,35%{transform:translateY(9px)}}
+@keyframes md-tilt-paper{0%,49%,70%,100%{transform:rotate(0)}57%,61%{transform:rotate(7deg)}}
+@keyframes md-up-paper{0%,49%,70%,100%{transform:translateY(0)}57%,61%{transform:translateY(-9px)}}
+@keyframes md-down-paper{0%,49%,70%,100%{transform:translateY(0)}57%,61%{transform:translateY(9px)}}
+@media(max-width:850px){#site-stages .world1-stage-grid{grid-auto-rows:auto}}
+
+/* The global reduced-motion stylesheet compresses other game animations.
+   A deliberate preview-only Play restores the proper slow cycle here, and
+   leaves all gameplay animations untouched. */
+.reduce-motion [data-demo-motion="playing"] .menu-demo *,
+.reduce-motion [data-demo-motion="paused"] .menu-demo *{animation-duration:var(--demo-duration)!important}

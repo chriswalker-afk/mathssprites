@@ -18,6 +18,7 @@ import {createSignedWorkshopEquation,SIGNED_WORKSHOP_EXAMPLES} from "./signed-wo
 import {createFractionWorkshopEquation,FRACTION_WORKSHOP_EXAMPLES} from "./fraction-workshop.mjs";
 import {createSquareWorkshopEquation,SQUARE_WORKSHOP_EXAMPLES,SQUARE_BUILD_EXAMPLES} from "./square-workshop.mjs";
 import {createHomeHero} from "./home-hero.mjs?v=88";
+import {WORLD_DEMOS,METHOD_DEMOS,worldDemoMarkup,methodDemoMarkup,createMenuDemoPlayback} from "./menu-demonstrations.mjs?v=100";
 import {compactWorldProgress,compactStageProgress,briefStageIntro} from "./menu-copy.mjs";
 import {boardContinueLevel,spatialTileIndex,campaignMenuScreen,campaignHomeLabel} from "./navigation-journey.mjs?v=98";
 import {loadResume,saveResume,resumeDestination,resumeLabel,RESUME_STAGE_NUMBERS} from "./resume.mjs";
@@ -52,8 +53,10 @@ import {
 
 const $ = id => document.getElementById(id);
 const homeHero=createHomeHero();
+const menuDemos=createMenuDemoPlayback();
 window.addEventListener("mathssprites:motion-change",event=>{
   homeHero.setMotionOverride(event.detail?.reduced===true);
+  menuDemos.setMotionOverride(event.detail?.reduced===true);
 });
 let progress = loadProgress();
 let stage2Progress = loadStage2Progress();
@@ -179,11 +182,11 @@ function renderWorlds() {
           ? '<img class="hall-door-art" src="./assets/portal/door-'+artwork+
             '.svg" width="320" height="360" alt="" loading="lazy" decoding="async" />'
           : '<span class="world-symbol">'+clean(world.icon||"✦")+'</span>')+
-        '<span class="hall-door-mist"></span></div>' +
+        '<span class="hall-door-mist"></span>'+worldDemoMarkup(world.id)+'</div>' +
       '<div class="world-card-body"><div class="eyebrow">WORLD ' +
         String(world.number).padStart(2,"0") + '</div>' +
       '<h3>' + clean(world.title) + '</h3><p class="world-subtitle">' +
-        clean(world.subtitle) + '</p><p class="world-context">'+clean(world.description||"")+'</p>' +
+        clean(world.subtitle) + '</p><p class="world-context">'+clean(world.description||"")+'</p><p class="visually-hidden">'+clean(WORLD_DEMOS[world.id]||"")+'</p>' +
       '<div class="world-card-footer"><span class="world-progress">' + progressLine + ' · '+totals.earned+' / '+totals.available+' ★</span>' +
         (world.available
           ? '<button type="button" class="primary-btn" data-world-stages="'+clean(world.id)+'" aria-label="Choose '+clean(world.title)+' — '+clean(world.subtitle)+'">'+
@@ -214,9 +217,9 @@ function renderStages() {
       '<div class="stage-top"><span class="stage-no">STAGE '+String(stage.number).padStart(2,"0")+
       '</span><span class="stage-tag">'+(finished?"Method mastered":!playable?"Coming soon":recommended?"Recommended start":"Available")+
       '</span></div><div class="stage-ornament" aria-hidden="true">'+
-        portalStageArt(stage.id,stage.icon)+'</div>'+
+        portalStageArt(stage.id,stage.icon)+methodDemoMarkup(stage.id)+'</div>'+
       '<h2>'+clean(methodTitle)+'</h2>'+
-      '<p class="stage-tagline">'+clean(briefStageIntro(stage))+'</p>'+
+      '<p class="stage-tagline">'+clean(briefStageIntro(stage))+'</p><p class="visually-hidden">'+clean(METHOD_DEMOS[stage.id]||"")+'</p>'+
       '<div class="stage-card-bottom"><span class="stage-count">'+countText+'</span>'+
       (playable
         ? '<button type="button" class="primary-btn" data-stage-open="'+clean(stage.id)+'">Choose '+clean(methodTitle)+' →</button>'
@@ -426,6 +429,7 @@ function showScreen(name,{focusHeading=true}={}) {
     else button.removeAttribute("aria-current");
   });
   homeHero.setActive(name==="home");
+  menuDemos.setScreen(name);
   const heading = $("site-" + name).querySelector("h1, h2");
   // Focus the usable input at the desk, and the heading elsewhere.
   // The initial home question receives no reload focus ring.
@@ -442,6 +446,7 @@ function launch(levelIdOrNumber,stageId=selectedStage,worldId=selectedWorld) {
   rewardCelebration.leaveReview();
   cosmeticRewards.refreshAppearance();
   homeHero.setActive(false);
+  menuDemos.setScreen(null);
   selectedWorld=worldId;
   selectedStage=stageId;
   selectedLevelId=slot.id;
@@ -540,6 +545,7 @@ function launchWorkshopScene(level,handMode){
   closeFractionCampaign();
   cosmeticRewards.refreshAppearance();
   homeHero.setActive(false);
+  menuDemos.setScreen(null);
   playingNumber=null;
   playingStage=null;
   playingWorld=null;
@@ -752,6 +758,7 @@ $("site-replay-independent").addEventListener("click",restartIndependentIntroduc
 function launchNotebookPreview(level=WORLD1_LEVELS[8].level){
   cosmeticRewards.refreshAppearance();
   homeHero.setActive(false);
+  menuDemos.setScreen(null);
   playingStage=null;
   playingNumber=null;
   playingWorld=null;
@@ -874,6 +881,7 @@ if(workshopDraft!==null){
   const fixture=SQUARE_LEVEL_PLAN.find(l=>l.id===squarePreview&&["guided","independent"].includes(l.stage));
   if(fixture){
     homeHero.setActive(false);
+  menuDemos.setScreen(null);
     document.body.classList.add("preview-mode");
     $("site-shell").hidden=true;
     $("game-shell").hidden=false;
@@ -889,6 +897,7 @@ if(workshopDraft!==null){
   // Direct preview route keeps the 13 prototype experiments testable while
   // the public student route shows only the available World 1 campaign.
   homeHero.setActive(false);
+  menuDemos.setScreen(null);
   document.body.classList.add("preview-mode");
   $("site-shell").hidden = true;
   $("game-shell").hidden = false;
