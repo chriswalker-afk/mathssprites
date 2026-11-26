@@ -386,7 +386,7 @@ function renderNotebookVisibility() {
   $("chapter-status").textContent=campaign
     ?notebookLocation:"PAPER FIRST · SPRITE REPLAY SECOND · NO PROGRESS";
   $("notebook-stage-kicker").textContent=campaign
-    ?notebookLocation:workshopActive?"FREE PLAY · SQUARE ALGEBRA APPRENTICE":"STAGE 3 · ALGEBRA APPRENTICE · TEACHER PROTOTYPE";
+    ?notebookLocation:workshopActive?(currentLevel().quantityMode==="signed"?"FREE PLAY · OPPOSITES ALGEBRA APPRENTICE":"FREE PLAY · SQUARE ALGEBRA APPRENTICE"):"STAGE 3 · ALGEBRA APPRENTICE · TEACHER PROTOTYPE";
   $("notebook-stage-note").textContent=campaign
     ?"Campaign experiment · Progress saved after a successful sprite replay"
     :workshopActive?"Free play · No levels or stars earned":"Practice preview · No levels or progress earned";
@@ -436,7 +436,7 @@ function renderWorkshopVisibility(){
   document.body.classList.toggle("workshop-mode",workshopActive);
   $("game-levels").textContent=workshopActive?"← Equation Workshop":"▦ Levels";
   if(!workshopActive)return;
-  $("chapter").textContent="FREE PLAY · EQUATION WORKSHOP";
+  $("chapter").textContent=currentLevel().quantityMode==="signed"?"FREE PLAY · OPPOSITE CHAMBERS":"FREE PLAY · EQUATION WORKSHOP";
   $("chapter-status").hidden=false;
   $("chapter-status").textContent="CUSTOM EQUATION · NO CAMPAIGN PROGRESS";
   $("game-guide-restart").hidden=true;
@@ -616,6 +616,7 @@ function render() {
       " · "+campaignChapterTitle):"AN EQUATION TO EXPLORE");
   $("level-title").textContent = lvl.title;
   if(campaignWorldId)document.body.dataset.campaignWorld=campaignWorldId;
+  else if(workshopActive&&lvl.quantityMode==="signed")document.body.dataset.campaignWorld="opposites";
   else delete document.body.dataset.campaignWorld;
   $("level-prompt").textContent = lvl.groupedPrototype?"":lvl.prompt;
   document.body.classList.toggle("grouped-physical-level",
@@ -753,7 +754,7 @@ function render() {
     ? (campaignStage==="independent"?"manual":"auto") : mode;
   $("mode-select").disabled=inCampaign||squarePreviewActive||busy||awaiting;
   $("quantity-mode").value=state.quantityMode;
-  $("quantity-mode").disabled=busy||awaiting||!!lvl.lockPositive;
+  $("quantity-mode").disabled=busy||awaiting||!!lvl.lockPositive||workshopActive;
   $("quantity-mode").querySelector('option[value="positive"]').disabled=
     levelQuantityMode(lvl)==="signed";
   document.body.classList.toggle("quantity-mode-positive",state.quantityMode==="positive");
@@ -2504,7 +2505,7 @@ $("game-guide-restart").addEventListener("click",()=>{
 $("quantity-mode").addEventListener("change", event => {
   if(busy||state.pending)return render();
   const requested=event.target.value;
-  if (currentLevel().lockPositive) return render();
+  if (currentLevel().lockPositive||workshopActive) return render();
   if(levelQuantityMode(currentLevel())==="signed"&&requested!=="signed")
     return render();
   startLevel(levelIndex,requested);
@@ -2545,7 +2546,7 @@ $("reset").addEventListener("click", () => {
   }
   if(workshopActive){
     const level=currentLevel(),selected=mode;
-    startLevel(0,"positive",level,null);
+    startLevel(0,levelQuantityMode(level),level,null);
     workshopActive=true;
     mode=selected;
     render();
@@ -2799,16 +2800,17 @@ $("notebook-next").addEventListener("click",()=>{
 window.addEventListener("mathssprites:workshop-launch",event=>{
   if(busy)return;
   const {level,handMode}=event.detail||{};
-  if(!level?.lockPositive||level.quantityMode!=="positive"||
-     level.id!=="workshop-custom")return;
-  if(level.squareLaboratory&&handMode==="notebook"){
+  const signed=level?.quantityMode==="signed"&&!level.lockPositive;
+  const positive=level?.quantityMode==="positive"&&level.lockPositive;
+  if((!signed&&!positive)||level.id!=="workshop-custom")return;
+  if((level.squareLaboratory||signed)&&handMode==="notebook"){
     openNotebookLevel(level);
     workshopActive=true;
     renderNotebookPaper();render();
     $("notebook-operation").focus({preventScroll:true});
     return;
   }
-  startLevel(0,"positive",level,null);
+  startLevel(0,levelQuantityMode(level),level,null);
   workshopActive=true;
   mode=handMode==="manual"?"manual":"auto";
   render();

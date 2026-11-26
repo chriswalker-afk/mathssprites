@@ -32,8 +32,8 @@
   <link rel="stylesheet" href="./src/square-sprites.css" />
   <link rel="stylesheet" href="./src/square-construction.css" />
   <link rel="stylesheet" href="./src/square-inspection.css" />
-  <script type="module" src="./src/app.mjs?v=81"></script>
-  <script type="module" src="./src/site.mjs?v=80"></script>
+  <script type="module" src="./src/app.mjs?v=82"></script>
+  <script type="module" src="./src/site.mjs?v=82"></script>
 </head>
 <body>
   <div class="site-shell" id="site-shell">
@@ -142,7 +142,7 @@
           </div>
           <div class="workshop-glyph" aria-hidden="true">⚖</div>
           <h2>One equation. Two rooms.</h2>
-          <p><strong>x</strong> means a sprite; each number counts brass weights. The hand acts on both rooms.</p>
+          <p id="workshop-lesson-copy"><strong>x</strong> means a sprite; each number counts brass weights. The hand acts on both rooms.</p>
           <div class="workshop-lesson-example" aria-label="Illustration of an equation as physical rooms">
             <div><span>WEST</span><strong id="workshop-west-example">3 sprites + 5 weights</strong></div>
             <span class="workshop-lesson-equals" aria-hidden="true">⚖</span>
@@ -153,7 +153,7 @@
         <section class="workshop-form-card" aria-label="Build a custom equation">
           <form id="workshop-form" novalidate>
             <label for="workshop-quantity-mode">Number system</label>
-            <select id="workshop-quantity-mode"><option value="positive">Whole numbers</option><option value="fractions">Fractions · World 3</option><option value="squares">Squares · World 4</option></select>
+            <select id="workshop-quantity-mode"><option value="positive">Whole numbers · World 1</option><option value="signed">Negative numbers · World 2</option><option value="fractions">Fractions · World 3</option><option value="squares">Squares · World 4</option></select>
             <div id="workshop-goal-field" hidden>
               <label for="workshop-square-goal">Goal</label>
               <select id="workshop-square-goal"><option value="isolate">Solve a quadratic balance</option><option value="area">Build both square areas</option></select>
