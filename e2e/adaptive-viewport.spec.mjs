@@ -1,3 +1,4 @@
+import {openCampaignBoard,chooseCampaignWorld,chooseCampaignStage,launchHomeOrFirst} from "./campaign-menu-helper.mjs";
 import {clickWithReferenceMove} from "./reference-move-helper.mjs";
 import {test,expect} from "@playwright/test";
 
@@ -40,7 +41,7 @@ async function measure(page){
      title:b("#site-home .landing-copy h1"),
      actions:b("#site-home .landing-actions"),
      animation:b("#site-home .hero-illustration"),
-     shortcuts:b("#home-stage-shortcuts"),
+     shortcuts:b("#site-home .landing-actions"),
      chapter:b(".app-shell .chapter-strip"),
      board:b(".app-shell .game-board"),
      scene:b("#scene"),rail:b(".experiment-controls"),
@@ -77,7 +78,7 @@ test("home fills available space proportionately without stretching the hero int
 });
 test("real room/pan/beam/pedestal remain connected while tall gameplay uses larger screens @smoke",async({page})=>{
   test.setTimeout(100000);
-  await page.locator("#home-play").click();
+  await launchHomeOrFirst(page);
   if(await page.locator("#guide-skip").isVisible())await page.locator("#guide-skip").click();
   await expect(page.locator("#scene")).toBeVisible();
   for(const size of dimensions){
@@ -118,15 +119,15 @@ test("world and stage tabs, scrollable chapters and signed notebook use the scre
     {width:1024,height:720,name:"laptop"}
   ]){
     await page.setViewportSize(size);
-    await page.locator('.site-nav-links [data-screen="levels"]').click();
+    await openCampaignBoard(page);
     await expect(page.locator("#site-levels")).toBeVisible();
-    await expect(page.locator("#map-world-tabs button")).toHaveCount(4);
-    await expect(page.locator('[data-map-world="fractions"]')).toBeEnabled();
-    await expect(page.locator('[data-map-world="squares"]')).toBeEnabled();
+    await expect(page.locator("#world-cards [data-world-stages]")).toHaveCount(4);
+    await expect(page.locator('[data-world-stages="fractions"]')).toBeEnabled();
+    await expect(page.locator('[data-world-stages="squares"]')).toBeEnabled();
     withinScreen(await measure(page));
     await page.screenshot({path:"artifacts/pr59-world-tabs-"+size.name+".png"});
-    await page.locator('[data-map-world="opposites"]').click();
-    await page.locator('[data-map-stage="guided"]').click();
+    await chooseCampaignWorld(page,"opposites");
+    await chooseCampaignStage(page,"guided");
     await expect(page.locator("#site-levels")).toHaveAttribute("data-active-world","opposites");
     await expect(page.locator("#site-levels")).toHaveAttribute("data-active-stage","guided");
     await expect(page.locator(".chapter-group")).toHaveCount(6);
@@ -137,7 +138,7 @@ test("world and stage tabs, scrollable chapters and signed notebook use the scre
     withinScreen(m);
     expect(m.finalTile.bottom).toBeLessThanOrEqual(m.sections.bottom+3);
     await page.screenshot({path:"artifacts/pr59-board-"+size.name+".png"});
-    await page.locator('[data-map-stage="notebook"]').click();
+    await chooseCampaignStage(page,"notebook");
     await expect(page.locator(".chapter-group")).toHaveCount(4);
     await expect(page.locator(".level-tile")).toHaveCount(16);
     await page.locator('[data-level="1"]').click();
@@ -151,8 +152,7 @@ test("world and stage tabs, scrollable chapters and signed notebook use the scre
 test("signed zero-pair hand actions still commit in both tall desktop hand modes @smoke",async({page})=>{
   test.setTimeout(105000);
   await page.setViewportSize({width:2048,height:1252});
-  await page.locator("#home-choose-level").click();
-  await page.locator('[data-map-world="opposites"]').click();
+  await openCampaignBoard(page,"opposites");
   await page.locator('[data-level="1"]').click();
   if(await page.locator("#guide-skip").isVisible())await page.locator("#guide-skip").click();
   await expect(page.locator("#left-items .balloon")).toHaveCount(1);
@@ -163,9 +163,7 @@ test("signed zero-pair hand actions still commit in both tall desktop hand modes
   await page.locator("#game-home").click();
 
   await page.setViewportSize({width:1200,height:1252});
-  await page.locator("#home-choose-level").click();
-  await page.locator('[data-map-world="opposites"]').click();
-  await page.locator('[data-map-stage="independent"]').click();
+  await openCampaignBoard(page,"opposites","independent");
   await page.locator('[data-level="1"]').click();
   if(await page.locator("#guide-skip").isVisible())await page.locator("#guide-skip").click();
   await expect(page.locator("#left-items .balloon")).toHaveCount(2);
@@ -185,8 +183,8 @@ test("phone and portrait tablet keep natural scrolling and reachable controls @s
   ]){
     await page.setViewportSize(size);
     withinScreen(await measure(page));
-    await expect(page.locator("#home-play")).toBeVisible();
-    await page.locator("#home-play").click();
+    await expect(page.locator("#home-choose-level")).toBeVisible();
+    await launchHomeOrFirst(page);
     if(await page.locator("#guide-skip").isVisible())
       await page.locator("#guide-skip").click();
     await expect(page.locator("#do-both")).toBeAttached();

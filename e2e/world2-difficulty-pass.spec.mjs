@@ -1,3 +1,4 @@
+import {openCampaignBoard} from "./campaign-menu-helper.mjs";
 import {test,expect} from "@playwright/test";
 
 test.beforeEach(async({page})=>{
@@ -5,9 +6,7 @@ test.beforeEach(async({page})=>{
   await page.goto("/");
 });
 async function open(page,stage,number){
-  await page.locator("#home-choose-level").click();
-  await page.locator('[data-map-world="opposites"]').click();
-  await page.locator('[data-map-stage="'+stage+'"]').click();
+  await openCampaignBoard(page,"opposites",stage);
   await page.locator('[data-level="'+number+'"]').click();
 }
 async function chooseSigned(page,op,kind,count){
@@ -83,8 +82,7 @@ test("existing World 2 completions are visibly archived when their puzzle is rev
   };
   await page.evaluate(data=>localStorage.setItem("mathssprites.campaign.v2",JSON.stringify(data)),old);
   await page.reload();
-  await page.locator("#home-choose-level").click();
-  await page.locator('[data-map-world="opposites"]').click();
+  await openCampaignBoard(page,"opposites");
   await expect(page.locator('[data-level="1"]')).toHaveClass(/status-complete/);
   await expect(page.locator('[data-level="5"]')).toHaveClass(/status-revised/);
   await expect(page.locator('[data-level="5"] .tile-status')).toContainText("Revised");

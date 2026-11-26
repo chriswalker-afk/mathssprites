@@ -1,3 +1,4 @@
+import {openCampaignBoard} from "../e2e/campaign-menu-helper.mjs";
 /** Verify the currently published cosmetic release, not a localhost build
  * or a diagnostic's stale response. No real learner data is accessed. */
 import {chromium,expect} from "@playwright/test";
@@ -100,9 +101,7 @@ try{
   await shot(page,"locked-preview");
   note("Live 57-reward Atelier; locked 720-star outfit can be tried on without writes");
   await page.locator("#atelier-back").click();
-  await page.locator("#home-choose-level").click();
-  await page.locator('[data-map-world="workshop"]').click();
-  await page.locator('[data-map-stage="guided"]').click();
+  await openCampaignBoard(page,"workshop","guided");
   await page.locator('[data-level="1"]').click();
   await clickWithReferenceMove(page,"#do-both");
   await expect(page.locator("#replay-star-summary")).toContainText("3 stars",{timeout:25000});

@@ -1,3 +1,4 @@
+import {openCampaignBoard} from "./campaign-menu-helper.mjs";
 import {test,expect} from "@playwright/test";
 
 test.beforeEach(async({page})=>{
@@ -7,8 +8,7 @@ test.beforeEach(async({page})=>{
 
 test("starting weights and balloons can be attached only in their own chamber; Undo restores them @quick @smoke",async({page})=>{
   test.setTimeout(60000);
-  await page.locator("#home-choose-level").click();
-  await page.locator('[data-map-world="opposites"]').click();
+  await openCampaignBoard(page,"opposites");
   await page.locator('[data-level="18"]').click();
   await expect(page.locator("#level-title")).toHaveText("Removing the negative");
   const right=page.locator("#right-items");
@@ -35,9 +35,7 @@ test("starting weights and balloons can be attached only in their own chamber; U
 
 test("independent-stage starting balloon pairs do not create a manual pending move @smoke",async({page})=>{
   test.setTimeout(60000);
-  await page.locator("#home-choose-level").click();
-  await page.locator('[data-map-world="opposites"]').click();
-  await page.locator('[data-map-stage="independent"]').click();
+  await openCampaignBoard(page,"opposites","independent");
   await page.locator('[data-level="6"]').click();
   await expect(page.locator("#left-action")).toBeDisabled();
   const right=page.locator("#right-items");

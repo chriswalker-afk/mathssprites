@@ -1,3 +1,4 @@
+import {openCampaignBoard} from "./campaign-menu-helper.mjs";
 import {test,expect} from "@playwright/test";
 import {mkdirSync} from "node:fs";
 
@@ -16,17 +17,17 @@ for(const size of [
     await expect(page.locator("#home-title")).toBeVisible();
     await page.screenshot({path:"artifacts/pr34-"+name+"-foyer.png",fullPage:true});
 
-    await page.locator('.site-nav-links [data-screen="levels"]').click();
-    await expect(page.locator("#map-world-tabs button")).toHaveCount(4);
+    await openCampaignBoard(page);
+    await expect(page.locator("#world-cards [data-world-stages]")).toHaveCount(4);
     await expect(page.locator(".level-tile")).toHaveCount(24);
     await page.screenshot({path:"artifacts/pr59-"+name+"-worlds-and-levels.png",fullPage:true});
 
     await page.locator('.site-nav-links [data-screen="home"]').click();
-    await page.locator("#home-choose-level").click();
+    await openCampaignBoard(page);
     await expect(page.locator(".level-tile")).toHaveCount(24);
     await page.screenshot({path:"artifacts/pr34-"+name+"-board.png",fullPage:true});
 
-    await page.locator('.site-nav-links [data-screen="levels"]').click();
+    await openCampaignBoard(page);
     await page.locator('#site-levels [data-screen="workshop"]').click();
     await expect(page.locator("#workshop-equation")).toBeFocused();
     await page.screenshot({path:"artifacts/pr34-"+name+"-desk.png",fullPage:true});

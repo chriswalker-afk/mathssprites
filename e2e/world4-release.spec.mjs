@@ -1,3 +1,4 @@
+import {openCampaignBoard} from "./campaign-menu-helper.mjs";
 import {test,expect} from "@playwright/test";
 import {SQUARE_CAMPAIGN_STAGES} from "../src/square-campaign-levels.mjs";
 import {equation,initialState} from "../src/engine.mjs";
@@ -13,9 +14,7 @@ for(const stage of SQUARE_CAMPAIGN_STAGES){
     await page.emulateMedia({reducedMotion:"reduce"});
     await page.goto("/");
     const errors=[];page.on("pageerror",e=>errors.push(String(e)));
-    await page.locator("#home-choose-level").click();
-    await page.locator('[data-map-world="squares"]').click();
-    await page.locator('[data-map-stage="'+stage.id+'"]').click();
+    await openCampaignBoard(page,"squares",stage.id);
     for(const slot of stage.levels){
       await page.locator('.level-tile[data-level-id="'+slot.id+'"]').click();
       const level=slot.level;

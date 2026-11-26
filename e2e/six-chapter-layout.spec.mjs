@@ -1,3 +1,4 @@
+import {openCampaignBoard,chooseCampaignStage} from "./campaign-menu-helper.mjs";
 import {test,expect} from "@playwright/test";
 import {mkdirSync} from "node:fs";
 
@@ -52,7 +53,7 @@ test("six Guided chapters never clip any level label, stars or status at desktop
   for(const size of desktopViews){
     await page.setViewportSize(size);
     await page.goto("/");
-    await page.locator("#home-choose-level").click();
+    await openCampaignBoard(page);
     await expect(page.locator("#site-levels")).toBeVisible();
     const m=await measureBoard(page);
     expect(m.chapterLayout).toBe("multi-row");
@@ -88,7 +89,7 @@ test("board scrolling is keyboard accessible, stage-specific and preserves posit
   await page.emulateMedia({reducedMotion:"reduce"});
   await page.setViewportSize({width:1652,height:834});
   await page.goto("/");
-  await page.locator("#home-choose-level").click();
+  await openCampaignBoard(page);
   const board=page.locator("#level-sections");
   await expect(board).toHaveAttribute("role","region");
   await expect(board).toHaveAttribute("tabindex","0");
@@ -103,11 +104,11 @@ test("board scrolling is keyboard accessible, stage-specific and preserves posit
   await expect(board).toHaveAttribute("data-chapter-layout","multi-row");
   const after=await board.evaluate(el=>el.scrollTop);
   expect(after).toBeGreaterThanOrEqual(before-2);
-  await page.locator('[data-map-stage="independent"]').click();
+  await chooseCampaignStage(page,"independent");
   await expect(board).toHaveAttribute("data-chapter-layout","single-row");
   await expect(page.locator(".chapter-group")).toHaveCount(5);
   await expect(page.locator(".level-tile")).toHaveCount(20);
-  await page.locator('[data-map-stage="guided"]').click();
+  await chooseCampaignStage(page,"guided");
   await expect(board).toHaveAttribute("data-chapter-layout","multi-row");
   expect(await board.evaluate(el=>el.scrollTop)).toBeGreaterThan(0);
   // Returning to the same learning stage keeps the place you last visited.
@@ -116,7 +117,7 @@ test("board scrolling is keyboard accessible, stage-specific and preserves posit
 test("phone layout continues natural document scrolling instead of nested truncated chapters @smoke",async({page})=>{
   await page.setViewportSize({width:390,height:844});
   await page.goto("/");
-  await page.locator("#home-choose-level").click();
+  await openCampaignBoard(page);
   const m=await measureBoard(page);
   expect(m.chapters).toBe(6);
   expect(m.tiles).toHaveLength(24);

@@ -1,3 +1,4 @@
+import {openCampaignBoard,chooseCampaignStage} from "../e2e/campaign-menu-helper.mjs";
 /** Strict deployed World 3 smoke check. Run after GitHub Pages has deployed
  * the release; never infer the branch under test from the public URL. */
 import {chromium} from "@playwright/test";
@@ -13,10 +14,9 @@ mkdirSync("artifacts",{recursive:true});
 try{
   const response=await page.goto(url+"?world3-release="+Date.now(),{waitUntil:"networkidle",timeout:30000});
   verify(response?.ok(),"Published home resolves");
-  await page.locator("#home-choose-level").click();
-  await page.locator('[data-map-world="fractions"]').click();
+  await openCampaignBoard(page,"fractions");
   for(const [stage,count] of [["guided",24],["independent",20],["notebook",16]]){
-    await page.locator('[data-map-stage="'+stage+'"]').click();
+    await chooseCampaignStage(page,stage);
     await page.locator(".level-tile").first().waitFor({state:"visible"});
     verify(await page.locator(".level-tile").count()===count,"Published "+stage+" has "+count+" levels");
     verify(await page.locator(".level-tile:disabled").count()===0,"Published "+stage+" is fully selectable");
@@ -24,7 +24,7 @@ try{
   await page.screenshot({path:"artifacts/live-world3-board.png",fullPage:true});
   // Verify the deployed UI as seen by a returning student, not only engine outputs.
   await page.setViewportSize({width:1838,height:891});
-  await page.locator('[data-map-stage="guided"]').click();
+  await chooseCampaignStage(page,"guided");
   await page.locator('.level-tile[data-level-id="frac-g-06"]').click();
   const host=page.locator("#fraction-game-host");
   await host.locator("#fraction-lab").waitFor({state:"visible"});
