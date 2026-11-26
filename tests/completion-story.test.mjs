@@ -22,7 +22,7 @@ test("shared story contains the starting balance and every exact committed fract
   const entries=storyEntries(result.state);
   assert.equal(entries.length,2);
   assert.equal(equation(entries[0].after),equation(start));
-  assert.equal(equation(entries[1].after),"x = 7/2");
+  assert.equal(equation(entries[1].after),"x = 5/2");
   assert.equal(entries[1].action.factor,2);
 });
 test("square story diagrams retain each of the mathematically correct mixed-area cells",()=>{

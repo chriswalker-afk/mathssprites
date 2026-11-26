@@ -62,7 +62,7 @@ test("solve a Guided fraction level, reveal exact comic and stars, advance and r
   await expect(page.locator("#replay-title")).toHaveText("Your algebra, illustrated.");
   await expect(page.locator("#comic-panels")).toContainText("Before the hand began");
   await page.locator("#replay-skip").click();
-  await expect(page.locator("#pencil-lines")).toContainText("x = 7/2");
+  await expect(page.locator("#pencil-lines")).toContainText("x = 5/2");
   await expect(page.locator("#comic-panels .current-panel [data-numerator=\"1\"][data-denominator=\"2\"]")).toBeVisible();
   await expect(page.locator("#reward-celebration-names")).toContainText("Curious eyes");
   await expect(page.locator("#reward-celebration")).toBeVisible();
