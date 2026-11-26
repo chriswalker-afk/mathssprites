@@ -6,14 +6,14 @@
   <meta name="theme-color" content="#151d20" />
   <meta name="description" content="Maths Sprites: a mysterious little balancing-lab game where physical puzzles turn into algebraic discoveries." />
   <title>Maths Sprites — The Balance Lab</title>
-  <link rel="stylesheet" href="./src/styles.css?v=81" />
+  <link rel="stylesheet" href="./src/styles.css?v=83" />
   <link rel="stylesheet" href="./src/site.css" />
   <link rel="stylesheet" href="./src/polish.css" />
   <link rel="stylesheet" href="./src/stages.css" />
   <link rel="stylesheet" href="./src/notebook.css" />
   <link rel="stylesheet" href="./src/notebook-editor.css?v=31" />
   <link rel="stylesheet" href="./src/workshop.css" />
-  <link rel="stylesheet" href="./src/home-hero.css" />
+  <link rel="stylesheet" href="./src/home-hero.css?v=83" />
   <link rel="stylesheet" href="./src/viewport-fit.css?v=28" />
   <link rel="stylesheet" href="./src/scene-polish.css?v=30" />
   <link rel="stylesheet" href="./src/experiment-board.css?v=51" />
@@ -33,7 +33,7 @@
   <link rel="stylesheet" href="./src/square-construction.css" />
   <link rel="stylesheet" href="./src/square-inspection.css" />
   <script type="module" src="./src/app.mjs?v=82"></script>
-  <script type="module" src="./src/site.mjs?v=82"></script>
+  <script type="module" src="./src/site.mjs?v=83"></script>
 </head>
 <body>
   <div class="site-shell" id="site-shell">
@@ -70,7 +70,7 @@
           </div>
           <span id="home-progress" class="landing-progress" aria-live="polite"></span>
         </div>
-        <div class="hero-art" id="home-hero-art" data-scene="still" data-phase="still" data-balance="level">
+        <div class="hero-art" id="home-hero-art" data-scene="still" data-phase="still" data-balance="level" data-playback="reduced">
           <div class="hero-illustration" role="img" aria-label="A brass balance scale with mysterious dark sprites and individual brass weights. They are added to either side until the scale balances.">
             <div class="art-window" aria-hidden="true"></div>
             <div class="hero-shelf" aria-hidden="true"></div>
@@ -84,7 +84,15 @@
                   <div class="hero-chains"></div>
                   <div class="hero-pan">
                     <div id="hero-left-items" class="hero-items">
-                      <span class="hero-item hero-creature"><span class="hero-eyes"><i></i><i></i></span></span>
+                      <span class="hero-item hero-creature hero-landed" data-kind="sprite">
+                        <span class="token sprite sprite-black">
+                          <span class="sprite-ground-shadow"></span>
+                          <span class="sprite-reaction-shell"><span class="sprite-motion">
+                            <span class="sprite-feet"></span>
+                            <span class="sprite-body"><span class="sprite-eyes"><i></i><i></i></span></span>
+                          </span></span>
+                        </span>
+                      </span>
                     </div>
                   </div>
                 </div>

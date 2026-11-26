@@ -21,6 +21,7 @@
   display:flex;flex-direction:column;justify-content:flex-end;
   min-width:0;width:100%;min-height:395px;gap:7px;
   position:relative;isolation:isolate;--hero-angle:0deg;--hero-counter-angle:0deg;
+  --hero-slot:38px;--hero-actor-scale:.82;
 }
 .hero-illustration{
   position:relative;width:100%;height:346px;
@@ -108,29 +109,49 @@
   box-shadow:0 2px 5px #0005;
 }
 .hero-items{
-  position:absolute;left:4px;right:4px;bottom:8px;min-height:29px;
-  display:grid;grid-template-columns:repeat(3,minmax(0,30px));
-  grid-auto-rows:29px;column-gap:2px;row-gap:2px;
+  position:absolute;left:4px;right:4px;bottom:8px;min-height:var(--hero-slot);
+  display:grid;grid-template-columns:repeat(3,minmax(0,var(--hero-slot)));
+  grid-auto-rows:var(--hero-slot);column-gap:2px;row-gap:2px;
   justify-content:center;align-items:end;align-content:end;
   transition:opacity .35s ease,transform .35s ease;
 }
 .hero-item{display:block;position:relative;justify-self:center;align-self:end;flex:none}
+/* Same native 46×47 actor as the game, scaled at the outer art boundary.
+   The separate hero-item wrapper owns falling/squash transforms. */
 .hero-creature{
-  width:32px;height:34px;border-radius:45% 49% 46% 46%;
-  background:radial-gradient(circle at 31% 22%,#586963,#25312f 61%,#171f20);
-  border:3px solid #73857a;box-shadow:inset -5px -4px 8px #0008,0 3px 4px #0007;
-  transform-origin:50% 90%;
+  width:var(--hero-slot);height:calc(var(--hero-slot) + 1px);
+  transform-origin:50% 100%;
 }
-.hero-creature::after{
-  content:"";position:absolute;bottom:-5px;left:5px;width:17px;height:4px;
-  background:linear-gradient(90deg,#536159,#293831);border-radius:4px;
+.hero-creature>.sprite{
+  position:absolute;left:50%;bottom:0;
+  transform:translateX(-50%) scale(var(--hero-actor-scale));
+  transform-origin:50% 100%;
+  pointer-events:none;
 }
-.hero-eyes{
-  position:absolute;top:10px;left:6px;display:flex;gap:5px;
+/* Centre the opening sprite and two-object arrangements on their pan. */
+.hero-items:has(>.hero-item:only-child){
+  grid-template-columns:minmax(0,var(--hero-slot));
 }
-.hero-eyes i{
-  display:block;width:5px;height:7px;border-radius:50%;
-  background:#f7f2dc;box-shadow:0 0 2px #fff6ce;
+.hero-items:has(>.hero-item:nth-child(2):last-child){
+  grid-template-columns:repeat(2,minmax(0,var(--hero-slot)));
+}
+/* Do not double-hop in midair, or freeze a static sprite in a mid-hop pose.
+   Native idle animations resume only after mass and landing are registered. */
+.hero-creature:not(.hero-landed) :is(.sprite-motion,.sprite-body,.sprite-eyes,.sprite-eyes i),
+.hero-art[data-playback="reduced"] .hero-creature :is(.sprite-motion,.sprite-body,.sprite-eyes,.sprite-eyes i){
+  animation:none;transform:none;
+}
+.hero-creature:not(.hero-landed) .sprite-ground-shadow,
+.hero-art[data-playback="reduced"] .hero-creature .sprite-ground-shadow{
+  animation:none;transform:translateX(-50%);
+}
+.hero-creature:not(.hero-landed) .sprite-ground-shadow::after,
+.hero-art[data-playback="reduced"] .hero-creature .sprite-ground-shadow::after{
+  animation:none;opacity:0;
+}
+.hero-is-paused .hero-creature :is(.sprite-motion,.sprite-body,.sprite-ground-shadow,.sprite-eyes,.sprite-eyes i),
+.hero-is-paused .hero-creature .sprite-ground-shadow::after{
+  animation-play-state:paused;
 }
 .hero-weight{
   width:24px;height:23px;
@@ -197,7 +218,7 @@
  .landing-actions{margin:19px 0 14px}
  .landing-copy p{font-size:.96rem}
  .hero-illustration{height:315px}
- .hero-art{--hero-pan-width:clamp(94px,27vw,133px)}
+ .hero-art{--hero-pan-width:clamp(94px,27vw,133px);--hero-slot:29px;--hero-actor-scale:.62}
  .hero-hanger{height:188px}
  .hero-scene-caption{font-size:.81rem;flex-basis:150px}
  .hero-underbar{gap:9px}
@@ -205,11 +226,10 @@
 }
 @media(max-width:390px){
  .hero-illustration{height:310px}
- .hero-art{--hero-pan-width:clamp(91px,27vw,105px)}
+ .hero-art{--hero-pan-width:clamp(91px,27vw,105px);--hero-slot:25px;--hero-actor-scale:.54}
  .hero-hanger{left:21%}
  .hero-hanger-right{left:79%}
- .hero-items{grid-template-columns:repeat(3,minmax(0,27px));column-gap:1px}
- .hero-creature{width:29px;height:32px}
+ .hero-items{column-gap:1px}
  .hero-weight{width:22px;height:22px}
  .hero-scene-caption{flex-basis:100%;text-align:center}
  .hero-playback{width:100%}
