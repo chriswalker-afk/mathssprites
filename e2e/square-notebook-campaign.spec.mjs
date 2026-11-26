@@ -113,6 +113,12 @@ test("whole-expression squaring creates a genuine build goal; replay alone saves
   expect(data.worlds.squares.stages.notebook.bestMoves["square-a-01"]).toBe(1);
   expect(data.worlds.squares.stages.guided.completed).toEqual([]);
   expect(data.worlds.squares.stages.independent.completed).toEqual([]);
+  await page.locator("#notebook-story").click();
+  await expect(page.locator("#replay-backdrop")).toBeVisible();
+  await page.locator("#replay-skip").click();
+  await expect(page.locator("#pencil-lines")).toContainText("x² + 2x + 1 = 16");
+  await expect(page.locator(".comic-square-story .comic-area-grid").first().locator("[data-kind=\"posX\"]")).toHaveCount(2);
+  await page.locator("#replay-close").click();
   await page.locator("#notebook-next").click();
   await expect(page.locator("#notebook-stage-kicker")).toContainText("LEVEL 02 / 16");
   await expect(page.locator("#scene")).toBeHidden();

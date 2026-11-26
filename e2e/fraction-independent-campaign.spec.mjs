@@ -65,13 +65,15 @@ test("right-first equivalent fractional removals require a fresh second selectio
   await expect(lab(page).locator("#scene")).toHaveAttribute("data-balance","level");
   await expect(lab(page).locator("#fb-moves")).toHaveText("1 move");
   await expect(lab(page).locator("#fb-rating")).toContainText("★★★");
-  await expect(lab(page).locator("#fb-replay-step")).toHaveText("1 / 1");
-  await expect(lab(page).locator("#fb-comic-page math mfrac").first()).toBeVisible();
+  await expect(page.locator("#replay-backdrop")).toBeVisible();
+  await page.locator("#replay-skip").click();
+  await expect(page.locator("#pencil-lines")).toContainText("− 3/4 on both sides");
+  await expect(page.locator("#pencil-lines")).toContainText("x = 13/4");
   const records=await saved(page);
   expect(records.worlds.fractions.stages.independent.completed).toEqual(["frac-i-05"]);
   expect(records.worlds.fractions.stages.independent.bestMoves["frac-i-05"]).toBe(1);
   expect(records.worlds.fractions.stages.guided.completed).toEqual([]);
-  await lab(page).locator("#fb-next-level").click();await ready(page);
+  await page.locator("#next-level").click();await ready(page);
   await expect(lab(page).locator("#fb-chapter-status")).toContainText("LEVEL 06 / 20");
   await lab(page).locator("#fb-game-home").click();await page.reload();
   await expect(page.locator("#home-play")).toContainText("Continue: Fractions · Independent · Level 6");

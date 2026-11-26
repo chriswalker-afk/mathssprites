@@ -35,7 +35,7 @@ try{
     return {revision:el.dataset.presentationRevision,styles:el.dataset.styles,sidebar:panel.x>scene.right&&Math.abs(panel.y-scene.y)<3&&Math.abs(panel.height-scene.height)<3,
       labelled:!!plaque&&getComputedStyle(plaque).borderTopStyle==="solid",singleActor:!!whole?.querySelector(".fs-whole-actor")&&!whole.querySelector("svg")};
   });
-  verify(presentation.revision==="103"&&presentation.styles==="ready","Published fraction presentation uses current versioned assets");
+  verify(presentation.revision==="104"&&presentation.styles==="ready","Published fraction presentation uses current versioned assets");
   verify(presentation.sidebar,"Published desktop controls sit next to full-size scene");
   verify(presentation.labelled,"Published fractional quantity uses a physical plaque");
   verify(presentation.singleActor,"Published whole sprite is a single animated actor");
@@ -48,7 +48,9 @@ try{
   const root=page.locator("#fraction-game-host #fraction-lab");
   await root.locator('[data-fb-op="divide"]').click();await root.locator('[data-fb-factor="2"]').click();
   await root.locator("#fb-apply").click();
-  await root.locator("#fb-next-level").waitFor({state:"visible",timeout:30000});
+  await page.locator("#replay-backdrop").waitFor({state:"visible",timeout:30000});
+  await page.locator("#replay-skip").click();
+  verify((await page.locator("#pencil-lines").textContent()).includes("x = 5/2"),"Shared journal shows the exact fractional solution");
   verify(await root.getAttribute("data-solved")==="true","Published physical fraction division solves 2x=5");
   verify((await root.locator("#right-items").getAttribute("aria-label")).includes("5/2 weights"),"Published result is exactly five halves");
   verify((await page.evaluate(()=>JSON.stringify(localStorage)))===before,"Published custom play leaves saves unchanged");

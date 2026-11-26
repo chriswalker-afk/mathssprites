@@ -138,6 +138,8 @@ test("motion on really animates the original actor and moving exact cargo, inclu
   await expect(r.locator(".fb-transfer")).toHaveCount(0);
   await expect(r.locator("#right-items")).toHaveAttribute("aria-label","East chamber: 0 sprites, 4 weights");
   await expect(r.locator("#fb-moves")).toHaveText("1 move");
+  await expect(page.locator("#replay-backdrop")).toBeVisible();
+  await page.locator("#replay-close").click();
   await r.locator("#fb-undo").click();
   await amount(page,"add",1,3);await recordTransfers(page,"drop");await r.locator("#fb-apply").click();
   await ready(page);

@@ -73,6 +73,7 @@ test("building the first square wins only after actual construction, awards thre
   await expect(page.locator("#replay-star-summary")).toContainText("1 move (optimal: 1)");
   await page.locator("#replay-skip").click();
   await expect(page.locator("#pencil-lines")).toContainText("x² = 9");
+  await expect(page.locator(".comic-square-story[data-square-operation=\"square\"] .comic-area-grid").last().locator("[data-kind=\"posOne\"]")).toHaveCount(9);
   await expect(page.locator("#replay-end-note")).toContainText("Both entire expressions were squared");
   const saved=await page.evaluate(()=>({records:JSON.parse(localStorage.getItem("mathssprites.campaign.v2")),resume:JSON.parse(localStorage.getItem("mathssprites.resume.v2"))}));
   expect(saved.records.worlds.squares.stages.guided.completed).toEqual(["square-g-01"]);
@@ -110,6 +111,7 @@ test("public Guided completing-the-square level earns certified stars without co
   await page.locator("#replay-skip").click();
   await expect(page.locator("#pencil-lines")).toContainText("x = 3");
   await expect(page.locator("#replay-end-note")).toContainText("principal square root");
+  await expect(page.locator(".comic-square-story[data-square-operation=\"sqrt\"]")).toHaveCount(1);
   await shot(page,"completed-square-replay");
 });
 test("the new six-chapter board fits a school laptop; mobile can reach later chapters",async({page})=>{

@@ -54,8 +54,11 @@ test("Guided custom equation solves with exact baskets and comic, then returns t
   await expect(root(page)).toHaveAttribute("data-solved","true");
   await expect(h.locator("#right-items")).toHaveAttribute("aria-label","East chamber: 0 sprites, 5/2 weights");
   await expect(h.locator("#fb-rating")).toContainText("no stars awarded");
-  await expect(h.locator("#fb-comic-page math mfrac")).toHaveText("52");
-  await h.locator("#fb-next-level").click();
+  await expect(page.locator("#replay-backdrop")).toBeVisible();
+  await page.locator("#replay-skip").click();
+  await expect(page.locator("#pencil-lines")).toContainText("x = 5/2");
+  await expect(page.locator("#replay-star-summary")).toContainText("no stars awarded");
+  await page.locator("#next-level").click();
   await expect(page.locator("#site-workshop")).toBeVisible();
   await expect(page.locator("#workshop-equation")).toHaveValue("2x = 5");
   await expect(page.locator("#workshop-quantity-mode")).toHaveValue("fractions");
@@ -71,6 +74,8 @@ test("Independent custom equation requires a fresh equivalent second operation a
   await amount(page,2,4);await h.locator("#right-action").click();await ready(page);
   await expect(root(page)).toHaveAttribute("data-solved","true");
   await expect(h.locator("#fb-rating")).toContainText("1 checked move");
+  await expect(page.locator("#replay-backdrop")).toBeVisible();
+  await page.locator("#replay-close").click();
   await h.locator("#fb-game-levels").click();
   await expect(page.locator("#site-workshop")).toBeVisible();
   await expect(page.locator("#workshop-hand-mode")).toHaveValue("manual");
