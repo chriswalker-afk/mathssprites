@@ -42,8 +42,8 @@
   <link rel="stylesheet" href="./src/weight-effects.css?v=94" />
   <link rel="stylesheet" href="./src/chamber-themes.css?v=97" />
   <link rel="stylesheet" href="./src/campaign-path.css?v=98" />
-  <script type="module" src="./src/app.mjs?v=108"></script>
-  <script type="module" src="./src/site.mjs?v=108"></script>
+  <script type="module" src="./src/app.mjs?v=109"></script>
+  <script type="module" src="./src/site.mjs?v=109"></script>
   <link rel="stylesheet" href="./src/compact-level-board.css?v=99" />
   <link rel="stylesheet" href="./src/menu-demonstrations.css?v=100" />
   <link rel="stylesheet" href="./src/menu-usability.css?v=101" />
@@ -464,7 +464,7 @@
         <div class="notebook-intro notebook-control-panel" aria-label="Algebra controls">
           <span class="eyebrow" id="notebook-stage-kicker">STAGE 3 · ALGEBRA APPRENTICE · TEACHER PROTOTYPE</span>
           <h3>Choose your next move</h3>
-          <p id="notebook-level-prompt">Choose a mathematical operation to apply to both sides. The editor calculates each new equation; once you have isolated the mystery sprite, the hand will replay your method.</p>
+          <p id="notebook-level-prompt">Choose a mathematical operation to apply to both sides. The editor calculates an equivalent equation.</p>
           <div class="notebook-tools-scroll">
             <div class="notebook-guide-slot"></div>
           <form id="notebook-form" class="notebook-form">
@@ -504,12 +504,12 @@
                 <button type="button" data-notebook-key="9">9</button>
                 <button type="button" data-notebook-key="0">0</button>
                 <button type="button" data-notebook-key="x" aria-label="Mystery sprite x">x</button>
-                <button type="button" data-notebook-key="x²" aria-label="Square sprite x squared" id="notebook-square-key" hidden>x²</button>
+                <button type="button" data-notebook-key="x²" aria-label="Quadratic term x squared" id="notebook-square-key" hidden>x²</button>
                 <button type="button" data-notebook-key="backspace" aria-label="Delete last symbol">⌫</button>
               </div>
-              <div class="notebook-expand-choices" role="group" aria-label="Expand a sealed expression">
-                <button type="button" data-notebook-expand="left" hidden>Expand west expression</button>
-                <button type="button" data-notebook-expand="right" hidden>Expand east expression</button>
+              <div class="notebook-expand-choices" role="group" aria-label="Expand brackets">
+                <button type="button" data-notebook-expand="left" hidden>Expand left-hand expression</button>
+                <button type="button" data-notebook-expand="right" hidden>Expand right-hand expression</button>
               </div>
               <div id="notebook-signed-operations" class="notebook-signed-operations" role="group" aria-label="Signed operations" hidden>
                 <span>Signed objects:</span>
@@ -518,7 +518,7 @@
                 <button type="button" data-notebook-insert="+(-x)" aria-label="Add one white sprite, negative x">+ (−x)</button>
                 <button type="button" data-notebook-insert="-(-x)" aria-label="Remove one white sprite, subtract negative x">− (−x)</button>
               </div>
-              <p id="notebook-operation-tip" class="notebook-operation-tip">Choose an operation for both sides, not an answer. You can use signed objects when that world allows them.</p>
+              <p id="notebook-operation-tip" class="notebook-operation-tip">Choose an operation, not an answer. Apply the same operation to both sides to preserve equality.</p>
               <div class="notebook-operation-preview" aria-label="Automatic equation preview">
                 <div class="notebook-preview-current">
                   <small>Current equation</small>
@@ -543,7 +543,7 @@
           </aside>
           <button id="notebook-hint" type="button" class="secondary-btn notebook-hint">Need a thinking prompt?</button>
           <p id="notebook-hint-message" class="notebook-hint-message" hidden role="status"></p>
-          <p id="notebook-help" class="notebook-help">Choose a balancing operation, not the answer. Addition or subtraction can use 1–12 weights or sprites; multiplication and division use factors 2–5. Every move must work with whole objects on both sides.</p>
+          <p id="notebook-help" class="notebook-help">Use supported integer coefficients and constants. Add or subtract amounts 1–12; multiply or divide by a factor from 2 to 5.</p>
             </div>
           </div>
           <div class="notebook-actions">

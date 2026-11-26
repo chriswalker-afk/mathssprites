@@ -26,6 +26,7 @@ const ALL=Object.freeze(Object.keys(GROUP_SPECS));
 // Keep source dependencies here; a spec belongs to exactly one primary
 // group, with deliberately broader routing for cross-feature weight piles.
 const RULES=Object.freeze([
+  [/^src\/notebook-advice\.mjs$/,["notebook","signed","area"]],
   [/^src\/notebook-(?:engine|maths-editor)\.mjs$/,["notebook","signed","area"]],
   [/^src\/workshop-(?:builder\.css|preview\.mjs)$/,["layout","navigation","notebook"]],
   [/^src\/apprentice-workspace\.css$/ ,["notebook","layout"]],

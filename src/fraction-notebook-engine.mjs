@@ -3,9 +3,10 @@
 import {initialState,validInitialLevel,perform,undo,isSolved,equation} from "./engine.mjs";
 import {rational,rtext} from "./rational.mjs";
 import {fractionAction,FRACTION_MODE} from "./fraction-engine.mjs";
-import {NOTEBOOK_MAX_STEPS,notebookFailureMessage} from "./notebook-engine.mjs?v=108";
+import {NOTEBOOK_MAX_STEPS,notebookFailureMessage} from "./notebook-engine.mjs?v=109";
 
 const failure=(code,message)=>({ok:false,code,message});
+const invalidFraction=checked=>failure(checked.code,notebookFailureMessage(checked,{quantityMode:FRACTION_MODE}));
 const syntax="Write one operation, e.g. −1/2, −2x/3, ×4 or ÷2.";
 export function parseFractionNotebookOperation(input){
   if(typeof input!=="string"||input.length>48)return failure("syntax",syntax);
@@ -18,7 +19,7 @@ export function parseFractionNotebookOperation(input){
     const [,sign,w,num,den,x]=mixed,whole=Number(w),n=Number(num),d=Number(den),variable=!!x;
     if(whole<1||n<1||d<1||n>=d)return failure("number","Write a mixed number with a positive whole and a proper fractional part.");
     const checked=fractionAction({op:sign==="+"?"add":"remove",kind:variable?"posX":"posOne",count:rational(whole*d+n,d)});
-    if(!checked.ok)return failure(checked.code,checked.reason);
+    if(!checked.ok)return invalidFraction(checked);
     return {ok:true,action:checked.action,written:Object.freeze({whole,n,d,variable})};
   }
   if(/\d\s+\d/.test(normalized))return failure("syntax","Use a single number or a mixed number such as 1 1/2.");
@@ -47,7 +48,7 @@ export function parseFractionNotebookOperation(input){
   if(n===0)return failure("number","Choose a positive quantity, not zero.");
   const count=rational(n,d);
   const checked=fractionAction({op:sign==="+"?"add":"remove",kind:variable?"posX":"posOne",count});
-  if(!checked.ok)return failure(checked.code,checked.reason);
+  if(!checked.ok)return invalidFraction(checked);
   return {ok:true,action:checked.action,written:Object.freeze({n,d,variable})};
 }
 export function fractionNotebookOperationText(action){

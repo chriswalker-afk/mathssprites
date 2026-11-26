@@ -1,5 +1,5 @@
 import { LEVELS } from "./engine.mjs";
-import {createFractionCampaignView} from "./fraction-campaign.mjs?v=108";
+import {createFractionCampaignView} from "./fraction-campaign.mjs?v=109";
 import {
   CAMPAIGN_REGISTRY,findCampaignWorld,findCampaignStage,findCampaignLevel,
   nextCampaignLevel,isCampaignPlayable,firstCampaignLevel
@@ -22,7 +22,7 @@ import {createHomeHero} from "./home-hero.mjs?v=88";
 import {WORLD_DEMOS,METHOD_DEMOS,worldDemoMarkup,methodDemoMarkup,createMenuDemoPlayback} from "./menu-demonstrations.mjs?v=100";
 import {compactWorldProgress,compactStageProgress,briefStageIntro,worldChoiceIntro,methodChoiceIntro} from "./menu-copy.mjs?v=101";
 import {boardContinueLevel,spatialTileIndex,campaignMenuScreen,campaignHomeLabel,quickBoardDestination} from "./navigation-journey.mjs?v=103";
-import {mountRouteGuide,resetFirstVisitGuides,usesPhysicalFirstLesson} from "./route-guide.mjs?v=106";
+import {mountRouteGuide,resetFirstVisitGuides,usesPhysicalFirstLesson} from "./route-guide.mjs?v=109";
 import {loadResume,saveResume,resumeDestination,resumeLabel,RESUME_STAGE_NUMBERS} from "./resume.mjs";
 import {
   WORLDS, WORLD1_CHAPTERS, WORLD1_LEVELS, findWorld1Level,
