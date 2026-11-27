@@ -60,7 +60,7 @@ export async function playCrateDivision({
   const plan=crateDiscardPlan(crates.length,factor);
   if(crates.length!==plan.count||track.querySelectorAll(":scope > .token").length!==plan.count)
     throw new Error("Crate division must not swallow other loose objects");
-  const badge=track.querySelector(":scope > .crate-stack-count");
+  const badge=root.querySelector(":scope > .inventory-counts > .crate-stack-count")||track.querySelector(":scope > .crate-stack-count");
   if(!badge||track.querySelectorAll(".crate-picture-sign").length!==1||
      !crates[plan.pictureIndex].querySelector(".crate-picture-sign"))
     throw new Error("The surviving stack must retain the original contents picture");

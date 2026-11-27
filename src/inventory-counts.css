@@ -1,0 +1,37 @@
+/* PR111 — readable chamber counts, outside the scaled physical floor.
+   The top rail follows the chamber when it tilts, but NEVER inherits the
+   floor's inventory scale. Text remains 13 CSS px at every viewport. */
+.room-items > .inventory-counts{
+  position:absolute;inset:0 0 auto;display:flex;align-items:flex-start;
+  justify-content:center;flex-wrap:wrap;gap:4px 6px;z-index:7;
+  min-width:0;pointer-events:none;
+}
+.room-items > .inventory-counts > :is(.weight-stack-count,.crate-stack-count,.fw-count-plaque){
+  position:relative;inset:auto;transform:none;flex:0 1 auto;
+  display:inline-flex;align-items:center;justify-content:center;
+  width:max-content;max-width:100%;min-width:0;box-sizing:border-box;
+  min-height:26px;padding:4px 8px;margin:0;border:2px solid #bf9b5d;
+  border-radius:22px;background:linear-gradient(155deg,#21473f,#172f2d);
+  color:#fff0c6;font:700 13px/1.2 system-ui,sans-serif;
+  text-shadow:0 1px 2px #091a19;text-align:center;white-space:normal;
+  box-shadow:inset 0 0 0 1px #d9c58a5e,0 2px 5px #030b0a92;
+  pointer-events:none;
+}
+/* The rail identifies the entire inventory, not one particular object.
+   The former side connector and crate label column waste valuable space. */
+.room-items > .inventory-counts :is(.weight-count-connector,.crate-count-connector){display:none}
+.room-items > .inventory-counts > .fw-count-plaque::after{content:none}
+.room-items:has(> .inventory-counts > .crate-stack-count) .items-grid.floor-track:has(> .sealed-crate){
+  padding-left:0;
+}
+/* Hide the settled loose count when individual weights have been transferred
+   into baskets. The actual remaining inventory gets its count on redraw. */
+.room-items:has(.division-stage:is([data-phase="sharing"],[data-phase="grouping"],[data-phase="copying"],[data-phase="ready"],[data-phase="discarding"],[data-phase="pouring"],[data-phase="remaining"])) > .inventory-counts > .weight-stack-count{
+  visibility:hidden;
+}
+.room-items:has(.crate-division-stage[data-phase="taking"]) > .inventory-counts > .crate-stack-count{
+  visibility:hidden;
+}
+/* During square construction or a refusal overlay, show the relevant
+   physical animation instead of an obsolete settled inventory count. */
+.area-active:not(.area-after-square):not(.area-after-sqrt) .room-items > .inventory-counts{visibility:hidden}
