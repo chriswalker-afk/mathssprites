@@ -149,3 +149,32 @@
     --weight-gap:1px;
   }
 }
+
+/* PR110 — opt-in Workshop ten stacks. Keep the original physical tokens
+   direct children of the floor, with no transforms or wrapper actors.
+   Relative offsets/margins are confined to the floor; baskets, hand cargo
+   and temporary clones outside it retain their existing choreography. */
+.room-items .items-grid.floor-track[data-workshop-stack="ten"]{
+  --workshop-weight-pitch:42px;
+  --workshop-rise:calc(var(--ws-rise,33px) - 1px);
+  --workshop-pile-gap:3px;
+  padding-top:calc(var(--workshop-max-row,0) * var(--workshop-rise));
+}
+body:not([data-weight-shape]) .room-items .items-grid.floor-track[data-workshop-stack="ten"],
+body[data-weight-shape="original"] .room-items .items-grid.floor-track[data-workshop-stack="ten"]{
+  --workshop-weight-pitch:36px;
+}
+.room-items .items-grid.floor-track[data-workshop-stack="ten"] > .token.weight[data-workshop-weight][data-weight-slot]{
+  top:calc(-1 * var(--workshop-row) * var(--workshop-rise));
+  z-index:calc(3 + var(--workshop-row));
+  margin-left:0;margin-right:0;
+}
+.room-items .items-grid.floor-track[data-workshop-stack="ten"] > .token.weight[data-workshop-weight][data-workshop-first="false"]{
+  margin-left:calc(var(--workshop-delta) * var(--workshop-weight-pitch) - 41px - var(--weight-gap));
+}
+.room-items .items-grid.floor-track[data-workshop-stack="ten"] > .token.weight[data-workshop-weight][data-workshop-last="true"]{
+  margin-right:calc(var(--workshop-tail) * var(--workshop-weight-pitch));
+}
+.room-items .items-grid.floor-track[data-workshop-stack="ten"] > .token.weight[data-workshop-weight][data-workshop-next-pile="true"]{
+  margin-right:calc((var(--workshop-tail) + 1) * var(--workshop-weight-pitch) + var(--workshop-pile-gap) - 41px - var(--weight-gap));
+}
