@@ -16,7 +16,7 @@ import { floorScaleToFit, inRoomBoxPlan, areaMathLabel } from "./area-layout.mjs
 import {mountSquareConstruction,squareOverflowPlan,squareOverflowMarkup} from "./square-construction.mjs";
 import {mountSquareRoot,squareRootTrialPlan,squareRootTrialMessage,mountSquareRootTrial} from "./square-root-construction.mjs";
 import {squareInspectionPolicy,guidedInspectionSide,inspectionSideStep,squareInspectionPlan,mountSquareInspection,INSPECTION_SIDE_LIMIT} from "./square-inspection.mjs";
-import {weightPilePosition,weightCountPlaque} from "./weight-piles.mjs";
+import {weightPilePosition,weightCountPlaque,workshopWeightPilePosition} from "./weight-piles.mjs?v=110";
 import { itemWord, attemptMessage, mismatchedMoveMessage } from "./attempt-feedback.mjs";
 import { fractionCutPlan } from "./fraction-theatre.mjs";
 import {neutralPairSequence, neutralPairSummary} from "./neutral-pairs.mjs";
@@ -153,13 +153,19 @@ function token(kind, i, mini = false, side = "left", weightTotal = 0) {
   if (kind === "posOne") {
     // Only the full-size floor tokens participate in a physical stack.
     // Miniatures used in the hand and artwork stay unchanged.
-    const pile=weightTotal?weightPilePosition(i,weightTotal):null;
+    const pile=weightTotal?(workshopActive?workshopWeightPilePosition(i,weightTotal):weightPilePosition(i,weightTotal)):null;
     const placement=pile
       ? ' data-weight-pile="'+pile.pile+'" data-weight-slot="'+pile.slot+
         '" data-weight-pile-size="'+pile.pileSize+'"'+
         (pile.last?' data-weight-pile-end="'+pile.last+'"':"")
       : "";
-    return '<span class="token weight"'+placement+
+    const workshopPlacement=pile&&workshopActive
+      ?' data-workshop-weight="true" data-workshop-row="'+pile.row+'"'+
+        ' data-workshop-first="'+String(pile.slot===1)+'" data-workshop-last="'+String(!!pile.last)+'"'+
+        ' data-workshop-next-pile="'+String(pile.nextPile)+'"'+
+        ' style="--workshop-row:'+pile.row+';--workshop-delta:'+pile.delta+';--workshop-tail:'+pile.tail+'"'
+      :"";
+    return '<span class="token weight"'+placement+workshopPlacement+
       ' title="One unit weight"><i class="weight-handle"></i><i class="weight-shine"></i></span>';
   }
   return '<span class="token balloon" title="A little floating balloon"><i class="balloon-body"></i><i class="balloon-knot"></i><i class="balloon-string"></i></span>';
@@ -179,7 +185,7 @@ function renderRoom(side, r, groupCount) {
   const node = $(side + "-items");
   // Only rebuild a room when its actual contents change. Otherwise the idle
   // sprites are repeatedly destroyed and their bouncing animations restart.
-  const signature = currentLevel().id + "|" + side + "|" +
+  const signature = currentLevel().id + "|" + side + "|"+(workshopActive?"ten":"five")+"|" +
     TOKEN_KINDS.map(key => r[key]).join(":") +
     "|crates:" + JSON.stringify(r.crates||null) + "|groups:" + groupCount;
   // Loose-object division uses baskets; whole sealed crates go straight to the hand.
@@ -265,16 +271,33 @@ function renderRoom(side, r, groupCount) {
 function resizeFloor(side) {
   const room = $(side + "-items");
   for(const track of room.querySelectorAll(".floor-track")){
-    const width=track.scrollWidth||track.getBoundingClientRect().width;
+    const weights=[...track.querySelectorAll(":scope > .token.weight[data-workshop-weight]")];
+    const compact=workshopActive&&weights.length>0;
+    // Reserve the real height of the upper tiers before measuring.
+    if(compact){
+      track.dataset.workshopStack="ten";
+      track.style.setProperty("--workshop-max-row",String(Math.max(...weights.map(w=>Number(w.dataset.workshopRow)))));
+    }else{
+      delete track.dataset.workshopStack;
+      track.style.removeProperty("--workshop-max-row");
+    }
+    const width=compact?(track.offsetWidth||track.scrollWidth):(track.scrollWidth||track.getBoundingClientRect().width);
     // Each floor track fits into its OWN room-side zone. In ordinary rooms
     // the shell fills the chamber; mixed crate/loose rooms have two shells.
     const container=track.closest(".floor-shell")?.clientWidth||room.clientWidth;
-    const fit=floorScaleToFit(container,width);
+    let fit=floorScaleToFit(container,width);
+    if(compact){
+      const height=track.offsetHeight,available=track.closest(".floor-shell")?.clientHeight||room.clientHeight;
+      if(height&&available)fit=Math.min(fit,Math.max(.035,(available-4)/height));
+    }
     track.style.setProperty("--floor-scale",fit.toFixed(4));
   }
 }
 window.addEventListener("resize", () => {
   for (const side of ["left", "right"]) resizeFloor(side);
+});
+window.addEventListener("mathssprites:cosmetics-change",()=>{
+  if(workshopActive)for(const side of ["left","right"])resizeFloor(side);
 });
 function visible() { return override || visibleRooms(state); }
 function currentDifference(shown) {

@@ -53,8 +53,10 @@ test("kettlebell with actual handle opening retains five-weight piles and exact 
   await expect(weights.first()).toHaveCSS("clip-path",/polygon\(evenodd,/);
   await expect(weights.first()).toHaveCSS("background-image",/rgb\(242, 185, 142\)/);
   await expect(page.locator("#left-items .weight-stack-count")).toHaveText("12 weights");
-  await expect(page.locator("#left-items .weight[data-weight-slot='4']")).toHaveCount(2);
-  await expect(page.locator("#left-items .weight[data-weight-slot='4']").first()).toHaveCSS("top","-25px");
+  await expect(page.locator("#left-items .weight[data-weight-slot='4']")).toHaveCount(1);
+  await expect(page.locator("#left-items .weight[data-weight-slot='4']")).toHaveCSS("top","0px");
+  await expect(page.locator("#left-items .weight[data-weight-slot='5']")).toHaveCSS("top","-24px");
+  await expect(page.locator("#left-items .weight[data-weight-slot='10']")).toHaveCSS("top","-72px");
   await testInfo.attach("kettlebell-piles.png",{body:await page.screenshot(),contentType:"image/png"});
   await custom(page,"x+2/3=4+2/3","fractions");
   const root=page.locator("#fraction-game-host #fraction-lab");

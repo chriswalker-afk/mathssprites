@@ -32,3 +32,28 @@ export function weightCountPlaque(count){
   return '<span class="weight-stack-count" aria-hidden="true">'+
     count+' weights<span class="weight-count-connector"></span></span>';
 }
+
+/** PR110 — an opt-in free-play layout. The campaign's five-weight
+ * planner and its existing slot metadata are deliberately untouched. */
+export const WORKSHOP_WEIGHT_PILE_SIZE=10;
+const WORKSHOP_PATTERNS=Object.freeze([
+  [],[1],[2],[3],[4],[3,2],[3,2,1],[4,3],[4,3,1],[4,3,2],[4,3,2,1]
+].map(Object.freeze));
+export function workshopWeightPilePosition(index,total){
+  if(!Number.isInteger(index)||!Number.isInteger(total)||total<1||index<0||index>=total)
+    throw new RangeError("A pile position requires an existing whole weight");
+  const pile=Math.floor(index/WORKSHOP_WEIGHT_PILE_SIZE);
+  const slot=index%WORKSHOP_WEIGHT_PILE_SIZE+1;
+  const pileSize=Math.min(WORKSHOP_WEIGHT_PILE_SIZE,total-pile*WORKSHOP_WEIGHT_PILE_SIZE);
+  const rows=WORKSHOP_PATTERNS[pileSize],base=rows[0];
+  let row=0,offset=slot-1;
+  while(offset>=rows[row]){offset-=rows[row];row++;}
+  // Stagger each upper row over the shoulders of its supporting row.
+  const x=row/2+offset;
+  const previous=row===0?x-1:offset>0?x-1:(row-1)/2+rows[row-1]-1;
+  return Object.freeze({pile,slot,pileSize,row,x,base,rows:rows.length,
+    delta:slot===1?0:x-previous,
+    last:slot===pileSize?pileSize:0,
+    tail:slot===pileSize?base-1-x:0,
+    nextPile:slot===pileSize&&index<total-1});
+}

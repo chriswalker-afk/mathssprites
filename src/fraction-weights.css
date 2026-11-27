@@ -44,3 +44,23 @@
 .fb-campaign .fw-count-plaque:after{content:"";position:absolute;left:100%;top:50%;width:10px;border-top:2px solid #c8a36a}
 .fb-campaign .fb-comic-room .fw-label,.fb-campaign .fb-comic-room .fs-label,.fb-campaign .fb-comic-room .fw-count-plaque{font-size:10px;min-height:18px;padding:2px 4px;border-width:1px}
 .fb-campaign .fb-comic-room .fw-assembly:has(>.fw-label)>svg{width:40px}
+
+/* Only opt-in free-play inventories receive compact ten stacks. The
+   original five-slot CSS and fraction preview/campaign art remain intact.
+   A complete pile is one non-shrinking flex item, so wrapping cannot
+   break apart its rows or detach the remainder from its own base. */
+.fb-lab .fw-inventory-objects[data-stack-layout="ten"]{column-gap:3px;row-gap:5px}
+.fb-lab .fw-pile[data-stack-layout="ten"]{
+  width:var(--fw-stack-width);height:var(--fw-stack-height);
+  min-width:var(--fw-stack-width);flex:none;
+}
+.fb-lab .fw-pile[data-stack-layout="ten"]>.fw-pile-weight[data-stack-row]{
+  left:calc(var(--fw-stack-x) * var(--fw-stack-pitch));
+  bottom:calc(var(--fw-stack-row) * var(--fw-stack-rise));
+  display:flex;align-items:flex-end;width:var(--fw-stack-pitch);z-index:calc(1 + var(--fw-stack-row));
+}
+.fb-lab .fw-pile[data-stack-layout="ten"]>.fw-pile-weight>.fw-assembly{
+  width:58px;max-width:none;margin-left:calc((var(--fw-stack-pitch) - 58px) / 2);
+}
+
+.fb-lab[data-free-play="true"] .fb-room-floor[data-wrap] .fw-grid-inventory>.fw-inventory:has(.fw-pile[data-stack-layout="ten"]){max-width:100%}

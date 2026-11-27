@@ -137,3 +137,8 @@ test("full browser QA uses six test-level shards instead of duplicating the focu
   assert.match(workflow,/--fully-parallel --shard=.*\/6 --workers=1/);
   assert.match(workflow,/--grep @quick --workers=2/);
 });
+
+test("Workshop stack regressions are included in layout QA",()=>{
+  assert.ok(GROUP_SPECS.layout.includes("e2e/workshop-weight-stacks.spec.mjs"));
+  assert.deepEqual(selectBrowserGroups(["e2e/workshop-weight-stacks.spec.mjs"]),["layout"]);
+});

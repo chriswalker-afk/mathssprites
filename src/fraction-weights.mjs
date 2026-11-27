@@ -4,7 +4,7 @@
  */
 import {rational,radd,rsub,rmul,req,rtext} from "./rational.mjs";
 import {FRACTION_DENOMINATORS,FRACTION_CAPACITY,fractionParts,fractionPieceCount} from "./fraction-engine.mjs";
-import {weightPilePosition,WEIGHT_COUNT_LABEL_THRESHOLD} from "./weight-piles.mjs";
+import {weightPilePosition,workshopWeightPilePosition,WEIGHT_COUNT_LABEL_THRESHOLD} from "./weight-piles.mjs?v=110";
 
 import {weightShape,resolveWeightShape} from "./weight-shapes.mjs?v=93";
 export const WEIGHT_BODY=weightShape("original").outer;
@@ -64,13 +64,13 @@ export function weightPartition(denominator,{trial=false,shape="original"}={}){
   cache.set(key,pieces);
   return pieces;
 }
-export function weightInventoryPlan(value){
+export function weightInventoryPlan(value,{layout="five"}={}){
   const q=rational(value),parts=fractionParts(q);
   if(!allowed(q.d)||fractionPieceCount(q)>FRACTION_CAPACITY)
     throw new RangeError("Unsupported or oversized weight inventory");
   const piles=[];
   for(let index=0;index<parts.whole;index++){
-    const position=weightPilePosition(index,parts.whole);
+    const position=(layout==="ten"?workshopWeightPilePosition:weightPilePosition)(index,parts.whole);
     (piles[position.pile]??=[]).push(position);
   }
   const pieces=weightPartition(parts.denominator).slice(0,parts.pieces);
@@ -159,28 +159,46 @@ export function weightAssemblyMarkup(denominator,indices,{outline=true,label=tru
     (outline&&denominator>1?contour(profile.outer,profile.holes,'class="fw-whole-outline" fill="none" stroke="currentColor" stroke-width="1.4" stroke-dasharray="3 3"'):"")+
     art+(full?contour(profile.outer,profile.holes,'class="fw-joined-edge" fill="none" stroke="#694921" stroke-width=".75" stroke-linejoin="round"'):"")+'</svg>'+(label?'<span class="fw-label" aria-hidden="true">'+caption+'</span>':"")+'</span>';
 }
-function pileMarkup(positions,shape){
+/** Match the true contour width, not the transparent SVG viewBox. */
+export function workshopFractionPileGeometry(positions,shape="original"){
+  if(!positions.length)throw new RangeError("Expected a nonempty pile");
+  const profile=weightShape(shape);
+  const xs=profile.outer.map(p=>p[0]);
+  const pitch=(Math.max(...xs)-Math.min(...xs))*58/136+1.5;
+  const rise=profile.fractionRise-1;
+  return Object.freeze({pitch,rise,width:positions[0].base*pitch,
+    height:Math.ceil(58*103/136+(positions[0].rows-1)*rise)});
+}
+function pileMarkup(positions,shape,layout){
+  if(layout==="ten"){
+    const g=workshopFractionPileGeometry(positions,shape);
+    return '<span class="fw-pile" data-stack-layout="ten" data-pile-size="'+positions.length+'"'+
+      ' style="--fw-stack-pitch:'+g.pitch.toFixed(3)+'px;--fw-stack-rise:'+g.rise+'px;--fw-stack-width:'+g.width.toFixed(3)+'px;--fw-stack-height:'+g.height+'px">'+
+      positions.map(pos=>'<span class="fw-pile-weight" data-slot="'+pos.slot+'" data-stack-row="'+pos.row+'"'+
+        ' style="--fw-stack-x:'+pos.x+';--fw-stack-row:'+pos.row+'">'+
+        weightAssemblyMarkup(1,[0],{outline:false,label:false,shape})+'</span>').join("")+'</span>';
+  }
   return '<span class="fw-pile" data-pile-size="'+positions.length+'">'+positions.map(pos=>
     '<span class="fw-pile-weight" data-slot="'+pos.slot+'">'+
     weightAssemblyMarkup(1,[0],{outline:false,label:false,shape})+'</span>').join("")+'</span>';
 }
-export function weightInventoryMarkup(value,{shape="original"}={}){
-  const plan=weightInventoryPlan(value);
-  const pile=plan.piles.map(positions=>pileMarkup(positions,shape)).join("");
+export function weightInventoryMarkup(value,{shape="original",layout="five"}={}){
+  const plan=weightInventoryPlan(value,{layout});
+  const pile=plan.piles.map(positions=>pileMarkup(positions,shape,layout)).join("");
   const partial=plan.pieces.length?weightAssemblyMarkup(plan.denominator,plan.pieces.map(p=>p.index),{shape}):"";
   return '<div class="fw-inventory" role="img" aria-label="'+rtext(plan.value)+' weights">'+
-    '<div class="fw-inventory-objects" aria-hidden="true">'+
+    '<div class="fw-inventory-objects"'+(layout==="ten"?' data-stack-layout="ten"':"")+' aria-hidden="true">'+
     (plan.countPlaque?'<span class="fw-count-plaque">'+plan.countPlaque+' whole weights</span>':"")+
     pile+partial+(!plan.whole&&!plan.pieces.length?'<span class="fw-empty">No weights</span>':"")+'</div></div>';
 }
 /** Show a temporary unreduced grid, including borrowed whole weights and
  * uncombined pieces. A full group of d pieces retains its seams here.
  */
-export function weightGridMarkup({whole,units,denominator},{shape="original"}={}){
+export function weightGridMarkup({whole,units,denominator},{shape="original",layout="five"}={}){
   if(!Number.isInteger(whole)||whole<0||!Number.isInteger(units)||units<0||
     !allowed(denominator)||whole+units>FRACTION_CAPACITY*2)
     throw new RangeError("Invalid demonstration inventory");
-  const wholes=weightInventoryMarkup(whole,{shape});
+  const wholes=weightInventoryMarkup(whole,{shape,layout});
   const groups=[];
   for(let i=0;i<units;i+=denominator){
     groups.push(weightAssemblyMarkup(denominator,

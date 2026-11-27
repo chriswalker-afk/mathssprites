@@ -6,7 +6,7 @@
 import {initialState,visibleRooms,prepare,perform,undo,isSolved,equation,algebraOperation,evaluate,previewRoomAction} from "./engine.mjs";
 import {rational,radd,rsub,rcompare,rtext} from "./rational.mjs";
 import {FRACTION_DENOMINATORS,FRACTION_FACTORS,fractionAction,fractionRoom} from "./fraction-engine.mjs";
-import {weightInventoryMarkup,weightGridMarkup} from "./fraction-weights.mjs?v=94";
+import {weightInventoryMarkup,weightGridMarkup} from "./fraction-weights.mjs?v=110";
 import {spriteInventoryMarkup,spriteGridMarkup} from "./fraction-sprites.mjs?v=89";
 import {divisionBasketMarkup,resetHand} from "./division-baskets.mjs";
 import {gridRoom,roomChoreography,failureSpeech,fractionRefusalMarkup} from "./fraction-choreography.mjs?v=94";
@@ -20,7 +20,7 @@ const options=values=>values.map(v=>'<option value="'+v+'">'+v+'</option>').join
 export function mountFractionBalance(root,{level,mode="auto",reduced=false,onComplete=()=>{},onState=()=>{}}={}){
   const $=id=>root.querySelector("#"+id);
   const spriteOptions={animatedWhole:root.classList.contains("fb-campaign")};
-  const weightOptions=()=>({shape:root.dataset.weightShape||"original"});
+  const weightOptions=()=>({shape:root.dataset.weightShape||"original",layout:root.dataset.freePlay==="true"?"ten":"five"});
   const roomMarkup=room=>'<div class="fb-room-floor">'+spriteInventoryMarkup(room.posX,spriteOptions)+weightInventoryMarkup(room.posOne,weightOptions())+'</div>';
   const gridMarkup=grid=>'<div class="fb-room-floor">'+spriteGridMarkup(grid.posX,spriteOptions)+weightGridMarkup(grid.posOne,weightOptions())+'</div>';
   const scene=$("scene"),hand=$("hand"),cargo=$("hand-cargo"),speech=$("speech"),caption=$("action-caption");
@@ -46,9 +46,37 @@ export function mountFractionBalance(root,{level,mode="auto",reduced=false,onCom
       if(!parent)continue;
       floor.removeAttribute("data-wrap");
       floor.style.removeProperty("--fb-wrap-width");
-      let width=floor.scrollWidth||floor.offsetWidth,height=floor.offsetHeight;
+      const compact=root.dataset.freePlay==="true"&&!!floor.querySelector(".fw-pile[data-stack-layout='ten']");
+      // Transparent SVG viewBox overhang is not part of the compact pile.
+      const measure=()=>({width:compact?floor.offsetWidth:(floor.scrollWidth||floor.offsetWidth),height:floor.offsetHeight});
+      let {width,height}=measure();
       const availableW=parent.clientWidth||width,availableH=parent.clientHeight||height;
-      if(parent.classList.contains("room-items")&&width>availableW*1.45&&availableH>height*1.25){
+      if(compact&&parent.classList.contains("room-items")){
+        const fit=(w,h)=>Math.min(1,availableW/Math.max(1,w),availableH/Math.max(1,h));
+        const naturalWidth=width;
+        // A complete pile, sprite assembly or fractional assembly is
+        // indivisible in layout, even on a narrow mobile chamber.
+        const minWrap=Math.max(1,...[...floor.querySelectorAll(
+          ".fw-inventory-objects > *, .fs-inventory-objects > *, .fw-grid-inventory > .fw-assembly, .fs-grid-inventory > .fs-assembly"
+        )].map(el=>el.offsetWidth));
+        let bestWidth=null,best=fit(width,height);
+        // Try whole-pile wrap widths, selecting one only if the rendered
+        // weight size increases. The existing campaign fitting is unchanged.
+        for(let rows=2;rows<=4&&best<1;rows++){
+          const trial=Math.ceil(Math.max(availableW,minWrap,naturalWidth/rows));
+          if(trial>=naturalWidth)continue;
+          floor.dataset.wrap="true";
+          floor.style.setProperty("--fb-wrap-width",trial+"px");
+          const size=measure(),candidate=fit(size.width,size.height);
+          if(candidate>best+.01){best=candidate;bestWidth=trial;}
+        }
+        if(bestWidth!==null){
+          floor.dataset.wrap="true";floor.style.setProperty("--fb-wrap-width",bestWidth+"px");
+        }else{
+          floor.removeAttribute("data-wrap");floor.style.removeProperty("--fb-wrap-width");
+        }
+        ({width,height}=measure());
+      }else if(parent.classList.contains("room-items")&&width>availableW*1.45&&availableH>height*1.25){
         const rows=Math.min(4,Math.max(2,Math.ceil(Math.sqrt(width/Math.max(1,availableW)))));
         floor.dataset.wrap="true";
         floor.style.setProperty("--fb-wrap-width",Math.ceil(Math.max(availableW,width/rows))+"px");
