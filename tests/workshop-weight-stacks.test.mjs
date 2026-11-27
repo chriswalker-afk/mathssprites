@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import {WORKSHOP_WEIGHT_PILE_SIZE,WEIGHT_PILE_SIZE,weightPilePosition,workshopWeightPilePosition,weightCountPlaque} from "../src/weight-piles.mjs";
+import {WORKSHOP_WEIGHT_PILE_SIZE,WEIGHT_PILE_SIZE,weightPilePosition,workshopWeightPilePosition,weightCountPlaque,weightStackLayout,CROWDED_WEIGHT_THRESHOLD} from "../src/weight-piles.mjs";
 import {weightInventoryPlan,weightInventoryMarkup,weightGridMarkup,workshopFractionPileGeometry} from "../src/fraction-weights.mjs";
 import {WEIGHT_SHAPES} from "../src/weight-shapes.mjs";
 import {rational,radd} from "../src/rational.mjs";
@@ -88,4 +88,12 @@ test("compact fraction piles preserve exact pieces, whole counts and cosmetic co
   assert.equal((grid.match(/class="fw-piece"/g)||[]).length,25);
   assert.match(grid,/is-separated/);
   assert.match(grid,/3\/4/);
+});
+
+test("crowded campaign layout switches only from twenty whole weights; free play keeps compact tens",()=>{
+  assert.equal(CROWDED_WEIGHT_THRESHOLD,20);
+  for(let count=0;count<=48;count++){
+    assert.equal(weightStackLayout(count),count>=20?"ten":"five");
+    assert.equal(weightStackLayout(count,{freePlay:true}),"ten");
+  }
 });

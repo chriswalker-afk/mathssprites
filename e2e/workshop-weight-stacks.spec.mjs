@@ -27,7 +27,7 @@ async function nativeGeometry(page,count,side="right"){
       width:el.offsetWidth,height:el.offsetHeight,
       availableW:el.closest(".floor-shell").clientWidth,availableH:el.closest(".floor-shell").clientHeight,
       pitch:parseFloat(styles.getPropertyValue("--workshop-weight-pitch")),
-      plaque:el.querySelector(":scope > .weight-stack-count")?.textContent||"",
+      plaque:room.querySelector(":scope > .inventory-counts > .weight-stack-count")?.textContent||"",
       weights:[...el.querySelectorAll(":scope > .token.weight")].map(w=>({
         group:Number(w.dataset.weightPile),row:Number(w.dataset.workshopRow),slot:Number(w.dataset.weightSlot),
         x:w.offsetLeft,y:w.offsetTop,width:w.offsetWidth,height:w.offsetHeight
@@ -64,7 +64,7 @@ async function fractionGeometry(page,count,{side="right",piece=null}={}){
     const floor=el.closest(".fb-room-floor"),room=floor.closest(".room-items");
     return {scale:parseFloat(getComputedStyle(floor).getPropertyValue("--fb-fit")),
       width:floor.offsetWidth,height:floor.offsetHeight,availableW:room.clientWidth,availableH:room.clientHeight,
-      plaque:el.querySelector(".fw-count-plaque")?.textContent||"",
+      plaque:room.querySelector(":scope > .inventory-counts > .fw-count-plaque")?.textContent||"",
       piles:[...el.querySelectorAll(":scope > .fw-pile")].map(p=>{
         const style=getComputedStyle(p);
         return {x:p.offsetLeft,y:p.offsetTop,width:p.offsetWidth,height:p.offsetHeight,

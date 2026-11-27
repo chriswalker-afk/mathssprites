@@ -16,12 +16,13 @@ import { floorScaleToFit, inRoomBoxPlan, areaMathLabel } from "./area-layout.mjs
 import {mountSquareConstruction,squareOverflowPlan,squareOverflowMarkup} from "./square-construction.mjs";
 import {mountSquareRoot,squareRootTrialPlan,squareRootTrialMessage,mountSquareRootTrial} from "./square-root-construction.mjs";
 import {squareInspectionPolicy,guidedInspectionSide,inspectionSideStep,squareInspectionPlan,mountSquareInspection,INSPECTION_SIDE_LIMIT} from "./square-inspection.mjs";
-import {weightPilePosition,weightCountPlaque,workshopWeightPilePosition} from "./weight-piles.mjs?v=110";
+import {weightPilePosition,weightCountPlaque,workshopWeightPilePosition,weightStackLayout} from "./weight-piles.mjs?v=111";
+import {liftInventoryCounts,inventoryCountInset} from "./inventory-counts.mjs?v=111";
 import { itemWord, attemptMessage, mismatchedMoveMessage } from "./attempt-feedback.mjs";
 import { fractionCutPlan } from "./fraction-theatre.mjs";
 import {neutralPairSequence, neutralPairSummary} from "./neutral-pairs.mjs";
 import {crateCount,crateMarkup,looseAfterUnpack} from "./group-crates.mjs";
-import {isCrateOnlyDivisionRoom,playCrateDivision} from "./crate-division.mjs";
+import {isCrateOnlyDivisionRoom,playCrateDivision} from "./crate-division.mjs?v=111";
 import {resetHand} from "./division-baskets.mjs";
 import {crateExpansionPlan} from "./crate-expansion.mjs";
 import {createCrateExpansionView} from "./crate-expansion-view.mjs";
@@ -153,13 +154,14 @@ function token(kind, i, mini = false, side = "left", weightTotal = 0) {
   if (kind === "posOne") {
     // Only the full-size floor tokens participate in a physical stack.
     // Miniatures used in the hand and artwork stay unchanged.
-    const pile=weightTotal?(workshopActive?workshopWeightPilePosition(i,weightTotal):weightPilePosition(i,weightTotal)):null;
+    const ten=weightTotal&&weightStackLayout(weightTotal,{freePlay:workshopActive})==="ten";
+    const pile=weightTotal?(ten?workshopWeightPilePosition(i,weightTotal):weightPilePosition(i,weightTotal)):null;
     const placement=pile
       ? ' data-weight-pile="'+pile.pile+'" data-weight-slot="'+pile.slot+
         '" data-weight-pile-size="'+pile.pileSize+'"'+
         (pile.last?' data-weight-pile-end="'+pile.last+'"':"")
       : "";
-    const workshopPlacement=pile&&workshopActive
+    const workshopPlacement=pile&&ten
       ?' data-workshop-weight="true" data-workshop-row="'+pile.row+'"'+
         ' data-workshop-first="'+String(pile.slot===1)+'" data-workshop-last="'+String(!!pile.last)+'"'+
         ' data-workshop-next-pile="'+String(pile.nextPile)+'"'+
@@ -270,9 +272,12 @@ function renderRoom(side, r, groupCount) {
 // Scale the entire horizontal row, never wrap it into multiple rows.
 function resizeFloor(side) {
   const room = $(side + "-items");
-  for(const track of room.querySelectorAll(".floor-track")){
+  const tracks=[...room.querySelectorAll(".floor-track")];
+  liftInventoryCounts(room,tracks);
+  const inset=inventoryCountInset(room);
+  for(const track of tracks){
     const weights=[...track.querySelectorAll(":scope > .token.weight[data-workshop-weight]")];
-    const compact=workshopActive&&weights.length>0;
+    const compact=weights.length>0;
     // Reserve the real height of the upper tiers before measuring.
     if(compact){
       track.dataset.workshopStack="ten";
@@ -286,9 +291,12 @@ function resizeFloor(side) {
     // the shell fills the chamber; mixed crate/loose rooms have two shells.
     const container=track.closest(".floor-shell")?.clientWidth||room.clientWidth;
     let fit=floorScaleToFit(container,width);
-    if(compact){
-      const height=track.offsetHeight,available=track.closest(".floor-shell")?.clientHeight||room.clientHeight;
-      if(height&&available)fit=Math.min(fit,Math.max(.035,(available-4)/height));
+    if(compact||inset){
+      // Legacy two-tier piles can extend above their nominal flex box.
+      const top=Math.min(0,...[...track.querySelectorAll(":scope > .token")].map(node=>node.offsetTop));
+      const height=track.offsetHeight-top;
+      const available=(track.closest(".floor-shell")?.clientHeight||room.clientHeight)-inset;
+      if(height&&available>0)fit=Math.min(fit,Math.max(.035,(available-4)/height));
     }
     track.style.setProperty("--floor-scale",fit.toFixed(4));
   }
@@ -297,7 +305,7 @@ window.addEventListener("resize", () => {
   for (const side of ["left", "right"]) resizeFloor(side);
 });
 window.addEventListener("mathssprites:cosmetics-change",()=>{
-  if(workshopActive)for(const side of ["left","right"])resizeFloor(side);
+  for(const side of ["left","right"])resizeFloor(side);
 });
 function visible() { return override || visibleRooms(state); }
 function currentDifference(shown) {

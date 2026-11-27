@@ -26,7 +26,7 @@ async function geometry(page){
   });
 }
 test.beforeEach(async({page})=>page.emulateMedia({reducedMotion:"reduce"}));
-test("concept layout: two sealed crates are vertically stacked with only one illustrated picture and linked count @smoke",async({page})=>{
+test("concept layout: two sealed crates are vertically stacked with one illustrated picture and independent readable count @smoke",async({page})=>{
   test.setTimeout(90000);
   await openLevel19(page);
   const crates=page.locator("#left-items .sealed-crate");
@@ -41,7 +41,7 @@ test("concept layout: two sealed crates are vertically stacked with only one ill
   const m=await geometry(page);
   expect(Math.abs(m.top.x-m.bottom.x)).toBeLessThan(2);
   expect(m.top.bottom).toBeLessThanOrEqual(m.bottom.top+4);
-  expect(m.count.right).toBeLessThanOrEqual(m.top.left+5);
+  expect(m.count.bottom).toBeLessThanOrEqual(m.top.top+3);
   expect(m.sign.top).toBeGreaterThanOrEqual(m.bottom.top-3);
   expect(m.sign.bottom).toBeLessThanOrEqual(m.bottom.bottom+3);
   expect(m.scrollWidth).toBeLessThanOrEqual(m.viewport.width+3);
@@ -77,7 +77,7 @@ test("stack and label fit the room on desktop, laptop and phone @smoke",async({p
     expect(m.scrollWidth).toBeLessThanOrEqual(size.width+3);
     expect(m.top.bottom).toBeLessThanOrEqual(m.bottom.top+4);
     expect(Math.abs(m.top.x-m.bottom.x)).toBeLessThan(3);
-    expect(m.count.right).toBeLessThanOrEqual(m.top.left+6);
+    expect(m.count.bottom).toBeLessThanOrEqual(m.top.top+3);
     expect(m.top.top).toBeGreaterThanOrEqual(m.chamber.top+4);
     expect(m.bottom.bottom).toBeLessThanOrEqual(m.chamber.bottom+3);
     await page.locator("#unpack-crates").scrollIntoViewIfNeeded();

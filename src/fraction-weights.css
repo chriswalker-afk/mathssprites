@@ -63,4 +63,4 @@
   width:58px;max-width:none;margin-left:calc((var(--fw-stack-pitch) - 58px) / 2);
 }
 
-.fb-lab[data-free-play="true"] .fb-room-floor[data-wrap] .fw-grid-inventory>.fw-inventory:has(.fw-pile[data-stack-layout="ten"]){max-width:100%}
+.fb-lab .fb-room-floor[data-wrap] .fw-grid-inventory>.fw-inventory:has(.fw-pile[data-stack-layout="ten"]){max-width:100%}

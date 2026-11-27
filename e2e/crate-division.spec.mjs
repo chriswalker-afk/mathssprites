@@ -17,7 +17,7 @@ async function recordCrateDiscard(page){
       if(!stage)return;
       const phase=stage.dataset.phase;
       const actor=document.querySelector("#hand-cargo > .hand-held-crate");
-      const label=stage.querySelector(".crate-stack-count");
+      const label=stage.closest(".room-items").querySelector(".inventory-counts > .crate-stack-count");
       const snapshot={
         phase,remaining:stage.querySelectorAll(".floor-track > .sealed-crate").length,
         westBaskets:document.querySelectorAll("#left-items .group-basket").length,

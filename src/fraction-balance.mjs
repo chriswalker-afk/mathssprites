@@ -5,7 +5,9 @@
  */
 import {initialState,visibleRooms,prepare,perform,undo,isSolved,equation,algebraOperation,evaluate,previewRoomAction} from "./engine.mjs";
 import {rational,radd,rsub,rcompare,rtext} from "./rational.mjs";
-import {FRACTION_DENOMINATORS,FRACTION_FACTORS,fractionAction,fractionRoom} from "./fraction-engine.mjs";
+import {FRACTION_DENOMINATORS,FRACTION_FACTORS,fractionAction,fractionRoom,fractionParts} from "./fraction-engine.mjs";
+import {weightStackLayout} from "./weight-piles.mjs?v=111";
+import {liftInventoryCounts,inventoryCountInset} from "./inventory-counts.mjs?v=111";
 import {weightInventoryMarkup,weightGridMarkup} from "./fraction-weights.mjs?v=110";
 import {spriteInventoryMarkup,spriteGridMarkup} from "./fraction-sprites.mjs?v=89";
 import {divisionBasketMarkup,resetHand} from "./division-baskets.mjs";
@@ -20,9 +22,9 @@ const options=values=>values.map(v=>'<option value="'+v+'">'+v+'</option>').join
 export function mountFractionBalance(root,{level,mode="auto",reduced=false,onComplete=()=>{},onState=()=>{}}={}){
   const $=id=>root.querySelector("#"+id);
   const spriteOptions={animatedWhole:root.classList.contains("fb-campaign")};
-  const weightOptions=()=>({shape:root.dataset.weightShape||"original",layout:root.dataset.freePlay==="true"?"ten":"five"});
-  const roomMarkup=room=>'<div class="fb-room-floor">'+spriteInventoryMarkup(room.posX,spriteOptions)+weightInventoryMarkup(room.posOne,weightOptions())+'</div>';
-  const gridMarkup=grid=>'<div class="fb-room-floor">'+spriteGridMarkup(grid.posX,spriteOptions)+weightGridMarkup(grid.posOne,weightOptions())+'</div>';
+  const weightOptions=whole=>({shape:root.dataset.weightShape||"original",layout:root.classList.contains("fb-campaign")?weightStackLayout(whole,{freePlay:root.dataset.freePlay==="true"}):"five"});
+  const roomMarkup=room=>'<div class="fb-room-floor">'+spriteInventoryMarkup(room.posX,spriteOptions)+weightInventoryMarkup(room.posOne,weightOptions(fractionParts(room.posOne).whole))+'</div>';
+  const gridMarkup=grid=>'<div class="fb-room-floor">'+spriteGridMarkup(grid.posX,spriteOptions)+weightGridMarkup(grid.posOne,weightOptions(grid.posOne.whole))+'</div>';
   const scene=$("scene"),hand=$("hand"),cargo=$("hand-cargo"),speech=$("speech"),caption=$("action-caption");
   const abort=new AbortController();
   const listen=(el,type,fn)=>el.addEventListener(type,fn,{signal:abort.signal});
@@ -46,11 +48,11 @@ export function mountFractionBalance(root,{level,mode="auto",reduced=false,onCom
       if(!parent)continue;
       floor.removeAttribute("data-wrap");
       floor.style.removeProperty("--fb-wrap-width");
-      const compact=root.dataset.freePlay==="true"&&!!floor.querySelector(".fw-pile[data-stack-layout='ten']");
+      const compact=!!floor.querySelector(".fw-pile[data-stack-layout='ten']");
       // Transparent SVG viewBox overhang is not part of the compact pile.
       const measure=()=>({width:compact?floor.offsetWidth:(floor.scrollWidth||floor.offsetWidth),height:floor.offsetHeight});
       let {width,height}=measure();
-      const availableW=parent.clientWidth||width,availableH=parent.clientHeight||height;
+      const availableW=parent.clientWidth||width,availableH=Math.max(1,(parent.clientHeight||height)-(parent.classList.contains("room-items")?inventoryCountInset(parent):0));
       if(compact&&parent.classList.contains("room-items")){
         const fit=(w,h)=>Math.min(1,availableW/Math.max(1,w),availableH/Math.max(1,h));
         const naturalWidth=width;
@@ -89,6 +91,7 @@ export function mountFractionBalance(root,{level,mode="auto",reduced=false,onCom
   function draw(side,room,grid=null){
     const el=$(side+"-items");
     el.innerHTML=grid?gridMarkup(grid):roomMarkup(room);
+    if(root.classList.contains("fb-campaign"))liftInventoryCounts(el,[el.querySelector(":scope > .fb-room-floor")]);
     el.setAttribute("aria-label",(side==="left"?"West":"East")+" chamber: "+summary(room));
     el.dataset.phase=grid?"regrouping":"settled";fitAll();
   }
@@ -317,7 +320,7 @@ export function mountFractionBalance(root,{level,mode="auto",reduced=false,onCom
     delete el.dataset.operation;await pause(120);
   }
   async function refusal(failure,side,rollback,action){
-    const el=$(side+"-items"),markup=fractionRefusalMarkup(failure,action,shown[side],{...spriteOptions,...weightOptions()});
+    const el=$(side+"-items"),markup=fractionRefusalMarkup(failure,action,shown[side],{...spriteOptions,...weightOptions(fractionParts(shown[side].posOne).whole)});
     el.dataset.refusal=failure.code||"invalid";
     if(markup){
       const trial=document.createElement("div");trial.className="fb-refusal-overlay";

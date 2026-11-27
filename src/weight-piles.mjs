@@ -57,3 +57,10 @@ export function workshopWeightPilePosition(index,total){
     tail:slot===pileSize?base-1-x:0,
     nextPile:slot===pileSize&&index<total-1});
 }
+
+/** Preserve ordinary campaign art while compacting large inventories.
+ * Free play keeps the PR110 policy, including smaller remainders. */
+export const CROWDED_WEIGHT_THRESHOLD=20;
+export function weightStackLayout(whole,{freePlay=false}={}){
+  return freePlay||whole>=CROWDED_WEIGHT_THRESHOLD?"ten":"five";
+}

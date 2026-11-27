@@ -1,5 +1,5 @@
 import { LEVELS } from "./engine.mjs";
-import {createFractionCampaignView} from "./fraction-campaign.mjs?v=110";
+import {createFractionCampaignView} from "./fraction-campaign.mjs?v=111";
 import {
   CAMPAIGN_REGISTRY,findCampaignWorld,findCampaignStage,findCampaignLevel,
   nextCampaignLevel,isCampaignPlayable,firstCampaignLevel

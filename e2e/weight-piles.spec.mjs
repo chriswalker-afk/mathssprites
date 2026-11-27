@@ -33,10 +33,12 @@ async function measureWeights(page,side,loose=false){
         pile:Number(w.dataset.weightPile),slot:Number(w.dataset.weightSlot),
         pileSize:Number(w.dataset.weightPileSize),
         end:w.dataset.weightPileEnd?Number(w.dataset.weightPileEnd):0,
+        row:w.dataset.workshopRow===undefined?null:Number(w.dataset.workshopRow),
         ...take(w)
       })),
-      label:el.querySelector(":scope > .weight-stack-count")?.textContent||"",
-      labelCount:el.querySelectorAll(":scope > .weight-stack-count").length,
+      label:el.closest(".room-items").querySelector(":scope > .inventory-counts > .weight-stack-count")?.textContent||"",
+      labelCount:el.closest(".room-items").querySelectorAll(":scope > .inventory-counts > .weight-stack-count").length,
+      compact:el.dataset.workshopStack==="ten",
       noOldCount:document.querySelectorAll(".floor-count").length===0,
       roomLabel:el.closest(".room-items")?.getAttribute("aria-label"),
       width:take(el).width
@@ -56,13 +58,23 @@ function checkPiles(data,count,{expectedLabel=count>10}={}){
     if(!groups.has(p.pile))groups.set(p.pile,[]);
     groups.get(p.pile).push(p);
   }
-  expect(groups.size).toBe(Math.ceil(count/5));
+  const size=count>=20?10:5;
+  expect(data.compact).toBe(count>=20);
+  expect(groups.size).toBe(Math.ceil(count/size));
   for(const [index,items] of groups){
-    const n=Math.min(5,count-index*5);
+    const n=Math.min(size,count-index*size);
     expect(items.length).toBe(n);
     expect(items.map(p=>p.slot)).toEqual(Array.from({length:n},(_,i)=>i+1));
     expect(items.map(p=>p.pileSize)).toEqual(Array.from({length:n},()=>n));
     expect(items.map(p=>p.end)).toEqual(Array.from({length:n},(_,i)=>i===n-1?n:0));
+    if(size===10){
+      const patterns=[[],[1],[2],[3],[4],[3,2],[3,2,1],[4,3],[4,3,1],[4,3,2],[4,3,2,1]];
+      const rows=patterns[n];
+      expect(rows.map((_,row)=>items.filter(p=>p.row===row).length)).toEqual(rows);
+      for(let row=1;row<rows.length;row++)
+        expect(items.find(p=>p.row===row).top).toBeLessThan(items.find(p=>p.row===row-1).top);
+      continue;
+    }
     const lower=items.slice(0,Math.min(3,n));
     // During the final split the scale itself can still be gently
     // rotating; a straight row rotates in screen coordinates. Allow a
@@ -92,10 +104,10 @@ function checkPiles(data,count,{expectedLabel=count>10}={}){
   }
 }
 
-test("all Guided weights form 3+2 floor piles, including 1–4 remainders and >10 plaques @quick @smoke",async({page})=>{
+test("Guided weights retain small 3+2 piles and use compact tens for large inventories @quick @smoke",async({page})=>{
   test.setTimeout(105000);
   // 5, 10 (no plaque), 11 (first plaque), 12 (5+5+2),
-  // 16 (5+5+5+1), 25, 29 (five full piles + four remainder).
+  // 16 (5+5+5+1), 25 and 29 (compact tens plus remainder).
   for(const [level,count] of [[1,5],[6,10],[9,11],[4,12],[7,16],[8,25],[20,29]]){
     await openGuided(page,level);
     checkPiles(await measureWeights(page,"right"),count);
