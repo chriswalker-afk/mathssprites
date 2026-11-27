@@ -296,6 +296,9 @@ function resizeFloor(side) {
 window.addEventListener("resize", () => {
   for (const side of ["left", "right"]) resizeFloor(side);
 });
+window.addEventListener("mathssprites:cosmetics-change",()=>{
+  if(workshopActive)for(const side of ["left","right"])resizeFloor(side);
+});
 function visible() { return override || visibleRooms(state); }
 function currentDifference(shown) {
   return evaluate(shown.left, state.solution) - evaluate(shown.right, state.solution);

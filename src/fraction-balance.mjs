@@ -54,11 +54,16 @@ export function mountFractionBalance(root,{level,mode="auto",reduced=false,onCom
       if(compact&&parent.classList.contains("room-items")){
         const fit=(w,h)=>Math.min(1,availableW/Math.max(1,w),availableH/Math.max(1,h));
         const naturalWidth=width;
+        // A complete pile, sprite assembly or fractional assembly is
+        // indivisible in layout, even on a narrow mobile chamber.
+        const minWrap=Math.max(1,...[...floor.querySelectorAll(
+          ".fw-inventory-objects > *, .fs-inventory-objects > *, .fw-grid-inventory > .fw-assembly, .fs-grid-inventory > .fs-assembly"
+        )].map(el=>el.offsetWidth));
         let bestWidth=null,best=fit(width,height);
         // Try whole-pile wrap widths, selecting one only if the rendered
         // weight size increases. The existing campaign fitting is unchanged.
         for(let rows=2;rows<=4&&best<1;rows++){
-          const trial=Math.ceil(Math.max(availableW,naturalWidth/rows));
+          const trial=Math.ceil(Math.max(availableW,minWrap,naturalWidth/rows));
           if(trial>=naturalWidth)continue;
           floor.dataset.wrap="true";
           floor.style.setProperty("--fb-wrap-width",trial+"px");

@@ -57,8 +57,10 @@
 .fb-lab .fw-pile[data-stack-layout="ten"]>.fw-pile-weight[data-stack-row]{
   left:calc(var(--fw-stack-x) * var(--fw-stack-pitch));
   bottom:calc(var(--fw-stack-row) * var(--fw-stack-rise));
-  width:var(--fw-stack-pitch);z-index:calc(1 + var(--fw-stack-row));
+  display:flex;align-items:flex-end;width:var(--fw-stack-pitch);z-index:calc(1 + var(--fw-stack-row));
 }
 .fb-lab .fw-pile[data-stack-layout="ten"]>.fw-pile-weight>.fw-assembly{
   width:58px;max-width:none;margin-left:calc((var(--fw-stack-pitch) - 58px) / 2);
 }
+
+.fb-lab[data-free-play="true"] .fb-room-floor[data-wrap] .fw-grid-inventory>.fw-inventory:has(.fw-pile[data-stack-layout="ten"]){max-width:100%}
