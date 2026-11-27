@@ -22,7 +22,7 @@ const options=values=>values.map(v=>'<option value="'+v+'">'+v+'</option>').join
 export function mountFractionBalance(root,{level,mode="auto",reduced=false,onComplete=()=>{},onState=()=>{}}={}){
   const $=id=>root.querySelector("#"+id);
   const spriteOptions={animatedWhole:root.classList.contains("fb-campaign")};
-  const weightOptions=whole=>({shape:root.dataset.weightShape||"original",layout:weightStackLayout(whole,{freePlay:root.dataset.freePlay==="true"})});
+  const weightOptions=whole=>({shape:root.dataset.weightShape||"original",layout:root.classList.contains("fb-campaign")?weightStackLayout(whole,{freePlay:root.dataset.freePlay==="true"}):"five"});
   const roomMarkup=room=>'<div class="fb-room-floor">'+spriteInventoryMarkup(room.posX,spriteOptions)+weightInventoryMarkup(room.posOne,weightOptions(fractionParts(room.posOne).whole))+'</div>';
   const gridMarkup=grid=>'<div class="fb-room-floor">'+spriteGridMarkup(grid.posX,spriteOptions)+weightGridMarkup(grid.posOne,weightOptions(grid.posOne.whole))+'</div>';
   const scene=$("scene"),hand=$("hand"),cargo=$("hand-cargo"),speech=$("speech"),caption=$("action-caption");

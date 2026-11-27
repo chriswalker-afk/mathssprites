@@ -142,3 +142,10 @@ test("Workshop stack regressions are included in layout QA",()=>{
   assert.ok(GROUP_SPECS.layout.includes("e2e/workshop-weight-stacks.spec.mjs"));
   assert.deepEqual(selectBrowserGroups(["e2e/workshop-weight-stacks.spec.mjs"]),["layout"]);
 });
+
+test("inventory count changes exercise layout and physical regressions",()=>{
+  for(const path of ["src/inventory-counts.css","src/inventory-counts.mjs"])
+    assert.deepEqual(selectBrowserGroups([path]),["crates","signed","layout","physics","area"],path);
+  assert.ok(GROUP_SPECS.layout.includes("e2e/inventory-counts.spec.mjs"));
+  assert.deepEqual(selectBrowserGroups(["e2e/inventory-counts.spec.mjs"]),["layout"]);
+});
